@@ -20,39 +20,38 @@
  */
 #include "can_mapping.h"
 #include "byteswap.h"
-#include <byteswap.h>
 
 #include <stdio.h>
 
-float canmapping_extract_value(uint64_t raw_data, CANMapping *mapping)
+float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
-	uint8_t offset = mapping->offset;
-	uint8_t length = mapping->length;
-	if (! mapping->bit_mode) {
-			length *= 8;
-			offset *= 8;
-	}
-	uint32_t bitmask = (1UL << length) - 1;
-	uint32_t raw_value = (raw_data >> offset) & bitmask;
-	if (mapping->big_endian) {
-	        switch (mapping->length) {
-	            case 2:
-	                raw_value = swap_uint16(raw_value);
-	                break;
-	            case 3:
-	                raw_value = swap_uint24(raw_value);
-	                break;
-	            case 4:
-	                raw_value = swap_uint32(raw_value);
-	                break;
-	            default:
-	                break;
-	        }
-	}
-	return (float)raw_value;
+        uint8_t offset = mapping->offset;
+        uint8_t length = mapping->length;
+        if (! mapping->bit_mode) {
+                length *= 8;
+                offset *= 8;
+        }
+        uint32_t bitmask = (1UL << length) - 1;
+        uint32_t raw_value = (raw_data >> offset) & bitmask;
+        if (mapping->big_endian) {
+                switch (mapping->length) {
+                    case 2:
+                        raw_value = swap_uint16(raw_value);
+                        break;
+                    case 3:
+                        raw_value = swap_uint24(raw_value);
+                        break;
+                    case 4:
+                        raw_value = swap_uint32(raw_value);
+                        break;
+                    default:
+                        break;
+                }
+        }
+        return (float)raw_value;
 }
 
-float canmapping_apply_formula(float value, CANMapping *mapping)
+float canmapping_apply_formula(float value, const CANMapping *mapping)
 {
 		value *= mapping->multiplier;
 		if (mapping->divider)
@@ -61,16 +60,16 @@ float canmapping_apply_formula(float value, CANMapping *mapping)
 		return value;
 }
 
-bool canmapping_match_id(CAN_msg *can_msg, CANMapping *mapping)
+bool canmapping_match_id(const CAN_msg *can_msg, const CANMapping *mapping)
 {
-    uint32_t can_id  = can_msg->addressValue;
-    if (mapping->can_mask)
-            can_id &= mapping->can_mask;
+        uint32_t can_id  = can_msg->addressValue;
+        if (mapping->can_mask)
+                can_id &= mapping->can_mask;
 
-    return can_id == mapping->can_id;
+        return can_id == mapping->can_id;
 }
 
-bool canmapping_map_value(float *value, CAN_msg *can_msg, CANMapping *mapping)
+bool canmapping_map_value(float *value, const CAN_msg *can_msg, const CANMapping *mapping)
 {
         if (! canmapping_match_id(can_msg, mapping))
                 return false;
