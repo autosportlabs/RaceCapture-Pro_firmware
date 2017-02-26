@@ -28,6 +28,17 @@
 CPP_GUARD_BEGIN
 
 /**
+ * Call to flag that the CAN state is stale
+ */
+void CAN_state_stale(void);
+
+/**
+ * Indicates if the CAN state is stale
+ * @return true if the state is stale
+ */
+bool CAN_is_state_stale(void);
+
+/**
  * Initialize the list of current values
  * @param values the number of values in the list
  * @return true if the initialization was successful

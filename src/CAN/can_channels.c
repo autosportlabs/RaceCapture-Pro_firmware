@@ -26,34 +26,54 @@
 #include "printk.h"
 #include <string.h>
 
-/* CAN bus channels current channel values */
-static float * CAN_current_values = NULL;
+
+/* manages the running state of OBD2 queries */
+struct CANState {
+		/* CAN bus channels current channel values */
+		float * CAN_current_values;
+
+		/* flag to indicate if state is stale */
+		bool state_is_stale;
+};
+
+static struct CANState can_state = {0};
+
+void CAN_state_stale(void)
+{
+	can_state.state_is_stale = true;
+}
+
+bool CAN_is_state_stale(void)
+{
+	return can_state.state_is_stale;
+}
 
 bool CAN_init_current_values(size_t values) {
-        if (CAN_current_values != NULL)
-                portFree(CAN_current_values);
+        if (can_state.CAN_current_values != NULL)
+                portFree(can_state.CAN_current_values);
 
         values = MAX(1, values);
         size_t size = sizeof(float[values]);
-        CAN_current_values = portMalloc(size);
+        can_state.CAN_current_values = portMalloc(size);
 
-        if (CAN_current_values != NULL)
-                memset(CAN_current_values, 0, size);
+        if (can_state.CAN_current_values != NULL)
+                memset(can_state.CAN_current_values, 0, size);
 
-        return CAN_current_values != NULL;
+        can_state.state_is_stale = false;
+        return can_state.CAN_current_values != NULL;
 }
 
 float CAN_get_current_channel_value(int index) {
-        if (CAN_current_values == NULL)
+        if (can_state.CAN_current_values == NULL)
                 return 0;
-        return CAN_current_values[index];
+        return can_state.CAN_current_values[index];
 }
 
 void CAN_set_current_channel_value(int index, float value)
 {
-        if (CAN_current_values == NULL)
+        if (can_state.CAN_current_values == NULL)
                 return;
-        CAN_current_values[index] = value;
+        can_state.CAN_current_values[index] = value;
 }
 
 void update_can_channels(CAN_msg *msg, CANChannelConfig *cfg, uint16_t enabled_mapping_count)

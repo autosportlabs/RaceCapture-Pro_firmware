@@ -47,7 +47,6 @@ static void CAN_task(void *parameters)
         LoggerConfig *lc = getWorkingLoggerConfig();
         CANChannelConfig *ccc = &lc->can_channel_cfg;
         OBD2Config *oc = &lc->OBD2Configs;
-        OBD2_init_state();
 
         while(1) {
                 uint16_t enabled_mapping_count = 0;
@@ -66,9 +65,7 @@ static void CAN_task(void *parameters)
                 if (!success)
                         pr_error_int_msg("Failed to create buffer for OBD2 channels; size ", new_enabled_obd2_pids_count);
 
-                bool config_changed = false;
-
-                while(! config_changed) {
+                while(! (CAN_is_state_stale() || OBD2_is_state_stale())) {
                         CAN_msg msg;
                         int result = CAN_rx_msg(&msg, CAN_RX_DELAY );
 
@@ -81,8 +78,6 @@ static void CAN_task(void *parameters)
                         }
                         if (oc->enabled)
                                 sequence_next_obd2_query(oc, enabled_obd2_pids_count);
-
-                        config_changed = (enabled_mapping_count != ccc->enabled_mappings || enabled_obd2_pids_count != oc->enabledPids);
                 }
                 delayMs(CAN_TASK_FEATURED_DISABLED_MS);
         }

@@ -30,8 +30,16 @@ CPP_GUARD_BEGIN
 #define OBD2_PID_DEFAULT_TIMEOUT_MS 300
 #define OBD2_PID_REQUEST_TIMEOUT_MS 10
 
-/* set the initial state for OBDII runtime */
-void OBD2_init_state(void);
+/**
+ * Call to flag that the OBD2 state is stale
+ */
+void OBD2_state_stale(void);
+
+/**
+ * Indicates if the OBD2 state is stale
+ * @return true if the state is stale
+ */
+bool OBD2_is_state_stale(void);
 
 /**
  * Initialize the current values based on the provided OBD2 config
