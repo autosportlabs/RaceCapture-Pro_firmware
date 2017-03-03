@@ -38,11 +38,11 @@
 
 #include "CAN_aux_queue.h"
 
-#define _LOG_PFX            "[CAN_Task] "
+#define _LOG_PFX                        "[CAN_Task] "
 
-#define CAN_TASK_STACK 					128
-#define CAN_TASK_FEATURED_DISABLED_MS	2000
-#define CAN_RX_DELAY 					300
+#define CAN_TASK_STACK                  128
+#define CAN_TASK_FEATURED_DISABLED_MS   2000
+#define CAN_RX_DELAY                    300
 
 static void CAN_task(void *parameters)
 {
@@ -80,13 +80,13 @@ static void CAN_task(void *parameters)
 
                                 if (oc->enabled)
                                         update_obd2_channels(&msg, oc);
+#if CAN_AUX_QUEUE_SUPPORT == 1
+                                CAN_aux_queue_put_msg(&msg, 0);
+#endif
                         }
                         if (oc->enabled)
                                 sequence_next_obd2_query(oc, enabled_obd2_pids_count);
 
-#if CAN_AUX_QUEUE_SUPPORT == 1
-                        CAN_aux_queue_put_msg(&msg, 0);
-#endif
                 }
                 delayMs(CAN_TASK_FEATURED_DISABLED_MS);
         }

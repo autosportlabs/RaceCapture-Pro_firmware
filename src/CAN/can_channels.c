@@ -27,7 +27,7 @@
 #include <string.h>
 
 
-/* manages the running state of OBD2 queries */
+/* manages the running state of the CAN channels*/
 struct CANState {
 		/* CAN bus channels current channel values */
 		float * CAN_current_values;

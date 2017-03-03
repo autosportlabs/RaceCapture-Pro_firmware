@@ -31,7 +31,7 @@
 #include "stdutil.h"
 #include "can_mapping.h"
 
-#define _LOG_PFX            			"[OBD2] "
+#define _LOG_PFX                        "[OBD2] "
 #define STANDARD_PID_RESPONSE           0x7e8
 #define OBD2_TIMEOUT_DISABLE_THRESHOLD  10
 
@@ -275,16 +275,21 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
 
 void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
 {
-        PidConfig *pid_config = &cfg->pids[obd2_state.current_obd2_pid_index];
+        uint16_t current_pid_index = obd2_state.current_obd2_pid_index;
+        PidConfig *pid_config = &cfg->pids[current_pid_index];
+        struct OBD2ChannelState *channel_state = &obd2_state.current_channel_states[current_pid_index];
+
         /* Did we get an OBDII PID we were waiting for? */
         if (obd2_state.last_obd2_query_timestamp &&
             msg->addressValue == STANDARD_PID_RESPONSE &&
             msg->data[2] == pid_config->pid ) {
                     float value;
                     bool result = canmapping_map_value(&value, msg, &pid_config->mapping);
-                    if (result)
-                            OBD2_set_current_channel_value(obd2_state.current_obd2_pid_index, value);
-
+                    if (result) {
+                            OBD2_set_current_channel_value(current_pid_index, value);
+                            channel_state->channel_status = OBD2_CHANNEL_STATUS_DATA_RECEIVED;
+                            channel_state->timeout_count = 0;
+                    }
                     /* PID request is complete */
                     obd2_state.last_obd2_query_timestamp = 0;
         }
