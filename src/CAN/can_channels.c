@@ -33,19 +33,19 @@ struct CANState {
 		float * CAN_current_values;
 
 		/* flag to indicate if state is stale */
-		bool state_is_stale;
+		bool stale;
 };
 
 static struct CANState can_state = {0};
 
 void CAN_state_stale(void)
 {
-	can_state.state_is_stale = true;
+	can_state.stale = true;
 }
 
 bool CAN_is_state_stale(void)
 {
-	return can_state.state_is_stale;
+	return can_state.stale;
 }
 
 bool CAN_init_current_values(size_t values) {
@@ -59,7 +59,7 @@ bool CAN_init_current_values(size_t values) {
         if (can_state.CAN_current_values != NULL)
                 memset(can_state.CAN_current_values, 0, size);
 
-        can_state.state_is_stale = false;
+        can_state.stale = false;
         return can_state.CAN_current_values != NULL;
 }
 

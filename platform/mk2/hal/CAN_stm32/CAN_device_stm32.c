@@ -207,7 +207,7 @@ static void CAN_device_init_2(int baud, bool termination_enabled)
         }
 }
 
-int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
+int CAN_device_init(const uint8_t channel, const uint32_t baud, const bool termination_enabled)
 {
         pr_info(_LOG_PFX "Initializing CAN");
         pr_info_int(channel);
@@ -239,18 +239,14 @@ int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
         return 1;
 }
 
-int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
-              uint32_t filter, uint32_t mask, const bool enabled)
+int CAN_device_set_filter(const uint8_t const channel, const uint8_t id, const uint8_t extended,
+              const uint32_t filter, const uint32_t mask, const bool enabled)
 {
         if (channel > 1)
             return 0;
 
         if (id > 13)
             return 0;
-
-        /* CAN2 filters start at 14 by default */
-        if (channel == 1)
-            id += 14;
 
         /*
          * The mapping for these filters/masks is wonkey.  See page
@@ -260,7 +256,8 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
          */
 
         CAN_FilterInitTypeDef CAN_filter_init_structure;
-        CAN_filter_init_structure.CAN_FilterNumber = id;
+        /* CAN2 filters start at 14 by default */
+        CAN_filter_init_structure.CAN_FilterNumber = (channel == 1) ? id + 14 : id;
         CAN_filter_init_structure.CAN_FilterMode = CAN_FilterMode_IdMask;
         CAN_filter_init_structure.CAN_FilterScale = CAN_FilterScale_32bit;
         CAN_filter_init_structure.CAN_FilterFIFOAssignment =
@@ -269,10 +266,8 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
             enabled ? ENABLE : DISABLE;
 
         const size_t shift = extended ? 3 : 21;
-        filter <<= shift;
-        mask <<= shift;
-        CAN_filter_init_structure.CAN_FilterIdHigh = filter >> 16;
-        CAN_filter_init_structure.CAN_FilterMaskIdHigh = mask >> 16;
+        CAN_filter_init_structure.CAN_FilterIdHigh = (filter << shift) >> 16;
+        CAN_filter_init_structure.CAN_FilterMaskIdHigh = (mask << shift) >> 16;
         CAN_filter_init_structure.CAN_FilterIdLow = (uint16_t) filter;
         CAN_filter_init_structure.CAN_FilterMaskIdLow = (uint16_t) mask;
 
@@ -281,7 +276,7 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
         return 1;
 }
 
-int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeout_ms)
+int CAN_device_tx_msg(const uint8_t channel, const CAN_msg * msg, const unsigned int timeout_ms)
 {
         CanTxMsg TxMessage;
 
@@ -334,9 +329,9 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeout_ms)
         return status == CAN_TxStatus_Ok;
 }
 
-int CAN_device_rx_msg(CAN_msg * msg, unsigned int timeout_ms)
+int CAN_device_rx_msg(CAN_msg * msg, const unsigned int timeout_ms)
 {
-        if (xQueueReceive(can_rx_queue, msg, msToTicks(timeout_ms)) == pdTRUE) {
+        if (pdTRUE == xQueueReceive(can_rx_queue, msg, msToTicks(timeout_ms))) {
             return 1;
         } else {
             pr_debug(_LOG_PFX "timeout rx CAN msg\r\n");
@@ -353,7 +348,7 @@ static void process_can_irq_rx(uint8_t can_bus, CAN_TypeDef* can_x, uint8_t fifo
         /* translate into a higher level CAN message */
         CAN_msg can_msg;
         can_msg.can_bus = can_bus;
-        can_msg.isExtendedAddress = rx_msg.IDE == CAN_ID_EXT ? 1 : 0;
+        can_msg.isExtendedAddress = rx_msg.IDE == CAN_ID_EXT;
         can_msg.addressValue = can_msg.isExtendedAddress ? rx_msg.ExtId : rx_msg.StdId;
         memcpy(can_msg.data, rx_msg.Data, rx_msg.DLC);
         can_msg.dataLength = rx_msg.DLC;

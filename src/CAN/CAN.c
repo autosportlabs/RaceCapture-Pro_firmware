@@ -42,29 +42,29 @@ int CAN_init(LoggerConfig *loggerConfig)
     return 1;
 }
 
-int CAN_init_port(uint8_t port, uint32_t baud, bool termination_enabled)
+int CAN_init_port(const uint8_t port, const uint32_t baud, const bool termination_enabled)
 {
     return CAN_device_init(port, baud, termination_enabled);
 }
 
-int CAN_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
-           uint32_t filter, uint32_t mask, const bool enabled)
+int CAN_set_filter(const uint8_t channel, const uint8_t id, const uint8_t extended,
+           const uint32_t filter, const uint32_t mask, const bool enabled)
 {
     return CAN_device_set_filter(channel, id, extended, filter,
                      mask, enabled);
 }
 
-int CAN_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs)
+int CAN_tx_msg(const uint8_t channel, const CAN_msg *msg, const unsigned int timeoutMs)
 {
-    int rc = CAN_device_tx_msg(channel, msg, timeoutMs);
+    const int rc = CAN_device_tx_msg(channel, msg, timeoutMs);
     if (rc)
             led_toggle(LED_CAN);
     return rc;
 }
 
-int CAN_rx_msg(CAN_msg *msg, unsigned int timeoutMs)
+int CAN_rx_msg(CAN_msg *msg, const unsigned int timeoutMs)
 {
-    int rc = CAN_device_rx_msg(msg, timeoutMs);
+    const int rc = CAN_device_rx_msg(msg, timeoutMs);
     if (rc)
             led_toggle(LED_CAN);
     return rc;

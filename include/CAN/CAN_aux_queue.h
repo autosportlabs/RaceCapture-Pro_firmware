@@ -22,8 +22,8 @@
 #ifndef INCLUDE_CAN_CAN_AUX_QUEUE_H_
 #define INCLUDE_CAN_CAN_AUX_QUEUE_H_
 
-#include <stddef.h>
 #include "CAN.h"
+#include <stddef.h>
 
 /**
  * Initializes the CAN aux message queues

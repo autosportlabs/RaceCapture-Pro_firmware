@@ -20,7 +20,6 @@
  */
 #include "can_mapping.h"
 #include "byteswap.h"
-#include "printk.h"
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {

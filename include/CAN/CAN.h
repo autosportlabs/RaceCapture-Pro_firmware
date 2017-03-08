@@ -52,11 +52,11 @@ typedef struct _CAN_msg {
 } CAN_msg;
 
 int CAN_init(LoggerConfig *loggerConfig);
-int CAN_init_port(uint8_t port, uint32_t baud, bool termination_enabled);
-int CAN_set_filter(uint8_t, uint8_t id, uint8_t extended, uint32_t filter,
-		   uint32_t mask, const bool enabled);
-int CAN_tx_msg(uint8_t channel, CAN_msg *msg, unsigned int timeoutMs);
-int CAN_rx_msg(CAN_msg *msg, unsigned int timeoutMs);
+int CAN_init_port(const uint8_t port, const uint32_t baud, const bool termination_enabled);
+int CAN_set_filter(const uint8_t, const uint8_t id, const uint8_t extended, const uint32_t filter,
+		   const uint32_t mask, const bool enabled);
+int CAN_tx_msg(const uint8_t channel, const CAN_msg *msg, const unsigned int timeoutMs);
+int CAN_rx_msg(CAN_msg *msg, const unsigned int timeoutMs);
 
 CPP_GUARD_END
 

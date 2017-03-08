@@ -157,7 +157,7 @@ static void CAN_device_init_1(int baud)
     initCANInterrupts(CAN1, USB_LP_CAN1_RX0_IRQn);
 }
 
-int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
+int CAN_device_init(const uint8_t channel, const uint32_t baud, const bool termination_enabled)
 {
 	pr_info(_LOG_PFX "Initializing CAN");
 	pr_info_int(channel);
@@ -188,8 +188,8 @@ int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
 	return 1;
 }
 
-int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
-			  uint32_t filter, uint32_t mask, const bool enabled)
+int CAN_device_set_filter(const uint8_t channel, const uint8_t id, const uint8_t extended,
+			  const uint32_t filter, const uint32_t mask, const bool enabled)
 {
 	if (channel > 1)
 		return 0;
@@ -214,10 +214,8 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
 		enabled ? ENABLE : DISABLE;
 
 	const size_t shift = extended ? 3 : 21;
-	filter <<= shift;
-	mask <<= shift;
-	CAN_FilterInitStructure.CAN_FilterIdHigh = filter >> 16;
-	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = mask >> 16;
+	CAN_FilterInitStructure.CAN_FilterIdHigh = (filter << shift) >> 16;
+	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = (mask << shift) >> 16;
 	CAN_FilterInitStructure.CAN_FilterIdLow = (uint16_t) filter;
 	CAN_FilterInitStructure.CAN_FilterMaskIdLow = (uint16_t) mask;
 
@@ -226,7 +224,7 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
 	return 1;
 }
 
-int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
+int CAN_device_tx_msg(const uint8_t channel, const CAN_msg * msg, const unsigned int timeoutMs)
 {
 	if (channel != 0)
 		return 0;
@@ -281,9 +279,9 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
 
 }
 
-int CAN_device_rx_msg(CAN_msg * msg, unsigned int timeoutMs)
+int CAN_device_rx_msg(CAN_msg * msg, const unsigned int timeoutMs)
 {
-    if (xQueueReceive(can_rx_queue, msg, msToTicks(timeoutMs)) == pdTRUE) {
+    if (pdTRUE == xQueueReceive(can_rx_queue, msg, msToTicks(timeoutMs))) {
         return 1;
     } else {
         pr_debug(_LOG_PFX "timeout rx CAN msg\r\n");
@@ -303,7 +301,7 @@ void CAN_device_isr(void)
                 /* translate into a higher level CAN message */
                 CAN_msg can_msg;
                 can_msg.can_bus = 0;
-                can_msg.isExtendedAddress = rx_msg.IDE == CAN_ID_EXT ? 1 : 0;
+                can_msg.isExtendedAddress = rx_msg.IDE == CAN_ID_EXT;
                 can_msg.addressValue = can_msg.isExtendedAddress ? rx_msg.ExtId : rx_msg.StdId;
                 memcpy(can_msg.data, rx_msg.Data, rx_msg.DLC);
                 can_msg.dataLength = rx_msg.DLC;

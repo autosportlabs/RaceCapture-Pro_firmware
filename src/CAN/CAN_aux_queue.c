@@ -1,8 +1,22 @@
 /*
- * CAN_aux_queue.c
+ * Race Capture Firmware
  *
- *  Created on: Feb 26, 2017
- *      Author: brent
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "CAN_aux_queue.h"
 #include "capabilities.h"
@@ -32,20 +46,18 @@ bool CAN_aux_queue_put_msg(CAN_msg * can_msg, size_t timeout_ms)
         if (can_bus >= CAN_CHANNELS)
                 return false;
 
-        if (xQueueSend(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)) == pdTRUE)
+        if (pdTRUE == xQueueSend(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)))
                 return true;
-        else {
-                pr_debug_int_msg(_LOG_PFX "timeout on put CAN aux msg for bus ", can_bus);
-                return false;
-        }
+
+        pr_debug_int_msg(_LOG_PFX "timeout on put CAN aux msg for bus ", can_bus);
+        return false;
 }
 
 bool CAN_aux_queue_get_msg(uint8_t can_bus, CAN_msg * can_msg, size_t timeout_ms)
 {
-        if (xQueueReceive(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)) == pdTRUE)
+        if (pdTRUE == xQueueReceive(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)))
                 return true;
-        else {
-            pr_debug_int_msg(_LOG_PFX "timeout on get CAN aux msg for bus ", can_bus);
-            return 0;
-        }
+
+        pr_debug_int_msg(_LOG_PFX "timeout on get CAN aux msg for bus ", can_bus);
+        return false;
 }
