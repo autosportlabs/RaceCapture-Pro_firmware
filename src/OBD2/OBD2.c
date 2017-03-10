@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "CAN.h"
 #include "FreeRTOS.h"
 #include "OBD2.h"
@@ -27,381 +26,304 @@
 #include "printk.h"
 #include "task.h"
 #include "taskUtil.h"
+#include "mem_mang.h"
+#include <string.h>
+#include "stdutil.h"
+#include "can_mapping.h"
 
+#define _LOG_PFX                        "[OBD2] "
+#define STANDARD_PID_RESPONSE           0x7e8
+#define OBD2_TIMEOUT_DISABLE_THRESHOLD  10
 
-#define STANDARD_PID_RESPONSE 			0x7e8
-#define CUSTOM_MODE_SHOW_CURRENT_DATA 	0x41
+enum obd2_channel_status {
+        OBD2_CHANNEL_STATUS_NO_DATA = 0,
+        OBD2_CHANNEL_STATUS_DATA_RECEIVED,
+        OBD2_CHANNEL_STATUS_SQUELCHED
+};
 
-static int OBD2_current_values[OBD2_CHANNELS];
+/* tracks the state of OBD2 channels */
+struct OBD2ChannelState {
+        /* the current OBD2 channel value */
+        float current_value;
 
-void OBD2_set_current_PID_value(size_t index, int value)
+        /**
+         * holds the state for the priority sequencer
+         */
+        uint16_t sequencer_count;
+
+        /* PID associated with OBD2 channel */
+        uint8_t pid;
+
+        /* number of timeouts seen on this channel */
+        uint8_t timeout_count;
+
+        /* indicates status of channel */
+        enum obd2_channel_status channel_status;
+};
+
+/* manages the running state of OBD2 queries */
+struct OBD2State {
+        /* points to a dynamically created array of OBD2ChannelState structs */
+        struct OBD2ChannelState * current_channel_states;
+
+        /* holds the last query timestamp, for determining OBD2 query timeouts */
+        size_t last_obd2_query_timestamp;
+
+        /* the index of the current OBD2 PID we're querying */
+        uint16_t current_obd2_pid_index;
+
+        /**
+         * the max sample rate across all of the channels;
+         * will set the time base for the fastest PID querying
+         */
+        uint16_t max_sample_rate;
+
+        /**
+         * number of OBD2 channels
+         */
+        uint16_t channel_count;
+
+        /**
+         * number of squelched channels
+         */
+        uint16_t squelched_count;
+
+        /**
+         * flag to indicate if config was stale
+         */
+        bool is_stale;
+};
+
+static struct OBD2State obd2_state = {0};
+
+void OBD2_state_stale(void)
 {
-    if (index < OBD2_CHANNELS) {
-        OBD2_current_values[index] = value;
-    }
+	obd2_state.is_stale = true;
 }
 
-int OBD2_get_current_PID_value(int index)
+bool OBD2_is_state_stale(void)
 {
-    return OBD2_current_values[index];
+	return obd2_state.is_stale;
 }
 
-static float celcius_to_farenheight(float celcius)
+bool OBD2_init_current_values(OBD2Config *obd2_config)
 {
-    return celcius * 1.8 + 32.0;
-}
+        uint16_t obd2_channel_count = obd2_config->enabledPids;
 
-static float kph_to_mph(float kph)
-{
-    return kph * 0.621371;
-}
+        /* free any previously created channel states */
+        if (obd2_state.current_channel_states != NULL)
+                portFree(obd2_state.current_channel_states);
 
-/*
- * PSIG is the measurement of pressure relative to ambient atmospheric 
- * pressure and is quantified in pounds per square inch gauge. 
- * This is used in almost all standard gauges leveraging a realtive to zero pressure environment.
- */
-static float kPa_to_psig(float kPa)
-{
-    return (kPa * 0.1450377377)-14.6959494;
-}
+        /* start the querying from the first PID */
+        obd2_state.current_obd2_pid_index = 0;
+        obd2_state.last_obd2_query_timestamp = 0;
+        obd2_state.squelched_count = 0;
 
-/* 
- * look into data bytes beyond 4
- * need 4F,50, 55,56,57,58,64
- */
-static int decode_pid(unsigned char pid, CAN_msg *msg, int *value)
-{
-    int result = 0;
-
-    if (msg->addressValue == STANDARD_PID_RESPONSE &&
-        msg->data[0] >= 3 &&
-        msg->data[1] == CUSTOM_MODE_SHOW_CURRENT_DATA &&
-        msg->data[2] == pid ) {
-
-        result = 1;
-
-        int A = msg->data[3];
-        int B = msg->data[4];
-        int C = msg->data[5];
-        int D = msg->data[6];
-
-        switch(pid) {
-            /* Calculated engine load */
-            case 0x04:
-                *value = A * 100 / 255;
-                break;
-            /* Engine coolant temperature (C) */
-            case 0x05:
-                *value = celcius_to_farenheight(A - 40);
-                break;
-            /* Short term fuel % trim - Bank 1 */
-            /* Short term fuel % trim - Bank 1 */
-            /* Short term fuel % trim - Bank 2 */
-            /* Short term fuel % trim - Bank 2 */
-            case 0x06:
-            case 0x07:
-            case 0x08:
-            case 0x09:
-                *value = (A - 128) * 100 / 128;
-                break;
-            /* Fuel pressure (KPa (gauge)) */
-            case 0x0A:
-                *value  = A * 3;
-                break;
-            /* Intake manifold pressure (KPa absolute) */
-            case 0x0B:
-                *value = A;
-                break;
-            /* RPM */
-            case 0x0C:
-                *value = ((A * 256) + B) / 4;
-                break;
-            /* Vehicle speed (km/ h) */
-            case 0x0D:
-                *value = kph_to_mph(A);
-                break;
-            /* Timing advance (degrees) */
-            case 0x0E:
-                *value = (A - 128) / 2;
-                break;
-            /* Intake air temperature (C) */
-            case 0x0F:
-                *value = celcius_to_farenheight(A - 40);
-                break;
-            /* MAF airflow rate (grams / sec) */
-            case 0x10:
-                *value = ((A * 256) + B) / 100;
-                break;
-            /* Throttle position % */
-            case 0x11:
-                *value = A * 100 / 255;
-                break;
-            /* 
-             * Oxygen sensor voltage - Bank 1, Sensor 1
-             * Oxygen sensor voltage - Bank 1, Sensor 2
-             * Oxygen sensor voltage - Bank 1, Sensor 3
-             * Oxygen sensor voltage - Bank 1, Sensor 4
-             * Oxygen sensor voltage - Bank 2, Sensor 1
-             * Oxygen sensor voltage - Bank 2, Sensor 2
-             * Oxygen sensor voltage - Bank 2, Sensor 3
-             * Oxygen sensor voltage - Bank 2, Sensor 4
-             */
-            case 0x14:
-            case 0x15:
-            case 0x16:
-            case 0x17:
-            case 0x18:
-            case 0x19:
-            case 0x1A:
-            case 0x1B:
-                *value = A / 200;
-                break;
-            /* Run time since engine start */
-            case 0x1F:
-                *value = (A * 256) + B;
-                break;
-            /* Fuel rail Pressure (relative to manifold vacuum) psi */
-            case 0x22:
-                *value = kPa_to_psig(((A * 256) + B) * 0.079);
-                break;
-            /* Fuel rail Pressure (diesel, or gasoline direct inject) psi */
-            case 0x23:
-                *value = kPa_to_psig(((A * 256) + B) * 10);
-                break;
-            /* Commanded evaporative purge % */
-            case 0x2E:
-                *value = A * 100 / 255;
-                break;
-            /* Fuel level input % */
-            case 0x2F:
-                *value = A * 100 / 255;
-                break;
-            /* Number of warm-ups since codes cleared */
-            case 0x30:
-                *value = A;
-                break;
-            /* Distance traveled since codes cleared - Validate km to miles */
-            case 0x31:
-                *value = kph_to_mph((A * 256) + B);
-                break;
-            /* Evap. System Vapor Pressure */
-            case 0x32:
-                *value = ((A * 256) + B) / 4;
-                break;
-            /* Barometric pressure psi */
-            case 0x33:
-                *value = kPa_to_psig(A);
-                break;
-            /* 
-             * O2S1_WR_lambda Current
-             * O2S2_WR_lambda Current
-             * O2S3_WR_lambda Current
-             * O2S4_WR_lambda Current
-             * O2S5_WR_lambda Current
-             * O2S6_WR_lambda Current
-             * O2S7_WR_lambda Current
-             * O2S8_WR_lambda Current
-             */
-            case 0x34:
-            case 0x35:
-            case 0x36:
-            case 0x37:
-            case 0x38:
-            case 0x39:
-            case 0x3A:
-            case 0x3B:
-                *value = ((C * 256) + D) / 256 - 128;
-                break;
-            /* 
-             * Catalyst Temperature Bank 1, Sensor 1
-             * Catalyst Temperature Bank 1, Sensor 2
-             * Catalyst Temperature Bank 2, Sensor 1
-             * Catalyst Temperature Bank 2, Sensor 1
-             */
-            case 0x3C:
-            case 0x3D:
-            case 0x3E:
-            case 0x3F:
-                *value = celcius_to_farenheight((( A * 256) + B) / 10 - 40);
-                break;
-            /* Control module voltage V */
-            case 0x42:
-                *value = ((A * 256) + B) / 1000;
-                break;
-             /* Absolute load value percent */
-            case 0x43:
-                *value = ((A * 256) + B) * 100 / 255;
-                break;
-            /* Fuel/Air commanded equivalence ratio */
-            case 0x44:
-                *value = ((A * 256) + B) / 32768;
-                break;
-            /* Relative throttle position percent */
-            case 0x45:
-                *value = A * 100 / 255;
-                break;
-            /* Ambient air temperature */
-            case 0x46:
-                *value = celcius_to_farenheight(A - 40);
-                break;
-            /* 
-             * Absolute throttle position B percent
-             * Absolute throttle position C percent
-             * Absolute throttle position D percent
-             * Absolute throttle position E percent
-             * Absolute throttle position F percent
-             */
-            case 0x47:
-            case 0x48:
-            case 0x49:
-            case 0x4A:
-            case 0x4B:
-                *value = A * 100 / 255;
-                break;
-            /* 
-             * Time run with MIL on minutes
-             * Time since trouble codes cleared minutes 
-             */
-            case 0x4D:
-            case 0x4E:
-                *value = (A * 256) + B;
-                break;
-            /* 
-             * Fuel Types
-             * 00	Not available
-             * 01	Gasoline
-             * 02	Methanol
-             * 03	Ethanol
-             * 04	Diesel
-             * 05	LPG
-             * 06	CNG
-             * 07	Propane
-             * 08	Electric
-             * 09	Bifuel running Gasoline
-             * 0A	Bifuel running Methanol
-             * 0B	Bifuel running Ethanol
-             * 0C	Bifuel running LPG
-             * 0D	Bifuel running CNG
-             * 0E	Bifuel running Propane
-             */
-            case 0x51:
-                *value = A;
-                break;
-            /* Ethanol fuel percent */
-            case 0x52:
-                *value = A * 100 / 255;
-                break;
-            /* Absolute Evap system Vapor Pressure psi */
-            case 0x53:
-                *value = kPa_to_psig(((A * 256) + B) / 200);
-                break;
-             /* Evap system vapor pressure Pa */
-            case 0x54:
-                *value = ((A * 256) + B) - 32767;
-                break;
-            /* Fuel rail pressure (absolute) psi */
-            case 0x59:
-                *value = kPa_to_psig(((A * 256) + B) * 10);
-                break;
-            /* Relative accelerator pedal position percent */
-            case 0x5A:
-                *value = A * 100 / 255;
-                break;
-            /* Hybrid battery pack remaining life percent */
-            case 0x5B:
-                *value = A * 100 / 255;
-                break;
-            /* Engine oil temp (F) */
-            case 0x5C:
-                *value = celcius_to_farenheight(A - 40);
-                break;
-            /* Fuel injection timing degree */
-            case 0x5D:
-                *value = (((A * 256) + B) - 26880) / 128;
-                break;
-            /* Engine fuel rate l/h */
-            case 0x5E:
-                *value = ((A * 256) + B) * 0.05;
-                break;
-            /* 
-             * Driver's demand engine - percent torque percent
-             * Actual engine - percent torque percent
-             */
-            case 0x61:
-            case 0x62:
-                *value = A - 125;
-                break;
-            /* Engine reference torque - foot lbs */
-            case 0x63:
-                *value = ((A * 256) + B)*0.737562149277;
-                break;
-            /* Engine coolant temperature */
-            case 0x67:
-                *value = celcius_to_farenheight(A - 40);
-                break;
-            /* Intake air temperature sensor */
-            case 0x68:
-                *value = celcius_to_farenheight(A - 40);
-                break;
-            /* Exhaust gas recirculation temperature */
-            case 0x6B:
-                *value = celcius_to_farenheight(A - 40);
-                break;
-            /* Turbocharger compressor inlet pressure psi */
-            case 0x6F:
-                *value = kPa_to_psig(A);
-                break;
-            /* Boost pressure control in psi */
-            case 0x70:
-                *value = kPa_to_psig(A);
-                break;
-            /* Boost pressure control in psi */
-            case 0x74:
-                *value = kPa_to_psig(A);
-                break;
-            default:
-                result = 0;
-                break;
+        /* determine the fastest sample rate, which will set our PID querying timebase */
+        size_t max_sample_rate = 0;
+        for (size_t i = 0; i < obd2_channel_count; i++) {
+                max_sample_rate = MAX(max_sample_rate,
+                                      decodeSampleRate(obd2_config->pids[i].cfg.sampleRate));
         }
-    }
-    return result;
+        obd2_state.max_sample_rate = max_sample_rate;
+        pr_debug_int_msg(_LOG_PFX " Max OBD2 sample rate: ", obd2_state.max_sample_rate);
+
+        if (obd2_channel_count == 0) {
+        		/* if no OBD2 channels are enabled, don't malloc */
+				obd2_state.current_channel_states = NULL;
+				return true;
+        }
+
+		/* malloc the collection of OBD2 channels */
+		size_t size = sizeof(struct OBD2ChannelState[obd2_channel_count]);
+		obd2_state.current_channel_states = portMalloc(size);
+
+		if (obd2_state.current_channel_states == NULL) {
+				pr_error_int_msg(_LOG_PFX " Failed to init OBD2ChannelState with count ", obd2_channel_count);
+				/* whoops */
+				return false;
+		}
+
+		/* set our current PIDs */
+		for (size_t i = 0; i < obd2_channel_count; i++) {
+		        struct OBD2ChannelState *state = &obd2_state.current_channel_states[i];
+				state->pid = obd2_config->pids[i].pid;
+				state->channel_status = OBD2_CHANNEL_STATUS_NO_DATA;
+				state->timeout_count = 0;
+		}
+
+		obd2_state.channel_count = obd2_config->enabledPids;
+		obd2_state.is_stale = false;
+		return true;
 }
 
-int OBD2_request_PID(unsigned char pid, int *value, size_t timeout)
+float OBD2_get_current_channel_value(int index) {
+    if (obd2_state.current_channel_states == NULL)
+            return 0;
+    return obd2_state.current_channel_states[index].current_value;
+}
+
+void OBD2_set_current_channel_value(int index, float value)
 {
-    CAN_msg msg;
-    msg.addressValue = 0x7df;
-    msg.data[0] = 2;
-    msg.data[1] = 1;
-    msg.data[2] = pid;
-    msg.data[3] = 0x55;
-    msg.data[4] = 0x55;
-    msg.data[5] = 0x55;
-    msg.data[6] = 0x55;
-    msg.data[7] = 0x55;
-    msg.dataLength = 8;
-    msg.isExtendedAddress = 0;
-    int pid_request_success = 0;
-    if (CAN_tx_msg(0, &msg, timeout)) {
-        size_t start_time = xTaskGetTickCount();
-        while (!isTimeoutMs(start_time, OBD2_PID_DEFAULT_TIMEOUT_MS)) {
-            int result = CAN_rx_msg(0, &msg, OBD2_PID_DEFAULT_TIMEOUT_MS);
-            if (result) {
-                result = decode_pid(pid, &msg, value);
-                if (result) {
-                    pid_request_success = 1;
-                    if (DEBUG_LEVEL) {
-                        pr_debug("read OBD2 PID ");
-                        pr_debug_int(pid);
-                        pr_debug("=")
-                        pr_debug_int(*value);
-                        pr_debug("\r\n");
-                    }
-                    break;
+        if (obd2_state.current_channel_states == NULL)
+                return;
+        obd2_state.current_channel_states[index].current_value = value;
+}
+
+void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pids_count)
+{
+        /* no PIDs, no query... */
+		if (enabled_obd2_pids_count == 0)
+				return;
+
+        bool is_obd2_timeout = obd2_state.last_obd2_query_timestamp > 0 &&
+        		isTimeoutMs(obd2_state.last_obd2_query_timestamp, OBD2_PID_DEFAULT_TIMEOUT_MS);
+
+        size_t current_pid_index = obd2_state.current_obd2_pid_index;
+
+        if (is_obd2_timeout) {
+        		/* check for timeout and squelch current PID if needed */
+                struct OBD2ChannelState *state = &obd2_state.current_channel_states[current_pid_index];
+                pr_debug_int_msg(_LOG_PFX "Timeout requesting PID ", state->pid);
+                state->timeout_count++;
+                if (state->timeout_count >= OBD2_TIMEOUT_DISABLE_THRESHOLD) {
+                		state->channel_status = OBD2_CHANNEL_STATUS_SQUELCHED;
+                		pr_debug_int_msg(_LOG_PFX "Excessive timeouts, squelching PID ", state->pid);
+                		obd2_state.squelched_count++;
+                		/**
+                		 * if all channels end up being squelched, then we should just reset OBD2 config
+                		 * This accounts for cases where there's a complete disconnect and a reset is needed
+                		 */
+                		if (obd2_state.squelched_count == obd2_state.channel_count) {
+                				pr_debug(_LOG_PFX "all channels timed out, resetting OBD2 state\r\n");
+                				obd2_state.is_stale = true;
+                		}
                 }
-            }
         }
-    }
-    return pid_request_success;
+
+        /* if a query is active and not timed out, exit now */
+        if (obd2_state.last_obd2_query_timestamp != 0 && !is_obd2_timeout)
+        		return;
+
+		/**
+		 * Scheduler algorithm.  This updates a sequencer counter
+		 * based on the channel's sample rate.
+		 *
+		 * Whichever PID has the highest count *above* the max configured
+		 * OBDII sample rate wins and is selected for querying. once this happens
+		 * the counter is reset to 0.
+		 *
+		 * The result causes channels to be proportionately queried based on the
+		 * configured sample rate.
+		 *
+		 * Example:
+		 * Channel1 @ 1Hz - gets incremented by 1 on every pass through
+		 * Channel2 @ 25Hz - gets incremented by 25 on every pass
+		 * Channel3 @ 50Hz - gets incremented by 50 on every pass
+		 * Max configured sample rate: 50Hz
+		 *
+		 * Results:
+		 * Channel 1 is selected for PID querying approx. 1/50 the rate of channel 3
+		 * Channel 2 is selected for PID querying approx. 1/2 the rate of channel 3
+		 * Channel 3 is selected for PID querying approx. every time
+		 */
+
+		uint16_t highest_timeout_factor = 0;
+
+		/* tracks which PID should be scheduled next */
+		int most_due_pid_index = -1;
+
+		for (size_t i = 0; i < enabled_obd2_pids_count; i++) {
+                struct OBD2ChannelState *state = &obd2_state.current_channel_states[i];
+                if (state->channel_status == OBD2_CHANNEL_STATUS_SQUELCHED)
+                        /* if channel is squelched then skip */
+                        continue;
+
+                uint16_t timeout = state->sequencer_count;
+                uint16_t sample_rate = decodeSampleRate(obd2_config->pids[i].cfg.sampleRate);
+                timeout += sample_rate;
+
+                /**
+                 * select the channel if:
+                 * 1. the timeout has reached the trigger point
+                 * 2. the timeout has taken the longest amount of time to reach the trigger point */
+                uint16_t timeout_factor = timeout / sample_rate;
+                if (timeout >= obd2_state.max_sample_rate && timeout_factor > highest_timeout_factor) {
+                        highest_timeout_factor = timeout_factor;
+                        most_due_pid_index = i;
+                }
+                state->sequencer_count = timeout;
+		}
+
+		if (most_due_pid_index < 0)
+		        /* no PID was selected, give up */
+		        return;
+
+		current_pid_index = most_due_pid_index;
+		obd2_state.current_channel_states[current_pid_index].sequencer_count = 0;
+
+		PidConfig * pid_cfg = &obd2_config->pids[current_pid_index];
+		int pid_request_result = OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, OBD2_PID_REQUEST_TIMEOUT_MS);
+		if (pid_request_result) {
+				obd2_state.last_obd2_query_timestamp = getCurrentTicks();
+		}
+		else {
+				pr_debug_int_msg("Timeout sending PID request ", pid_cfg->pid);
+		}
+		obd2_state.current_obd2_pid_index = current_pid_index;
+}
+
+void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
+{
+        uint16_t current_pid_index = obd2_state.current_obd2_pid_index;
+        PidConfig *pid_config = &cfg->pids[current_pid_index];
+        struct OBD2ChannelState *channel_state = &obd2_state.current_channel_states[current_pid_index];
+
+        /* Did we get an OBDII PID we were waiting for? */
+        if (obd2_state.last_obd2_query_timestamp &&
+            msg->addressValue == STANDARD_PID_RESPONSE &&
+            msg->data[2] == pid_config->pid ) {
+                    float value;
+                    bool result = canmapping_map_value(&value, msg, &pid_config->mapping);
+                    if (result) {
+                            OBD2_set_current_channel_value(current_pid_index, value);
+                            channel_state->channel_status = OBD2_CHANNEL_STATUS_DATA_RECEIVED;
+                            channel_state->timeout_count = 0;
+                    }
+                    /* PID request is complete */
+                    obd2_state.last_obd2_query_timestamp = 0;
+        }
+}
+
+int OBD2_request_PID(uint8_t pid, uint8_t mode, size_t timeout)
+{
+		CAN_msg msg;
+		msg.addressValue = 0x7df;
+		msg.data[0] = 2;
+		msg.data[1] = mode;
+		msg.data[2] = pid;
+		msg.data[3] = 0x55;
+		msg.data[4] = 0x55;
+		msg.data[5] = 0x55;
+		msg.data[6] = 0x55;
+		msg.data[7] = 0x55;
+		msg.dataLength = 8;
+		msg.isExtendedAddress = 0;
+		return CAN_tx_msg(0, &msg, timeout);
+}
+
+bool OBD2_get_value_for_pid(uint8_t pid, float *value)
+{
+		struct OBD2ChannelState *states = obd2_state.current_channel_states;
+		if (states == NULL)
+				return false;
+
+		for (size_t i = 0; i < obd2_state.channel_count; i++) {
+				struct OBD2ChannelState *test_state = states + i;
+				if (pid == test_state->pid) {
+						*value = test_state->current_value;
+						return true;
+				}
+		}
+		return false;
 }

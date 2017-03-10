@@ -34,7 +34,9 @@
 #include "taskUtil.h"
 #include <stdint.h>
 
-static xQueueHandle xCan1Rx;
+#define _LOG_PFX  "[CAN device] "
+
+static xQueueHandle can_rx_queue;
 
 #define CAN_FILTER_COUNT	13
 #define CAN_IRQ_PRIORITY 	5
@@ -62,17 +64,13 @@ static const u8 can_baud_sjw[] =
 static const u8 can_baud_pre[] = { 20, 18, 9, 9, 2 };
 static const u32 can_baud_rate[] = { 100000, 125000, 250000, 500000, 1000000 };
 
-static int initQueues()
+static bool init_queue()
 {
-        if (!xCan1Rx) {
-                xCan1Rx = xQueueCreate(CAN_QUEUE_LENGTH,
+        if (!can_rx_queue)
+                can_rx_queue = xQueueCreate(CAN_QUEUE_LENGTH,
                                        (unsigned portBASE_TYPE)
-                                       sizeof(CanRxMsg));
-                if (!xCan1Rx)
-                        return 0;
-        }
-
-        return 1;
+                                       sizeof(CAN_msg));
+        return can_rx_queue != NULL;
 }
 
 static void initGPIO(GPIO_TypeDef * GPIOx, uint32_t gpioPins)
@@ -159,14 +157,14 @@ static void CAN_device_init_1(int baud)
     initCANInterrupts(CAN1, USB_LP_CAN1_RX0_IRQn);
 }
 
-int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
+int CAN_device_init(const uint8_t channel, const uint32_t baud, const bool termination_enabled)
 {
-	pr_info("Initializing CAN");
+	pr_info(_LOG_PFX "Initializing CAN");
 	pr_info_int(channel);
 	pr_info_int_msg(" with baud rate ", baud);
 
-	if (!initQueues()) {
-		pr_info("CAN init queues failed\r\n");
+	if (!init_queue()) {
+		pr_info(_LOG_PFX "CAN init queues failed\r\n");
 		return 0;
 	}
 
@@ -175,7 +173,7 @@ int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
 		CAN_device_init_1(baud);
 		break;
 	default:
-		pr_info("CAN init device failed\r\n");
+		pr_info(_LOG_PFX "CAN init device failed\r\n");
 		return 0;
 	}
 
@@ -184,14 +182,14 @@ int CAN_device_init(uint8_t channel, uint32_t baud, bool termination_enabled)
 	for (size_t i = 1; i < CAN_FILTER_COUNT; ++i)
 		CAN_device_set_filter(channel, i, 0, 0, 0, false);
 
-	pr_info("CAN init success!\r\n");
+	pr_info(_LOG_PFX "CAN init success!\r\n");
 
 	/*  termination is not supported on this platform, so termination_enabled parameter is not used */
 	return 1;
 }
 
-int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
-			  uint32_t filter, uint32_t mask, const bool enabled)
+int CAN_device_set_filter(const uint8_t channel, const uint8_t id, const uint8_t extended,
+			  const uint32_t filter, const uint32_t mask, const bool enabled)
 {
 	if (channel > 1)
 		return 0;
@@ -216,10 +214,8 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
 		enabled ? ENABLE : DISABLE;
 
 	const size_t shift = extended ? 3 : 21;
-	filter <<= shift;
-	mask <<= shift;
-	CAN_FilterInitStructure.CAN_FilterIdHigh = filter >> 16;
-	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = mask >> 16;
+	CAN_FilterInitStructure.CAN_FilterIdHigh = (filter << shift) >> 16;
+	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = (mask << shift) >> 16;
 	CAN_FilterInitStructure.CAN_FilterIdLow = (uint16_t) filter;
 	CAN_FilterInitStructure.CAN_FilterMaskIdLow = (uint16_t) mask;
 
@@ -228,7 +224,7 @@ int CAN_device_set_filter(uint8_t channel, uint8_t id, uint8_t extended,
 	return 1;
 }
 
-int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
+int CAN_device_tx_msg(const uint8_t channel, const CAN_msg * msg, const unsigned int timeoutMs)
 {
 	if (channel != 0)
 		return 0;
@@ -283,33 +279,34 @@ int CAN_device_tx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
 
 }
 
-int CAN_device_rx_msg(uint8_t channel, CAN_msg * msg, unsigned int timeoutMs)
+int CAN_device_rx_msg(CAN_msg * msg, const unsigned int timeoutMs)
 {
-	if (channel > 0) {
-		return 0;
-	}
-
-    CanRxMsg rxMsg;
-    if (xQueueReceive(xCan1Rx, &rxMsg, msToTicks(timeoutMs)) == pdTRUE) {
-        msg->isExtendedAddress = rxMsg.IDE == CAN_ID_EXT ? 1 : 0;
-        msg->addressValue = msg->isExtendedAddress ? rxMsg.ExtId : rxMsg.StdId;
-        memcpy(msg->data, rxMsg.Data, rxMsg.DLC);
-        msg->dataLength = rxMsg.DLC;
+    if (pdTRUE == xQueueReceive(can_rx_queue, msg, msToTicks(timeoutMs))) {
         return 1;
     } else {
-        pr_debug("timeout rx CAN msg\r\n");
+        pr_debug(_LOG_PFX "timeout rx CAN msg\r\n");
         return 0;
     }
 }
 
 void CAN_device_isr(void)
 {
-    if (CAN_GetITStatus(CAN1, CAN_IT_FMP0) != RESET)
-    {
-        portBASE_TYPE xTaskWokenByRx = pdFALSE;
-        CanRxMsg rxMsg;
-        CAN_Receive(CAN1, CAN_FIFO0, &rxMsg);
-        xQueueSendFromISR(xCan1Rx, &rxMsg, &xTaskWokenByRx);
-        portEND_SWITCHING_ISR(xTaskWokenByRx);
-    }
+        if (CAN_GetITStatus(CAN1, CAN_IT_FMP0) != RESET)
+        {
+
+                portBASE_TYPE task_woken_by_rx = pdFALSE;
+                CanRxMsg rx_msg;
+                CAN_Receive(CAN1, CAN_FIFO0, &rx_msg);
+
+                /* translate into a higher level CAN message */
+                CAN_msg can_msg;
+                can_msg.can_bus = 0;
+                can_msg.isExtendedAddress = rx_msg.IDE == CAN_ID_EXT;
+                can_msg.addressValue = can_msg.isExtendedAddress ? rx_msg.ExtId : rx_msg.StdId;
+                memcpy(can_msg.data, rx_msg.Data, rx_msg.DLC);
+                can_msg.dataLength = rx_msg.DLC;
+
+                xQueueSendFromISR(can_rx_queue, &can_msg, &task_woken_by_rx);
+                portEND_SWITCHING_ISR(task_woken_by_rx);
+        }
 }

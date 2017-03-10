@@ -604,11 +604,22 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
             ++channels;
 #endif
 
-    const size_t enabled_obd2_pids = loggerConfig->OBD2Configs.enabledPids;
-    const unsigned char enabled = loggerConfig->OBD2Configs.enabled;
-    for (size_t i=0; i < enabled_obd2_pids && enabled; i++) {
-        if (loggerConfig->OBD2Configs.pids[i].cfg.sampleRate != SAMPLE_DISABLED)
-            ++channels;
+    {
+            OBD2Config *obd2_config = &(loggerConfig->OBD2Configs);
+            const size_t enabled_channels = obd2_config->enabledPids;
+            bool enabled = obd2_config->enabled;
+            for (size_t i=0; i < enabled_channels && enabled; i++) {
+                if (loggerConfig->OBD2Configs.pids[i].cfg.sampleRate != SAMPLE_DISABLED)
+                    ++channels;
+            }
+    }
+    {
+            CANChannelConfig *ccc = &(loggerConfig->can_channel_cfg);
+            const size_t enabled_can_channels = ccc->enabled_mappings;
+            for (size_t i=0; i < enabled_can_channels && ccc->enabled; i++) {
+                if (ccc->can_channels[i].channel_cfg.sampleRate != SAMPLE_DISABLED)
+                    ++channels;
+            }
     }
 
     GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;

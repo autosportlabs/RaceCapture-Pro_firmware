@@ -23,6 +23,7 @@
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "OBD2.h"
+#include "can_channels.h"
 #include "PWM.h"
 #include "channel_config.h"
 #include "dateTime.h"
@@ -69,6 +70,7 @@ static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
     return ++s;
 }
 
+#if GPIO_CHANNELS > 0
 static ChannelSample* processChannelSampleWithIntGetter(ChannelSample *s,
         ChannelConfig *cfg,
         const size_t index,
@@ -84,6 +86,7 @@ static ChannelSample* processChannelSampleWithIntGetter(ChannelSample *s,
 
     return ++s;
 }
+#endif
 
 static ChannelSample* processChannelSampleWithFloatGetterNoarg(ChannelSample *s,
         ChannelConfig *cfg,
@@ -302,8 +305,15 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     const unsigned char enabled = loggerConfig->OBD2Configs.enabled;
     for (size_t i = 0; i < obd2Config->enabledPids && enabled; i++) {
         chanCfg = &(obd2Config->pids[i].cfg);
-        sample = processChannelSampleWithIntGetter(sample, chanCfg, i,
-                                                   OBD2_get_current_PID_value);
+        sample = processChannelSampleWithFloatGetter(sample, chanCfg, i,
+                                                   OBD2_get_current_channel_value);
+    }
+
+    CANChannelConfig *ccc = &(loggerConfig->can_channel_cfg);
+    for (size_t i = 0; i < ccc->enabled_mappings && ccc->enabled; i++) {
+            chanCfg = &(ccc->can_channels[i].channel_cfg);
+            sample = processChannelSampleWithFloatGetter(sample, chanCfg, i,
+                                                       CAN_get_current_channel_value);
     }
 
 #if VIRTUAL_CHANNEL_SUPPORT

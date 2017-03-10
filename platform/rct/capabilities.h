@@ -9,7 +9,7 @@
 #define MS_PER_TICK 1
 
 /* Support Flags */
-#define BLUETOOTH_SUPPORT       0
+#define BLUETOOTH_SUPPORT           0
 #define CELLULAR_SUPPORT	        0
 #define LUA_SUPPORT		            0
 #define SDCARD_SUPPORT		        0
@@ -99,4 +99,6 @@
 /* How big is our hardware init stack */
 #define HARDWARE_INIT_STACK_SIZE	192
 
+/* if auxiliary CAN queues are supported */
+#define CAN_AUX_QUEUE_SUPPORT   LUA_SUPPORT
 #endif /* CAPABILITIES_H_ */

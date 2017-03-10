@@ -19,17 +19,18 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OBD2_TASK_H_
-#define OBD2_TASK_H_
+#ifndef CAN_TASK_H_
+#define CAN_TASK_H_
 
 #include "cpp_guard.h"
+#include <stdbool.h>
+#include <stddef.h>
 
 CPP_GUARD_BEGIN
 
-void startOBD2Task(int priority);
-void OBD2Task(void *pvParameters);
+void start_CAN_task(int priority);
 
 CPP_GUARD_END
 
 
-#endif /* OBD2_TASK_H_ */
+#endif /* CAN_TASK_H_ */

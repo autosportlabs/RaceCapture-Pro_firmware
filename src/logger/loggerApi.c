@@ -25,6 +25,7 @@
 #include "bluetooth.h"
 #include "capabilities.h"
 #include "cellular.h"
+#include "CAN.h"
 #include "cellular_api_status_keys.h"
 #include "channel_config.h"
 #include "constants.h"
@@ -1315,7 +1316,8 @@ int api_getCanConfig(struct Serial *serial, const jsmntok_t *json)
 int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
-    CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
+    LoggerConfig *lc = getWorkingLoggerConfig();
+    CANConfig *canCfg = &lc->CanConfig;
     jsmn_exists_set_val_uint8( json, "en", &canCfg->enabled, NULL);
 
     {
@@ -1344,6 +1346,7 @@ int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
             }
     }
 #endif
+    CAN_init(lc);
     return API_SUCCESS;
 }
 
@@ -1453,7 +1456,7 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 
     /* set the global enabled flag, if present */
     jsmn_exists_set_val_uint8(json, "en", &can_channel_cfg->enabled, NULL);
-
+    configChanged();
     return API_SUCCESS;
 }
 

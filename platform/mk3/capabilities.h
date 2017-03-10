@@ -8,16 +8,16 @@
 #define MS_PER_TICK	1
 
 /* Support Flags */
-#define BLUETOOTH_SUPPORT	1
-#define CELLULAR_SUPPORT	1
-#define LUA_SUPPORT		1
-#define SDCARD_SUPPORT		1
-#define USB_SERIAL_SUPPORT	1
+#define BLUETOOTH_SUPPORT	    1
+#define CELLULAR_SUPPORT	    1
+#define LUA_SUPPORT		        1
+#define SDCARD_SUPPORT		    1
+#define USB_SERIAL_SUPPORT	    1
 #define VIRTUAL_CHANNEL_SUPPORT	1
-#define WIFI_SUPPORT		1
+#define WIFI_SUPPORT		    1
 
 /* Wifi Specific Info */
-#define WIFI_MAX_BAUD       921600
+#define WIFI_MAX_BAUD           921600
 #define WIFI_MAX_SAMPLE_RATE    50
 #define WIFI_ENABLED_DEFAULT    true
 
@@ -97,5 +97,8 @@
 
 /* How big is our hardware init stack */
 #define HARDWARE_INIT_STACK_SIZE	256
+
+/* if auxiliary CAN queues are supported */
+#define CAN_AUX_QUEUE_SUPPORT   LUA_SUPPORT
 
 #endif /* CAPABILITIES_H_ */

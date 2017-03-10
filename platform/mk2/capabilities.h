@@ -97,4 +97,6 @@
 /* How big is our hardware init stack */
 #define HARDWARE_INIT_STACK_SIZE	256
 
+/* if auxiliary CAN queues are supported */
+#define CAN_AUX_QUEUE_SUPPORT   LUA_SUPPORT
 #endif /* CAPABILITIES_H_ */
