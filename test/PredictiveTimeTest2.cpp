@@ -165,10 +165,8 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
           printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
                 lat, lon, speed, utcTimeStr, utcTime, millis);
 
-          const GeoPoint gp = getGeoPoint();
-          const millis_t epochMillis = getMillisSinceEpoch();
-          const millis_t predTime = getPredictedTime(&gp, epochMillis);
-          printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
+          const millis_t predTime = getPredictedTime(&snap);
+          //printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
           */
 
 	}
