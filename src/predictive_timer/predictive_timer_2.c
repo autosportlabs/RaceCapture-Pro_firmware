@@ -28,9 +28,9 @@
 #include "predictive_timer_2.h"
 
 /* What is the required GPS fix quality to be used as a sample */
-#define GPS_FIX_QUALITY_REQUIRED GPS_QUALITY_3D_DGNSS
+#define GPS_FIX_QUALITY_REQUIRED GPS_QUALITY_3D
 /* What is the maximum GPS DOP we accept to be used as a sample */
-#define GPS_MAXIMUM_DOP_ALLOWED 2.0
+#define GPS_MAXIMUM_DOP_ALLOWED 3.0
 
 /**
  * How frequently to initially take in GPS data.  To small and we overflow.  To large and we don't
