@@ -29,7 +29,7 @@
  */
 
 #include "FreeRTOS.h"
-#include "OBD2_task.h"
+#include "CAN_task.h"
 #include "capabilities.h"
 #include "connectivityTask.h"
 #include "constants.h"
@@ -84,7 +84,7 @@ void setupTask(void *param)
         startUSBCommTask(RCP_INPUT_PRIORITY);
 #endif
 
-        startOBD2Task(RCP_INPUT_PRIORITY);
+        start_CAN_task(RCP_INPUT_PRIORITY);
         startConnectivityTask(RCP_OUTPUT_PRIORITY);
         startLoggerTaskEx(RCP_LOGGING_PRIORITY);
 

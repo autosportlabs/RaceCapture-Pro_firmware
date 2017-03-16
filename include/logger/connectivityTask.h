@@ -37,7 +37,6 @@ CPP_GUARD_BEGIN
 
 typedef struct _ConnParams {
         bool always_streaming;
-        uint8_t isPrimary;
         char * connectionName;
         int (*disconnect)(DeviceConfig *config);
         int (*init_connection)(DeviceConfig *config);
@@ -47,6 +46,7 @@ typedef struct _ConnParams {
         uint32_t connection_timeout;
         xQueueHandle sampleQueue;
         int max_sample_rate;
+        enum led activity_led;
 } ConnParams;
 
 void queueTelemetryRecord(const LoggerMessage *msg);

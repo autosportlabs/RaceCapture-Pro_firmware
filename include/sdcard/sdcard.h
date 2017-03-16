@@ -32,6 +32,7 @@ void TestSDWrite(struct Serial *serial, int lines,int doFlush, int quiet);
 void InitFSHardware(void);
 int InitFS();
 int UnmountFS();
+bool sdcard_present();
 int OpenNextLogFile(FIL *f);
 
 CPP_GUARD_END

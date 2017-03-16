@@ -23,10 +23,13 @@
 #define SDCARD_DEVICE_H_
 
 #include "cpp_guard.h"
+#include <stdbool.h>
 
 CPP_GUARD_BEGIN
 
 void disk_init_hardware(void);
+
+bool sdcard_device_card_present(void);
 
 CPP_GUARD_END
 

@@ -21,6 +21,7 @@
 
 #include "ADC.h"
 #include "CAN.h"
+#include "CAN_aux_queue.h"
 #include "FreeRTOS.h"
 #include "GPIO.h"
 #include "OBD2.h"
@@ -131,6 +132,8 @@ static int lua_get_gps_at_start_finish(lua_State *L)
         return 1;
 }
 
+#if PWM_CHANNELS > 0
+
 static int lua_set_pwm_clk_freq(lua_State *L)
 {
         lua_validate_args_count(L, 1, 1);
@@ -150,6 +153,56 @@ static int lua_get_pwm_clk_freq(lua_State *L)
         lua_pushinteger(L, getWorkingLoggerConfig()->PWMClockFrequency);
         return 1;
 }
+
+static void validate_pwm_channel(lua_State *l, const size_t channel)
+{
+        if (channel >= CONFIG_PWM_CHANNELS)
+                luaL_error(l, "Invalid PWM channel index");
+}
+
+static int lua_set_pwm_duty_cycle(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+        lua_validate_arg_number(L, 1);
+        lua_validate_arg_number(L, 2);
+
+        const size_t channel = lua_tointeger(L, 1);
+        validate_pwm_channel(L, channel);
+
+        const size_t dutyCycleRaw = lua_tointeger(L, 2);
+        PWM_set_duty_cycle(channel, (unsigned short) dutyCycleRaw);
+        return 0;
+}
+
+static int lua_set_pwm_period(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+        lua_validate_arg_number(L, 1);
+        lua_validate_arg_number(L, 2);
+
+        const size_t channel = lua_tointeger(L, 1);
+        validate_pwm_channel(L, channel);
+
+        const size_t periodRaw = lua_tointeger(L, 2);
+        PWM_channel_set_period(channel, (unsigned short) periodRaw);
+        return 0;
+}
+
+static int lua_set_analog_out(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+        lua_validate_arg_number(L, 1);
+        lua_validate_arg_number(L, 2);
+
+        const size_t channel = lua_tointeger(L,1);
+        validate_pwm_channel(L, channel);
+
+        const float dutyCycle = (float) lua_tonumber(L, 2) /
+                PWM_VOLTAGE_SCALING;
+        PWM_set_duty_cycle(channel, (unsigned short) dutyCycle);
+        return 0;
+}
+#endif
 
 static int lua_get_analog(lua_State *L)
 {
@@ -564,64 +617,26 @@ static int lua_imu_read_raw(lua_State *L)
         return 1;
 }
 
-static void validate_pwm_channel(lua_State *l, const size_t channel)
-{
-        if (channel >= CONFIG_PWM_CHANNELS)
-                luaL_error(l, "Invalid PWM channel index");
-}
-
-static int lua_set_pwm_duty_cycle(lua_State *L)
-{
-        lua_validate_args_count(L, 2, 2);
-        lua_validate_arg_number(L, 1);
-        lua_validate_arg_number(L, 2);
-
-        const size_t channel = lua_tointeger(L, 1);
-        validate_pwm_channel(L, channel);
-
-        const size_t dutyCycleRaw = lua_tointeger(L, 2);
-        PWM_set_duty_cycle(channel, (unsigned short) dutyCycleRaw);
-        return 0;
-}
-
-static int lua_set_pwm_period(lua_State *L)
-{
-        lua_validate_args_count(L, 2, 2);
-        lua_validate_arg_number(L, 1);
-        lua_validate_arg_number(L, 2);
-
-        const size_t channel = lua_tointeger(L, 1);
-        validate_pwm_channel(L, channel);
-
-        const size_t periodRaw = lua_tointeger(L, 2);
-        PWM_channel_set_period(channel, (unsigned short) periodRaw);
-        return 0;
-}
-
-static int lua_set_analog_out(lua_State *L)
-{
-        lua_validate_args_count(L, 2, 2);
-        lua_validate_arg_number(L, 1);
-        lua_validate_arg_number(L, 2);
-
-        const size_t channel = lua_tointeger(L,1);
-        validate_pwm_channel(L, channel);
-
-        const float dutyCycle = (float) lua_tonumber(L, 2) /
-                PWM_VOLTAGE_SCALING;
-        PWM_set_duty_cycle(channel, (unsigned short) dutyCycle);
-        return 0;
-}
 
 static int lua_init_can(lua_State *L)
 {
-        lua_validate_args_count(L, 2, 2);
-        lua_validate_arg_number(L, 1);
-        lua_validate_arg_number(L, 2);
+        lua_validate_args_count(L, 2, 3);
+
+        bool termination_enabled = true;
+        switch(lua_gettop(L)) {
+        default:
+            return lua_panic(L);
+        case 3:
+            lua_validate_arg_number(L, 3);
+            termination_enabled = (bool)lua_tonumber(L, 3);
+        case 2:
+            lua_validate_arg_number(L, 2);
+            lua_validate_arg_number(L, 1);
+        }
 
         const size_t port = lua_tointeger(L, 1);
         const size_t baud = lua_tointeger(L, 2);
-        lua_pushinteger(L, CAN_init_port(port, baud));
+        lua_pushinteger(L, CAN_init_port(port, baud, termination_enabled));
         return 1;
 }
 
@@ -701,7 +716,7 @@ static int lua_rx_can_msg(lua_State *L)
 {
         lua_validate_args_count(L, 1, 2);
 
-        size_t channel;
+        size_t can_bus;
         size_t timeout = DEFAULT_CAN_TIMEOUT;
 
         switch(lua_gettop(L)) {
@@ -712,23 +727,22 @@ static int lua_rx_can_msg(lua_State *L)
                 timeout = lua_tointeger(L, 2);
         case 1:
                 lua_validate_arg_number(L, 1);
-                channel = lua_tointeger(L, 1);
+                can_bus = lua_tointeger(L, 1);
         }
 
-        CAN_msg msg;
-        if (!CAN_rx_msg(channel, &msg, timeout))
+        CAN_msg can_msg;
+        if (!CAN_aux_queue_get_msg(can_bus, &can_msg, timeout))
                 return 0;
 
-        lua_pushinteger(L, msg.addressValue);
-        lua_pushinteger(L, msg.isExtendedAddress);
+        lua_pushinteger(L, can_msg.addressValue);
+        lua_pushinteger(L, can_msg.isExtendedAddress);
 
         lua_newtable(L);
-        for (int i = 1; i <= msg.dataLength; i++) {
+        for (int i = 1; i <= can_msg.dataLength; i++) {
                 lua_pushnumber(L, i);
-                lua_pushnumber(L, msg.data[i - 1]);
+                lua_pushnumber(L, can_msg.data[i - 1]);
                 lua_rawset(L, -3);
         }
-
         return 3;
 }
 
@@ -736,26 +750,24 @@ static int lua_obd2_read(lua_State *L)
 {
         lua_validate_args_count(L, 1, 2);
 
-        size_t pid;
-        size_t timeout = OBD2_PID_DEFAULT_TIMEOUT_MS;
+        uint8_t pid;
 
         switch(lua_gettop(L)) {
         default:
                 return lua_panic(L);
         case 2:
-                lua_validate_arg_number(L, 2);
-                timeout = lua_tointeger(L, 2);
         case 1:
                 lua_validate_arg_number(L, 1);
                 pid = lua_tointeger(L, 1);
         }
 
-        int value;
-        if (!OBD2_request_PID(pid, &value, timeout))
-                return 0;
-
-        lua_pushnumber(L, value);
-        return 1;
+        float value;
+        if (OBD2_get_value_for_pid(pid, &value)) {
+        		lua_pushnumber(L, value);
+        		return 1;
+        }
+        else
+        		return 0;
 }
 
 static int lua_logging_start(lua_State *L)
@@ -909,11 +921,13 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L,"setGpio", lua_set_gpio);
         lua_registerlight(L,"getButton", lua_get_button);
 
+#if PWM_CHANNELS > 0
         lua_registerlight(L, "setPwmDutyCycle", lua_set_pwm_duty_cycle);
         lua_registerlight(L, "setPwmPeriod", lua_set_pwm_period);
         lua_registerlight(L, "setAnalogOut", lua_set_analog_out);
         lua_registerlight(L, "setPwmClockFreq", lua_set_pwm_clk_freq);
         lua_registerlight(L, "getPwmClockFreq", lua_get_pwm_clk_freq);
+#endif
 
         lua_registerlight(L, "getTimerRpm", lua_get_rpm);
         lua_registerlight(L, "getTimerPeriodMs", lua_get_period_ms);

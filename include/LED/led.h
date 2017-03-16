@@ -44,11 +44,14 @@ enum led {
         LED_GPS       =  2,
         LED_TELEMETRY =  3,
         LED_WIFI      =  4,
+        LED_BLUETOOTH =  5,
+        LED_CAN       =  6
 };
 
 bool led_init(void);
 bool led_set_index(const size_t index, const bool on);
 bool led_set(const enum led l, const bool on);
+bool led_available(const enum led l);
 bool led_enable(const enum led l);
 bool led_disable(const enum led l);
 bool led_toggle(const enum led l);

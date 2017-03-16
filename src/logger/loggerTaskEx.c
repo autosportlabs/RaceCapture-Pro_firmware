@@ -252,10 +252,9 @@ void loggerTaskEx(void *params)
                 if (is_logging && should_sample(currentTicks, loggingSampleRate)) {
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);
-                        const logging_status_t ls = pdTRUE == res ?
-                                LOGGING_STATUS_WRITING :
-                                LOGGING_STATUS_ERROR_WRITING;
-                        logging_set_status(ls);
+                        if (pdTRUE != res) {
+                            logging_set_status(LOGGING_STATUS_OVERFLOW);
+                        }
                 }
 #endif
 

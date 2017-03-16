@@ -16,7 +16,7 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 ASL_FW_POSTPROCESS := asl_f4_fw_postprocess
 
 #specify the use of the external crystal
-BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1
+BOARD_DEFINES = -DPLL_SOURCE_HSE -DUSE_I2C1 -fno-zero-initialized-in-bss
 
 # Needed for FreeRTOS GDB debugging
 FREERTOS_LD_FLAGS := -Wl,--undefined=uxTopUsedPriority
@@ -98,7 +98,7 @@ src-y += $(wildcard hal/cpu_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/cpu
 
 # GPS skytraq
-src-y += $(wildcard hal/gps_skytraq/*.c)
+src-y += $(wildcard hal/gps_stm32/*.c)
 inc-y += $(RC_INCLUDE_DIR)/gps
 
 #filter

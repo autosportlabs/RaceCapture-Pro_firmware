@@ -38,6 +38,7 @@ typedef enum {
     UART_TELEMETRY,
     UART_WIRELESS,
     UART_AUX,
+    UART_AUX2,
     __UART_COUNT, /* Maximum number of UART devices */
 } uart_id_t;
 

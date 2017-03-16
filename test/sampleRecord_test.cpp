@@ -80,8 +80,8 @@ void SampleRecordTest::testPopulateSampleRecord(){
         increment_tick();
         CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
 
-	const unsigned short highSampleRate =
-                (unsigned short) populate_sample_buffer(&s, 0);
+        populate_sample_buffer(&s, 0);
+
         const ChannelSample *samples = s.channel_samples;
 
         // Interval Channel
@@ -195,7 +195,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (ac->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t) i, ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t) i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &ac->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) get_analog_sample,
                                      (void *) ts->get_float_sample);
@@ -208,7 +208,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (ac->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t)i,ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t)i,ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &ac->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) get_imu_sample,
                                      (void *) ts->get_float_sample);
@@ -221,7 +221,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (tc->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t)i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &tc->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) timer_get_sample,
                                      (void *) ts->get_float_sample);
@@ -234,7 +234,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (gc->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t)i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &gc->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) GPIO_get,
                                      (void *) ts->get_int_sample);
@@ -247,7 +247,7 @@ void SampleRecordTest::testInitSampleRecord()
                 if (pc->cfg.sampleRate == SAMPLE_DISABLED)
                         continue;
 
-                CPPUNIT_ASSERT_EQUAL((size_t)i, ts->channelIndex);
+                CPPUNIT_ASSERT_EQUAL((uint8_t)i, ts->channelIndex);
                 CPPUNIT_ASSERT_EQUAL((void *) &pc->cfg, (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) get_pwm_sample,
                                      (void *) ts->get_int_sample);
@@ -422,8 +422,6 @@ void SampleRecordTest::testIsValidLoggerMessage() {
 }
 
 void SampleRecordTest::testLoggerMessageAlwaysHasTime() {
-        size_t channelCount = get_enabled_channel_count(lc);
-
         /*
          * Check that we always populate the Interval time, regardless of
          * what the sample rate is that is set for that channel.

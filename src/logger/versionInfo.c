@@ -23,6 +23,8 @@
 #include "versionInfo.h"
 #include <stddef.h>
 
+#define _LOG_PFX "[VersionInfo] "
+
 static void print_version(const VersionInfo *vi)
 {
         pr_info_int(vi->major);
@@ -42,21 +44,14 @@ const VersionInfo* get_current_version_info() {
         return &vi;
 }
 
-bool version_check_changed(const VersionInfo *pv,
-                           const char* log_pfx)
+bool version_check_changed(const VersionInfo *pv)
 {
         const VersionInfo* cv = get_current_version_info();
         const bool changed = cv->major != pv->major ||
                 cv->minor != pv->minor;
 
         if (changed) {
-                if (log_pfx) {
-                        pr_info(log_pfx);
-                        pr_info(" version changed: ");
-                } else {
-                        pr_info("Version changed: ");
-                }
-
+                pr_info(_LOG_PFX "version changed: ");
                 print_version(pv);
                 pr_info(" -> ");
                 print_version(cv);

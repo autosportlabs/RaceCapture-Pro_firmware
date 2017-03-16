@@ -103,8 +103,16 @@ const jsmntok_t * jsmn_trimData(const jsmntok_t *tok);
  */
 int jsmn_isNull(const jsmntok_t *tok);
 
+/*
+ * Finds the next node with a specific type
+ */
+const jsmntok_t * jsmn_find_node_type(const jsmntok_t *node, const jsmntype_t node_type);
+
 /**
  * Finds the node with the given name.
+ * @param node the starting node to search from
+ * @param name the name of the node to match
+ * @return the found node, or NULL if the node was not found
  */
 const jsmntok_t * jsmn_find_node(const jsmntok_t *node, const char * name);
 
@@ -134,6 +142,17 @@ bool jsmn_exists_set_val_float(const jsmntok_t* root, const char* field,
 
 bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
                               void* val);
+
+/**
+ * Searches for a node based on the specified field name, and if found, set the pointed-to uchar value. Also passes it through a filter function if provided.
+ * @param root the node to start searching from.
+ * @param field the field name to match
+ * @param val the pointer to the value to set
+ * @param filter a function to filter the value, which is called if the field is present
+ * @return true if the field was present and val wase set.
+ */
+bool jsmn_exists_set_val_uint8(const jsmntok_t *root, const char * field,
+                              uint8_t *val, uint8_t (*filter)(uint8_t));
 
 bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
 				void* val, const size_t max_len,

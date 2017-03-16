@@ -69,13 +69,17 @@
 #define LUA_REGISTER_EXTERNAL_LIBS	1
 
 
-//Input / output Channels
+//Sensor Channels
 #define ANALOG_CHANNELS 		8
 #define IMU_CHANNELS			7
 #define	GPIO_CHANNELS			3
 #define TIMER_CHANNELS			3
 #define PWM_CHANNELS			4
 #define CAN_CHANNELS			2
+#define CAN_SW_TERMINATION      false
+#define CAN_MAPPINGS            100
+#define OBD2_CHANNELS           10
+//Wireless Channels
 #define CONNECTIVITY_CHANNELS	2
 
 //sample rates
@@ -93,4 +97,6 @@
 /* How big is our hardware init stack */
 #define HARDWARE_INIT_STACK_SIZE	256
 
+/* if auxiliary CAN queues are supported */
+#define CAN_AUX_QUEUE_SUPPORT   LUA_SUPPORT
 #endif /* CAPABILITIES_H_ */

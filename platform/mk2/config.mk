@@ -61,7 +61,7 @@ $(HAL_SRC)/fat_sd_stm32/fatfs/option/unicode.c \
 $(HAL_SRC)/fat_sd_stm32/sdcard_device_stm32.c \
 $(HAL_SRC)/fat_sd_stm32/tm_stm32f4_fatfs.c \
 $(HAL_SRC)/fat_sd_stm32/tm_stm32f4_gpio.c \
-$(HAL_SRC)/gps_skytraq/gps_device_skytraq.c \
+$(HAL_SRC)/gps_stm32/gps_device_lld_stm32.c \
 $(HAL_SRC)/i2c_stm32/i2c_device_stm32.c \
 $(HAL_SRC)/imu_stm32/imu_device_stm32.c \
 $(HAL_SRC)/imu_stm32/invensense_9150.c \
@@ -78,11 +78,14 @@ $(HAL_SRC)/watchdog_stm32/watchdog_device_stm32.c \
 $(HAL_SRC)/wifi_esp8266/wifi_esp8266_device.c \
 $(RCP_SRC)/ADC/ADC.c \
 $(RCP_SRC)/CAN/CAN.c \
+$(RCP_SRC)/CAN/CAN_task.c \
+$(RCP_SRC)/CAN/CAN_aux_queue.c \
+$(RCP_SRC)/CAN/can_mapping.c \
+$(RCP_SRC)/CAN/can_channels.c \
 $(RCP_SRC)/GPIO/GPIO.c \
 $(RCP_SRC)/GPIO/gpioTasks.c \
 $(RCP_SRC)/LED/led.c \
 $(RCP_SRC)/OBD2/OBD2.c \
-$(RCP_SRC)/OBD2/OBD2_task.c \
 $(RCP_SRC)/PWM/PWM.c \
 $(RCP_SRC)/api/api.c \
 $(RCP_SRC)/auto_config/auto_track.c \
@@ -96,6 +99,7 @@ $(RCP_SRC)/devices/esp8266.c \
 $(RCP_SRC)/devices/null_device.c \
 $(RCP_SRC)/devices/sara_u280.c \
 $(RCP_SRC)/devices/sim900.c \
+$(RCP_SRC)/devices/gps_skytraq_s1216_sup500f8.c \
 $(RCP_SRC)/drivers/esp8266_drv.c \
 $(RCP_SRC)/filter/filter.c \
 $(RCP_SRC)/gps/dateTime.c \

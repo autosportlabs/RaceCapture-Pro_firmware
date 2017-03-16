@@ -157,15 +157,17 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
           GpsSnapshot snap = getGpsSnapshot();
           lapstats_processUpdate(&snap);
 
+          /* uncomment me to debug
           const unsigned long millis = getMillisSinceEpoch();
-          //printf("---\n");
-          //printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.year,
-          //        dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
-          //printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
-          //      lat, lon, speed, utcTimeStr, utcTime, millis);
+          printf("---\n");
+          printf("DateTime - YY MM DD HH MM SS.mmm : %02d %02d %02d %02d %02d %02d.%03d\n", dt.year,
+                  dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
+          printf("lat = %f : lon = %f : speed = %f : UTC_Str = \"%s\" : time = %f : millis = %lu\n",
+                lat, lon, speed, utcTimeStr, utcTime, millis);
 
           const millis_t predTime = getPredictedTime(&snap);
           //printf("Lap #%d - Predicted Time: %ull\n", getLapCount(), predTime);
+          */
 
 	}
 }

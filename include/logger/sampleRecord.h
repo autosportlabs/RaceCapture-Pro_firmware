@@ -58,11 +58,13 @@ enum SampleData {
 };
 
 typedef struct _ChannelSample {
+    union {
+        int valueInt;
+        long long valueLongLong;
+        float valueFloat;
+        double valueDouble;
+    };
     ChannelConfig *cfg;
-    size_t channelIndex;
-    bool populated;
-
-    enum SampleData sampleData;
     union {
         int (*get_int_sample)(int);
         long long (*get_longlong_sample)(int);
@@ -73,14 +75,10 @@ typedef struct _ChannelSample {
         float (*get_float_sample_noarg)();
         double (*get_double_sample_noarg)();
     };
-
-    union {
-        int valueInt;
-        long long valueLongLong;
-        float valueFloat;
-        double valueDouble;
-    };
-} ChannelSample;
+    uint8_t channelIndex;
+    bool populated;
+    enum SampleData sampleData;
+}  __attribute__((__packed__,aligned(4))) ChannelSample;
 
 struct sample {
    size_t ticks;
