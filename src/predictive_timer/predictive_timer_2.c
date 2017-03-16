@@ -108,7 +108,7 @@ static tiny_millis_t getCurrentLapTime(tiny_millis_t time)
  */
 static bool verify_gps_quality(const GpsSample *sample)
 {
-	return sample->quality == GPS_FIX_QUALITY_REQUIRED
+	return sample->quality >= GPS_FIX_QUALITY_REQUIRED
 		&& sample->DOP <= GPS_MAXIMUM_DOP_ALLOWED;
 }
 
