@@ -1,3 +1,9 @@
+= 2.11.0 RC1 =
+* RCP MK3 support
+* direct CAN mapping support
+* OBDII PID mapping support
+* Predictive timer requires high quality GPS data
+
 = 2.10.2 =
 * Fixed OBDII Stack Smash issue on RCT
 * Fixed version printing information to reflect git tags
