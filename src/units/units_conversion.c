@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "channel_config.h"
 #include "units_conversion.h"
 
 static float no_conversion(float value)

@@ -233,6 +233,7 @@ $(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \
 $(RCP_SRC)/tasks/wifi.c \
 $(RCP_SRC)/units/units.c \
+$(RCP_SRC)/units/units_conversion.c \
 $(RCP_SRC)/usart/usart.c \
 $(RCP_SRC)/util/convert.c \
 $(RCP_SRC)/util/byteswap.c \
