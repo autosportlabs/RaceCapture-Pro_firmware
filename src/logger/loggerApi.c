@@ -1355,7 +1355,7 @@ static void json_put_can_mapping(struct Serial *serial, const CANMapping * mappi
         json_bool(serial, "bm", mapping->bit_mode, 1);
         json_int(serial, "bus", mapping->can_channel, 1);
         json_int(serial, "id", mapping->can_id, 1);
-        json_int(serial, "id_mask", mapping->can_mask, 1);
+        json_int(serial, "idMask", mapping->can_mask, 1);
         json_bool(serial, "bigEndian", mapping->big_endian, 1);
         json_int(serial, "offset", mapping->offset, 1);
         json_int(serial, "len", mapping->length, 1);
@@ -1404,7 +1404,7 @@ static void set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
     jsmn_exists_set_val_uint8(json_mapping, "bus", &mapping->can_channel, filter_can_bus_channel);
 
     jsmn_exists_set_val_int(json_mapping, "id", &mapping->can_id);
-    jsmn_exists_set_val_int(json_mapping, "id_mask", &mapping->can_mask);
+    jsmn_exists_set_val_int(json_mapping, "idMask", &mapping->can_mask);
     jsmn_exists_set_val_bool(json_mapping, "bigEndian", &mapping->big_endian);
     jsmn_exists_set_val_float(json_mapping, "mult", &mapping->multiplier);
     jsmn_exists_set_val_float(json_mapping, "div", &mapping->divider);

@@ -19,7 +19,7 @@
             "type": 0,
             "id": 1234,
             "bus": 0,
-            "id_mask": 5678,
+            "idMask": 5678,
             "pid": 5,
             "mode": 1,
             "pass": false
@@ -41,7 +41,7 @@
             "type": 0,
             "id": 1234,
             "bus": 0,
-            "id_mask": 5678,
+            "idMask": 5678,
             "pid": 6,
             "mode": 22,
             "pass": true

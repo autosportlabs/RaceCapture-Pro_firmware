@@ -1114,7 +1114,7 @@ void LoggerApiTest::check_can_mapping_config(Object &jch, CANMapping *mapping)
     CPPUNIT_ASSERT_EQUAL((float)(Number)jch["mult"], (float)mapping->multiplier);
     CPPUNIT_ASSERT_EQUAL((float)(Number)jch["div"], (float)mapping->divider);
     CPPUNIT_ASSERT_EQUAL((int)(Number)jch["id"], (int)mapping->can_id);
-    CPPUNIT_ASSERT_EQUAL((int)(Number)jch["id_mask"], (int)mapping->can_mask);
+    CPPUNIT_ASSERT_EQUAL((int)(Number)jch["idMask"], (int)mapping->can_mask);
 }
 
 void LoggerApiTest::testGetCanChanCfg()
@@ -1172,7 +1172,7 @@ void LoggerApiTest::testGetCanChanCfgFile(string filename)
         CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)ch["bm"]);
         CPPUNIT_ASSERT_EQUAL(2, (int)(Number)ch["bus"]);
         CPPUNIT_ASSERT_EQUAL((int)(1 + i), (int)(Number)ch["id"]);
-        CPPUNIT_ASSERT_EQUAL((int)(2 + i), (int)(Number)ch["id_mask"]);
+        CPPUNIT_ASSERT_EQUAL((int)(2 + i), (int)(Number)ch["idMask"]);
         CPPUNIT_ASSERT_EQUAL((int)(3 + i), (int)(Number)ch["filtId"]);
         CPPUNIT_ASSERT_EQUAL((float)(4 + i), (float)(Number)ch["div"]);
         CPPUNIT_ASSERT_EQUAL((float)(5 + i), (float)(Number)ch["mult"]);
