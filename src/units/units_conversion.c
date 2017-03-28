@@ -1,7 +1,7 @@
 /*
  * Race Capture Firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2017 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
