@@ -146,6 +146,7 @@ $(RCP_SRC)/timer/timer.c \
 $(RCP_SRC)/timer/timer_config.c \
 $(RCP_SRC)/tracks/tracks.c \
 $(RCP_SRC)/units/units.c \
+$(RCP_SRC)/units/units_conversion.c \
 $(RCP_SRC)/usart/usart.c \
 $(RCP_SRC)/usb_comm/usb_comm.c \
 $(RCP_SRC)/util/FreeRTOS-openocd.c \

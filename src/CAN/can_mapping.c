@@ -20,6 +20,7 @@
  */
 #include "can_mapping.h"
 #include "byteswap.h"
+#include "units_conversion.h"
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
@@ -75,5 +76,6 @@ bool canmapping_map_value(float *value, const CAN_msg *can_msg, const CANMapping
 		uint64_t raw_data = can_msg->data64;
 		*value = canmapping_extract_value(raw_data, mapping);
 		*value = canmapping_apply_formula(*value, mapping);
+		*value = convert_units(mapping->conversion_filter_id, *value);
 		return true;
 }
