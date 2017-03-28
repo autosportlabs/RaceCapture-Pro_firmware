@@ -32,7 +32,7 @@ static float c_to_f(float value)
 
 static float f_to_c(float value)
 {
-		return (value - 32) / 1.8;
+		return (value - 32) * 0.555555556;
 }
 
 static float bar_to_psi(float value)
@@ -115,8 +115,6 @@ static float hp_to_w(float value)
 		return value * 745.69987158;
 }
 
-#define UNITS_CONVERSION_COUNT 19
-
 static float(*units_converter[UNITS_CONVERSION_COUNT]) (float value) = {
 		no_conversion,
 		c_to_f,
@@ -139,7 +137,7 @@ static float(*units_converter[UNITS_CONVERSION_COUNT]) (float value) = {
 		hp_to_w
 };
 
-float convert_units(int id, const float value) {
+float convert_units(enum unit_conversions id, const float value) {
 		if (id >= UNITS_CONVERSION_COUNT )
 				return value;
 
