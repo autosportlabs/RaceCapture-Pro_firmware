@@ -17,6 +17,7 @@ class CANMappingTest : public CppUnit::TestFixture
     CPPUNIT_TEST( mapping_test );
     CPPUNIT_TEST( formula_test );
     CPPUNIT_TEST( extract_test );
+    CPPUNIT_TEST( extract_type_test );
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -24,6 +25,7 @@ public:
     void mapping_test(void);
     void formula_test(void);
     void extract_test(void);
+    void extract_type_test(void);
 };
 
 #endif /* TEST_CAN_OBD2_CAN_MAPPING_TEST_H_ */

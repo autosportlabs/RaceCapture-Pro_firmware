@@ -32,6 +32,8 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
         }
         uint32_t bitmask = (1UL << length) - 1;
         uint32_t raw_value = (raw_data >> offset) & bitmask;
+
+        /* normalize endian */
         if (mapping->big_endian) {
                 switch (mapping->length) {
                     case 2:
@@ -47,7 +49,30 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
                         break;
                 }
         }
-        return (float)raw_value;
+
+        /* convert type */
+        float extracted_value = 0;
+        switch (mapping->type) {
+        	case CANMappingType_IEEE754:
+        		extracted_value = *((float*)&raw_value);
+        		break;
+        	case CANMappingType_signed:
+        		if (mapping->length <= 8) {
+        			extracted_value = *((int8_t*)&raw_value);
+        		}
+        		else if (mapping->length <= 16){
+        			extracted_value = *((int16_t*)&raw_value);
+        		}
+        		else {
+        			extracted_value = *((int32_t*)&raw_value);
+        		}
+        		break;
+        	case CANMappingType_unsigned:
+        	default:
+        		extracted_value = raw_value;
+        		break;
+        }
+        return extracted_value;
 }
 
 float canmapping_apply_formula(float value, const CANMapping *mapping)
