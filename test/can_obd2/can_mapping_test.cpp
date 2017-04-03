@@ -183,7 +183,7 @@ void CANMappingTest::extract_type_test(void)
 
     msg.data[0] = 0x0;
     value = canmapping_extract_value(msg.data64, &mapping);
-    CPPUNIT_ASSERT_EQUAL((float)0, value);
+    CPPUNIT_ASSERT_EQUAL((float)0.0, value);
 
     msg.data[0] = 0x80;
     value = canmapping_extract_value(msg.data64, &mapping);
@@ -205,7 +205,7 @@ void CANMappingTest::extract_type_test(void)
     msg.data[0] = 0x00;
     msg.data[1] = 0x00;
     value = canmapping_extract_value(msg.data64, &mapping);
-    CPPUNIT_ASSERT_EQUAL((float)0, value);
+    CPPUNIT_ASSERT_EQUAL((float)0.0, value);
 
     msg.data[0] = 0x00;
     msg.data[1] = 0x80;
@@ -233,7 +233,7 @@ void CANMappingTest::extract_type_test(void)
     msg.data[2] = 0x00;
     msg.data[3] = 0x80;
     value = canmapping_extract_value(msg.data64, &mapping);
-    CPPUNIT_ASSERT_EQUAL((float)0, value);
+    CPPUNIT_ASSERT_EQUAL((float)0.0, value);
 
     msg.data[0] = 0x00;
     msg.data[1] = 0x00;
