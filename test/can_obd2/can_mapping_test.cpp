@@ -117,19 +117,20 @@ void CANMappingTest::extract_type_test(void)
     memset(&msg, 0, sizeof(CAN_msg));
     mapping.offset = 0;
     mapping.length = 1;
+    mapping.bit_mode = false;
 
-    /* 8 byte signed */
+    /* 8 bit signed */
     msg.data[0] = 255;
     mapping.type = CANMappingType_signed;
     float value = canmapping_extract_value(msg.data64, &mapping);
     CPPUNIT_ASSERT_EQUAL((float)-1, value);
 
-    /* 8 byte unsigned */
+    /* 8 bit unsigned */
     mapping.type = CANMappingType_unsigned;
     value = canmapping_extract_value(msg.data64, &mapping);
     CPPUNIT_ASSERT_EQUAL((float)255, value);
 
-    /* 16 byte signed */
+    /* 16 bit signed */
     mapping.type = CANMappingType_signed;
     mapping.length = 2;
     msg.data[0] = 255;
@@ -137,12 +138,12 @@ void CANMappingTest::extract_type_test(void)
     value = canmapping_extract_value(msg.data64, &mapping);
     CPPUNIT_ASSERT_EQUAL((float)-1, value);
 
-    /* 16 byte unsigned */
+    /* 16 bit unsigned */
     mapping.type = CANMappingType_unsigned;
     value = canmapping_extract_value(msg.data64, &mapping);
     CPPUNIT_ASSERT_EQUAL((float)65535, value);
 
-    /* 16 byte signed */
+    /* 32 bit signed */
     mapping.type = CANMappingType_signed;
     mapping.length = 4;
     msg.data[0] = 255;
@@ -152,7 +153,7 @@ void CANMappingTest::extract_type_test(void)
     value = canmapping_extract_value(msg.data64, &mapping);
     CPPUNIT_ASSERT_EQUAL((float)-1, value);
 
-    /* 16 byte unsigned */
+    /* 32 bit unsigned */
     mapping.type = CANMappingType_unsigned;
     value = canmapping_extract_value(msg.data64, &mapping);
     CPPUNIT_ASSERT_EQUAL((float)4294967295, value);

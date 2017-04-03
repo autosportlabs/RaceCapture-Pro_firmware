@@ -21,6 +21,7 @@
 #include "can_mapping.h"
 #include "byteswap.h"
 #include "units_conversion.h"
+#include "panic.h"
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
@@ -36,6 +37,8 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
         /* normalize endian */
         if (mapping->big_endian) {
                 switch (mapping->length) {
+                    case 1:
+                        break;
                     case 2:
                         raw_value = swap_uint16(raw_value);
                         break;
@@ -46,33 +49,33 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
                         raw_value = swap_uint32(raw_value);
                         break;
                     default:
+                        /* Should never be mapping anything larger than 4 bytes */
+                        panic(PANIC_CAUSE_UNREACHABLE);
                         break;
                 }
         }
 
         /* convert type */
-        float extracted_value = 0;
         switch (mapping->type) {
         	case CANMappingType_IEEE754:
-        		extracted_value = *((float*)&raw_value);
-        		break;
+        		return *((float*)&raw_value);
         	case CANMappingType_signed:
-        		if (mapping->length <= 8) {
-        			extracted_value = *((int8_t*)&raw_value);
+        		if (length <= 8) {
+        			return (float)*((int8_t*)&raw_value);
         		}
-        		else if (mapping->length <= 16){
-        			extracted_value = *((int16_t*)&raw_value);
+        		else if (length <= 16){
+        			return (float)*((int16_t*)&raw_value);
         		}
         		else {
-        			extracted_value = *((int32_t*)&raw_value);
+        			return (float)*((int32_t*)&raw_value);
         		}
-        		break;
         	case CANMappingType_unsigned:
+        		return (float)raw_value;
         	default:
-        		extracted_value = raw_value;
-        		break;
+                /* We reached an invalid enum */
+                panic(PANIC_CAUSE_UNREACHABLE);
+                return 0;
         }
-        return extracted_value;
 }
 
 float canmapping_apply_formula(float value, const CANMapping *mapping)
