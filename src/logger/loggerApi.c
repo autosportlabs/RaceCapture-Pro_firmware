@@ -1410,6 +1410,10 @@ static void set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
     jsmn_exists_set_val_float(json_mapping, "div", &mapping->divider);
     jsmn_exists_set_val_float(json_mapping, "add", &mapping->adder);
     jsmn_exists_set_val_uint8(json_mapping, "filtId", &mapping->conversion_filter_id, NULL);
+    uint8_t mapping_type;
+    if (jsmn_exists_set_val_uint8(json_mapping, "type", &mapping_type, NULL)) {
+            mapping->type = filter_can_mapping_type((enum CANMappingType)mapping_type);
+    }
 }
 
 int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)

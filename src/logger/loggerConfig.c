@@ -205,6 +205,12 @@ uint8_t filter_can_bus_channel(uint8_t value)
         return MIN(value, CONFIG_CAN_CHANNELS - 1);
 }
 
+enum CANMappingType filter_can_mapping_type(enum CANMappingType mapping_type){
+    if (mapping_type >= CANMappingType_ENUM_COUNT)
+            mapping_type = CANMappingType_unsigned;
+    return mapping_type;
+}
+
 static void _reset_can_mapping_config(CANChannelConfig *cfg)
 {
     memset(cfg, 0, sizeof(CANChannelConfig));

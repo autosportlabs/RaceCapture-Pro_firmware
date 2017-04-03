@@ -298,7 +298,8 @@ enum CANMappingEndian {
 enum CANMappingType {
     CANMappingType_unsigned = 0,
     CANMappingType_signed,
-    CANMappingType_IEEE754
+    CANMappingType_IEEE754,
+    CANMappingType_ENUM_COUNT
 };
 
 
@@ -621,6 +622,8 @@ void reset_logger_config(void);
 int flash_default_logger_config(void);
 
 void logger_config_reset_gps_config(GPSConfig *cfg);
+
+enum CANMappingType filter_can_mapping_type(enum CANMappingType type);
 
 CPP_GUARD_END
 
