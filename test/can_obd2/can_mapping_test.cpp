@@ -118,6 +118,7 @@ void CANMappingTest::extract_type_test(void)
     mapping.offset = 0;
     mapping.length = 1;
     mapping.bit_mode = false;
+    mapping.big_endian = false;
 
     /* 8 bit signed */
     msg.data[0] = 255;
@@ -168,6 +169,78 @@ void CANMappingTest::extract_type_test(void)
     msg.data[3] = 0x42;
     value = canmapping_extract_value(msg.data64, &mapping);
     CPPUNIT_ASSERT_EQUAL((float)100.0, value);
+
+    /* 8 bit sign-magnitude */
+    mapping.type = CANMappingType_sign_magnitude;
+    mapping.length = 1;
+    msg.data[0] = 0x01;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)1.0, value);
+
+    msg.data[0] = 0x81;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)-1.0, value);
+
+    msg.data[0] = 0x0;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)0, value);
+
+    msg.data[0] = 0x80;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)-0.0, value);
+
+    /* 16 bit sign-magnitude */
+    mapping.length = 2;
+    msg.data[0] = 0x01;
+    msg.data[1] = 0x00;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)1.0, value);
+
+
+    msg.data[0] = 0x01;
+    msg.data[1] = 0x80;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)-1.0, value);
+
+    msg.data[0] = 0x00;
+    msg.data[1] = 0x00;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)0, value);
+
+    msg.data[0] = 0x00;
+    msg.data[1] = 0x80;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)-0.0, value);
+
+    /* 32 bit sign-magnitude */
+    mapping.length = 4;
+    msg.data[0] = 0x01;
+    msg.data[1] = 0x00;
+    msg.data[2] = 0x00;
+    msg.data[3] = 0x00;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)1.0, value);
+
+    msg.data[0] = 0x01;
+    msg.data[1] = 0x00;
+    msg.data[2] = 0x00;
+    msg.data[3] = 0x80;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)-1.0, value);
+
+    msg.data[0] = 0x00;
+    msg.data[1] = 0x00;
+    msg.data[2] = 0x00;
+    msg.data[3] = 0x80;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)0, value);
+
+    msg.data[0] = 0x00;
+    msg.data[1] = 0x00;
+    msg.data[2] = 0x00;
+    msg.data[3] = 0x80;
+    value = canmapping_extract_value(msg.data64, &mapping);
+    CPPUNIT_ASSERT_EQUAL((float)-0.0, value);
 }
 
 

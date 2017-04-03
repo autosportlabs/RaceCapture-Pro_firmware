@@ -57,8 +57,8 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 
         /* convert type */
         switch (mapping->type) {
-        	case CANMappingType_IEEE754:
-        		return *((float*)&raw_value);
+            case CANMappingType_unsigned:
+                return (float)raw_value;
         	case CANMappingType_signed:
         		if (length <= 8) {
         			return (float)*((int8_t*)&raw_value);
@@ -69,8 +69,27 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
         		else {
         			return (float)*((int32_t*)&raw_value);
         		}
-        	case CANMappingType_unsigned:
-        		return (float)raw_value;
+            case CANMappingType_IEEE754:
+                return *((float*)&raw_value);
+            case CANMappingType_sign_magnitude:
+                /**
+                 *  sign-magnitude is used in cases where there's a sign bit
+                 *  and an absolute value indicating magnitude.
+                 *  e.g. BMW E46 steering angle sensor
+                 **/
+                {
+                        uint32_t sign;
+                        if (length <= 8) {
+                                sign = 1 << 7;
+                        }
+                        else if (length <= 16){
+                                sign = 1 << 15;
+                        }
+                        else {
+                                sign = 1 << 31;
+                        }
+                        return raw_value < sign ? (float)raw_value : -(float)(raw_value & (sign - 1));
+                }
         	default:
                 /* We reached an invalid enum */
                 panic(PANIC_CAUSE_UNREACHABLE);
