@@ -51,7 +51,6 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
                     default:
                         /* Should never be mapping anything larger than 4 bytes */
                         panic(PANIC_CAUSE_UNREACHABLE);
-                        break;
                 }
         }
 
@@ -63,12 +62,10 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
                     if (length <= 8) {
                         return (float)*((int8_t*)&raw_value);
                     }
-                    else if (length <= 16){
+                    if (length <= 16){
                         return (float)*((int16_t*)&raw_value);
                     }
-                    else {
-                        return (float)*((int32_t*)&raw_value);
-                    }
+                    return (float)*((int32_t*)&raw_value);
             case CANMappingType_IEEE754:
                     return *((float*)&raw_value);
             case CANMappingType_sign_magnitude:
