@@ -21,6 +21,7 @@
 #include "can_mapping.h"
 #include "byteswap.h"
 #include "units_conversion.h"
+#include "panic.h"
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
@@ -32,22 +33,52 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
         }
         uint32_t bitmask = (1UL << length) - 1;
         uint32_t raw_value = (raw_data >> offset) & bitmask;
+
+        /* normalize endian */
         if (mapping->big_endian) {
-                switch (mapping->length) {
-                    case 2:
-                        raw_value = swap_uint16(raw_value);
-                        break;
-                    case 3:
-                        raw_value = swap_uint24(raw_value);
-                        break;
-                    case 4:
-                        raw_value = swap_uint32(raw_value);
-                        break;
-                    default:
-                        break;
+                /* do nothing if length <= 8 bits */
+                if (length > 8) {
+                        if(length <= 16) {
+                                raw_value = swap_uint16(raw_value);
+                        }
+                        else if (length <= 24) {
+                                raw_value = swap_uint24(raw_value);
+                        }
+                        else {
+                                raw_value = swap_uint32(raw_value);
+                        }
                 }
         }
-        return (float)raw_value;
+
+        /* convert type */
+        switch (mapping->type) {
+            case CANMappingType_unsigned:
+                    return (float)raw_value;
+        	case CANMappingType_signed:
+                    if (length <= 8) {
+                        return (float)*((int8_t*)&raw_value);
+                    }
+                    if (length <= 16){
+                        return (float)*((int16_t*)&raw_value);
+                    }
+                    return (float)*((int32_t*)&raw_value);
+            case CANMappingType_IEEE754:
+                    return *((float*)&raw_value);
+            case CANMappingType_sign_magnitude:
+                    /**
+                     *  sign-magnitude is used in cases where there's a sign bit
+                     *  and an absolute value indicating magnitude.
+                     *  e.g. BMW E46 steering angle sensor
+                     **/
+                    {
+                            uint32_t sign = 1 << (length - 1);
+                            return raw_value < sign ? (float)raw_value : -(float)(raw_value & (sign - 1));
+                    }
+        	default:
+                    /* We reached an invalid enum */
+                    panic(PANIC_CAUSE_UNREACHABLE);
+                    return 0;
+        }
 }
 
 float canmapping_apply_formula(float value, const CANMapping *mapping)

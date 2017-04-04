@@ -299,6 +299,7 @@ enum CANMappingType {
     CANMappingType_unsigned = 0,
     CANMappingType_signed,
     CANMappingType_IEEE754,
+    CANMappingType_sign_magnitude,
     CANMappingType_ENUM_COUNT
 };
 
