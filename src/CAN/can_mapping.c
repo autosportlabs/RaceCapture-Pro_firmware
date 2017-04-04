@@ -36,21 +36,17 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 
         /* normalize endian */
         if (mapping->big_endian) {
-                switch (mapping->length) {
-                    case 1:
-                        break;
-                    case 2:
-                        raw_value = swap_uint16(raw_value);
-                        break;
-                    case 3:
-                        raw_value = swap_uint24(raw_value);
-                        break;
-                    case 4:
-                        raw_value = swap_uint32(raw_value);
-                        break;
-                    default:
-                        /* Should never be mapping anything larger than 4 bytes */
-                        panic(PANIC_CAUSE_UNREACHABLE);
+                /* do nothing if length <= 8 bits */
+                if (length > 8) {
+                        if(length <= 16) {
+                                raw_value = swap_uint16(raw_value);
+                        }
+                        else if (length <= 24) {
+                                raw_value = swap_uint24(raw_value);
+                        }
+                        else {
+                                raw_value = swap_uint32(raw_value);
+                        }
                 }
         }
 
@@ -75,16 +71,7 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
                      *  e.g. BMW E46 steering angle sensor
                      **/
                     {
-                            uint32_t sign;
-                            if (length <= 8) {
-                                    sign = 1 << 7;
-                            }
-                            else if (length <= 16){
-                                    sign = 1 << 15;
-                            }
-                            else {
-                                    sign = 1 << 31;
-                            }
+                            uint32_t sign = 1 << (length - 1);
                             return raw_value < sign ? (float)raw_value : -(float)(raw_value & (sign - 1));
                     }
         	default:
