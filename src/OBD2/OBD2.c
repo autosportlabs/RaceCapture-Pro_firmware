@@ -92,9 +92,19 @@ struct OBD2State {
         uint16_t squelched_count;
 
         /**
+         * latency in ms for OBDII queries
+         */
+        uint32_t query_latency;
+
+        /**
          * flag to indicate if config was stale
          */
         bool is_stale;
+
+        /**
+         * flag to indicate if we have a live OBDII connection
+         */
+        bool is_active;
 };
 
 static struct OBD2State obd2_state = {0};
@@ -121,6 +131,8 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
         obd2_state.current_obd2_pid_index = 0;
         obd2_state.last_obd2_query_timestamp = 0;
         obd2_state.squelched_count = 0;
+        obd2_state.query_latency = 0;
+        obd2_state.is_active = false;
 
         /* determine the fastest sample rate, which will set our PID querying timebase */
         size_t max_sample_rate = 0;
@@ -188,19 +200,23 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
         		/* check for timeout and squelch current PID if needed */
                 struct OBD2ChannelState *state = &obd2_state.current_channel_states[current_pid_index];
                 pr_debug_int_msg(_LOG_PFX "Timeout requesting PID ", state->pid);
-                state->timeout_count++;
-                if (state->timeout_count >= OBD2_TIMEOUT_DISABLE_THRESHOLD) {
-                		state->channel_status = OBD2_CHANNEL_STATUS_SQUELCHED;
-                		pr_debug_int_msg(_LOG_PFX "Excessive timeouts, squelching PID ", state->pid);
-                		obd2_state.squelched_count++;
-                		/**
-                		 * if all channels end up being squelched, then we should just reset OBD2 config
-                		 * This accounts for cases where there's a complete disconnect and a reset is needed
-                		 */
-                		if (obd2_state.squelched_count == obd2_state.channel_count) {
-                				pr_debug(_LOG_PFX "all channels timed out, resetting OBD2 state\r\n");
-                				obd2_state.is_stale = true;
-                		}
+
+                /* only start counting timeouts if we've ever received data */
+                if (obd2_state.is_active) {
+                        state->timeout_count++;
+                        if (state->timeout_count >= OBD2_TIMEOUT_DISABLE_THRESHOLD) {
+                                state->channel_status = OBD2_CHANNEL_STATUS_SQUELCHED;
+                                pr_debug_int_msg(_LOG_PFX "Excessive timeouts, squelching PID ", state->pid);
+                                obd2_state.squelched_count++;
+                                /**
+                                 * if all channels end up being squelched, then we should just reset OBD2 config
+                                 * This accounts for cases where there's a complete disconnect and a reset is needed
+                                 */
+                                if (obd2_state.squelched_count == obd2_state.channel_count) {
+                                        pr_debug(_LOG_PFX "all channels timed out, resetting OBD2 state\r\n");
+                                        obd2_state.is_stale = true;
+                                }
+                        }
                 }
         }
 
@@ -303,8 +319,12 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
                             channel_state->channel_status = OBD2_CHANNEL_STATUS_DATA_RECEIVED;
                             channel_state->timeout_count = 0;
                     }
+                    /* Save our latency */
+                    obd2_state.query_latency = ticksToMs(getCurrentTicks() - obd2_state.last_obd2_query_timestamp);
+                    obd2_state.is_active = true;
                     /* PID request is complete */
                     obd2_state.last_obd2_query_timestamp = 0;
+
         }
 }
 

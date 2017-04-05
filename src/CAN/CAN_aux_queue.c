@@ -49,7 +49,6 @@ bool CAN_aux_queue_put_msg(CAN_msg * can_msg, size_t timeout_ms)
         if (pdTRUE == xQueueSend(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)))
                 return true;
 
-        pr_debug_int_msg(_LOG_PFX "timeout on put CAN aux msg for bus ", can_bus);
         return false;
 }
 
@@ -58,6 +57,5 @@ bool CAN_aux_queue_get_msg(uint8_t can_bus, CAN_msg * can_msg, size_t timeout_ms
         if (pdTRUE == xQueueReceive(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)))
                 return true;
 
-        pr_debug_int_msg(_LOG_PFX "timeout on get CAN aux msg for bus ", can_bus);
         return false;
 }
