@@ -1525,10 +1525,10 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
 
         for (pids_tok++; index < pid_max; index++) {
             PidConfig *pid_cfg = obd2Cfg->pids + index;
-            jsmn_exists_set_val_int(pids_tok, "pid", &pid_cfg->pid);
-            jsmn_exists_set_val_int(pids_tok, "mode", &pid_cfg->mode);
-            jsmn_exists_set_val_bool(pids_tok, "pass", &pid_cfg->passive);
             set_can_mapping(pids_tok, &(pid_cfg->mapping));
+            jsmn_exists_set_val_bool(pids_tok, "pass", &pid_cfg->passive);
+            jsmn_exists_set_val_uint16(pids_tok, "pid", &pid_cfg->pid);
+            jsmn_exists_set_val_uint8(pids_tok, "mode", &pid_cfg->mode, NULL);
             pids_tok = setChannelConfig(serial, pids_tok, &(pid_cfg->cfg), NULL, NULL);
         }
         /* update the number of PIDs enabled in the list as needed */
