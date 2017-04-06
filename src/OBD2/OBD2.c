@@ -165,6 +165,7 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
 				state->pid = obd2_config->pids[i].pid;
 				state->channel_status = OBD2_CHANNEL_STATUS_NO_DATA;
 				state->timeout_count = 0;
+				state->current_value = 0.0;
 		}
 
 		obd2_state.channel_count = obd2_config->enabledPids;
