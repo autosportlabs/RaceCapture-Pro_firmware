@@ -367,12 +367,11 @@ typedef struct _PidConfig {
 
     /* flag for passive mode where we only listen for OBDII PID responses */
     bool passive;
+    /* The OBDII mode specified in the query */
+    uint8_t mode;
 
     /* The OBDII PID to query */
-    uint8_t pid;
-
-    /* The OBDII mode specified in the query */
-    uint16_t mode;
+    uint16_t pid;
 } PidConfig;
 
 
