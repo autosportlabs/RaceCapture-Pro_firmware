@@ -95,23 +95,25 @@ enum imu_init_status imu_device_init_status()
 int imu_device_read(enum imu_channel channel)
 {
         /*
-         * Mapped to SAE J670E standard. Front of unit is RJ-45 and USB
-         * plug facing front of vehicle when mounted on windshield.
-         * Issue #425
+         * NOTE: The mappings here allow us to correct the orientation
+         * of the IMU unit relative to the orientation of the RaceCapture.
+         * We use the SAE J670E standard for orientation. See
+         * https://www.autosportlabs.net/RaceCapturePro2_Hardware_Install#Orientation
+         * for the definition of the MK2 orientation.
          */
         switch(channel) {
         case IMU_CHANNEL_X:
-                return read_buf->accel.accel_y;
+                return -read_buf->accel.accel_y;
         case IMU_CHANNEL_Y:
-                return read_buf->accel.accel_x;
+                return -read_buf->accel.accel_x;
         case IMU_CHANNEL_Z:
                 return read_buf->accel.accel_z;
-        case IMU_CHANNEL_YAW:
-                return -read_buf->gyro.gyro_z;
-        case IMU_CHANNEL_PITCH:
-                return read_buf->gyro.gyro_x;
         case IMU_CHANNEL_ROLL:
                 return read_buf->gyro.gyro_y;
+        case IMU_CHANNEL_PITCH:
+                return read_buf->gyro.gyro_x;
+        case IMU_CHANNEL_YAW:
+                return -read_buf->gyro.gyro_z;
         default:
                 return 0;
         }
