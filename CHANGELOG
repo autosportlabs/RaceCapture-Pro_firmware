@@ -1,3 +1,8 @@
+= 2.11.0 =
+* Fixed Backwards X/Y IMU channel for RaceCapture/Track 
+* Make precision on gyro channels (yaw / pitch / roll ) zero position
+* Final updates / bug fixes on OBDII channel mapping
+
 = 2.11.0 RC1 =
 * RCP MK3 support
 * direct CAN mapping support
