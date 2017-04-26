@@ -48,6 +48,7 @@ static struct state {
         uint16_t period;
         uint16_t duty_cycle;
         uint16_t q_period_ticks;
+        uint32_t pulse_count;
 } g_state[MK3_TIMER_CHANNELS];
 
 static struct config {
@@ -391,11 +392,18 @@ bool timer_device_init(const size_t chan, const uint32_t speed,
         return false;
 }
 
-void timer_device_reset_count(size_t chan) {}
+void timer_device_reset_count(size_t chan)
+{
+        if (chan >= MK3_TIMER_CHANNELS)
+                return;
+
+        struct state *s = &g_state[chan];
+        s->pulse_count = 0;
+}
 
 uint32_t timer_device_get_count(size_t chan)
 {
-        return 0;
+        return chan < MK3_TIMER_CHANNELS ? g_state[chan].pulse_count : 0;
 }
 
 static uint32_t ticks_to_us(const size_t chan, const uint16_t ticks)
@@ -454,6 +462,7 @@ static void update_device_state(const size_t chan, const uint16_t p_ticks,
         s->period = total_ticks;
         s->duty_cycle = 100 * (uint32_t) (h_ticks / total_ticks);
         s->q_period_ticks = 0;
+        s->pulse_count++;
 }
 
 /* Logical Timer 0 IRQ Handler */
