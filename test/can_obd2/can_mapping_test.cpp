@@ -69,6 +69,38 @@ void CANMappingTest::formula_test(void)
         }
 }
 
+void CANMappingTest::extract_test_bit_mode(void)
+{
+    size_t test_count = 0;
+    for (uint8_t length = 1; length <= 32; length++ ) {
+            uint64_t test_value = (1 << length) -1;
+            for (uint8_t offset = 0; offset < (CAN_MSG_SIZE * 8) - length + 1; offset++) {
+                    CAN_msg msg;
+                    CANMapping mapping;
+                    memset(&mapping, 0, sizeof(mapping));
+                    memset(&msg, 0, sizeof(CAN_msg));
+                    mapping.offset = offset;
+                    mapping.length = length;
+                    mapping.type = CANMappingType_unsigned;
+                    mapping.bit_mode = true;
+                    msg.data64 = test_value << offset;
+
+                    float value = canmapping_extract_value(msg.data64, &mapping);
+
+///#ifdef CAN_MAPPING_TEST_DEBUG
+                    printf("bitmode test(%u): value / offset / length / return %d %d %d %f\r\n" ,
+                           ++test_count, test_value, offset, length, value);
+                    printf("CAN data: ");
+                    for (size_t di = 0; di < CAN_MSG_SIZE; di++){
+                            printf("%2x ", msg.data[di]);
+                    }
+                    printf("\r\n");
+//#endif
+
+                    CPPUNIT_ASSERT_EQUAL((float)test_value, value);
+            }
+    }
+}
 void CANMappingTest::extract_test(void)
 {
         /*
