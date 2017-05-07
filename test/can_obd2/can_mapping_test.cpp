@@ -23,7 +23,9 @@
 #include "can_mapping_test.h"
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
-/* #define CAN_MAPPING_TEST_DEBUG */
+/*
+ * #define CAN_MAPPING_TEST_DEBUG
+ */
 
 CPPUNIT_TEST_SUITE_REGISTRATION( CANMappingTest );
 
@@ -86,7 +88,7 @@ void CANMappingTest::extract_test_bit_mode(void)
 
                     float value = canmapping_extract_value(msg.data64, &mapping);
 
-///#ifdef CAN_MAPPING_TEST_DEBUG
+#ifdef CAN_MAPPING_TEST_DEBUG
                     printf("bitmode test(%lu): value / offset / length / return %lu %d %d %f\r\n" ,
                            ++test_count, test_value, offset, length, value);
                     printf("CAN data: ");
@@ -108,7 +110,7 @@ void CANMappingTest::extract_test_bit_mode(void)
                     }
                     printf("\r\n");
 
-//#endif
+#endif
 
                     CPPUNIT_ASSERT_EQUAL((float)test_value, value);
             }
