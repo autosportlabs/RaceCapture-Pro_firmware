@@ -23,8 +23,9 @@
 #include "can_mapping_test.h"
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
-
-/* #define CAN_MAPPING_TEST_DEBUG */
+/*
+ * #define CAN_MAPPING_TEST_DEBUG
+ */
 
 CPPUNIT_TEST_SUITE_REGISTRATION( CANMappingTest );
 
@@ -69,6 +70,51 @@ void CANMappingTest::formula_test(void)
         }
 }
 
+void CANMappingTest::extract_test_bit_mode(void)
+{
+    for (uint8_t length = 1; length <= 32; length++ ) {
+            uint64_t test_value = ((uint64_t)1 << length) - 1;
+            for (uint8_t offset = 0; offset < (CAN_MSG_SIZE * 8) - length + 1; offset++) {
+                    CAN_msg msg;
+                    CANMapping mapping;
+                    memset(&mapping, 0, sizeof(mapping));
+                    memset(&msg, 0, sizeof(CAN_msg));
+                    mapping.offset = offset;
+                    mapping.length = length;
+                    mapping.type = CANMappingType_unsigned;
+                    mapping.bit_mode = true;
+                    msg.data64 = test_value << offset;
+
+                    float value = canmapping_extract_value(msg.data64, &mapping);
+
+#ifdef CAN_MAPPING_TEST_DEBUG
+                    printf("bitmode test: value / offset / length / return %lu %d %d %f\r\n" ,
+                           test_value, offset, length, value);
+                    printf("CAN data: ");
+                    for (size_t di = 0; di < CAN_MSG_SIZE; di++){
+                    		uint8_t d = msg.data[di];
+                            printf("%02x ", d);
+                    }
+                    printf("\r\n");
+
+                    for (size_t di = 0; di < CAN_MSG_SIZE; di++){
+                    		uint8_t d = msg.data[di];
+                            static char b[9];
+							b[0] = '\0';
+							for (int z = 128; z > 0; z >>= 1)
+							{
+								strcat(b, ((d & z) == z) ? "1" : "0");
+							}
+                            printf("%s ", b);
+                    }
+                    printf("\r\n");
+
+#endif
+
+                    CPPUNIT_ASSERT_EQUAL((float)test_value, value);
+            }
+    }
+}
 void CANMappingTest::extract_test(void)
 {
         /*
