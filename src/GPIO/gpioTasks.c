@@ -31,7 +31,7 @@
 #include "printk.h"
 #include "GPIO.h"
 
-#define DEBOUNCE_DELAY_PERIOD		30
+#define DEBOUNCE_DELAY_PERIOD		10
 #define GPIO_TASK_STACK_SIZE		64
 
 xSemaphoreHandle xOnPushbutton;
@@ -47,12 +47,16 @@ void startGPIOTasks(int priority)
 }
 
 
+
+
 void onPushbuttonTask(void *pvParameters)
 {
-
+    size_t last_press = 0;
     while(1) {
         if ( xSemaphoreTake(xOnPushbutton, portMAX_DELAY) == pdTRUE) {
-            delayMs(DEBOUNCE_DELAY_PERIOD);
+            if (! isTimeoutMs(last_press, DEBOUNCE_DELAY_PERIOD))
+                    continue;
+            last_press = getCurrentTicks();
 
             if (GPIO_is_button_pressed()) {
                 if (logging_is_active()) {
