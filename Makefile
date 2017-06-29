@@ -177,7 +177,7 @@ rct-pristine: rct-clean
 
 PHONY += rct-package
 rct-package: rct-pristine
-	./bin/package_release.sh "RaceCapture" $(VERSION) $(RCT_DIR)
+	./bin/package_release.sh "RaceCapture_Track" $(VERSION) $(RCT_DIR)
 
 PHONY += rct
 rct: rct-build
