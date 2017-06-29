@@ -283,7 +283,7 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
 		obd2_state.current_channel_states[current_pid_index].sequencer_count = 0;
 
 		PidConfig * pid_cfg = &obd2_config->pids[current_pid_index];
-		int pid_request_result = OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, OBD2_PID_REQUEST_TIMEOUT_MS);
+		int pid_request_result = pid_cfg->passive || OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, OBD2_PID_REQUEST_TIMEOUT_MS);
 		if (pid_request_result) {
 				obd2_state.last_obd2_query_timestamp = getCurrentTicks();
 		}
