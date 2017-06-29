@@ -235,7 +235,7 @@ static int lua_get_analog(lua_State *L)
         return 1;
 }
 
-static uint8_t get_ppr(const size_t chan_id)
+static float get_ppr(const size_t chan_id)
 {
         TimerConfig *c = get_timer_config(chan_id);
         return NULL == c ? 0 : c->pulsePerRevolution;
@@ -247,11 +247,11 @@ static int lua_get_rpm(lua_State *L)
         lua_validate_arg_number(L, 1);
 
         const size_t channel = (size_t) lua_tointeger(L, 1);
-        const uint8_t ppr = get_ppr(channel);
+        const float ppr = get_ppr(channel);
         if (0 == ppr)
                 return luaL_error(L, "Invalid channel index given");
 
-        lua_pushinteger(L, timer_get_rpm(channel) / ppr);
+        lua_pushinteger(L, (int)((float)timer_get_rpm(channel) / ppr));
         return 1;
 }
 
@@ -262,11 +262,11 @@ static int lua_get_period_ms(lua_State *L)
         lua_validate_arg_number(L, 1);
 
         const size_t channel = (size_t) lua_tointeger(L, 1);
-        const uint8_t ppr = get_ppr(channel);
+        const float ppr = get_ppr(channel);
         if (0 == ppr)
                 return luaL_error(L, "Invalid channel index given");
 
-        lua_pushinteger(L, timer_get_ms(channel) * ppr);
+        lua_pushinteger(L, (int)(ppr * (float)timer_get_ms(channel)));
         return 1;
 }
 
@@ -276,11 +276,11 @@ static int lua_get_freq(lua_State *L)
         lua_validate_arg_number(L, 1);
 
         const size_t channel = (size_t) lua_tointeger(L, 1);
-        const uint8_t ppr = get_ppr(channel);
+        const float ppr = get_ppr(channel);
         if (0 == ppr)
                 return luaL_error(L, "Invalid channel index given");
 
-        lua_pushinteger(L, timer_get_hz(channel) / ppr);
+        lua_pushinteger(L, (int)((float)timer_get_hz(channel) / ppr));
         return 1;
 }
 
