@@ -43,11 +43,21 @@
 #define NET_REG_BACKOFF_MS	1000
 #define STOP_DM_RX_EVENTS	10
 #define STOP_DM_RX_TIMEOUT_MS	1000
+#define SARA_U280_SUBSCRIBER_NUMBER_RETRIES 3
 
 static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
                                             struct cellular_info *ci)
 {
-        return gsm_get_subscriber_number(sb, ci);
+        /* sara u280 often does not respond immediately to SIM number
+         * requests; do some retrying
+         */
+        bool status = false;
+        for (size_t i = 0; i < SARA_U280_SUBSCRIBER_NUMBER_RETRIES && !status; ++i)
+                status = gsm_get_subscriber_number(sb, ci);
+
+        if (!status)
+                pr_warning("[cell] Failed to read phone number\r\n");
+        return status;
 }
 
 static bool sara_u280_get_signal_strength(struct serial_buffer *sb,
@@ -333,13 +343,9 @@ static bool sara_u280_get_sim_info(struct serial_buffer *sb,
                                    struct cellular_info *ci)
 {
         bool status = false;
-
-        for (size_t i = 0; i < 3 && !status; ++i)
-                status = sara_u280_get_subscriber_number(sb, ci);
-
+        status = sara_u280_get_subscriber_number(sb, ci);
         status = sara_u280_get_imei(sb, ci) && status;
         status = sara_u280_get_signal_strength(sb, ci) && status;
-
         return status;
 }
 
