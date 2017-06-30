@@ -556,6 +556,12 @@ static int lua_get_gps_distance(lua_State *L)
         return 1;
 }
 
+static int lua_get_predicted_lap_time(lua_State *L)
+{
+    lua_pushnumber(L, getPredictedTimeInMinutes());
+    return 1;
+}
+
 static int lua_get_lap_time(lua_State *L)
 {
         lua_pushnumber(L, tinyMillisToMinutes(getLastLapTime()));
@@ -948,6 +954,7 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getGpsDist", lua_get_gps_distance);
         lua_registerlight(L, "getGpsAltitude", lua_get_gps_altitude);
 
+        lua_registerlight(L, "getPredTime", lua_get_predicted_lap_time);
         lua_registerlight(L, "getLapCount", lua_get_lap_count);
         lua_registerlight(L, "getLapTime", lua_get_lap_time);
         lua_registerlight(L, "getGpsSec", lua_get_seconds_since_first_fix);
