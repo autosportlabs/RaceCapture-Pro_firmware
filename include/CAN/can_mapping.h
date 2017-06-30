@@ -31,7 +31,7 @@ CPP_GUARD_BEGIN
  * match the can message based on the specified CAN mapping ID and ID mask
  * @param can_msg the CAN message to test
  * @param mapping the can mapping to check against
- * @return true if the CAN message matches the mapping's CAN ID and ID mask
+ * @return true if the CAN message matches the mapping's CAN ID and ID mask, or true if mapping's CAN ID is 0
  */
 bool canmapping_match_id(const CAN_msg *can_msg, const CANMapping *mapping);
 
