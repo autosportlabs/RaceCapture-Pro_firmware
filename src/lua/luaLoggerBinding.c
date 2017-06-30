@@ -51,6 +51,7 @@
 #include "task.h"
 #include "timer.h"
 #include "virtual_channel.h"
+#include "predictive_timer_2.h"
 
 #define TEMP_BUFFER_LEN 		256
 #define DEFAULT_CAN_TIMEOUT 		100
