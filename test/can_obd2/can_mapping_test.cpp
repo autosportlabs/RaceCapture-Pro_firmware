@@ -106,6 +106,7 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         mapping.bit_mode = true;
                                         mapping.big_endian = (bool)endian;
 
+                                        /* now shift the value by the offset */
                                         uint64_t offset_test_value = shifted_test_value >> offset;
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
