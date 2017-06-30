@@ -35,7 +35,10 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
                 length *= 8;
                 offset *= 8;
         }
+        /* create the bitmask of the appropriate length */
         uint32_t bitmask = (1UL << length) - 1;
+
+        /* extract the raw value from the 64 bit representation of the CAN message */
         uint32_t raw_value = (raw_data >> (64 - offset - length)) & bitmask;
 
         /* normalize endian */
