@@ -96,7 +96,7 @@ bool canmapping_match_id(const CAN_msg *can_msg, const CANMapping *mapping)
         if (mapping->can_mask)
                 can_id &= mapping->can_mask;
 
-        return can_id == mapping->can_id;
+        return can_id == mapping->can_id || mapping->can_id == 0;
 }
 
 bool canmapping_map_value(float *value, const CAN_msg *can_msg, const CANMapping *mapping)
