@@ -25,6 +25,10 @@
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
+        #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+            raw_data = swap_uint64(raw_data);
+        #endif
+
         uint8_t offset = mapping->offset;
         uint8_t length = mapping->length;
         if (! mapping->bit_mode) {
@@ -32,22 +36,11 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
                 offset *= 8;
         }
         uint32_t bitmask = (1UL << length) - 1;
-        uint32_t raw_value = (raw_data >> offset) & bitmask;
+        uint32_t raw_value = (raw_data >> (64 - offset - length)) & bitmask;
 
         /* normalize endian */
-        if (mapping->big_endian) {
-                /* do nothing if length <= 8 bits */
-                if (length > 8) {
-                        if(length <= 16) {
-                                raw_value = swap_uint16(raw_value);
-                        }
-                        else if (length <= 24) {
-                                raw_value = swap_uint24(raw_value);
-                        }
-                        else {
-                                raw_value = swap_uint32(raw_value);
-                        }
-                }
+        if (!mapping->big_endian) {
+                raw_value = swap_uint_length(raw_value, length);
         }
 
         /* convert type */
