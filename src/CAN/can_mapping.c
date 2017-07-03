@@ -89,6 +89,8 @@ float canmapping_apply_formula(float value, const CANMapping *mapping)
 bool canmapping_match_id(const CAN_msg *can_msg, const CANMapping *mapping)
 {
         uint32_t can_id  = can_msg->addressValue;
+        if (mapping->can_id == 0) return true;
+
         if (mapping->can_mask)
                 can_id &= mapping->can_mask;
 

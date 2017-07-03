@@ -32,7 +32,12 @@
 #include "can_mapping.h"
 
 #define _LOG_PFX                        "[OBD2] "
-#define OBD2_STANDARD_PID_RESPONSE      0x7e8
+#define OBD2_11BIT_PID_RESPONSE         0x7E8
+#define OBD2_29BIT_PID_RESPONSE         0x18DAF110
+
+#define OBD2_11BIT_PID_REQUEST          0x7DF
+#define OBD2_29BIT_PID_REQUEST          0x18DB33F1
+
 #define OBD2_MODE_RESPONSE_OFFSET       0x40
 #define OBD2_MODE_SHOW_CURRENT_DATA     0x01
 #define OBD2_MODE_ENHANCED_DATA         0x22
@@ -105,22 +110,59 @@ struct OBD2State {
          * flag to indicate if we have a live OBDII connection
          */
         bool is_active;
+
+        /**
+         * indicates if we're using 29 bit PID requests
+         */
+        bool is_29bit_obd2;
 };
 
 static struct OBD2State obd2_state = {0};
 
+
 void OBD2_state_stale(void)
 {
-	obd2_state.is_stale = true;
+	    obd2_state.is_stale = true;
 }
 
 bool OBD2_is_state_stale(void)
 {
-	return obd2_state.is_stale;
+	    return obd2_state.is_stale;
+}
+
+/**
+ * Sends an OBD2 PID request on the CAN bus.
+ * @param pid the OBD2 PID to request
+ * @param mode the OBD2 mode to request
+ * @param timeout the timeout in ms for sending the OBD2 request
+ */
+static int OBD2_request_PID(uint16_t pid, uint8_t mode, bool is_29_bit, size_t timeout)
+{
+        CAN_msg msg;
+        msg.addressValue = is_29_bit ? OBD2_29BIT_PID_REQUEST : OBD2_11BIT_PID_REQUEST;
+        if (mode == OBD2_MODE_ENHANCED_DATA) {
+                msg.data[0] = 3;
+                msg.data[2] = pid >> 8;
+                msg.data[3] = pid & 0xFF;
+        }
+        else{
+                msg.data[0] = 2;
+                msg.data[2] = pid;
+                msg.data[3] = 0x55;
+        }
+        msg.data[1] = mode;
+        msg.data[4] = 0x55;
+        msg.data[5] = 0x55;
+        msg.data[6] = 0x55;
+        msg.data[7] = 0x55;
+        msg.dataLength = 8;
+        msg.isExtendedAddress = is_29_bit;
+        return CAN_tx_msg(0, &msg, timeout);
 }
 
 bool OBD2_init_current_values(OBD2Config *obd2_config)
 {
+        pr_info(_LOG_PFX "Init current values\r\n");
         uint16_t obd2_channel_count = obd2_config->enabledPids;
 
         /* free any previously created channel states */
@@ -133,7 +175,7 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
         obd2_state.squelched_count = 0;
         obd2_state.query_latency = 0;
         obd2_state.is_active = false;
-
+        obd2_state.is_29bit_obd2 = false;
         /* determine the fastest sample rate, which will set our PID querying timebase */
         size_t max_sample_rate = 0;
         for (size_t i = 0; i < obd2_channel_count; i++) {
@@ -173,10 +215,11 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
 		return true;
 }
 
-float OBD2_get_current_channel_value(int index) {
-    if (obd2_state.current_channel_states == NULL)
-            return 0;
-    return obd2_state.current_channel_states[index].current_value;
+float OBD2_get_current_channel_value(int index)
+{
+        if (obd2_state.current_channel_states == NULL)
+                return 0;
+        return obd2_state.current_channel_states[index].current_value;
 }
 
 void OBD2_set_current_channel_value(int index, float value)
@@ -218,6 +261,11 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
                                         obd2_state.is_stale = true;
                                 }
                         }
+                }
+                /*if we have timed out and we're not active, then we should try auto-detecting 29 or 11 bit OBDII */
+                else {
+                        obd2_state.is_29bit_obd2 = !obd2_state.is_29bit_obd2;
+                        pr_info_int_msg(_LOG_PFX "Trying OBDII bit mode ", obd2_state.is_29bit_obd2 ? 29 : 11);
                 }
         }
 
@@ -283,7 +331,7 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
 		obd2_state.current_channel_states[current_pid_index].sequencer_count = 0;
 
 		PidConfig * pid_cfg = &obd2_config->pids[current_pid_index];
-		int pid_request_result = pid_cfg->passive || OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, OBD2_PID_REQUEST_TIMEOUT_MS);
+		int pid_request_result = pid_cfg->passive || OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, obd2_state.is_29bit_obd2, OBD2_PID_REQUEST_TIMEOUT_MS);
 		if (pid_request_result) {
 				obd2_state.last_obd2_query_timestamp = getCurrentTicks();
 		}
@@ -305,7 +353,7 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
         if (obd2_state.last_obd2_query_timestamp &&
 
             /* is this CAN message an OBD2 PID response */
-            msg->addressValue == OBD2_STANDARD_PID_RESPONSE &&
+            (msg->addressValue == OBD2_11BIT_PID_RESPONSE || msg->addressValue == OBD2_29BIT_PID_RESPONSE) &&
 
             /* does the returned mode + response offeset match the one expected in the current query? ? */
             msg->data[1] == pid_config->mode + OBD2_MODE_RESPONSE_OFFSET &&
@@ -325,32 +373,7 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
                     obd2_state.is_active = true;
                     /* PID request is complete */
                     obd2_state.last_obd2_query_timestamp = 0;
-
         }
-}
-
-int OBD2_request_PID(uint16_t pid, uint8_t mode, size_t timeout)
-{
-		CAN_msg msg;
-		msg.addressValue = 0x7df;
-        if (mode == OBD2_MODE_ENHANCED_DATA) {
-		        msg.data[0] = 3;
-		        msg.data[2] = pid >> 8;
-		        msg.data[3] = pid & 0xFF;
-        }
-        else{
-                msg.data[0] = 2;
-                msg.data[2] = pid;
-                msg.data[3] = 0x55;
-        }
-        msg.data[1] = mode;
-		msg.data[4] = 0x55;
-		msg.data[5] = 0x55;
-		msg.data[6] = 0x55;
-		msg.data[7] = 0x55;
-		msg.dataLength = 8;
-		msg.isExtendedAddress = 0;
-		return CAN_tx_msg(0, &msg, timeout);
 }
 
 bool OBD2_get_value_for_pid(uint16_t pid, float *value)
