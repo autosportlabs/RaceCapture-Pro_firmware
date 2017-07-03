@@ -136,14 +136,26 @@ bool OBD2_is_state_stale(void)
  * @param mode the OBD2 mode to request
  * @param timeout the timeout in ms for sending the OBD2 request
  */
-static int OBD2_request_PID(uint16_t pid, uint8_t mode, bool is_29_bit, size_t timeout)
+static int OBD2_request_PID(uint32_t pid, uint8_t mode, bool is_29_bit, size_t timeout)
 {
         CAN_msg msg;
         msg.addressValue = is_29_bit ? OBD2_29BIT_PID_REQUEST : OBD2_11BIT_PID_REQUEST;
         if (mode == OBD2_MODE_ENHANCED_DATA) {
-                msg.data[0] = 3;
-                msg.data[2] = pid >> 8;
-                msg.data[3] = pid & 0xFF;
+                /* extract into a 32 bit PID as needed, big endian format */
+                if (pid > 0xFFFF) {
+                        msg.data[0] = 5;
+                        msg.data[2] = (pid >> 24);
+                        msg.data[3] = (pid >> 16) & 0xFF;
+                        msg.data[4] = (pid >> 8) & 0xFF;
+                        msg.data[5] = pid & 0xFF;
+                }
+                else {
+                        msg.data[0] = 3;
+                        msg.data[2] = (pid >> 8) & 0xFF;
+                        msg.data[3] = pid & 0xFF;
+                        msg.data[4] = 0x55;
+                        msg.data[5] = 0x55;
+                }
         }
         else{
                 msg.data[0] = 2;
@@ -151,8 +163,6 @@ static int OBD2_request_PID(uint16_t pid, uint8_t mode, bool is_29_bit, size_t t
                 msg.data[3] = 0x55;
         }
         msg.data[1] = mode;
-        msg.data[4] = 0x55;
-        msg.data[5] = 0x55;
         msg.data[6] = 0x55;
         msg.data[7] = 0x55;
         msg.dataLength = 8;
