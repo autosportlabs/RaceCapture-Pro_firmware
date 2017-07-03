@@ -29,9 +29,11 @@ ASL_CFLAGS += -Os -std=gnu99
 # That means no checks that would occur when DEBUG is active.
 #
 ifeq ($(RELEASE_TYPE),RELEASE_TYPE_DEVEL)
+$(info Development release. WATCHDOG DISABLED)
 ASL_CFLAGS += -DASL_DEBUG -D_DEBUG -DUSE_FULL_ASSERT
 ASL_WATCHDOG := false
 else
+$(info Beta or production release. WATCHDOG ENABLED)
 ASL_WATCHDOG := true
 endif
 
