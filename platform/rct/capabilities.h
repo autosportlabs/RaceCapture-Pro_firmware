@@ -41,8 +41,8 @@
 #define PWM_CHANNELS	            0
 #define CAN_CHANNELS	            1
 #define CAN_SW_TERMINATION          false
-#define CAN_MAPPINGS                5
-#define OBD2_CHANNELS               5
+#define CAN_MAPPINGS                15
+#define OBD2_CHANNELS               15
 
 //Wireless connections
 #define CONNECTIVITY_CHANNELS	    2

@@ -180,7 +180,7 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
         size_t max_sample_rate = 0;
         for (size_t i = 0; i < obd2_channel_count; i++) {
                 max_sample_rate = MAX(max_sample_rate,
-                                      decodeSampleRate(obd2_config->pids[i].cfg.sampleRate));
+                                      decodeSampleRate(obd2_config->pids[i].mapping.channel_cfg.sampleRate));
         }
         obd2_state.max_sample_rate = max_sample_rate;
         pr_debug_int_msg(_LOG_PFX " Max OBD2 sample rate: ", obd2_state.max_sample_rate);
@@ -308,7 +308,7 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
                         continue;
 
                 uint16_t timeout = state->sequencer_count;
-                uint16_t sample_rate = decodeSampleRate(obd2_config->pids[i].cfg.sampleRate);
+                uint16_t sample_rate = decodeSampleRate(obd2_config->pids[i].mapping.channel_cfg.sampleRate);
                 timeout += sample_rate;
 
                 /**

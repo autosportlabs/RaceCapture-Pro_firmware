@@ -362,7 +362,6 @@ typedef struct _CANChannelConfig {
 
 
 typedef struct _PidConfig {
-    ChannelConfig cfg;
     CANMapping mapping;
 
     /* flag for passive mode where we only listen for OBDII PID responses */
@@ -371,7 +370,7 @@ typedef struct _PidConfig {
     uint8_t mode;
 
     /* The OBDII PID to query */
-    uint16_t pid;
+    uint32_t pid;
 } PidConfig;
 
 
