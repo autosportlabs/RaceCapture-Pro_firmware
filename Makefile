@@ -41,7 +41,7 @@ export GIT_DESCRIPTION := "\"$(VERSION)\""
 # * RELEASE_TYPE_BETA     - A beta release.  One designed for user
 #                           testing, but has no official support.
 #
-RELEASE_TYPE := RELEASE_TYPE_DEVEL
+RELEASE_TYPE ?= RELEASE_TYPE_DEVEL
 OFFICIAL_TAG := $(if $(shell ./bin/get_official_tag.sh), yes)
 ifeq ($(RELEASE),BETA)
     RELEASE_TYPE := RELEASE_TYPE_BETA
