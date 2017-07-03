@@ -78,7 +78,7 @@
 #define CAN_CHANNELS			2
 #define CAN_SW_TERMINATION      false
 #define CAN_MAPPINGS            100
-#define OBD2_CHANNELS           10
+#define OBD2_CHANNELS           20
 //Wireless Channels
 #define CONNECTIVITY_CHANNELS	2
 

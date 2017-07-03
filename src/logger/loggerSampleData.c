@@ -52,7 +52,7 @@ struct sample_cb_registry {
         logger_sample_cb_t* cb;
         void* data;
         int rate;
-} sample_cb_registry[SAMPLE_CB_REGISTRY_SIZE];
+} sample_cb_registry[SAMPLE_CB_REGISTRY_SIZE] = {0};
 
 static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
         ChannelConfig *cfg,
