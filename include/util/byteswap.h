@@ -23,7 +23,7 @@
 #define _BYTESWAP_H_
 
 #include "cpp_guard.h"
-
+#include <stddef.h>
 #include <stdint.h>
 
 CPP_GUARD_BEGIN
@@ -53,6 +53,15 @@ int32_t swap_int32( int32_t val );
  */
 uint32_t swap_uint32( uint32_t val );
 
+/*
+* Byte swap unsigned 64 bits
+ */
+uint64_t swap_uint64( uint64_t val );
+
+/*
+ * Byte swap based on specified bit length
+ */
+uint64_t swap_uint_length(uint64_t val, size_t bit_length);
 CPP_GUARD_END
 
 #endif /* _BYTESWAP_H_ */
