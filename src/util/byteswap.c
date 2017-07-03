@@ -58,18 +58,11 @@ uint64_t swap_uint64(uint64_t val)
              (val & 0x00FF000000000000UL) >> 40 | (val & 0xFF00000000000000UL) >> 56;
 }
 
-uint32_t swap_uint_length(uint32_t val, size_t bit_length)
+uint64_t swap_uint_length(uint64_t val, size_t bit_length)
 {
-    if (bit_length > 8) {
-            if(bit_length <= 16) {
-                    return swap_uint16(val);
-            }
-            else if (bit_length <= 24) {
-                    return swap_uint24(val);
-            }
-            else {
-                    return swap_uint32(val);
-            }
-    }
-    return val;
+    if (bit_length <= 8) return val;
+    if (bit_length <= 16) return swap_uint16(val);
+    if (bit_length <= 24) return swap_uint24(val);
+    if (bit_length <= 32) return swap_uint32(val);
+    return swap_uint64(val);
 }

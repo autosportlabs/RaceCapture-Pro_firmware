@@ -24,7 +24,6 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include "byteswap.h"
-#include <time.h>
 #include <stdlib.h>
 
 /*
@@ -78,18 +77,18 @@ void CANMappingTest::extract_test_bit_mode(void)
 {
         srand(time(NULL));
 
-        for (size_t random = 0; random <= 1; random++){
+        for (size_t bitpattern = 0; bitpattern <= 1; bitpattern++){
                 for (size_t endian = 0; endian <= 1; endian++){
                         for (uint8_t length = 1; length <= 32; length++ ) {
 
                                 uint64_t test_value;
-                                if (!random) {
+                                if (!bitpattern) {
                                         /* just test a bit pattern of all 1's */
                                         test_value = ((uint64_t)1 << length) - 1;
                                 }
                                 else {
-                                        /* test with a randomly generated number */
-                                        test_value = rand() & (((uint64_t)1 << length) - 1);
+                                        /* test with bit pattern of 101010... */
+                                        test_value = 0x5555555555555555 & (((uint64_t)1 << length) - 1);
                                 }
 
                                 /* shift it all the way to the left */

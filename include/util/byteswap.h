@@ -61,7 +61,7 @@ uint64_t swap_uint64( uint64_t val );
 /*
  * Byte swap based on specified bit length
  */
-uint32_t swap_uint_length(uint32_t val, size_t bit_length);
+uint64_t swap_uint_length(uint64_t val, size_t bit_length);
 CPP_GUARD_END
 
 #endif /* _BYTESWAP_H_ */
