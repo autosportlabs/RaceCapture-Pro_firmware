@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #include "byteswap.h"
+#include "panic.h"
 
 uint16_t swap_uint16( uint16_t val )
 {
@@ -64,5 +65,7 @@ uint64_t swap_uint_length(uint64_t val, size_t bit_length)
     if (bit_length <= 16) return swap_uint16(val);
     if (bit_length <= 24) return swap_uint24(val);
     if (bit_length <= 32) return swap_uint32(val);
-    return swap_uint64(val);
+    if (bit_length <= 64) return swap_uint32(val);
+    panic(PANIC_CAUSE_UNREACHABLE);
+    return 0; /* to make compiler happy */
 }
