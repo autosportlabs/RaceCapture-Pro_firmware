@@ -136,23 +136,37 @@ bool OBD2_is_state_stale(void)
  * @param mode the OBD2 mode to request
  * @param timeout the timeout in ms for sending the OBD2 request
  */
-static int OBD2_request_PID(uint16_t pid, uint8_t mode, bool is_29_bit, size_t timeout)
+static int OBD2_request_PID(uint32_t pid, uint8_t mode, bool is_29_bit, size_t timeout)
 {
         CAN_msg msg;
         msg.addressValue = is_29_bit ? OBD2_29BIT_PID_REQUEST : OBD2_11BIT_PID_REQUEST;
-        if (mode == OBD2_MODE_ENHANCED_DATA) {
-                msg.data[0] = 3;
-                msg.data[2] = pid >> 8;
-                msg.data[3] = pid & 0xFF;
+        if (mode != OBD2_MODE_SHOW_CURRENT_DATA) {
+                /* treat everything that's not a standard current data request
+                 * as an enchanced data request mode
+                 */
+                if (pid > 0xFFFF) { /* extract into a 32 bit PID as needed, big endian format */
+                        msg.data[0] = 5;
+                        msg.data[2] = (pid >> 24);
+                        msg.data[3] = (pid >> 16) & 0xFF;
+                        msg.data[4] = (pid >> 8) & 0xFF;
+                        msg.data[5] = pid & 0xFF;
+                }
+                else { /*otherwise treat as 16 bit PID */
+                        msg.data[0] = 3;
+                        msg.data[2] = pid >> 8;
+                        msg.data[3] = pid & 0xFF;
+                        msg.data[4] = 0x55;
+                        msg.data[5] = 0x55;
+                }
         }
-        else{
+        else{ /* request current data, 8 bit PID */
                 msg.data[0] = 2;
                 msg.data[2] = pid;
                 msg.data[3] = 0x55;
+                msg.data[4] = 0x55;
+                msg.data[5] = 0x55;
         }
         msg.data[1] = mode;
-        msg.data[4] = 0x55;
-        msg.data[5] = 0x55;
         msg.data[6] = 0x55;
         msg.data[7] = 0x55;
         msg.dataLength = 8;
@@ -180,7 +194,7 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
         size_t max_sample_rate = 0;
         for (size_t i = 0; i < obd2_channel_count; i++) {
                 max_sample_rate = MAX(max_sample_rate,
-                                      decodeSampleRate(obd2_config->pids[i].cfg.sampleRate));
+                                      decodeSampleRate(obd2_config->pids[i].mapping.channel_cfg.sampleRate));
         }
         obd2_state.max_sample_rate = max_sample_rate;
         pr_debug_int_msg(_LOG_PFX " Max OBD2 sample rate: ", obd2_state.max_sample_rate);
@@ -308,7 +322,7 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
                         continue;
 
                 uint16_t timeout = state->sequencer_count;
-                uint16_t sample_rate = decodeSampleRate(obd2_config->pids[i].cfg.sampleRate);
+                uint16_t sample_rate = decodeSampleRate(obd2_config->pids[i].mapping.channel_cfg.sampleRate);
                 timeout += sample_rate;
 
                 /**
