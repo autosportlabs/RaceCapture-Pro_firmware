@@ -142,7 +142,7 @@ static int OBD2_request_PID(uint32_t pid, uint8_t mode, bool is_29_bit, size_t t
         msg.addressValue = is_29_bit ? OBD2_29BIT_PID_REQUEST : OBD2_11BIT_PID_REQUEST;
         if (mode != OBD2_MODE_SHOW_CURRENT_DATA) {
                 /* treat everything that's not a standard current data request
-                 * as an enchanced data request mode
+                 * as an enhanced data request mode
                  */
                 if (pid > 0xFFFF) { /* extract into a 32 bit PID as needed, big endian format */
                         msg.data[0] = 5;
