@@ -304,7 +304,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     OBD2Config *obd2Config = &(loggerConfig->OBD2Configs);
     const unsigned char enabled = loggerConfig->OBD2Configs.enabled;
     for (size_t i = 0; i < obd2Config->enabledPids && enabled; i++) {
-        chanCfg = &(obd2Config->pids[i].cfg);
+        chanCfg = &(obd2Config->pids[i].mapping.channel_cfg);
         sample = processChannelSampleWithFloatGetter(sample, chanCfg, i,
                                                    OBD2_get_current_channel_value);
     }

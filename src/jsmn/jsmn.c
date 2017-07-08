@@ -391,8 +391,8 @@ bool jsmn_exists_set_val_uint8(const jsmntok_t *root, const char * field,
     return (valueNode != NULL);
 }
 
-bool jsmn_exists_set_val_uint16(const jsmntok_t* root, const char* field,
-                             uint16_t* val)
+bool jsmn_exists_set_val_uint32(const jsmntok_t* root, const char* field,
+                             uint32_t* val)
 {
     const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
 

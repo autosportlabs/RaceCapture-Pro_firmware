@@ -1234,13 +1234,13 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
         obd2Config->enabled = 1;
         obd2Config->enabledPids = 2;
 
-        ChannelConfig *cfg1 = &obd2Config->pids[0].cfg;
+        ChannelConfig *cfg1 = &obd2Config->pids[0].mapping.channel_cfg;
         populateChannelConfig(cfg1, 1, 1);
         obd2Config->pids[0].pid = 0x05;
         obd2Config->pids[0].mode = 0x55;
         obd2Config->pids[0].passive = true;
 
-        ChannelConfig *cfg2 = &obd2Config->pids[1].cfg;
+        ChannelConfig *cfg2 = &obd2Config->pids[1].mapping.channel_cfg;
         populateChannelConfig(cfg2, 2, 50);
         obd2Config->pids[1].pid = 0x06;
         obd2Config->pids[1].mode = 0x66;
@@ -1252,14 +1252,14 @@ void LoggerApiTest::testGetObd2ConfigFile(string filename){
 
         Object json_pid0 = (Object)json["obd2Cfg"]["pids"][0];
         PidConfig *pid_cfg0 = &obd2Config->pids[0];
-        check_channel_config(json_pid0, &pid_cfg0->cfg);
+        check_channel_config(json_pid0, &pid_cfg0->mapping.channel_cfg);
         CPPUNIT_ASSERT_EQUAL((int)pid_cfg0->pid, (int)(Number)json_pid0["pid"]);
         CPPUNIT_ASSERT_EQUAL((int)pid_cfg0->mode, (int)(Number)json_pid0["mode"]);
         CPPUNIT_ASSERT_EQUAL((bool)pid_cfg0->passive, (bool)(Boolean)json_pid0["pass"]);
 
         Object json_pid1 = (Object)json["obd2Cfg"]["pids"][1];
         PidConfig *pid_cfg1 = &obd2Config->pids[1];
-        check_channel_config(json_pid1, &pid_cfg1->cfg);
+        check_channel_config(json_pid1, &pid_cfg1->mapping.channel_cfg);
         CPPUNIT_ASSERT_EQUAL((int)pid_cfg1->pid, (int)(Number)json_pid1["pid"]);
         CPPUNIT_ASSERT_EQUAL((int)pid_cfg1->mode, (int)(Number)json_pid1["mode"]);
         CPPUNIT_ASSERT_EQUAL((bool)pid_cfg1->passive, (bool)(Boolean)json_pid1["pass"]);
@@ -1287,7 +1287,7 @@ void LoggerApiTest::testSetObd2ConfigFile(string filename){
         for (size_t i=0; i < json_pids.Size(); i++) {
                 PidConfig *pid_cfg = &obd2Config->pids[i];
                 Object json_pid = (Object)json_pids[i];
-                check_channel_config(json_pid, &pid_cfg->cfg);
+                check_channel_config(json_pid, &pid_cfg->mapping.channel_cfg);
                 check_can_mapping_config(json_pid, &pid_cfg->mapping);
 
                 CPPUNIT_ASSERT_EQUAL((int)(Number)json_pid["pid"], (int)pid_cfg->pid);
@@ -1317,11 +1317,11 @@ void LoggerApiTest::testSetObd2ConfigFile_fromIndex(){
 	//when setting PIDs from an index, index + length of PID array becomes the total number of enabled PIDs
 	CPPUNIT_ASSERT_EQUAL(4, (int)obd2Config->enabledPids);
 
-    check_channel_config(obd2_json1["setObd2Cfg"]["pids"][0], &obd2Config->pids[0].cfg);
-    check_channel_config(obd2_json1["setObd2Cfg"]["pids"][1], &obd2Config->pids[1].cfg);
+    check_channel_config(obd2_json1["setObd2Cfg"]["pids"][0], &obd2Config->pids[0].mapping.channel_cfg);
+    check_channel_config(obd2_json1["setObd2Cfg"]["pids"][1], &obd2Config->pids[1].mapping.channel_cfg);
 
-	check_channel_config(obd2_json2["setObd2Cfg"]["pids"][0], &obd2Config->pids[2].cfg);
-	check_channel_config(obd2_json2["setObd2Cfg"]["pids"][1], &obd2Config->pids[3].cfg);
+	check_channel_config(obd2_json2["setObd2Cfg"]["pids"][0], &obd2Config->pids[2].mapping.channel_cfg);
+	check_channel_config(obd2_json2["setObd2Cfg"]["pids"][1], &obd2Config->pids[3].mapping.channel_cfg);
 }
 
 void LoggerApiTest::testSetObd2ConfigFile_invalid(){
