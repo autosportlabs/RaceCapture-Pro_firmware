@@ -28,7 +28,7 @@
 #include "printk.h"
 
 //Channel Filters
-static Filter g_imu_filter[CONFIG_IMU_CHANNELS];
+static Filter g_imu_filter[CONFIG_IMU_CHANNELS] = {0};
 
 static void init_filters(LoggerConfig *loggerConfig)
 {

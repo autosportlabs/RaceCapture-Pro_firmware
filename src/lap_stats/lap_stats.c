@@ -78,8 +78,8 @@ static int g_lapCount;
 static float g_distance;
 
 // Our GeoTriggers so we don't unintentionally trigger on start/finish
-static struct GeoTrigger g_start_geo_trigger;
-static struct GeoTrigger g_finish_geo_trigger;
+static struct GeoTrigger g_start_geo_trigger = {0};
+static struct GeoTrigger g_finish_geo_trigger = {0};
 
 static void reset_elapsed_time()
 {

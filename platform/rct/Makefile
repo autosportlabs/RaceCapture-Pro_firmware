@@ -273,7 +273,7 @@ CPU_FLAGS := \
 -mthumb \
 -mfloat-abi=soft \
 
-CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c
+CFLAGS := -DUSE_STDPERIPH_DRIVER -DSTM32F30X -MD -c 
 CFLAGS += $(CPU_FLAGS)
 CFLAGS += $(ASL_CFLAGS)
 CFLAGS += $(BOARD_DEFINES)
@@ -281,7 +281,7 @@ CFLAGS += $(addprefix -I,$(inc-y))
 
 LDFLAGS := $(CPU_FLAGS)
 LDFLAGS += -TProject/STM32_FLASH.ld
-LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=main.map
+LDFLAGS += -Wl,-cref,-u,Reset_Handler,-Map=main.map --specs=nano.specs
 LDFLAGS += -Wl,--gc-sections,-static
 LDFLAGS += $(FREERTOS_LD_FLAGS)
 

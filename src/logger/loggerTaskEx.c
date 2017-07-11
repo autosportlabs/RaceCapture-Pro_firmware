@@ -56,7 +56,7 @@ int g_telemetryBackgroundStreaming;
 xSemaphoreHandle onTick;
 
 /* This should be 0'd out accroding to C standards */
-static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE];
+static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE] = {0};
 
 static LoggerMessage getLogStartMessage()
 {

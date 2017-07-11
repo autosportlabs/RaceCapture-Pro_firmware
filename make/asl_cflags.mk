@@ -20,7 +20,7 @@
 ASL_CFLAGS :=
 
 # Basic flags
-ASL_CFLAGS += -Os -std=gnu99
+ASL_CFLAGS += -Os -std=gnu99 -Wno-missing-braces
 
 #
 # Only specify ASL_DEBUG on devel builds. Reason being that when

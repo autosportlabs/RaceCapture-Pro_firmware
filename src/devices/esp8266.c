@@ -50,7 +50,7 @@
 
 /* STIEG: Temp until we write *_create methods for serial_buff and at_info */
 struct serial_buffer _serial_cmd_buff;
-struct at_info _ati;
+struct at_info _ati = {0};
 
 /**
  * Internal state of our driver.

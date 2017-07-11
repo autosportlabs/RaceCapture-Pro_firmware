@@ -39,7 +39,7 @@
 #define IMU_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
 #define IS_9150_ADDR            0x68
 
-static struct is9150_all_sensor_data sensor_data[2];
+static struct is9150_all_sensor_data sensor_data[2] = {0};
 static struct is9150_all_sensor_data *read_buf = &sensor_data[0];
 static struct is9150_all_sensor_data *fill_buf = &sensor_data[1];
 static enum imu_init_status init_status;

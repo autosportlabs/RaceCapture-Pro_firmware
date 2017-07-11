@@ -62,8 +62,8 @@ signal gain in wooded areas).
 
 ### Toolchain Setup
 Do the following to setup the MK2 toolchain:
-* Download [the official MK2
-  toolchain](https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/)
+* Download [the official
+  toolchain](https://launchpad.net/gcc-arm-embedded/+milestone/4.9-2014-q4-major)
 * Extract the tarball to a directory of your choice
 * Add the 'bin' directory from within the newly extracted directory to
   your system PATH.
@@ -74,9 +74,11 @@ Do the following to setup the MK2 toolchain:
   asl_f4_loader application.  This package does all the post-processing on
   MK2 firmware and provides a firmware loading utility.
 
-### Compiling MK2 Firmware
-From the root of the project, simply run `make mk2`.  For a package run
-`make mk2-package`.
+### Compiling Firmware
+From the root of the project, simply run `make`.  This will build all platforms.
+To build a specific platform, run `make <platform>` where platform = mk2, mk3 or rct
+ For a package run
+`make <platform>-package`.
 
 When building from the command line, a debug version of the firmware is
 built by default. To disable debug and enable standard optimization,
