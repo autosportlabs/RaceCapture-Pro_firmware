@@ -1,12 +1,12 @@
-RaceCapture/Pro Firmware
+RaceCapture Firmware
 =====
 The premier open source telemetry system for your race vehicle.
 RaceCapture is a family of hardware devices installed in your race or street car
 that beams driving and vehicle telemetry to the cloud in real
 time. Combined with [RaceCapture
 App](https://github.com/autosportlabs/RaceCapture_App) and
-[RaceCapture Live](https://race-capture.com/), teams and drivers can
-use the platform to learn how to drive faster an drive better, giving
+[Podium cloud motorsports platform](https://podium.live/), teams and drivers can
+use the system to learn how to drive faster and smoother, giving
 them the edge to win.
 
 # Current Hardware Revisions
