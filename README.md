@@ -11,12 +11,15 @@ them the edge to win.
 
 # Current Hardware Revisions
 RaceCapture/Pro MK3
+
 ![alt text](images/RaceCapturePro_MK3.jpg?raw=true)
 
 RaceCapture/Track
+
 ![alt text](images/RaceCaptureTrack.jpg?raw=true)
 
 RaceCapture/Pro MK2
+
 ![alt text](images/RaceCapturePro_MK2.jpg?raw=true)
 
 
