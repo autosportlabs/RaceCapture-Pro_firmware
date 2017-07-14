@@ -27,7 +27,7 @@
 #define GPS_LOCK_FLASH_COUNT 5
 #define GPS_NOFIX_FLASH_COUNT 25
 
-static GpsSnapshot g_gpsSnapshot;
+static GpsSnapshot g_gpsSnapshot ={0};
 gps_status_t gps_status = GPS_STATUS_NOT_INIT;
 static int g_flashCount;
 static millis_t g_timeFirstFix;

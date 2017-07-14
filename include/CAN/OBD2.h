@@ -84,14 +84,6 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg);
  */
 bool OBD2_get_value_for_pid(uint16_t pid, float *value);
 
-/**
- * Sends an OBD2 PID request on the CAN bus.
- * @param pid the OBD2 PID to request
- * @param mode the OBD2 mode to request
- * @param timeout the timeout in ms for sending the OBD2 request
- */
-int OBD2_request_PID(uint16_t pid, uint8_t mode, size_t timeout_ms);
-
 CPP_GUARD_END
 
 #endif /* OBD2_H_ */

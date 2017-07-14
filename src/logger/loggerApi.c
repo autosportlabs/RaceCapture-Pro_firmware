@@ -163,6 +163,8 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
 #endif
         json_int(serial, "can", CONFIG_CAN_CHANNELS, 1);
 
+        json_int(serial, "obd2", CONFIG_OBD2_CHANNELS, 1);
+
         json_int(serial, "canChan", CONFIG_CAN_MAPPINGS, 0);
 
         json_objEnd(serial, 1);
@@ -1481,7 +1483,7 @@ int api_getObd2Config(struct Serial *serial, const jsmntok_t *json)
     for (int i = 0; i < enabledPids; i++) {
         PidConfig *pidCfg = &obd2Cfg->pids[i];
         json_objStart(serial);
-        json_channelConfig(serial, &(pidCfg->cfg), 1);
+        json_channelConfig(serial, &(pidCfg->mapping.channel_cfg), 1);
         json_put_can_mapping(serial, &(pidCfg->mapping), 1);
         json_int(serial,"pid",pidCfg->pid, 1);
         json_int(serial, "mode", pidCfg->mode, 1);
@@ -1530,9 +1532,9 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
             PidConfig *pid_cfg = obd2Cfg->pids + index;
             set_can_mapping(pids_tok, &(pid_cfg->mapping));
             jsmn_exists_set_val_bool(pids_tok, "pass", &pid_cfg->passive);
-            jsmn_exists_set_val_uint16(pids_tok, "pid", &pid_cfg->pid);
+            jsmn_exists_set_val_uint32(pids_tok, "pid", &pid_cfg->pid);
             jsmn_exists_set_val_uint8(pids_tok, "mode", &pid_cfg->mode, NULL);
-            pids_tok = setChannelConfig(serial, pids_tok, &(pid_cfg->cfg), NULL, NULL);
+            pids_tok = setChannelConfig(serial, pids_tok, &(pid_cfg->mapping.channel_cfg), NULL, NULL);
         }
         /* update the number of PIDs enabled in the list as needed */
         if (index > obd2Cfg->enabledPids || is_last)

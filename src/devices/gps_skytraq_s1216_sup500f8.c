@@ -654,7 +654,7 @@ static gps_cmd_result_t configureUpdateRate(GpsMessage * gpsMsg,
     return result;
 }
 
-static GpsMessage gpsMsg;
+static GpsMessage gpsMsg = {0};
 
 static uint8_t getTargetUpdateRate(uint8_t sampleRate)
 {

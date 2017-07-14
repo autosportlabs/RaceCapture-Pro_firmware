@@ -155,7 +155,7 @@ static struct {
                 tiny_millis_t backoff;
                 xTimerHandle timer;
         } led;
-} esp8266_state;
+} esp8266_state ={0};
 
 static void led_timer_cb( xTimerHandle xTimer )
 {
