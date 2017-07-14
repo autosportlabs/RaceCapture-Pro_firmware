@@ -517,6 +517,25 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     }
 #endif
 
+    {
+            OBD2Config *obd2_config = &(config->OBD2Configs);
+            const size_t enabled_channels = obd2_config->enabledPids;
+            bool enabled = obd2_config->enabled;
+            for (size_t i = 0; i < enabled_channels && enabled; i++) {
+					sr = config->OBD2Configs.pids[i].cfg.sampleRate;
+					s = getHigherSampleRate(sr, s);
+            }
+    }
+    {
+            CANChannelConfig *ccc = &(config->can_channel_cfg);
+            const size_t enabled_can_channels = ccc->enabled_mappings;
+            bool enabled = ccc->enabled;
+            for (size_t i = 0; i < enabled_can_channels && enabled; i++) {
+					sr = config->can_channel_cfg.can_channels[i].channel_cfg.sampleRate;
+					s = getHigherSampleRate(sr, s);
+            }
+    }
+
     GPSConfig *gpsConfig = &(config->GPSConfigs);
     sr = gpsConfig->latitude.sampleRate;
     s = getHigherSampleRate(sr, s);

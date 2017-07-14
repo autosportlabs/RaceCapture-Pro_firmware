@@ -29,6 +29,8 @@
 #include "cellular_api_status_keys.h"
 #include "channel_config.h"
 #include "constants.h"
+#include "can_channels.h"
+#include "OBD2.h"
 #include "cpu.h"
 #include "dateTime.h"
 #include "esp8266_drv.h"
@@ -1460,6 +1462,7 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 
     /* set the global enabled flag, if present */
     jsmn_exists_set_val_uint8(json, "en", &can_channel_cfg->enabled, NULL);
+    CAN_state_stale();
     configChanged();
     return API_SUCCESS;
 }
@@ -1540,6 +1543,7 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
     jsmn_exists_set_val_uint8(json, "en", &obd2Cfg->enabled, NULL);
 
     configChanged();
+    OBD2_state_stale();
     return API_SUCCESS;
 }
 

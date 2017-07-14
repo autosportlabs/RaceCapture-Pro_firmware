@@ -23,8 +23,12 @@
 #include "can_mapping_test.h"
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include "byteswap.h"
+#include <stdlib.h>
 
-/* #define CAN_MAPPING_TEST_DEBUG */
+/*
+ * #define CAN_MAPPING_TEST_DEBUG
+ */
 
 CPPUNIT_TEST_SUITE_REGISTRATION( CANMappingTest );
 
@@ -69,42 +73,130 @@ void CANMappingTest::formula_test(void)
         }
 }
 
+void CANMappingTest::extract_test_bit_mode(void)
+{
+        srand(time(NULL));
+
+        for (size_t bitpattern = 0; bitpattern <= 1; bitpattern++){
+                for (size_t endian = 0; endian <= 1; endian++){
+                        for (uint8_t length = 1; length <= 32; length++ ) {
+
+                                uint64_t test_value;
+                                if (!bitpattern) {
+                                        /* just test a bit pattern of all 1's */
+                                        test_value = ((uint64_t)1 << length) - 1;
+                                }
+                                else {
+                                        /* test with bit pattern of 101010... */
+                                        test_value = 0x5555555555555555 & (((uint64_t)1 << length) - 1);
+                                }
+
+                                /* shift it all the way to the left */
+                                uint64_t shifted_test_value = test_value << (64-length);
+
+                                for (uint8_t offset = 0; offset < (CAN_MSG_SIZE * 8) - length + 1; offset++) {
+                                        CAN_msg msg;
+                                        CANMapping mapping;
+                                        memset(&mapping, 0, sizeof(mapping));
+                                        memset(&msg, 0, sizeof(CAN_msg));
+                                        mapping.offset = offset;
+                                        mapping.length = length;
+                                        mapping.type = CANMappingType_unsigned;
+                                        mapping.bit_mode = true;
+                                        mapping.big_endian = (bool)endian;
+
+                                        /* now shift the value by the offset */
+                                        uint64_t offset_test_value = shifted_test_value >> offset;
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+                                        /* account for platform's endian-ness */
+                                        offset_test_value= swap_uint64(offset_test_value);
+#endif
+                                        msg.data64 = offset_test_value;
+
+                                        float value = canmapping_extract_value(msg.data64, &mapping);
+
+                                        /* prepare the comparison value */
+                                        uint64_t compare_value = test_value;
+                                        if (!mapping.big_endian) {
+                                                compare_value = swap_uint_length(test_value, length);
+                                        }
+#ifdef CAN_MAPPING_TEST_DEBUG
+                                        printf("bitmode test: endian=%u / test_value=%lu / offset=%d / length=%d / return = %f\r\n" ,
+                                               mapping.big_endian, compare_value, offset, length, value);
+                                        printf("CAN data: ");
+                                        for (size_t di = 0; di < CAN_MSG_SIZE; di++){
+                                                uint8_t d = msg.data[di];
+                                                printf("%02x ", d);
+                                        }
+                                        printf("\r\n");
+
+                                        for (size_t di = 0; di < CAN_MSG_SIZE; di++){
+                                                uint8_t d = msg.data[di];
+                                                static char b[9];
+                                                b[0] = '\0';
+                                                for (int z = 128; z > 0; z >>= 1)
+                                                {
+                                                    strcat(b, ((d & z) == z) ? "1" : "0");
+                                                }
+                                                printf("%s ", b);
+                                        }
+                                        printf("\r\n");
+#endif
+
+                                        CPPUNIT_ASSERT_EQUAL((float)compare_value, value);
+                                }
+                        }
+                }
+        }
+}
+
 void CANMappingTest::extract_test(void)
 {
         /*
          * This test sweeps through every offset and data lengths of 1-4 bytes,
          * testing the ability to extract values from anywhere in the message.
          */
-        uint32_t test_value = 0;
-        for (uint8_t length = 1; length <= 4; length++ ) {
-                /* make a test pattern like 0x01020304 */
-                test_value = (test_value << 8) + length;
-                for (uint8_t offset = 0; offset < CAN_MSG_SIZE - length + 1; offset++) {
-                        CAN_msg msg;
-                        CANMapping mapping;
-                        memset(&mapping, 0, sizeof(mapping));
-                        memset(&msg, 0, sizeof(CAN_msg));
-                        mapping.offset = offset;
-                        mapping.length = length;
-                        mapping.type = CANMappingType_unsigned;
-
-                        /* populate byte values starting at offset */
-                        for (size_t l = 0; l < length; l++) {
-                                msg.data[offset + l] = (test_value >> l * 8) & 0xff;
+        for (size_t endian = 0; endian <= 1; endian++){
+                uint32_t test_value = 0;
+                for (uint8_t length = 1; length <= 4; length++ ) {
+                        /* make a test pattern like 0x01020304 */
+                        test_value = (test_value << 8) + length;
+                        uint32_t can_value = test_value;
+                        if (!endian) {
+                                can_value = swap_uint_length(can_value, length * 8);
                         }
-                        float value = canmapping_extract_value(msg.data64, &mapping);
+
+                        for (uint8_t offset = 0; offset < CAN_MSG_SIZE - length + 1; offset++) {
+                                CAN_msg msg;
+                                CANMapping mapping;
+                                memset(&mapping, 0, sizeof(mapping));
+                                memset(&msg, 0, sizeof(CAN_msg));
+                                mapping.offset = offset;
+                                mapping.length = length;
+                                mapping.type = CANMappingType_unsigned;
+                                mapping.big_endian = (bool)endian;
+
+
+                                /* populate byte values starting at offset */
+                                for (size_t l = 0; l < length; l++) {
+                                        msg.data[offset + length - l - 1] = (can_value >> l * 8) & 0xff;
+                                }
+                                float value = canmapping_extract_value(msg.data64, &mapping);
 
 #ifdef CAN_MAPPING_TEST_DEBUG
-                        printf("test value / offset / length / return %d %d %d %f\r\n" ,
-                               test_value, offset, length, value);
-                        printf("CAN data: ");
-                        for (size_t di = 0; di < CAN_MSG_SIZE; di++){
-                                printf("%2x ", msg.data[di]);
-                        }
-                        printf("\r\n");
+                                printf("endian=%d / test value=%d / offset=%d / length=%d / return=%f\r\n" ,
+                                       endian, test_value, offset, length, value);
+                                printf("CAN data: ");
+                                for (size_t di = 0; di < CAN_MSG_SIZE; di++){
+                                        printf("%2x ", msg.data[di]);
+                                }
+                                printf("\r\n");
 #endif
 
-                        CPPUNIT_ASSERT_EQUAL((float)test_value, value);
+
+                               CPPUNIT_ASSERT_EQUAL((float)test_value, value);
+                        }
                 }
         }
 }
@@ -299,6 +391,7 @@ void CANMappingTest::mapping_test(void)
         msg.data[4] = 5;
         msg.data[5] = 6;
         msg.data[6] = 7;
+        msg.data[7] = 8;
         msg.addressValue = 0x1122;
 
         /* set up mapping */

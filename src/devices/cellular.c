@@ -172,8 +172,8 @@ static bool get_methods(const enum cellular_modem modem,
                 modem_name = "SIM900";
                 *methods = get_sim900_methods();
                 break;
-        case CELLULAR_MODEM_UBLOX_SARA_U280:
-                modem_name = "UBlox Sara U280";
+        case CELLULAR_MODEM_UBLOX_SARA_U2:
+                modem_name = "UBlox Sara U2";
                 *methods = get_sara_u280_methods();
                 break;
         default:
@@ -231,7 +231,7 @@ enum cellular_modem probe_cellular_manuf(struct serial_buffer *sb)
         pr_info_str_msg("[cell] manufacturer is ", msgs[0]);
 
         if (strstr(msgs[0], "u-blox"))
-                return CELLULAR_MODEM_UBLOX_SARA_U280;
+                return CELLULAR_MODEM_UBLOX_SARA_U2;
         else if (strstr(msgs[0], "SIMCOM_Ltd"))
                 return CELLULAR_MODEM_SIM900;
         else

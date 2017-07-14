@@ -43,7 +43,7 @@
 #define BT_BACKOFF_MS	500
 #define BT_BAUD_RATES	{230400, 115200, 9600}
 #define BT_COMMAND_WAIT	600
-#define BT_DEFAULT_NAME	"RaceCapturePro"
+#define BT_DEFAULT_NAME	"RaceCapture"
 #define BT_DEFAULT_PIN	"1234"
 #define BT_DBG_LOG_LVL	TRACE
 #define BT_MAX_NAME_LEN	(BT_DEVICE_NAME_LENGTH - 1)

@@ -41,7 +41,7 @@ export GIT_DESCRIPTION := "\"$(VERSION)\""
 # * RELEASE_TYPE_BETA     - A beta release.  One designed for user
 #                           testing, but has no official support.
 #
-RELEASE_TYPE := RELEASE_TYPE_DEVEL
+RELEASE_TYPE ?= RELEASE_TYPE_DEVEL
 OFFICIAL_TAG := $(if $(shell ./bin/get_official_tag.sh), yes)
 ifeq ($(RELEASE),BETA)
     RELEASE_TYPE := RELEASE_TYPE_BETA
@@ -177,7 +177,7 @@ rct-pristine: rct-clean
 
 PHONY += rct-package
 rct-package: rct-pristine
-	./bin/package_release.sh "RaceCapture" $(VERSION) $(RCT_DIR)
+	./bin/package_release.sh "RaceCapture_Track" $(VERSION) $(RCT_DIR)
 
 PHONY += rct
 rct: rct-build

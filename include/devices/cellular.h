@@ -46,7 +46,7 @@ typedef enum {
 enum cellular_modem {
         CELLULAR_MODEM_UNKNOWN = 0,
         CELLULAR_MODEM_SIM900,
-        CELLULAR_MODEM_UBLOX_SARA_U280,
+        CELLULAR_MODEM_UBLOX_SARA_U2,
 };
 
 enum cellular_net_status {

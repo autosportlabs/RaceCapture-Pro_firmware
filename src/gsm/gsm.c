@@ -78,7 +78,7 @@ bool gsm_get_subscriber_number(struct serial_buffer *sb,
         const bool status = is_rsp_ok(msgs, count);
 
         if (!status) {
-                pr_warning("[gsm] Failed to read phone number\r\n");
+                pr_debug("[gsm] Failed to read phone number\r\n");
                 return false;
         }
 
@@ -144,7 +144,7 @@ bool gsm_get_imei(struct serial_buffer *sb,
         const bool status = is_rsp_ok(msgs, count);
 
         if (!status) {
-                pr_warning("[sara_u280] Failed to read IMEI\r\n");
+                pr_warning("[gsm] Failed to read IMEI\r\n");
                 return false;
         }
 

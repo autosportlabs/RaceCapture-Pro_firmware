@@ -28,12 +28,12 @@
 /**
  * How long we hold the reset line for the GPS module
  */
-#define GPS_RESET_DURATION_MS 1
+#define GPS_RESET_DURATION_MS 10
 
 /**
  *  How long we wait after reset.
  */
-#define GPS_BOOT_DURATION_MS 50
+#define GPS_BOOT_DURATION_MS 1000
 
 /**
  *  I/O definitions for GPS RESET (PE1)
