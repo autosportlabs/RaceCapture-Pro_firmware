@@ -163,6 +163,8 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
 #endif
         json_int(serial, "can", CONFIG_CAN_CHANNELS, 1);
 
+        json_int(serial, "obd2", CONFIG_OBD2_CHANNELS, 1);
+
         json_int(serial, "canChan", CONFIG_CAN_MAPPINGS, 0);
 
         json_objEnd(serial, 1);
