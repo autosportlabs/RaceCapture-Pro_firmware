@@ -1,3 +1,26 @@
+= 2.12.0 = 
+* Added obd2 channels capacity in getCapabilities API #940
+* Increase number of OBDII channels from 5 to 10 for RaceCapture/Track; 10 to 20 for RaceCapture/Pro #936
+* Increase number of direct CAN mapping channels from 5 to 10 for RaceCapture/Track #936
+* Switch to newlib nano toolchain to conserve memory #904
+* Increased memory savings in RAM and flash #904
+* Allow any OBDII mode, treating any mode not 0x01 as an 'enhanced data request', enabling mode 0x23, etc. #915
+* Support 32 bit PID requests #924
+* Auto detection of 29 bit OBDII vehicles to support Honda, and similar #890
+* Add lua function to expose current predictive time #929
+* Ensure RELEASE_TYPE_BETA correctly enables watchdog #935
+* Ensure direct CAN mapping channels are initialized to 0 after they are added #930
+* Resolve pulse per revolution < 1 issue with Lua bindings around getTimerRPM and related functions #928
+* Ensure direct CAN channels are registered correctly when uploaded to unit #927
+* Fix incorrect direct can mapping with bit mode and big endian #926
+* Complete missing implementation of slow counter mode for timer channels #925
+* Prevent false-positive error reading phone number from SIM before cell module is ready #923
+* Increase OBDII query timeout to 500ms to account for certain ECUs that require longer queries #922
+* Complete missing implementation for passive mode OBDII #920
+* Increase robustness of GPS initialization #919
+* Rename .zip artifact for RaceCapture/Track to RaceCaptureTrack to correctly identify product #914
+* Improve debounce logic for new switch on RCP MK3 #901
+
 = 2.11.0 =
 * Fixed Backwards X/Y IMU channel for RaceCapture/Track 
 * Make precision on gyro channels (yaw / pitch / roll ) zero position
