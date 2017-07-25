@@ -170,7 +170,10 @@ src-y += $(wildcard $(RC_SRC_DIR)/OBD2/*.c)
 inc-y += $(RC_INCLUDE_DIR)/OBD2
 
 #devices
-src-y += $(wildcard $(RC_SRC_DIR)/devices/*.c)
+src-y += $(wildcard $(RC_SRC_DIR)/devices/null_device.c)
+src-y += $(wildcard $(RC_SRC_DIR)/devices/esp8266.c)
+src-y += $(wildcard $(RC_SRC_DIR)/devices/gps_skytraq_s1216_sup500f8.c)
+
 inc-y += $(RC_INCLUDE_DIR)/devices
 
 #drivers
