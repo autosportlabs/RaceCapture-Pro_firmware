@@ -149,7 +149,8 @@ struct at_urc_list {
  * @return true if the callback was able to parse the message,
  * false otherwise.
  */
-typedef bool sparse_urc_cb_t(char* msg);
+struct at_info;
+typedef bool sparse_urc_cb_t(struct at_info *ati, char* msg);
 
 struct at_info {
         /*

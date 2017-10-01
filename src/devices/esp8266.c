@@ -79,7 +79,7 @@ static void cmd_failure(const char *cmd_name, const char *msg)
 /**
  * This is the callback invoked when an IPD URC is seen.
  */
-static void ipd_urc_cb(char *msg)
+static void ipd_urc_cb(struct at_info *ati, char *msg)
 {
 	if (!state.hooks.data_received_cb)
 		return;
@@ -97,7 +97,7 @@ static void ipd_urc_cb(char *msg)
         const int chan_id = atoi(toks[1]);
         const size_t len = atoi(toks[2]);
         char *data = toks[3];
-	const size_t serial_len = strlen(data);
+        size_t serial_len = strlen(data);
 
 
 	/*
@@ -109,11 +109,21 @@ static void ipd_urc_cb(char *msg)
 	 * comes from the command messages.
 	 */
 	if (serial_len < len) {
-		pr_error(LOG_PFX "IPD Length Mismatch.  Dropping. \r\n");
-		pr_info_int_msg(LOG_PFX "Length Expected: ", (int) len);
-		pr_info_int_msg(LOG_PFX "Length Actual: ", (int) serial_len);
-		pr_info_str_msg(LOG_PFX "Data: ", data);
-		return;
+
+		/* There's more data coming */
+		while (serial_len < len) {
+		        /* reset pointer so we have a continuous string */
+		        ati->sb->curr_len--;
+		        char *msg = serial_buffer_rx(ati->sb, 1);
+                serial_len = strlen(data);
+		        if (strlen(msg) == 0)
+		                break;
+		}
+        pr_debug_int_msg(LOG_PFX "data received len: ", serial_len);
+        pr_debug("'");
+        pr_debug(data);
+        pr_debug("'\r\n");
+
 	}
 	data[len] = 0;
 
@@ -189,11 +199,11 @@ static bool channel_action_cb(const char* msg)
  * the standard URC callbacks.  Used for the silly messages like
  * `0,CONNECT` where there is no prefix for the URC like their should be.
  */
-static bool sparse_urc_cb(char* msg)
+static bool sparse_urc_cb(struct at_info *ati, char* msg)
 {
 	/* + IPD,... - Incoming data. */
 	if (strncmp(msg, "+IPD,", 5) == 0) {
-		ipd_urc_cb(msg);
+		ipd_urc_cb(ati, msg);
 		return true;
 	}
 

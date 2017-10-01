@@ -569,8 +569,9 @@ typedef struct _LoggerConfig {
     //Connectivity Configuration
     ConnectivityConfig ConnectivityConfigs;
 
-        struct logging_config logging_cfg;
-        struct auto_logger_config auto_logger_cfg;
+    struct logging_config logging_cfg;
+    struct auto_logger_config auto_logger_cfg;
+
     //Padding data to accommodate flash routine
     char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;

@@ -224,7 +224,7 @@ static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
 	 * Gotta figure out what type of message this is before we
 	 * process it.
 	 */
-	if (ati->sparse_urc_cb && ati->sparse_urc_cb(msg)) {
+	if (ati->sparse_urc_cb && ati->sparse_urc_cb(ati, msg)) {
 		/* It was a sparse URC that was handled. */
 		return;
 	}

@@ -129,8 +129,9 @@ struct wifi_event {
         enum task {
                 TASK_BEACON,
                 TASK_NEW_CONNECTION,
-		TASK_CHECK_CONNECTIONS,
+                TASK_CHECK_CONNECTIONS,
                 TASK_SAMPLE,
+                TASK_CAMERA_CONTROL
         } task;
         union {
                 struct wifi_sample_data sample;
@@ -179,12 +180,24 @@ static void check_connections_cb(xTimerHandle xTimer)
 
 static void beacon_timer_cb(xTimerHandle xTimer)
 {
+    return;
         /* Send the message here to wake the timer */
         struct wifi_event event = {
                 .task = TASK_BEACON,
         };
 
-	send_event(&event, "Beacon", false);
+        send_event(&event, "Beacon", false);
+}
+
+static void check_camera_cb(xTimerHandle xTimer)
+{
+        /* Send the message here to wake the timer */
+        struct wifi_event event = {
+                .task = TASK_CAMERA_CONTROL,
+        };
+
+        send_event(&event, "Cam Control", false);
+
 }
 
 static void wifi_sample_cb(const struct sample* sample,
@@ -495,6 +508,69 @@ static void do_beacon()
         serial_purge_rx_queue(serial);
 }
 
+static bool start = false;
+
+static void send_camera_control(struct Serial* serial, const char* ips[])
+{
+        if (start){
+                serial_write_s(serial, "GET /bacpac/SH?t=12345678&p=%01 HTTP/1.0\r\n\r\n");
+                pr_info("starting camera\r\n");
+        }
+        else {
+                serial_write_s(serial, "GET /bacpac/SH?t=12345678&p=%00 HTTP/1.0\r\n\r\n");
+                pr_info("stopping camera\r\n");
+        }
+        start = !start;
+}
+
+static void do_camera_control()
+{
+        const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
+        const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
+
+        if (!*client_ipv4->address && !*softap_ipv4->address) {
+                    /* Then don't bother since we don't have any IP addresses */
+                    return;
+            }
+
+        /*
+         * Check if the socket is closed.  If so, whine about it then move
+         * on and try re-opening it.
+         */
+        if (state.beacon.serial &&
+            !serial_is_connected(state.beacon.serial)) {
+            pr_warning("Beacon socket closed!  WTF!\r\n");
+            state.beacon.serial = NULL;
+        }
+
+        /*
+         * If here then we have at least one IP.  Send the camera control.  Now
+         * we need a channel to send the camera control on. Lets grab one if we
+         * don't have one yet.
+         */
+        if (NULL == state.beacon.serial) {
+                state.beacon.serial = esp8266_drv_connect(
+            PROTOCOL_TCP, "10.5.5.9",
+            80, 256,
+            256);
+        }
+
+        struct Serial* serial = state.beacon.serial;
+        if (!serial) {
+                pr_warning("Unable to create Serial for Camera Control\r\n");
+                return;
+        }
+
+        const char* ips[] = {
+                client_ipv4->address,
+                softap_ipv4->address,
+                NULL,
+        };
+        send_camera_control(serial, ips);
+
+        /* Now flush all incomming data since we don't care about it. */
+        serial_purge_rx_queue(serial);
+}
 
 static void process_sample(struct wifi_sample_data* data)
 {
@@ -532,17 +608,21 @@ static void _task(void *params)
                         do_beacon();
                         break;
                 case TASK_NEW_CONNECTION:
-			process_new_connection(event.data.serial);
-			break;
-		case TASK_CHECK_CONNECTIONS:
-			check_connections();
+                        process_new_connection(event.data.serial);
+                        break;
+                case TASK_CHECK_CONNECTIONS:
+                        check_connections();
                         break;
                 case TASK_SAMPLE:
                         process_sample(&event.data.sample);
                         break;
+                case TASK_CAMERA_CONTROL:
+                        do_camera_control();
+                        break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);
                 }
+
         }
 
         panic(PANIC_CAUSE_UNREACHABLE);
@@ -582,7 +662,7 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!state.event_queue)
                 goto init_failed;
 
-        /* Allocate our RX buffer for incomming data */
+        /* Allocate our RX buffer for incoming data */
         state.rx_msgs.rxb = rx_buff_create(RX_MAX_MSG_LEN);
         if (!state.rx_msgs.rxb)
                 goto init_failed;
@@ -606,6 +686,10 @@ bool wifi_init_task(const int wifi_task_priority,
 	if (!create_periodic_timer("WiFi Connections Timer",
 				   EXT_CONN_PERIOD_MS, check_connections_cb))
 		goto init_failed;
+
+    if (!create_periodic_timer("Camera Timer",
+                   5000, check_camera_cb))
+        goto init_failed;
 
         return true;
 
