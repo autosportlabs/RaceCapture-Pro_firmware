@@ -85,8 +85,12 @@ static struct {
         struct {
                 struct Serial* serial;
         } beacon;
+        struct {
+            struct Serial* serial;
+        } camera_control;
 	struct connection connections[EXT_CONN_MAX];
 	bool conn_check_pending;
+
 } state;
 
 /**
@@ -180,7 +184,6 @@ static void check_connections_cb(xTimerHandle xTimer)
 
 static void beacon_timer_cb(xTimerHandle xTimer)
 {
-    return;
         /* Send the message here to wake the timer */
         struct wifi_event event = {
                 .task = TASK_BEACON,
@@ -197,7 +200,6 @@ static void check_camera_cb(xTimerHandle xTimer)
         };
 
         send_event(&event, "Cam Control", false);
-
 }
 
 static void wifi_sample_cb(const struct sample* sample,
@@ -504,23 +506,50 @@ static void do_beacon()
         };
         send_beacon(serial, ips);
 
-        /* Now flush all incomming data since we don't care about it. */
+        /* Now flush all incoming data since we don't care about it. */
         serial_purge_rx_queue(serial);
 }
 
 static bool start = false;
 
+
+/* TODO this should get broken out to a modular design */
+
+/* Camera control for Hero 4+, including session */
+/*
 static void send_camera_control(struct Serial* serial, const char* ips[])
 {
-        if (start){
-                serial_write_s(serial, "GET /bacpac/SH?t=12345678&p=%01 HTTP/1.0\r\n\r\n");
-                pr_info("starting camera\r\n");
-        }
-        else {
-                serial_write_s(serial, "GET /bacpac/SH?t=12345678&p=%00 HTTP/1.0\r\n\r\n");
-                pr_info("stopping camera\r\n");
-        }
-        start = !start;
+    if (start) {
+            serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=1 HTTP/1.0\r\n\r\n");
+    }
+    else {
+            serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=0 HTTP/1.0\r\n\r\n");
+    }
+    start = !start;
+}
+*/
+
+/* Camera control for Hero 2,3
+ * Format is: GET /bacpac/SH?t=<wifi-password>&p=<shutter-param>
+ */
+static void send_camera_control(struct Serial* serial, const char* ips[])
+{
+    const char preamble[] = "GET /bacpac/SH?t=";
+    const char epilogue[] = " HTTP/1.0\r\n\r\n";
+    const char shutter_param[] = "&p=";
+    const int command_size = sizeof(preamble) + WIFI_PASSWD_MAX_LEN + sizeof(shutter_param) + 2 + sizeof(epilogue) + 5;
+    char command[command_size];
+
+    strncpy(command, preamble, sizeof(preamble));
+    strncat(command, getWorkingLoggerConfig()->ConnectivityConfigs.wifi.client.passwd, WIFI_PASSWD_MAX_LEN);
+    strncat(command, shutter_param, sizeof(shutter_param));
+    strncat(command, start ? "%01" : "%00", 3);
+    strncat(command, epilogue, sizeof(epilogue));
+
+    pr_info_str_msg(LOG_PFX "Camera control: ", start ? "starting" : "stopping");
+
+    serial_write_s(serial, command);
+    start = !start;
 }
 
 static void do_camera_control()
@@ -537,10 +566,9 @@ static void do_camera_control()
          * Check if the socket is closed.  If so, whine about it then move
          * on and try re-opening it.
          */
-        if (state.beacon.serial &&
-            !serial_is_connected(state.beacon.serial)) {
-            pr_warning("Beacon socket closed!  WTF!\r\n");
-            state.beacon.serial = NULL;
+        if (state.camera_control.serial &&
+            !serial_is_connected(state.camera_control.serial)) {
+            state.camera_control.serial = NULL;
         }
 
         /*
@@ -548,14 +576,14 @@ static void do_camera_control()
          * we need a channel to send the camera control on. Lets grab one if we
          * don't have one yet.
          */
-        if (NULL == state.beacon.serial) {
-                state.beacon.serial = esp8266_drv_connect(
+        if (NULL == state.camera_control.serial) {
+                state.camera_control.serial = esp8266_drv_connect(
             PROTOCOL_TCP, "10.5.5.9",
             80, 256,
             256);
         }
 
-        struct Serial* serial = state.beacon.serial;
+        struct Serial* serial = state.camera_control.serial;
         if (!serial) {
                 pr_warning("Unable to create Serial for Camera Control\r\n");
                 return;
@@ -600,6 +628,9 @@ static void _task(void *params)
                 struct wifi_event event;
                 if (!xQueueReceive(state.event_queue, &event,
                                    portMAX_DELAY))
+                        continue;
+
+                if (!esp8266_drv_is_initialized())
                         continue;
 
                 /* If here we have an event. Process it */
