@@ -719,7 +719,7 @@ bool wifi_init_task(const int wifi_task_priority,
 		goto init_failed;
 
     if (!create_periodic_timer("Camera Timer",
-                   5000, check_camera_cb))
+                   5000, check_camera_cb)) /* TODO remove magic number */
         goto init_failed;
 
         return true;

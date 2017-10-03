@@ -199,6 +199,15 @@ static void cmd_started()
         esp8266_state.cmd.in_progress = true;
 }
 
+static void check_excessive_failures(void)
+{
+        if (esp8266_state.cmd.failures >= CMD_MAX_FAILURES) {
+            pr_warning(LOG_PFX "Too many failures.  Resetting...\r\n");
+            esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
+            cmd_set_check(CHECK_WIFI_DEVICE);
+        }
+}
+
 static void cmd_completed(const bool success)
 {
         trigger_led();
@@ -215,11 +224,7 @@ static void cmd_completed(const bool success)
 	else if (esp8266_state.cmd.failures)
 		--esp8266_state.cmd.failures;
 
-	if (esp8266_state.cmd.failures >= CMD_MAX_FAILURES) {
-		pr_warning(LOG_PFX "Too many failures.  Resetting...\r\n");
-		esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
-		cmd_set_check(CHECK_WIFI_DEVICE);
-	}
+	check_excessive_failures();
 }
 
 /**
@@ -399,10 +404,8 @@ static void socket_disconnect_handler(const size_t chan_id)
 {
 	/* Check if the close op is in progress.  If so, take no action */
 	struct channel_sync_op *cso = &esp8266_state.comm.close_op;
-	if (cso->chan_id == chan_id) {
-		return;
-	}
-
+	if (cso->chan_id == chan_id)
+	        return;
 
 	struct channel *ch = esp8266_state.comm.channels + chan_id;
 	channel_close(ch);
@@ -738,6 +741,18 @@ static void set_fast_baud()
 	cmd_set_check(CHECK_WIFI_DEVICE);
 }
 
+static void hard_reset_wifi(void)
+{
+        serial_config(esp8266_state.device.serial,
+                  ESP8266_SERIAL_DEF_BITS,
+                  ESP8266_SERIAL_DEF_PARITY,
+                  ESP8266_SERIAL_DEF_STOP,
+                  ESP8266_SERIAL_DEF_BAUD);
+        wifi_device_reset();
+        delayMs(ESP8266_RESET_HARD_DELAY);
+        serial_flush(esp8266_state.device.serial);
+}
+
 /**
  * Method that checks the device state.	 Handles all aspects including
  * initialization, reset, mode, and whatever else may need handling
@@ -753,14 +768,7 @@ static void check_wifi_device()
 		delayMs(CLIENT_BACKOFF_MS);
 		/* Fall into hard reset */
 	case INIT_STATE_RESET_HARD:
-        serial_config(esp8266_state.device.serial,
-                  ESP8266_SERIAL_DEF_BITS,
-                  ESP8266_SERIAL_DEF_PARITY,
-                  ESP8266_SERIAL_DEF_STOP,
-                  ESP8266_SERIAL_DEF_BAUD);
-		wifi_device_reset();
-		delayMs(ESP8266_RESET_HARD_DELAY);
-        serial_flush(esp8266_state.device.serial);
+	    hard_reset_wifi();
 
 	case INIT_STATE_RESET:
 	case INIT_STATE_UNINITIALIZED:
@@ -1421,11 +1429,7 @@ static void connect_cb(const bool status, const bool already_connected)
                 pr_info_int_msg(LOG_PFX "Failed to connect channel: ",
 				cso->chan_id);
                 esp8266_state.cmd.failures++;
-                if (esp8266_state.cmd.failures >= CMD_MAX_FAILURES) {
-                    pr_warning(LOG_PFX "Too many failures.  Resetting...\r\n");
-                    esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
-                    cmd_set_check(CHECK_WIFI_DEVICE);
-                }
+                check_excessive_failures();
 
 		channel_close(ch);
 	}
