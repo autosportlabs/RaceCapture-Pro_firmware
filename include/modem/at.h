@@ -64,6 +64,7 @@ enum at_cmd_state {
  * All successful URC status values are >= 0.
  */
 enum at_rsp_status {
+        AT_RSP_STATUS_BUSY      = -6,
         AT_RSP_STATUS_SEND_FAIL = -5,
         AT_RSP_STATUS_TIMEOUT   = -4,
         AT_RSP_STATUS_FAILED    = -3,

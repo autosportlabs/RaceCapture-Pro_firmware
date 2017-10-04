@@ -485,6 +485,8 @@ static void do_beacon()
 	 * Check if the socket is closed.  If so, whine about it then move
 	 * on and try re-opening it.
 	 */
+    xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
+
 	if (state.beacon.serial &&
 	    !serial_is_connected(state.beacon.serial)) {
 		pr_warning("Beacon socket closed!  WTF!\r\n");
@@ -497,18 +499,16 @@ static void do_beacon()
          * don't have one yet.
          */
         if (NULL == state.beacon.serial) {
-                xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
                 state.beacon.serial = esp8266_drv_connect(
                             PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
                             RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
                             BEACON_SERIAL_BUFF_TX_SIZE);
-                xSemaphoreGive(state.connection_mutex);
         }
 
         struct Serial* serial = state.beacon.serial;
         if (!serial) {
                 pr_warning("Unable to create Serial for Beacon\r\n");
-                return;
+                goto do_beacon_exit;
         }
 
         const char* ips[] = {
@@ -518,8 +518,12 @@ static void do_beacon()
         };
         send_beacon(serial, ips);
 
+
         /* Now flush all incoming data since we don't care about it. */
         serial_purge_rx_queue(serial);
+
+do_beacon_exit:
+        xSemaphoreGive(state.connection_mutex);
 }
 
 static bool start = false;
@@ -572,10 +576,13 @@ static void do_camera_control()
                     /* Then don't bother since we don't have a clinet address */
                     return;
 
+
         /*
          * Check if the socket is closed.  If so, whine about it then move
          * on and try re-opening it.
          */
+        xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
+
         if (state.camera_control.serial &&
             !serial_is_connected(state.camera_control.serial)) {
             state.camera_control.serial = NULL;
@@ -587,24 +594,27 @@ static void do_camera_control()
          * don't have one yet.
          */
         if (NULL == state.camera_control.serial) {
-                xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
                 state.camera_control.serial = esp8266_drv_connect(
                             PROTOCOL_TCP, "10.5.5.9",
                             80, 256,
                             256);
-                xSemaphoreGive(state.connection_mutex);
         }
 
         struct Serial* serial = state.camera_control.serial;
         if (!serial) {
                 pr_warning("Unable to create Serial for Camera Control\r\n");
-                return;
+                goto do_camera_control_exit;
         }
 
         send_camera_control(serial);
 
         /* Now flush all incomming data since we don't care about it. */
         serial_purge_rx_queue(serial);
+do_camera_control_exit:
+
+        xSemaphoreGive(state.connection_mutex);
+
+
 }
 
 static void process_sample(struct wifi_sample_data* data)

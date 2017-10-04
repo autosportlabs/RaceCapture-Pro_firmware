@@ -629,6 +629,10 @@ static void init_wifi()
 {
         pr_info(LOG_PFX "Initializing Wifi\r\n");
 
+        /* Reset the IP addresses */
+        esp8266_state.ap.ipv4.address[0] = 0;
+        esp8266_state.client.ipv4.address[0] = 0;
+
         serial_clear(esp8266_state.device.serial);
         if (!esp8266_init(init_wifi_cb)) {
                 /* Failed to init critical bits.  */

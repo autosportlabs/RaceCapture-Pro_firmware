@@ -1026,8 +1026,10 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
 	}
         case AT_RSP_STATUS_SEND_OK:
                 /* Then we have successfully sent the message */
-		status = true;
+                status = true;
                 goto fini;
+        case AT_RSP_STATUS_BUSY:
+                pr_warning(LOG_PFX "Got busy response!");
         default:
                 /* Then bad things happened */
                 cmd_failure("send_data_cb", "Bad response value");

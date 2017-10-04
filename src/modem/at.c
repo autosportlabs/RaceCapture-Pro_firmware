@@ -45,6 +45,7 @@ static const struct at_rsp_status_msgs {
         AT_STATUS_MSG("FAIL", AT_RSP_STATUS_FAILED),
         AT_STATUS_MSG("ERROR", AT_RSP_STATUS_ERROR),
         AT_STATUS_MSG("ABORTED", AT_RSP_STATUS_ABORTED),
+        AT_STATUS_MSG("busy s...", AT_RSP_STATUS_BUSY),
 };
 
 static bool is_timed_out(const tiny_millis_t t_start,
