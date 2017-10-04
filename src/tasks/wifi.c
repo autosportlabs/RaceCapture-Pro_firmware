@@ -92,6 +92,7 @@ static struct {
         } camera_control;
 	struct connection connections[EXT_CONN_MAX];
 	bool conn_check_pending;
+	xSemaphoreHandle connection_mutex;
 
 } state;
 
@@ -173,15 +174,15 @@ static void new_ext_conn_cb(struct Serial *s)
 static void check_connections_cb(xTimerHandle xTimer)
 {
 	if (state.conn_check_pending)
-		return;
+		    return;
+
 
 	/* Send event message here to wake the task */
         struct wifi_event event = {
                 .task = TASK_CHECK_CONNECTIONS,
         };
-
 	if (send_event(&event, "Connection Check", true))
-		state.conn_check_pending = true;
+		    state.conn_check_pending = true;
 }
 
 static void beacon_timer_cb(xTimerHandle xTimer)
@@ -436,6 +437,13 @@ static void process_new_connection(struct Serial *s)
 	esp8266_drv_close(s);
 }
 
+static bool is_valid_ipv4(const char *address)
+{
+        return NULL != address &&
+                0 != *address &&
+                !(STR_EQ(address, IPV4_NO_IP_STR));
+}
+
 /* *** All methods that are used to handle sending beacons *** */
 
 static void send_beacon(struct Serial* serial, const char* ips[])
@@ -468,7 +476,7 @@ static void do_beacon()
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
         const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
-	if (!*client_ipv4->address && !*softap_ipv4->address) {
+	if (! is_valid_ipv4(client_ipv4->address) && ! is_valid_ipv4(softap_ipv4->address)) {
                 /* Then don't bother since we don't have any IP addresses */
                 return;
         }
@@ -489,10 +497,12 @@ static void do_beacon()
          * don't have one yet.
          */
         if (NULL == state.beacon.serial) {
+                xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
                 state.beacon.serial = esp8266_drv_connect(
-			PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
-			RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
-			BEACON_SERIAL_BUFF_TX_SIZE);
+                            PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
+                            RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
+                            BEACON_SERIAL_BUFF_TX_SIZE);
+                xSemaphoreGive(state.connection_mutex);
         }
 
         struct Serial* serial = state.beacon.serial;
@@ -534,7 +544,7 @@ static void send_camera_control(struct Serial* serial, const char* ips[])
 /* Camera control for Hero 2,3
  * Format is: GET /bacpac/SH?t=<wifi-password>&p=<shutter-param>
  */
-static void send_camera_control(struct Serial* serial, const char* ips[])
+static void send_camera_control(struct Serial* serial)
 {
     const char preamble[] = "GET /bacpac/SH?t=";
     const char epilogue[] = " HTTP/1.0\r\n\r\n";
@@ -557,12 +567,10 @@ static void send_camera_control(struct Serial* serial, const char* ips[])
 static void do_camera_control()
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
-        const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
 
-        if (!*client_ipv4->address) {
+        if (! is_valid_ipv4(client_ipv4->address))
                     /* Then don't bother since we don't have a clinet address */
                     return;
-            }
 
         /*
          * Check if the socket is closed.  If so, whine about it then move
@@ -579,10 +587,12 @@ static void do_camera_control()
          * don't have one yet.
          */
         if (NULL == state.camera_control.serial) {
+                xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
                 state.camera_control.serial = esp8266_drv_connect(
-            PROTOCOL_TCP, "10.5.5.9",
-            80, 256,
-            256);
+                            PROTOCOL_TCP, "10.5.5.9",
+                            80, 256,
+                            256);
+                xSemaphoreGive(state.connection_mutex);
         }
 
         struct Serial* serial = state.camera_control.serial;
@@ -591,12 +601,7 @@ static void do_camera_control()
                 return;
         }
 
-        const char* ips[] = {
-                client_ipv4->address,
-                softap_ipv4->address,
-                NULL,
-        };
-        send_camera_control(serial, ips);
+        send_camera_control(serial);
 
         /* Now flush all incomming data since we don't care about it. */
         serial_purge_rx_queue(serial);
@@ -628,7 +633,7 @@ static void _task(void *params)
 {
         for(;;) {
                 if (!esp8266_drv_is_initialized()) {
-                        delayMs(TASK_NOT_READY_DELAY);
+                        delayMs(TASKS_NOT_READY_DELAY);
                         continue;
                 }
 
@@ -685,7 +690,9 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!getWorkingLoggerConfig()->ConnectivityConfigs.wifi.active)
 		return false;
 
-	pr_info(LOG_PFX "Initializing...\r\n");
+        pr_info(LOG_PFX "Initializing...\r\n");
+
+        state.connection_mutex = xSemaphoreCreateMutex();
 
         /* Get our serial port setup */
         struct Serial *s = serial_device_get(SERIAL_WIFI);
