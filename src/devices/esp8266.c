@@ -109,22 +109,13 @@ static void ipd_urc_cb(struct at_info *ati, char *msg)
 	 * comes from the command messages.
 	 */
 	if (serial_len < len) {
-
-		/* There's more data coming */
-		while (serial_len < len) {
-		        /* reset pointer so we have a continuous string */
-		        ati->sb->curr_len--;
-		        char *msg = serial_buffer_rx(ati->sb, 1);
-                serial_len = strlen(data);
-		        if (strlen(msg) == 0)
-		                break;
-		}
-        pr_debug_int_msg(LOG_PFX "data received len: ", serial_len);
-        pr_debug("'");
-        pr_debug(data);
-        pr_debug("'\r\n");
-
+	    pr_info(LOG_PFX "Received less data than expected: ");
+	    pr_info_int(serial_len);
+	    pr_info("/");
+	    pr_info_int(len);
+	    pr_info_str_msg("; data: ", data);
 	}
+
 	data[len] = 0;
 
 
