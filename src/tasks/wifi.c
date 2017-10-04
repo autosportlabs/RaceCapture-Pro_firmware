@@ -71,6 +71,8 @@
 /* The highest channel WiFi can use (USA) */
 #define WIFI_MAX_CHANNEL	11
 
+/* how long we sleep in the task loop if the system is not initialized */
+#define TASKS_NOT_READY_DELAY 100
 struct connection {
 	struct Serial* serial;
 	int ls_handle;
@@ -557,8 +559,8 @@ static void do_camera_control()
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
         const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
 
-        if (!*client_ipv4->address && !*softap_ipv4->address) {
-                    /* Then don't bother since we don't have any IP addresses */
+        if (!*client_ipv4->address) {
+                    /* Then don't bother since we don't have a clinet address */
                     return;
             }
 
@@ -625,12 +627,14 @@ static void process_sample(struct wifi_sample_data* data)
 static void _task(void *params)
 {
         for(;;) {
+                if (!esp8266_drv_is_initialized()) {
+                        delayMs(TASK_NOT_READY_DELAY);
+                        continue;
+                }
+
                 struct wifi_event event;
                 if (!xQueueReceive(state.event_queue, &event,
                                    portMAX_DELAY))
-                        continue;
-
-                if (!esp8266_drv_is_initialized())
                         continue;
 
                 /* If here we have an event. Process it */
