@@ -43,6 +43,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#define BAD_WIFI_STATE_TIMEOUT_MS 3000
 #define AP_BACKOFF_MS		30000
 #define AT_TASK_TIMEOUT_MS	3
 /* MS to wait before checking/updating wifi configs */
@@ -155,6 +156,8 @@ static struct {
                 tiny_millis_t backoff;
                 xTimerHandle timer;
         } led;
+        xSemaphoreHandle cmd_mutex;
+        size_t last_socket_connect;
 } esp8266_state ={0};
 
 static void led_timer_cb( xTimerHandle xTimer )
@@ -414,6 +417,7 @@ static void socket_disconnect_handler(const size_t chan_id)
 /**
  * Callback that gets invoked when a socket state changes.
  */
+
 static void socket_state_changed_cb(const size_t chan_id,
 				    const enum socket_action action)
 {
@@ -430,11 +434,18 @@ static void socket_state_changed_cb(const size_t chan_id,
 		pr_info_int_msg(LOG_PFX "Socket closed on channel ",
 				chan_id);
 		socket_disconnect_handler(chan_id);
+		if (esp8266_state.last_socket_connect && ticksToMs(getCurrentTicks() - esp8266_state.last_socket_connect) < BAD_WIFI_STATE_TIMEOUT_MS) {
+		        pr_info("Wifi in bad state!\r\n");
+		        delayMs(5000);
+	            esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
+	            cmd_set_check(CHECK_WIFI_DEVICE);
+		}
 		break;
 	case SOCKET_ACTION_CONNECT:
 		pr_info_int_msg(LOG_PFX "Socket connected on channel ",
 				chan_id);
 		socket_connect_handler(chan_id);
+		esp8266_state.last_socket_connect = getCurrentTicks();
 		break;
 	default:
 		pr_warning_int_msg(LOG_PFX "Unknown socket action: ",
@@ -500,8 +511,8 @@ static void _send_data_cb(const bool status, const size_t bytes,
 		struct channel *ch = esp8266_state.comm.channels + chan;
 		channel_close(ch);
 		esp8266_close(chan, NULL);
-		return;
 	}
+	xSemaphoreGive(esp8266_state.cmd_mutex);
 }
 
 /**
@@ -529,14 +540,15 @@ static void check_data()
 		if (0 == size)
 			continue;
 
+		xSemaphoreTake(esp8266_state.cmd_mutex, portMAX_DELAY);
 		/* If here, we have a connection and data to send. Do Eet! */
 		if (!esp8266_send_data(i, serial, size, _send_data_cb)) {
 			pr_warning(LOG_PFX "Failed to queue send "
 				   "data command!!!\r\n");
 			/* We will retry */
+			xSemaphoreGive(esp8266_state.cmd_mutex);
 			return;
 		}
-
 		cmd_started();
 		return;
 	}
@@ -605,7 +617,8 @@ static void init_wifi_cb(const bool status)
 	esp8266_state.client.info_timestamp = 0;
 	esp8266_state.ap.info_timestamp = 0;
 	esp8266_state.cmd.failures = 0;
-        esp8266_state.device.init_state = INIT_STATE_READY;
+    esp8266_state.server.listening = false;
+    esp8266_state.device.init_state = INIT_STATE_READY;
 
 	/* Close all channels if open since we just reset */
 	for (unsigned int i = 0; channel_is_valid_id(i); ++i) {
@@ -629,6 +642,7 @@ static void init_wifi()
 {
         pr_info(LOG_PFX "Initializing Wifi\r\n");
 
+        esp8266_state.cmd_mutex = xSemaphoreCreateMutex();
         /* Reset the IP addresses */
         esp8266_state.ap.ipv4.address[0] = 0;
         esp8266_state.client.ipv4.address[0] = 0;
@@ -745,18 +759,6 @@ static void set_fast_baud()
 	cmd_set_check(CHECK_WIFI_DEVICE);
 }
 
-static void hard_reset_wifi(void)
-{
-        serial_config(esp8266_state.device.serial,
-                  ESP8266_SERIAL_DEF_BITS,
-                  ESP8266_SERIAL_DEF_PARITY,
-                  ESP8266_SERIAL_DEF_STOP,
-                  ESP8266_SERIAL_DEF_BAUD);
-        wifi_device_reset();
-        delayMs(ESP8266_RESET_HARD_DELAY);
-        serial_flush(esp8266_state.device.serial);
-}
-
 /**
  * Method that checks the device state.	 Handles all aspects including
  * initialization, reset, mode, and whatever else may need handling
@@ -772,7 +774,6 @@ static void check_wifi_device()
 		delayMs(CLIENT_BACKOFF_MS);
 		/* Fall into hard reset */
 	case INIT_STATE_RESET_HARD:
-	    hard_reset_wifi();
 
 	case INIT_STATE_RESET:
 	case INIT_STATE_UNINITIALIZED:

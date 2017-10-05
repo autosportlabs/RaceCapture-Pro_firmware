@@ -439,8 +439,8 @@ static void process_new_connection(struct Serial *s)
 
 static bool is_valid_ipv4(const char *address)
 {
-        return NULL != address &&
-                0 != *address &&
+        return address &&
+                *address &&
                 !(STR_EQ(address, IPV4_NO_IP_STR));
 }
 
@@ -476,7 +476,7 @@ static void do_beacon()
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
         const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
-	if (! is_valid_ipv4(client_ipv4->address) && ! is_valid_ipv4(softap_ipv4->address)) {
+        if (! (is_valid_ipv4(client_ipv4->address) || is_valid_ipv4(softap_ipv4->address))) {
                 /* Then don't bother since we don't have any IP addresses */
                 return;
         }
@@ -516,6 +516,7 @@ static void do_beacon()
                 softap_ipv4->address,
                 NULL,
         };
+        serial_purge_tx_queue(serial);
         send_beacon(serial, ips);
 
 
@@ -672,9 +673,7 @@ static void _task(void *params)
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);
                 }
-
         }
-
         panic(PANIC_CAUSE_UNREACHABLE);
 }
 

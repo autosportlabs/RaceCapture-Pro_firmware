@@ -366,8 +366,6 @@ static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
 
 	/* Reset Serial to default values first */
 	struct Serial* serial = state.ati->sb->serial;
-	serial_clear(serial);
-	esp8266_set_default_serial_params(serial);
 
 	/* Wait for the ready notice from the modem and ping test. */
 	esp8266_wait_for_ready(serial);
@@ -399,6 +397,15 @@ static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
  */
 static bool init_soft_reset()
 {
+    /* Initialize the esp8266 hardware */
+
+        wifi_device_init();
+        struct Serial* serial = state.ati->sb->serial;
+        serial_clear(serial);
+        esp8266_set_default_serial_params(serial);
+
+
+
         const char cmd[] = "AT+RST";
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
                                   init_soft_reset_cb, NULL);
@@ -1073,7 +1080,7 @@ bool esp8266_send_data(const unsigned int chan_id, struct Serial *serial,
         char cmd[32];
         snprintf(cmd, ARRAY_LEN(cmd),"AT+CIPSEND=%d,%d", chan_id, (int) len);
 
-        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_SUPER_MS,
                                   send_data_cb, ti);
 }
 
