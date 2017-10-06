@@ -23,6 +23,7 @@
 #define LOGGERCONFIG_H_
 
 #include "auto_logger.h"
+#include "camera_control.h"
 #include "capabilities.h"
 #include "channel_config.h"
 #include "cpp_guard.h"
@@ -570,8 +571,13 @@ typedef struct _LoggerConfig {
     ConnectivityConfig ConnectivityConfigs;
 
     struct logging_config logging_cfg;
+#if SDCARD_SUPPORT
     struct auto_logger_config auto_logger_cfg;
+#endif
 
+#if CAMERA_CONTROL
+    struct camera_control_config camera_control_cfg;
+#endif
     //Padding data to accommodate flash routine
     char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
