@@ -204,11 +204,11 @@ static void cmd_started()
 
 static void check_excessive_failures(void)
 {
-        if (esp8266_state.cmd.failures >= CMD_MAX_FAILURES) {
-            pr_warning(LOG_PFX "Too many failures.  Resetting...\r\n");
-            esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
-            cmd_set_check(CHECK_WIFI_DEVICE);
-        }
+        if (CMD_MAX_FAILURES > esp8266_state.cmd.failures) return;
+
+        pr_warning(LOG_PFX "Too many failures.  Resetting...\r\n");
+        esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
+        cmd_set_check(CHECK_WIFI_DEVICE);
 }
 
 static void cmd_completed(const bool success)

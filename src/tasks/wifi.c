@@ -476,7 +476,7 @@ static void do_beacon()
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
         const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
-        if (! (is_valid_ipv4(client_ipv4->address) || is_valid_ipv4(softap_ipv4->address))) {
+        if (!(is_valid_ipv4(client_ipv4->address) || is_valid_ipv4(softap_ipv4->address))) {
                 /* Then don't bother since we don't have any IP addresses */
                 return;
         }
@@ -551,17 +551,20 @@ static void send_camera_control(struct Serial* serial, const char* ips[])
  */
 static void send_camera_control(struct Serial* serial)
 {
-    const char preamble[] = "GET /bacpac/SH?t=";
-    const char epilogue[] = " HTTP/1.0\r\n\r\n";
-    const char shutter_param[] = "&p=";
-    const int command_size = sizeof(preamble) + WIFI_PASSWD_MAX_LEN + sizeof(shutter_param) + 2 + sizeof(epilogue) + 5;
+
+
+    static const char preamble[] = "GET /bacpac/SH?t=";
+    static const char epilogue[] = " HTTP/1.0\r\n\r\n";
+    static const char shutter_param[] = "&p=";
+    static const int command_size = sizeof(preamble) + WIFI_PASSWD_MAX_LEN + sizeof(shutter_param) + 2 + sizeof(epilogue) + 5;
     char command[command_size];
 
-    strncpy(command, preamble, sizeof(preamble));
-    strncat(command, getWorkingLoggerConfig()->ConnectivityConfigs.wifi.client.passwd, WIFI_PASSWD_MAX_LEN);
-    strncat(command, shutter_param, sizeof(shutter_param));
-    strncat(command, start ? "%01" : "%00", 3);
-    strncat(command, epilogue, sizeof(epilogue));
+    snprintf(command, ARRAY_LEN(command), "%s%s%s%s%s",
+             preamble,
+             getWorkingLoggerConfig()->ConnectivityConfigs.wifi.client.passwd,
+             shutter_param,
+             start ? "%01" : "%00",
+             epilogue);
 
     pr_info_str_msg(LOG_PFX "Camera control: ", start ? "starting" : "stopping");
 
@@ -573,7 +576,7 @@ static void do_camera_control()
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
 
-        if (! is_valid_ipv4(client_ipv4->address))
+        if (!is_valid_ipv4(client_ipv4->address))
                     /* Then don't bother since we don't have a clinet address */
                     return;
 
