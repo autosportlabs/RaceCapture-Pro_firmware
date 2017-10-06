@@ -64,6 +64,7 @@ enum at_cmd_state {
  * All successful URC status values are >= 0.
  */
 enum at_rsp_status {
+        AT_RSP_STATUS_BUSY      = -6,
         AT_RSP_STATUS_SEND_FAIL = -5,
         AT_RSP_STATUS_TIMEOUT   = -4,
         AT_RSP_STATUS_FAILED    = -3,
@@ -149,7 +150,8 @@ struct at_urc_list {
  * @return true if the callback was able to parse the message,
  * false otherwise.
  */
-typedef bool sparse_urc_cb_t(char* msg);
+struct at_info;
+typedef bool sparse_urc_cb_t(struct at_info *ati, char* msg);
 
 struct at_info {
         /*

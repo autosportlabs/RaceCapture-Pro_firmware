@@ -71,6 +71,8 @@
 /* The highest channel WiFi can use (USA) */
 #define WIFI_MAX_CHANNEL	11
 
+/* how long we sleep in the task loop if the system is not initialized */
+#define TASKS_NOT_READY_DELAY 100
 struct connection {
 	struct Serial* serial;
 	int ls_handle;
@@ -85,8 +87,13 @@ static struct {
         struct {
                 struct Serial* serial;
         } beacon;
+        struct {
+            struct Serial* serial;
+        } camera_control;
 	struct connection connections[EXT_CONN_MAX];
 	bool conn_check_pending;
+	xSemaphoreHandle connection_mutex;
+
 } state;
 
 /**
@@ -129,8 +136,9 @@ struct wifi_event {
         enum task {
                 TASK_BEACON,
                 TASK_NEW_CONNECTION,
-		TASK_CHECK_CONNECTIONS,
+                TASK_CHECK_CONNECTIONS,
                 TASK_SAMPLE,
+                TASK_CAMERA_CONTROL
         } task;
         union {
                 struct wifi_sample_data sample;
@@ -166,15 +174,15 @@ static void new_ext_conn_cb(struct Serial *s)
 static void check_connections_cb(xTimerHandle xTimer)
 {
 	if (state.conn_check_pending)
-		return;
+		    return;
+
 
 	/* Send event message here to wake the task */
         struct wifi_event event = {
                 .task = TASK_CHECK_CONNECTIONS,
         };
-
 	if (send_event(&event, "Connection Check", true))
-		state.conn_check_pending = true;
+		    state.conn_check_pending = true;
 }
 
 static void beacon_timer_cb(xTimerHandle xTimer)
@@ -184,7 +192,17 @@ static void beacon_timer_cb(xTimerHandle xTimer)
                 .task = TASK_BEACON,
         };
 
-	send_event(&event, "Beacon", false);
+        send_event(&event, "Beacon", false);
+}
+
+static void check_camera_cb(xTimerHandle xTimer)
+{
+        /* Send the message here to wake the timer */
+        struct wifi_event event = {
+                .task = TASK_CAMERA_CONTROL,
+        };
+
+        send_event(&event, "Cam Control", false);
 }
 
 static void wifi_sample_cb(const struct sample* sample,
@@ -419,6 +437,13 @@ static void process_new_connection(struct Serial *s)
 	esp8266_drv_close(s);
 }
 
+static bool is_valid_ipv4(const char *address)
+{
+        return address &&
+                *address &&
+                !(STR_EQ(address, IPV4_NO_IP_STR));
+}
+
 /* *** All methods that are used to handle sending beacons *** */
 
 static void send_beacon(struct Serial* serial, const char* ips[])
@@ -451,7 +476,7 @@ static void do_beacon()
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
         const struct esp8266_ipv4_info* softap_ipv4 = get_ap_ipv4_info();
-	if (!*client_ipv4->address && !*softap_ipv4->address) {
+        if (!(is_valid_ipv4(client_ipv4->address) || is_valid_ipv4(softap_ipv4->address))) {
                 /* Then don't bother since we don't have any IP addresses */
                 return;
         }
@@ -460,6 +485,8 @@ static void do_beacon()
 	 * Check if the socket is closed.  If so, whine about it then move
 	 * on and try re-opening it.
 	 */
+    xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
+
 	if (state.beacon.serial &&
 	    !serial_is_connected(state.beacon.serial)) {
 		pr_warning("Beacon socket closed!  WTF!\r\n");
@@ -473,15 +500,15 @@ static void do_beacon()
          */
         if (NULL == state.beacon.serial) {
                 state.beacon.serial = esp8266_drv_connect(
-			PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
-			RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
-			BEACON_SERIAL_BUFF_TX_SIZE);
+                            PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
+                            RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
+                            BEACON_SERIAL_BUFF_TX_SIZE);
         }
 
         struct Serial* serial = state.beacon.serial;
         if (!serial) {
                 pr_warning("Unable to create Serial for Beacon\r\n");
-                return;
+                goto do_beacon_exit;
         }
 
         const char* ips[] = {
@@ -489,12 +516,110 @@ static void do_beacon()
                 softap_ipv4->address,
                 NULL,
         };
+        serial_purge_tx_queue(serial);
         send_beacon(serial, ips);
+
+
+        /* Now flush all incoming data since we don't care about it. */
+        serial_purge_rx_queue(serial);
+
+do_beacon_exit:
+        xSemaphoreGive(state.connection_mutex);
+}
+
+static bool start = false;
+
+
+/* TODO this should get broken out to a modular design */
+
+/* Camera control for Hero 4+, including session */
+/*
+static void send_camera_control(struct Serial* serial, const char* ips[])
+{
+    if (start) {
+            serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=1 HTTP/1.0\r\n\r\n");
+    }
+    else {
+            serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=0 HTTP/1.0\r\n\r\n");
+    }
+    start = !start;
+}
+*/
+
+/* Camera control for Hero 2,3
+ * Format is: GET /bacpac/SH?t=<wifi-password>&p=<shutter-param>
+ */
+static void send_camera_control(struct Serial* serial)
+{
+
+
+    static const char preamble[] = "GET /bacpac/SH?t=";
+    static const char epilogue[] = " HTTP/1.0\r\n\r\n";
+    static const char shutter_param[] = "&p=";
+    static const int command_size = sizeof(preamble) + WIFI_PASSWD_MAX_LEN + sizeof(shutter_param) + 2 + sizeof(epilogue) + 5;
+    char command[command_size];
+
+    snprintf(command, ARRAY_LEN(command), "%s%s%s%s%s",
+             preamble,
+             getWorkingLoggerConfig()->ConnectivityConfigs.wifi.client.passwd,
+             shutter_param,
+             start ? "%01" : "%00",
+             epilogue);
+
+    pr_info_str_msg(LOG_PFX "Camera control: ", start ? "starting" : "stopping");
+
+    serial_write_s(serial, command);
+    start = !start;
+}
+
+static void do_camera_control()
+{
+        const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
+
+        if (!is_valid_ipv4(client_ipv4->address))
+                    /* Then don't bother since we don't have a clinet address */
+                    return;
+
+
+        /*
+         * Check if the socket is closed.  If so, whine about it then move
+         * on and try re-opening it.
+         */
+        xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
+
+        if (state.camera_control.serial &&
+            !serial_is_connected(state.camera_control.serial)) {
+            state.camera_control.serial = NULL;
+        }
+
+        /*
+         * If here then we have at least one IP.  Send the camera control.  Now
+         * we need a channel to send the camera control on. Lets grab one if we
+         * don't have one yet.
+         */
+        if (NULL == state.camera_control.serial) {
+                state.camera_control.serial = esp8266_drv_connect(
+                            PROTOCOL_TCP, "10.5.5.9",
+                            80, 256,
+                            256);
+        }
+
+        struct Serial* serial = state.camera_control.serial;
+        if (!serial) {
+                pr_warning("Unable to create Serial for Camera Control\r\n");
+                goto do_camera_control_exit;
+        }
+
+        send_camera_control(serial);
 
         /* Now flush all incomming data since we don't care about it. */
         serial_purge_rx_queue(serial);
-}
+do_camera_control_exit:
 
+        xSemaphoreGive(state.connection_mutex);
+
+
+}
 
 static void process_sample(struct wifi_sample_data* data)
 {
@@ -521,6 +646,11 @@ static void process_sample(struct wifi_sample_data* data)
 static void _task(void *params)
 {
         for(;;) {
+                if (!esp8266_drv_is_initialized()) {
+                        delayMs(TASKS_NOT_READY_DELAY);
+                        continue;
+                }
+
                 struct wifi_event event;
                 if (!xQueueReceive(state.event_queue, &event,
                                    portMAX_DELAY))
@@ -532,19 +662,21 @@ static void _task(void *params)
                         do_beacon();
                         break;
                 case TASK_NEW_CONNECTION:
-			process_new_connection(event.data.serial);
-			break;
-		case TASK_CHECK_CONNECTIONS:
-			check_connections();
+                        process_new_connection(event.data.serial);
+                        break;
+                case TASK_CHECK_CONNECTIONS:
+                        check_connections();
                         break;
                 case TASK_SAMPLE:
                         process_sample(&event.data.sample);
+                        break;
+                case TASK_CAMERA_CONTROL:
+                        do_camera_control();
                         break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);
                 }
         }
-
         panic(PANIC_CAUSE_UNREACHABLE);
 }
 
@@ -570,7 +702,9 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!getWorkingLoggerConfig()->ConnectivityConfigs.wifi.active)
 		return false;
 
-	pr_info(LOG_PFX "Initializing...\r\n");
+        pr_info(LOG_PFX "Initializing...\r\n");
+
+        state.connection_mutex = xSemaphoreCreateMutex();
 
         /* Get our serial port setup */
         struct Serial *s = serial_device_get(SERIAL_WIFI);
@@ -582,7 +716,7 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!state.event_queue)
                 goto init_failed;
 
-        /* Allocate our RX buffer for incomming data */
+        /* Allocate our RX buffer for incoming data */
         state.rx_msgs.rxb = rx_buff_create(RX_MAX_MSG_LEN);
         if (!state.rx_msgs.rxb)
                 goto init_failed;
@@ -606,6 +740,10 @@ bool wifi_init_task(const int wifi_task_priority,
 	if (!create_periodic_timer("WiFi Connections Timer",
 				   EXT_CONN_PERIOD_MS, check_connections_cb))
 		goto init_failed;
+
+    if (!create_periodic_timer("Camera Timer",
+                   5000, check_camera_cb)) /* TODO remove magic number */
+        goto init_failed;
 
         return true;
 
