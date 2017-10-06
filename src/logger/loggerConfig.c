@@ -714,7 +714,14 @@ void reset_logger_config(void)
     resetTrackConfig(&lc->TrackConfigs);
     resetConnectivityConfig(&lc->ConnectivityConfigs);
     reset_logging_config(&lc->logging_cfg);
+
+#if SDCARD_SUPPORT
     auto_logger_reset_config(&lc->auto_logger_cfg);
+#endif
+
+#if CAMERA_CONTROL
+    camera_control_reset_config(&lc->camera_control_cfg);
+#endif
     strcpy(lc->padding_data, "");
 }
 

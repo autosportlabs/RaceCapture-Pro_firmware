@@ -186,8 +186,16 @@ int api_set_telemetry(struct Serial *serial, const jsmntok_t *json);
 /* Volatile setter of active Track */
 int api_set_active_track(struct Serial *serial, const jsmntok_t *json);
 
+#if SDCARD_SUPPORT
 int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
+#if CAMERA_CONTROL
+int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
 CPP_GUARD_END
 
 #endif /* LOGGERAPI_H_ */

@@ -2075,6 +2075,7 @@ int api_set_active_track(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS;
 }
 
+#if SDCARD_SUPPORT
 int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
 {
         struct auto_logger_config* cfg =
@@ -2095,3 +2096,28 @@ int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
         return auto_logger_set_config(cfg, json) ?
                 API_SUCCESS : API_ERROR_UNSPECIFIED;
 }
+#endif
+
+#if CAMERA_CONTROL
+int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        struct camera_control_config* cfg =
+                &getWorkingLoggerConfig()->camera_control_cfg;
+
+        json_objStart(serial);
+        camera_control_get_config(cfg, serial, false);
+        json_objEnd(serial, false);
+
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        struct camera_control_config* cfg =
+                &getWorkingLoggerConfig()->camera_control_cfg;
+
+        return camera_control_set_config(cfg, json) ?
+                API_SUCCESS : API_ERROR_UNSPECIFIED;
+}
+#endif
+
