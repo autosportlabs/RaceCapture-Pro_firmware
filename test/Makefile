@@ -220,6 +220,7 @@ $(RCP_SRC)/logger/loggerSampleData.c \
 $(RCP_SRC)/logger/loggerTaskEx.c \
 $(RCP_SRC)/logger/sampleRecord.c \
 $(RCP_SRC)/logger/versionInfo.c \
+$(RCP_SRC)/logger/camera_control.c \
 $(RCP_SRC)/logging/printk.c \
 $(RCP_SRC)/lua/luaScript.c \
 $(RCP_SRC)/memory/memory.c \

@@ -1671,3 +1671,40 @@ void LoggerApiTest::testSetAutoLoggerCfg() {
 
         assertGenericResponse(response, "setAutoLoggerCfg", API_SUCCESS);
 }
+
+void LoggerApiTest::testGetCameraControlCfgDefault() {
+        const char *response = processApiGeneric("get_camera_control_cfg.json");
+
+        struct camera_control_config alc;
+        camera_control_reset_config(&alc);
+
+        Object json;
+        stringToJson(response, json);
+
+        Object galc = json["camCtrlCfg"];
+        CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
+
+        Object start_st = galc["start"];
+        CPPUNIT_ASSERT_EQUAL(alc.start.speed, (float)(Number)start_st["speed"]);
+        CPPUNIT_ASSERT_EQUAL(alc.start.time, (uint32_t)(Number)start_st["time"]);
+
+        Object stop_st = galc["stop"];
+        CPPUNIT_ASSERT_EQUAL(alc.stop.time, (uint32_t)(Number)stop_st["time"]);
+        CPPUNIT_ASSERT_EQUAL(alc.stop.speed, (float)(Number)stop_st["speed"]);
+}
+
+void LoggerApiTest::testSetCameraControlCfg() {
+        const LoggerConfig *lc = getWorkingLoggerConfig();
+        char *response = processApiGeneric("set_camera_control_cfg.json");
+
+        const struct camera_control_config* cfg = &lc->camera_control_cfg;
+        CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+
+        CPPUNIT_ASSERT_EQUAL((float) 11.1, cfg->start.speed);
+        CPPUNIT_ASSERT_EQUAL((uint32_t) 5, cfg->start.time);
+
+        CPPUNIT_ASSERT_EQUAL((uint32_t) 33, cfg->stop.time);
+        CPPUNIT_ASSERT_EQUAL((float) 9.9, cfg->stop.speed);
+
+        assertGenericResponse(response, "setCamCtrlCfg", API_SUCCESS);
+}
