@@ -31,6 +31,7 @@ class SampleRecordTest : public CppUnit::TestFixture
     CPPUNIT_TEST( testPopulateSampleRecord );
     CPPUNIT_TEST( testIsValidLoggerMessage );
     CPPUNIT_TEST( testLoggerMessageAlwaysHasTime );
+    CPPUNIT_TEST( test_get_sample_value_by_name );
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -41,6 +42,7 @@ public:
     void testPopulateSampleRecord();
     void testIsValidLoggerMessage();
     void testLoggerMessageAlwaysHasTime();
+    void test_get_sample_value_by_name();
 
 private:
 
