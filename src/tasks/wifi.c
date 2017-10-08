@@ -141,6 +141,7 @@ struct wifi_event {
                 TASK_CAMERA_CONTROL
         } task;
         union {
+        		bool camera_state;
                 struct wifi_sample_data sample;
                 struct Serial* serial;
         } data;
@@ -195,16 +196,6 @@ static void beacon_timer_cb(xTimerHandle xTimer)
         send_event(&event, "Beacon", false);
 }
 
-static void check_camera_cb(xTimerHandle xTimer)
-{
-        /* Send the message here to wake the timer */
-        struct wifi_event event = {
-                .task = TASK_CAMERA_CONTROL,
-        };
-
-        send_event(&event, "Cam Control", false);
-}
-
 static void wifi_sample_cb(const struct sample* sample,
                            const int tick,
 			   void* data)
@@ -230,6 +221,16 @@ static void wifi_sample_cb(const struct sample* sample,
 	send_event(&event, "Sample CB", false);
 }
 
+void wifi_trigger_camera(bool enabled)
+{
+        struct wifi_event event = {
+                .task = TASK_CAMERA_CONTROL,
+				.data.camera_state = enabled,
+        };
+
+        /* Send the message here to wake the timer */
+	send_event(&event, "Cam Ctrl", false);
+}
 
 /* *** Wifi Serial IOCTL Handlers *** */
 
@@ -527,9 +528,6 @@ do_beacon_exit:
         xSemaphoreGive(state.connection_mutex);
 }
 
-static bool start = false;
-
-
 /* TODO this should get broken out to a modular design */
 
 /* Camera control for Hero 4+, including session */
@@ -549,10 +547,8 @@ static void send_camera_control(struct Serial* serial, const char* ips[])
 /* Camera control for Hero 2,3
  * Format is: GET /bacpac/SH?t=<wifi-password>&p=<shutter-param>
  */
-static void send_camera_control(struct Serial* serial)
+static void send_camera_control(struct Serial* serial, const bool enabled)
 {
-
-
     static const char preamble[] = "GET /bacpac/SH?t=";
     static const char epilogue[] = " HTTP/1.0\r\n\r\n";
     static const char shutter_param[] = "&p=";
@@ -563,16 +559,13 @@ static void send_camera_control(struct Serial* serial)
              preamble,
              getWorkingLoggerConfig()->ConnectivityConfigs.wifi.client.passwd,
              shutter_param,
-             start ? "%01" : "%00",
+             enabled ? "%01" : "%00",
              epilogue);
 
-    pr_info_str_msg(LOG_PFX "Camera control: ", start ? "starting" : "stopping");
-
     serial_write_s(serial, command);
-    start = !start;
 }
 
-static void do_camera_control()
+static void do_camera_control(const bool enabled)
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
 
@@ -610,15 +603,14 @@ static void do_camera_control()
                 goto do_camera_control_exit;
         }
 
-        send_camera_control(serial);
+        send_camera_control(serial, enabled);
+        pr_info_str_msg(LOG_PFX "Camera control: ", enabled ? "starting" : "stopping");
 
         /* Now flush all incomming data since we don't care about it. */
         serial_purge_rx_queue(serial);
 do_camera_control_exit:
 
         xSemaphoreGive(state.connection_mutex);
-
-
 }
 
 static void process_sample(struct wifi_sample_data* data)
@@ -671,7 +663,7 @@ static void _task(void *params)
                         process_sample(&event.data.sample);
                         break;
                 case TASK_CAMERA_CONTROL:
-                        do_camera_control();
+                        do_camera_control(&event.data.camera_state);
                         break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);
@@ -740,10 +732,6 @@ bool wifi_init_task(const int wifi_task_priority,
 	if (!create_periodic_timer("WiFi Connections Timer",
 				   EXT_CONN_PERIOD_MS, check_connections_cb))
 		goto init_failed;
-
-    if (!create_periodic_timer("Camera Timer",
-                   5000, check_camera_cb)) /* TODO remove magic number */
-        goto init_failed;
 
         return true;
 

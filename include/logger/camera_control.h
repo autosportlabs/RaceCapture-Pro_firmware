@@ -24,6 +24,7 @@
 
 #include "cpp_guard.h"
 #include <stdbool.h>
+#include "jsmn.h"
 #include "gps.h"
 CPP_GUARD_BEGIN
 

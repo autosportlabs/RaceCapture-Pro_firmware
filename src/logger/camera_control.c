@@ -19,16 +19,13 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "api.h"
 #include "camera_control.h"
 #include "cpp_guard.h"
 #include "dateTime.h"
-#include "gps.h"
-#include "jsmn.h"
-#include "loggerConfig.h"
+#include "api.h"
 #include "printk.h"
-#include "serial.h"
 #include <stdbool.h>
+#include "wifi.h"
 
 #define DEFAULT_START_SPEED_KPH	40
 #define DEFAULT_START_TIME_SEC	5
@@ -170,15 +167,13 @@ void camera_control_gps_sample_cb(const GpsSample* sample)
                 if (!should_start_recording(sample, uptime))
                         return;
 
-                pr_info(LOG_PFX "Starting logging\r\n");
-                //startLogging();
+                wifi_trigger_camera(true);
                 camera_control_state.recording = true;
         } else {
                 if (!should_stop_recording(sample, uptime))
                         return;
 
-                pr_info(LOG_PFX "Stopping logging\r\n");
-                //stopLogging();
+                wifi_trigger_camera(false);
                 camera_control_state.recording = false;
         }
 }
