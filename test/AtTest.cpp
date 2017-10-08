@@ -63,7 +63,7 @@ bool cb(struct at_rsp *rsp, void *up) {
 }
 
 static bool g_sparse_urc_cb_called;
-bool sparse_urc_cb(char* msg) {
+bool sparse_urc_cb(struct at_info *at, char* msg) {
         g_sparse_urc_cb_called = true;
         return false;
 }
