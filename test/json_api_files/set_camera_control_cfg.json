@@ -1,1 +1,1 @@
-{"setCamCtrlCfg":{"active": true, "makeModel" : 1, "start":{"speed":11.1,"time":5},"stop":{"time":33,"speed":9.9}}}
+{"setCamCtrlCfg":{"active": true, "channel": "Foo", "makeModel" : 1, "start":{"thresh":11.1, "gt":true, "time":5},"stop":{"time":33,"gt":false, "thresh":9.9}}}

@@ -117,7 +117,7 @@ void free_sample_buffer(struct sample *s);
  * @param value pointer to the value to set if sample is found
  * @return true if the sample was found and set
  */
-bool get_sample_value_by_name(struct sample *s, const char * name, double *value);
+bool get_sample_value_by_name(const struct sample *s, const char * name, double *value);
 
 /**
  * Creates a LoggerMessage for use in the messaging between threads.

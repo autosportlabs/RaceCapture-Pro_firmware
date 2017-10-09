@@ -56,7 +56,7 @@ void free_sample_buffer(struct sample *s)
         s->channel_samples = NULL;
 }
 
-bool get_sample_value_by_name(struct sample *s, const char * name, double *value)
+bool get_sample_value_by_name(const struct sample *s, const char * name, double *value)
 {
     if (!s || !value || !name) return false;
 

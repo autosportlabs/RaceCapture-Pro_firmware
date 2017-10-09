@@ -32,9 +32,9 @@
 #include "serial.h"
 #include <stdbool.h>
 
-#define DEFAULT_START_SPEED_KPH	40
+#define DEFAULT_START_SPEED	40
 #define DEFAULT_START_TIME_SEC	5
-#define DEFAULT_STOP_SPEED_KPH	25
+#define DEFAULT_STOP_SPEED	25
 #define DEFAULT_STOP_TIME_SEC	10
 #define LOG_PFX			"[auto_logger] "
 
@@ -60,10 +60,10 @@ void auto_logger_reset_config(struct auto_logger_config* cfg)
         cfg->active = false;
 
         cfg->start.time = DEFAULT_START_TIME_SEC;
-        cfg->start.speed = DEFAULT_START_SPEED_KPH;
+        cfg->start.speed = DEFAULT_START_SPEED;
 
         cfg->stop.time = DEFAULT_STOP_TIME_SEC;
-        cfg->stop.speed = DEFAULT_STOP_SPEED_KPH;
+        cfg->stop.speed = DEFAULT_STOP_SPEED;
 }
 
 static void get_speed_time(struct Serial* serial,

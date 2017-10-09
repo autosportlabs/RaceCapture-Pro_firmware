@@ -1684,14 +1684,17 @@ void LoggerApiTest::testGetCameraControlCfgDefault() {
         Object galc = json["camCtrlCfg"];
         CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
         CPPUNIT_ASSERT_EQUAL((int)alc.make_model, (int)(Number)galc["makeModel"]);
+        CPPUNIT_ASSERT_EQUAL(string("Speed"), (string)(String)galc["channel"]);
 
         Object start_st = galc["start"];
-        CPPUNIT_ASSERT_EQUAL(alc.start.speed, (float)(Number)start_st["speed"]);
+        CPPUNIT_ASSERT_EQUAL(alc.start.threshold, (float)(Number)start_st["thresh"]);
         CPPUNIT_ASSERT_EQUAL(alc.start.time, (uint32_t)(Number)start_st["time"]);
+        CPPUNIT_ASSERT_EQUAL(alc.start.greater_than, (bool)(Boolean)start_st["gt"]);
 
         Object stop_st = galc["stop"];
         CPPUNIT_ASSERT_EQUAL(alc.stop.time, (uint32_t)(Number)stop_st["time"]);
-        CPPUNIT_ASSERT_EQUAL(alc.stop.speed, (float)(Number)stop_st["speed"]);
+        CPPUNIT_ASSERT_EQUAL(alc.stop.threshold, (float)(Number)stop_st["thresh"]);
+        CPPUNIT_ASSERT_EQUAL(alc.stop.greater_than, (bool)(Boolean)stop_st["gt"]);
 }
 
 void LoggerApiTest::testSetCameraControlCfg() {
@@ -1701,12 +1704,15 @@ void LoggerApiTest::testSetCameraControlCfg() {
         const struct camera_control_config* cfg = &lc->camera_control_cfg;
         CPPUNIT_ASSERT_EQUAL(true, cfg->active);
         CPPUNIT_ASSERT_EQUAL(1, (int)cfg->make_model);
+        CPPUNIT_ASSERT_EQUAL(string("Foo"), (string)(String)cfg->channel);
 
-        CPPUNIT_ASSERT_EQUAL((float) 11.1, cfg->start.speed);
+        CPPUNIT_ASSERT_EQUAL((float) 11.1, cfg->start.threshold);
         CPPUNIT_ASSERT_EQUAL((uint32_t) 5, cfg->start.time);
+        CPPUNIT_ASSERT_EQUAL(true, cfg->start.greater_than);
 
         CPPUNIT_ASSERT_EQUAL((uint32_t) 33, cfg->stop.time);
-        CPPUNIT_ASSERT_EQUAL((float) 9.9, cfg->stop.speed);
+        CPPUNIT_ASSERT_EQUAL((float) 9.9, cfg->stop.threshold);
+        CPPUNIT_ASSERT_EQUAL(false, cfg->stop.greater_than);
 
         assertGenericResponse(response, "setCamCtrlCfg", API_SUCCESS);
 }
