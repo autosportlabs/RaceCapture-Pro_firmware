@@ -896,19 +896,23 @@ static int lua_get_virtual_channel(lua_State *ls)
          * Numbers can be passed in as 123 or "123" in lua.  So handle
          * that case first
          */
-        VirtualChannel *vc;
         if (lua_isnumber(ls, 1)) {
+        		VirtualChannel *vc;
                 vc = get_virtual_channel(lua_tointeger(ls, 1));
+                if (vc) {
+						lua_pushnumber(ls, vc->currentValue);
+						return 1;
+                }
         } else {
-                const int idx = find_virtual_channel(lua_tostring(ls, 1));
-                vc = get_virtual_channel(idx);
-        }
+        		struct sample * s = get_current_sample();
+				double value;
+				if (s && get_sample_value_by_name(s, lua_tostring(ls, 1), &value)){
+						lua_pushnumber(ls, value);
+						return 1;
+        		}
+		}
 
-        if (!vc)
-                return luaL_error(ls, "Virtual channel not found!");
-
-        lua_pushnumber(ls, vc->currentValue);
-        return 1;
+		return luaL_error(ls, "Channel not found!");
 }
 
 static int lua_set_virt_channel_value(lua_State *L)

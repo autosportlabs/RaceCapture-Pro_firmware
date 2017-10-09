@@ -53,11 +53,17 @@
 int g_loggingShouldRun;
 int g_configChanged;
 int g_telemetryBackgroundStreaming;
+struct sample * current_sample = NULL;
 
 xSemaphoreHandle onTick;
 
 /* This should be 0'd out accroding to C standards */
 static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE] = {0};
+
+struct sample * get_current_sample(void)
+{
+		return current_sample;
+}
 
 static LoggerMessage getLogStartMessage()
 {
@@ -275,6 +281,8 @@ void loggerTaskEx(void *params)
 
                 ++bufferIndex;
                 bufferIndex %= buffer_size;
+
+                current_sample = sample;
         }
 
         panic(PANIC_CAUSE_UNREACHABLE);

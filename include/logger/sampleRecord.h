@@ -109,6 +109,16 @@ size_t init_sample_buffer(struct sample *s, const size_t count);
  */
 void free_sample_buffer(struct sample *s);
 
+
+/**
+ * Gets a sample value by name for the specified sample.
+ * @param s the sample to fetch a value from
+ * @param name the name of the channel
+ * @param value pointer to the value to set if sample is found
+ * @return true if the sample was found and set
+ */
+bool get_sample_value_by_name(struct sample *s, const char * name, double *value);
+
 /**
  * Creates a LoggerMessage for use in the messaging between threads.
  * @param t The messaget type.
