@@ -43,6 +43,7 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "watchdog.h"
+#include "camera_control.h"
 
 #define LOGGER_STACK_SIZE	152
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
@@ -175,6 +176,10 @@ void loggerTaskEx(void *params)
         logging_set_status(LOGGING_STATUS_IDLE);
         logging_set_logging_start(0);
         g_configChanged = 1;
+
+#if CAMERA_CONTROL
+        camera_control_init(&loggerConfig->camera_control_cfg);
+#endif
 
         while (1) {
                 xSemaphoreTake(onTick, portMAX_DELAY);

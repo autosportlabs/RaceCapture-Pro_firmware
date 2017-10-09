@@ -26,6 +26,7 @@
 #include "printk.h"
 #include <stdbool.h>
 #include "wifi.h"
+#include "loggerSampleData.h"
 
 #define DEFAULT_START_SPEED_KPH	40
 #define DEFAULT_START_TIME_SEC	5
@@ -97,18 +98,6 @@ bool camera_control_set_config(struct camera_control_config* cfg,
         return true;
 }
 
-bool camera_control_init(struct camera_control_config* cfg)
-{
-        if (!cfg)
-                return false;
-
-        camera_control_state.cfg = cfg;
-        camera_control_state.recording = false;
-        camera_control_state.timestamp_start = 0;
-        camera_control_state.timestamp_stop = 0;
-        return true;
-}
-
 static bool should_start_recording(const float current_speed,
                                  const tiny_millis_t uptime)
 {
@@ -159,12 +148,15 @@ static bool should_stop_recording(const float current_speed,
         return time_diff > trig_time;
 }
 
-void camera_control_gps_sample_cb(const GpsSample* sample)
+static void camera_control_sample_cb(const struct sample* sample,
+                           const int tick, void* data)
 {
+        return;
+
         if (!camera_control_state.cfg || !camera_control_state.cfg->active)
                 return;
 
-        float current_speed = sample->speed;
+        float current_speed = 0;
 
         const tiny_millis_t uptime = getUptime();
         if (!camera_control_state.recording) {
@@ -180,4 +172,19 @@ void camera_control_gps_sample_cb(const GpsSample* sample)
                 wifi_trigger_camera(false);
                 camera_control_state.recording = false;
         }
+}
+
+bool camera_control_init(struct camera_control_config* cfg)
+{
+        if (!cfg)
+                return false;
+
+        camera_control_state.cfg = cfg;
+        camera_control_state.recording = false;
+        camera_control_state.timestamp_start = 0;
+        camera_control_state.timestamp_stop = 0;
+
+        logger_sample_create_callback(camera_control_sample_cb, 10, NULL);
+
+        return true;
 }

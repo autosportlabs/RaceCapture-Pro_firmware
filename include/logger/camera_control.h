@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include "jsmn.h"
 #include "gps.h"
+
 CPP_GUARD_BEGIN
 
 enum camera_make_model {
@@ -56,7 +57,9 @@ bool camera_control_set_config(struct camera_control_config* cfg,
 
 bool camera_control_init(struct camera_control_config* cfg);
 
-void camera_control_gps_sample_cb(const GpsSample* sample);
+
+
+
 
 CPP_GUARD_END
 
