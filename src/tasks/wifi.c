@@ -663,7 +663,7 @@ static void _task(void *params)
                         process_sample(&event.data.sample);
                         break;
                 case TASK_CAMERA_CONTROL:
-                        do_camera_control(&event.data.camera_state);
+                        do_camera_control(event.data.camera_state);
                         break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);

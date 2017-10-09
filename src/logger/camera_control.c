@@ -109,7 +109,7 @@ bool camera_control_init(struct camera_control_config* cfg)
         return true;
 }
 
-static bool should_start_recording(const GpsSample* sample,
+static bool should_start_recording(const float current_speed,
                                  const tiny_millis_t uptime)
 {
         const tiny_millis_t trig_time =
@@ -119,7 +119,7 @@ static bool should_start_recording(const GpsSample* sample,
         if (0 == trig_time)
                 return false;
 
-        if (sample->speed < trig_speed) {
+        if (current_speed < trig_speed) {
         		camera_control_state.timestamp_start = 0;
                 return false;
         }
@@ -134,7 +134,7 @@ static bool should_start_recording(const GpsSample* sample,
         return time_diff > trig_time;
 }
 
-static bool should_stop_recording(const GpsSample* sample,
+static bool should_stop_recording(const float current_speed,
                                 const tiny_millis_t uptime)
 {
         const tiny_millis_t trig_time =
@@ -144,7 +144,7 @@ static bool should_stop_recording(const GpsSample* sample,
         if (0 == trig_time)
                 return false;
 
-        if (sample->speed > trig_speed) {
+        if (current_speed > trig_speed) {
         		camera_control_state.timestamp_stop = 0;
                 return false;
         }
@@ -164,15 +164,17 @@ void camera_control_gps_sample_cb(const GpsSample* sample)
         if (!camera_control_state.cfg || !camera_control_state.cfg->active)
                 return;
 
+        float current_speed = sample->speed;
+
         const tiny_millis_t uptime = getUptime();
         if (!camera_control_state.recording) {
-                if (!should_start_recording(sample, uptime))
+                if (!should_start_recording(current_speed, uptime))
                         return;
 
                 wifi_trigger_camera(true);
                 camera_control_state.recording = true;
         } else {
-                if (!should_stop_recording(sample, uptime))
+                if (!should_stop_recording(current_speed, uptime))
                         return;
 
                 wifi_trigger_camera(false);
