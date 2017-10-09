@@ -58,7 +58,7 @@ void free_sample_buffer(struct sample *s)
 
 bool get_sample_value_by_name(struct sample *s, const char * name, double *value)
 {
-    if (!s || !value) return false;
+    if (!s || !value || !name) return false;
 
     for (size_t i = 0; i < s->channel_count; i++){
             ChannelSample *sam = (s->channel_samples + i);
