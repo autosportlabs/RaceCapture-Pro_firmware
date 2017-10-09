@@ -1683,6 +1683,7 @@ void LoggerApiTest::testGetCameraControlCfgDefault() {
 
         Object galc = json["camCtrlCfg"];
         CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
+        CPPUNIT_ASSERT_EQUAL((int)alc.make_model, (int)(Number)galc["makeModel"]);
 
         Object start_st = galc["start"];
         CPPUNIT_ASSERT_EQUAL(alc.start.speed, (float)(Number)start_st["speed"]);
@@ -1699,6 +1700,7 @@ void LoggerApiTest::testSetCameraControlCfg() {
 
         const struct camera_control_config* cfg = &lc->camera_control_cfg;
         CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+        CPPUNIT_ASSERT_EQUAL(1, (int)cfg->make_model);
 
         CPPUNIT_ASSERT_EQUAL((float) 11.1, cfg->start.speed);
         CPPUNIT_ASSERT_EQUAL((uint32_t) 5, cfg->start.time);

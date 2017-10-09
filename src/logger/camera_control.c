@@ -43,7 +43,7 @@ static struct {
 void camera_control_reset_config(struct camera_control_config* cfg)
 {
         cfg->active = false;
-
+        cfg->make_model = CAMERA_MAKEMODEL_GOPRO_HERO2_3;
         cfg->start.time = DEFAULT_START_TIME_SEC;
         cfg->start.speed = DEFAULT_START_SPEED_KPH;
 
@@ -68,6 +68,7 @@ void camera_control_get_config(struct camera_control_config* cfg,
 {
         json_objStartString(serial, "camCtrlCfg");
         json_bool(serial, "active", cfg->active, true);
+        json_int(serial, "makeModel", cfg->make_model, true);
         get_speed_time(serial, &cfg->start, "start", true);
         get_speed_time(serial, &cfg->stop, "stop", false);
         json_objEnd(serial, more);
@@ -90,6 +91,7 @@ bool camera_control_set_config(struct camera_control_config* cfg,
                             const jsmntok_t *json)
 {
         jsmn_exists_set_val_bool(json, "active", &cfg->active);
+        jsmn_exists_set_val_int(json, "makeModel", &cfg->make_model);
         set_speed_time(&cfg->start, "start", json);
         set_speed_time(&cfg->stop, "stop", json);
         return true;

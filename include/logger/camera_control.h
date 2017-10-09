@@ -28,6 +28,11 @@
 #include "gps.h"
 CPP_GUARD_BEGIN
 
+enum camera_make_model {
+    CAMERA_MAKEMODEL_GOPRO_HERO2_3 = 0,
+    CAMERA_MAKEMODEL_GOPRO_HERO4_5 = 1,
+};
+
 struct camera_control_speed_time {
         float speed;
         uint32_t time;
@@ -35,6 +40,7 @@ struct camera_control_speed_time {
 
 struct camera_control_config {
         bool active;
+        enum camera_make_model make_model;
         struct camera_control_speed_time start;
         struct camera_control_speed_time stop;
 };
