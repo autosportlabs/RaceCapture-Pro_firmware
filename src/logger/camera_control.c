@@ -29,10 +29,10 @@
 #include "loggerSampleData.h"
 #include <string.h>
 
-#define DEFAULT_START_SPEED	40
-#define DEFAULT_START_TIME_SEC	1
-#define DEFAULT_STOP_SPEED	25
-#define DEFAULT_STOP_TIME_SEC	1
+#define DEFAULT_CAMERA_CONTROL_START_SPEED	40
+#define DEFAULT_CAMERA_CONTROL_START_TIME_SEC	1
+#define DEFAULT_CAMERA_CONTROL_STOP_SPEED	25
+#define DEFAULT_CAMERA_CONTROL_STOP_TIME_SEC	1
 #define LOG_PFX			"[cam_ctrl] "
 
 static struct {
@@ -44,16 +44,16 @@ static struct {
 
 void camera_control_reset_config(struct camera_control_config* cfg)
 {
-        cfg->active = true;
+        cfg->active = false;
         strcpy(cfg->channel, "Speed");
         cfg->make_model = CAMERA_MAKEMODEL_GOPRO_HERO2_3;
 
-        cfg->start.time = DEFAULT_START_TIME_SEC;
-        cfg->start.threshold = DEFAULT_START_SPEED;
+        cfg->start.time = DEFAULT_CAMERA_CONTROL_START_TIME_SEC;
+        cfg->start.threshold = DEFAULT_CAMERA_CONTROL_START_SPEED;
         cfg->start.greater_than = true;
 
-        cfg->stop.time = DEFAULT_STOP_TIME_SEC;
-        cfg->stop.threshold = DEFAULT_STOP_SPEED;
+        cfg->stop.time = DEFAULT_CAMERA_CONTROL_STOP_TIME_SEC;
+        cfg->stop.threshold = DEFAULT_CAMERA_CONTROL_STOP_SPEED;
         cfg->stop.greater_than = false;
 }
 
@@ -77,7 +77,6 @@ void camera_control_get_config(struct camera_control_config* cfg,
         json_bool(serial, "active", cfg->active, true);
         json_int(serial, "makeModel", cfg->make_model, true);
         json_string(serial, "channel", cfg->channel, true);
-        pr_info_str_msg("ffff ", cfg->channel);
         get_speed_time(serial, &cfg->start, "start", true);
         get_speed_time(serial, &cfg->stop, "stop", false);
         json_objEnd(serial, more);
@@ -114,7 +113,7 @@ static bool should_start_recording(const float current_value,
         const tiny_millis_t trig_time =
                 (tiny_millis_t) camera_control_state.cfg->start.time * 1000;
         const float threshold = camera_control_state.cfg->start.threshold;
-        bool gt = camera_control_state.cfg->start.greater_than;
+        const bool gt = camera_control_state.cfg->start.greater_than;
 
         if (0 == trig_time)
                 return false;
@@ -140,7 +139,7 @@ static bool should_stop_recording(const float current_value,
         const tiny_millis_t trig_time =
                 (tiny_millis_t) camera_control_state.cfg->stop.time * 1000;
         const float threshold = camera_control_state.cfg->stop.threshold;
-        bool gt = camera_control_state.cfg->stop.greater_than;
+        const bool gt = camera_control_state.cfg->stop.greater_than;
 
         if (0 == trig_time)
                 return false;
@@ -167,7 +166,7 @@ static void camera_control_sample_cb(const struct sample* sample,
                 return;
 
         double value;
-        if (!get_sample_value_by_name(sample, "Foo", &value))
+        if (!get_sample_value_by_name(sample, camera_control_state.cfg->channel, &value))
                 return;
 
         float current_speed = value;
@@ -199,6 +198,5 @@ bool camera_control_init(struct camera_control_config* cfg)
         camera_control_state.timestamp_stop = 0;
 
         logger_sample_create_callback(camera_control_sample_cb, 10, NULL);
-
         return true;
 }

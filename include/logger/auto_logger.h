@@ -28,18 +28,21 @@
 #include "jsmn.h"
 #include "gps.h"
 #include <stdbool.h>
+#include "channel_config.h"
 
 CPP_GUARD_BEGIN
 
-struct auto_logger_speed_time {
-        float speed;
+struct auto_logger_trigger {
+        float threshold;
+        bool greater_than;
         uint32_t time;
 };
 
 struct auto_logger_config {
         bool active;
-        struct auto_logger_speed_time start;
-        struct auto_logger_speed_time stop;
+        char channel[DEFAULT_LABEL_LENGTH];
+        struct auto_logger_trigger start;
+        struct auto_logger_trigger stop;
 };
 
 void auto_logger_reset_config(struct auto_logger_config* cfg);
@@ -52,8 +55,6 @@ bool auto_logger_set_config(struct auto_logger_config* cfg,
                             const jsmntok_t *json);
 
 bool auto_logger_init(struct auto_logger_config* cfg);
-
-void auto_logger_gps_sample_cb(const GpsSample* sample);
 
 CPP_GUARD_END
 

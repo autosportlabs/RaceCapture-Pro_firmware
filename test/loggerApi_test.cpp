@@ -1646,14 +1646,15 @@ void LoggerApiTest::testGetAutoLoggerCfgDefault() {
 
         Object galc = json["autoLoggerCfg"];
         CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
+        CPPUNIT_ASSERT_EQUAL(string(alc.channel), (string)(String)galc["channel"]);
 
         Object start_st = galc["start"];
-        CPPUNIT_ASSERT_EQUAL(alc.start.speed, (float)(Number)start_st["speed"]);
+        CPPUNIT_ASSERT_EQUAL(alc.start.threshold, (float)(Number)start_st["thresh"]);
         CPPUNIT_ASSERT_EQUAL(alc.start.time, (uint32_t)(Number)start_st["time"]);
 
         Object stop_st = galc["stop"];
         CPPUNIT_ASSERT_EQUAL(alc.stop.time, (uint32_t)(Number)stop_st["time"]);
-        CPPUNIT_ASSERT_EQUAL(alc.stop.speed, (float)(Number)stop_st["speed"]);
+        CPPUNIT_ASSERT_EQUAL(alc.stop.threshold, (float)(Number)stop_st["thresh"]);
 }
 
 void LoggerApiTest::testSetAutoLoggerCfg() {
@@ -1663,11 +1664,13 @@ void LoggerApiTest::testSetAutoLoggerCfg() {
         const struct auto_logger_config* cfg = &lc->auto_logger_cfg;
         CPPUNIT_ASSERT_EQUAL(true, cfg->active);
 
-        CPPUNIT_ASSERT_EQUAL((float) 45.6, cfg->start.speed);
-	CPPUNIT_ASSERT_EQUAL((uint32_t) 3, cfg->start.time);
+        CPPUNIT_ASSERT_EQUAL((float) 45.6, cfg->start.threshold);
+	       CPPUNIT_ASSERT_EQUAL((uint32_t) 3, cfg->start.time);
+	       CPPUNIT_ASSERT_EQUAL(true, cfg->start.greater_than);
 
         CPPUNIT_ASSERT_EQUAL((uint32_t) 42, cfg->stop.time);
-        CPPUNIT_ASSERT_EQUAL((float) 34.5, cfg->stop.speed);
+        CPPUNIT_ASSERT_EQUAL((float) 34.5, cfg->stop.threshold);
+        CPPUNIT_ASSERT_EQUAL(false, cfg->stop.greater_than);
 
         assertGenericResponse(response, "setAutoLoggerCfg", API_SUCCESS);
 }
@@ -1675,26 +1678,26 @@ void LoggerApiTest::testSetAutoLoggerCfg() {
 void LoggerApiTest::testGetCameraControlCfgDefault() {
         const char *response = processApiGeneric("get_camera_control_cfg.json");
 
-        struct camera_control_config alc;
-        camera_control_reset_config(&alc);
+        struct camera_control_config ccc;
+        camera_control_reset_config(&ccc);
 
         Object json;
         stringToJson(response, json);
 
         Object galc = json["camCtrlCfg"];
-        CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
-        CPPUNIT_ASSERT_EQUAL((int)alc.make_model, (int)(Number)galc["makeModel"]);
+        CPPUNIT_ASSERT_EQUAL(ccc.active, (bool)(Boolean)galc["active"]);
+        CPPUNIT_ASSERT_EQUAL((int)ccc.make_model, (int)(Number)galc["makeModel"]);
         CPPUNIT_ASSERT_EQUAL(string("Speed"), (string)(String)galc["channel"]);
 
         Object start_st = galc["start"];
-        CPPUNIT_ASSERT_EQUAL(alc.start.threshold, (float)(Number)start_st["thresh"]);
-        CPPUNIT_ASSERT_EQUAL(alc.start.time, (uint32_t)(Number)start_st["time"]);
-        CPPUNIT_ASSERT_EQUAL(alc.start.greater_than, (bool)(Boolean)start_st["gt"]);
+        CPPUNIT_ASSERT_EQUAL(ccc.start.threshold, (float)(Number)start_st["thresh"]);
+        CPPUNIT_ASSERT_EQUAL(ccc.start.time, (uint32_t)(Number)start_st["time"]);
+        CPPUNIT_ASSERT_EQUAL(ccc.start.greater_than, (bool)(Boolean)start_st["gt"]);
 
         Object stop_st = galc["stop"];
-        CPPUNIT_ASSERT_EQUAL(alc.stop.time, (uint32_t)(Number)stop_st["time"]);
-        CPPUNIT_ASSERT_EQUAL(alc.stop.threshold, (float)(Number)stop_st["thresh"]);
-        CPPUNIT_ASSERT_EQUAL(alc.stop.greater_than, (bool)(Boolean)stop_st["gt"]);
+        CPPUNIT_ASSERT_EQUAL(ccc.stop.time, (uint32_t)(Number)stop_st["time"]);
+        CPPUNIT_ASSERT_EQUAL(ccc.stop.threshold, (float)(Number)stop_st["thresh"]);
+        CPPUNIT_ASSERT_EQUAL(ccc.stop.greater_than, (bool)(Boolean)stop_st["gt"]);
 }
 
 void LoggerApiTest::testSetCameraControlCfg() {

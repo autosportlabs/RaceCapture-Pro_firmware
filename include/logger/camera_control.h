@@ -42,7 +42,7 @@ struct camera_control_trigger {
 
 struct camera_control_config {
         bool active;
-        enum camera_make_model make_model;
+        uint8_t make_model;
         char channel[DEFAULT_LABEL_LENGTH];
         struct camera_control_trigger start;
         struct camera_control_trigger stop;
