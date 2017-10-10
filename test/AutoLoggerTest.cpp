@@ -26,6 +26,7 @@
 /* Inclue the code to test here */
 extern "C" {
 #include "auto_logger.c"
+#include "auto_control.h"
 }
 
 static float current_value;
@@ -41,32 +42,32 @@ void AutoLoggerTest::setUp()
 
 void AutoLoggerTest::setGpsSpeedAboveStartTrigger()
 {
-        current_value = DEFAULT_AUTO_LOGGER_START_SPEED + 1;
+        current_value = DEFAULT_AUTO_CONTROL_START_THRESHOLD + 1;
 }
 
 void AutoLoggerTest::setGpsSpeedBelowStartTrigger()
 {
-        current_value = DEFAULT_AUTO_LOGGER_START_SPEED - 1;
+        current_value = DEFAULT_AUTO_CONTROL_START_THRESHOLD - 1;
 }
 
 void AutoLoggerTest::setGpsSpeedAboveStopTrigger()
 {
-        current_value = DEFAULT_AUTO_LOGGER_STOP_SPEED + 1;
+        current_value = DEFAULT_AUTO_CONTROL_STOP_THRESHOLD + 1;
 }
 
 void AutoLoggerTest::setGpsSpeedBelowStopTrigger()
 {
-        current_value = DEFAULT_AUTO_LOGGER_STOP_SPEED - 1;
+        current_value = DEFAULT_AUTO_CONTROL_STOP_THRESHOLD - 1;
 }
 
 tiny_millis_t AutoLoggerTest::getTriggerTimeStart()
 {
-        return (tiny_millis_t) DEFAULT_AUTO_LOGGER_START_TIME_SEC * 1000 + 1;
+        return (tiny_millis_t) DEFAULT_AUTO_CONTROL_START_TIME_SEC * 1000 + 1;
 }
 
 tiny_millis_t AutoLoggerTest::getTriggerTimeStop()
 {
-        return (tiny_millis_t) DEFAULT_AUTO_LOGGER_STOP_TIME_SEC * 1000 + 1;
+        return (tiny_millis_t) DEFAULT_AUTO_CONTROL_STOP_TIME_SEC * 1000 + 1;
 }
 
 void AutoLoggerTest::shouldStartLoggingNoTrigTime()

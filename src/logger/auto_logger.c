@@ -29,9 +29,9 @@
 #include "loggerSampleData.h"
 #include <string.h>
 
-#define DEFAULT_AUTO_LOGGER_CHANNEL "Speed"
+#define LOG_PFX   "[auto_logger] "
 
-#define LOG_PFX			"[auto_logger] "
+#define DEFAULT_AUTO_LOGGER_CHANNEL "Speed"
 
 /*
  * NOTE:

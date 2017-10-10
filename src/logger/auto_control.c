@@ -21,11 +21,6 @@
 #include "auto_control.h"
 #include "api.h"
 
-#define DEFAULT_AUTO_CONTROL_START_THRESHOLD 40
-#define DEFAULT_AUTO_CONTROL_START_TIME_SEC 5
-#define DEFAULT_AUTO_CONTROL_STOP_THRESHOLD 25
-#define DEFAULT_AUTO_CONTROL_STOP_TIME_SEC 10
-
 void auto_control_reset_trigger(struct auto_control_trigger *start, struct auto_control_trigger *stop)
 {
         start->time = DEFAULT_AUTO_CONTROL_START_TIME_SEC;

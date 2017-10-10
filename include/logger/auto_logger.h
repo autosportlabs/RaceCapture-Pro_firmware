@@ -23,10 +23,8 @@
 #define _AUTO_LOGGER_H_
 
 #include "cpp_guard.h"
-#include "dateTime.h"
 #include "serial.h"
 #include "jsmn.h"
-#include "gps.h"
 #include <stdbool.h>
 #include "channel_config.h"
 #include "auto_control.h"

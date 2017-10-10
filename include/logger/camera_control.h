@@ -27,6 +27,7 @@
 #include "jsmn.h"
 #include "gps.h"
 #include "channel_config.h"
+#include "auto_control.h"
 CPP_GUARD_BEGIN
 
 enum camera_make_model {
@@ -34,18 +35,12 @@ enum camera_make_model {
     CAMERA_MAKEMODEL_GOPRO_HERO4_5 = 1,
 };
 
-struct camera_control_trigger {
-        float threshold;
-        bool greater_than;
-        uint32_t time;
-};
-
 struct camera_control_config {
         bool active;
         uint8_t make_model;
         char channel[DEFAULT_LABEL_LENGTH];
-        struct camera_control_trigger start;
-        struct camera_control_trigger stop;
+        struct auto_control_trigger start;
+        struct auto_control_trigger stop;
 };
 
 void camera_control_reset_config(struct camera_control_config* cfg);
@@ -58,10 +53,6 @@ bool camera_control_set_config(struct camera_control_config* cfg,
                             const jsmntok_t *json);
 
 bool camera_control_init(struct camera_control_config* cfg);
-
-
-
-
 
 CPP_GUARD_END
 
