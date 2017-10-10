@@ -76,10 +76,10 @@ void AutoLoggerTest::shouldStartLoggingNoTrigTime()
 
         setGpsSpeedAboveStartTrigger();
         auto_logger_state.cfg->start.time = 0;
-        auto_logger_state.timestamp_start = t1;
+        auto_logger_state.control_state.timestamp_start = t1;
 
-        CPPUNIT_ASSERT_EQUAL(false, should_start_logging(current_value, t1));
-        CPPUNIT_ASSERT_EQUAL(false, should_start_logging(current_value, t2));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_start(current_value, t1, &auto_logger_state.cfg->start, &auto_logger_state.control_state));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_start(current_value, t2, &auto_logger_state.cfg->start, &auto_logger_state.control_state));
 }
 
 void AutoLoggerTest::shouldStartLoggingLowSpeed()
@@ -88,10 +88,10 @@ void AutoLoggerTest::shouldStartLoggingLowSpeed()
         const tiny_millis_t t2 = t1 + getTriggerTimeStart();
 
         setGpsSpeedBelowStartTrigger();
-        auto_logger_state.timestamp_start = t1;
+        auto_logger_state.control_state.timestamp_start = t1;
 
-        CPPUNIT_ASSERT_EQUAL(false, should_start_logging(current_value, t1));
-        CPPUNIT_ASSERT_EQUAL(false, should_start_logging(current_value, t2));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_start(current_value, t1, &auto_logger_state.cfg->start, &auto_logger_state.control_state));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_start(current_value, t2, &auto_logger_state.cfg->start, &auto_logger_state.control_state));
 }
 
 void AutoLoggerTest::shouldStartLoggingTrigger()
@@ -100,10 +100,10 @@ void AutoLoggerTest::shouldStartLoggingTrigger()
         const tiny_millis_t t2 = t1 + getTriggerTimeStart();
 
         setGpsSpeedAboveStartTrigger();
-        auto_logger_state.timestamp_start = t1;
+        auto_logger_state.control_state.timestamp_start = t1;
 
-        CPPUNIT_ASSERT_EQUAL(false, should_start_logging(current_value, t1));
-        CPPUNIT_ASSERT_EQUAL(true, should_start_logging(current_value, t2));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_start(current_value, t1, &auto_logger_state.cfg->start, &auto_logger_state.control_state));
+        CPPUNIT_ASSERT_EQUAL(true, auto_control_should_start(current_value, t2, &auto_logger_state.cfg->start, &auto_logger_state.control_state));
 }
 
 void AutoLoggerTest::shouldStopLoggingNoTrigTime()
@@ -113,10 +113,10 @@ void AutoLoggerTest::shouldStopLoggingNoTrigTime()
 
         setGpsSpeedBelowStopTrigger();
         auto_logger_state.cfg->stop.time = 0;
-        auto_logger_state.timestamp_stop = t1;
+        auto_logger_state.control_state.timestamp_stop = t1;
 
-        CPPUNIT_ASSERT_EQUAL(false, should_stop_logging(current_value, t1));
-        CPPUNIT_ASSERT_EQUAL(false, should_stop_logging(current_value, t2));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_stop(current_value, t1, &auto_logger_state.cfg->stop, &auto_logger_state.control_state));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_stop(current_value, t2, &auto_logger_state.cfg->stop, &auto_logger_state.control_state));
 }
 
 void AutoLoggerTest::shouldStopLoggingHighSpeed()
@@ -125,10 +125,10 @@ void AutoLoggerTest::shouldStopLoggingHighSpeed()
         const tiny_millis_t t2 = t1 + getTriggerTimeStop();
 
         setGpsSpeedAboveStopTrigger();
-        auto_logger_state.timestamp_stop = t1;
+        auto_logger_state.control_state.timestamp_stop = t1;
 
-        CPPUNIT_ASSERT_EQUAL(false, should_stop_logging(current_value, t1));
-        CPPUNIT_ASSERT_EQUAL(false, should_stop_logging(current_value, t2));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_stop(current_value, t1, &auto_logger_state.cfg->stop, &auto_logger_state.control_state));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_stop(current_value, t2, &auto_logger_state.cfg->stop, &auto_logger_state.control_state));
 }
 
 void AutoLoggerTest::shouldStopLoggingTrigger()
@@ -137,8 +137,8 @@ void AutoLoggerTest::shouldStopLoggingTrigger()
         const tiny_millis_t t2 = t1 + getTriggerTimeStop();
 
         setGpsSpeedBelowStopTrigger();
-        auto_logger_state.timestamp_stop = t1;
+        auto_logger_state.control_state.timestamp_stop = t1;
 
-        CPPUNIT_ASSERT_EQUAL(false, should_stop_logging(current_value, t1));
-        CPPUNIT_ASSERT_EQUAL(true, should_stop_logging(current_value, t2));
+        CPPUNIT_ASSERT_EQUAL(false, auto_control_should_stop(current_value, t1, &auto_logger_state.cfg->stop, &auto_logger_state.control_state));
+        CPPUNIT_ASSERT_EQUAL(true, auto_control_should_stop(current_value, t2, &auto_logger_state.cfg->stop, &auto_logger_state.control_state));
 }

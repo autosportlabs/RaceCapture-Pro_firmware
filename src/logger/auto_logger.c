@@ -29,11 +29,8 @@
 #include "loggerSampleData.h"
 #include <string.h>
 
-#define DEFAULT_AUTO_LOGGER_START_SPEED	40
-#define DEFAULT_AUTO_LOGGER_START_TIME_SEC	5
-#define DEFAULT_AUTO_LOGGER_STOP_SPEED	25
-#define DEFAULT_AUTO_LOGGER_STOP_TIME_SEC	10
 #define DEFAULT_AUTO_LOGGER_CHANNEL "Speed"
+
 #define LOG_PFX			"[auto_logger] "
 
 /*
@@ -48,35 +45,14 @@
 
 static struct {
         struct auto_logger_config *cfg;
-        bool logging;
-        tiny_millis_t timestamp_start;
-        tiny_millis_t timestamp_stop;
+        struct auto_control_state control_state;
 } auto_logger_state;
 
 void auto_logger_reset_config(struct auto_logger_config* cfg)
 {
         cfg->active = false;
         strcpy(cfg->channel, DEFAULT_AUTO_LOGGER_CHANNEL);
-
-        cfg->start.time = DEFAULT_AUTO_LOGGER_START_TIME_SEC;
-        cfg->start.threshold = DEFAULT_AUTO_LOGGER_START_SPEED;
-        cfg->start.greater_than = true;
-
-        cfg->stop.time = DEFAULT_AUTO_LOGGER_STOP_TIME_SEC;
-        cfg->stop.threshold = DEFAULT_AUTO_LOGGER_STOP_SPEED;
-        cfg->stop.greater_than = false;
-}
-
-static void get_speed_time(struct Serial* serial,
-                           struct auto_logger_trigger *alst,
-                           const char* name,
-                           const bool more)
-{
-        json_objStartString(serial, name);
-        json_float(serial, "thresh", alst->threshold, 2, true);
-        json_bool(serial, "gt", alst->greater_than, true);
-        json_uint(serial, "time", alst->time, false);
-        json_objEnd(serial, more);
+        auto_control_reset_trigger(&cfg->start, &cfg->stop);
 }
 
 void auto_logger_get_config(struct auto_logger_config* cfg,
@@ -86,85 +62,19 @@ void auto_logger_get_config(struct auto_logger_config* cfg,
         json_objStartString(serial, "autoLoggerCfg");
         json_bool(serial, "active", cfg->active, true);
         json_string(serial, "channel", cfg->channel, true);
-        get_speed_time(serial, &cfg->start, "start", true);
-        get_speed_time(serial, &cfg->stop, "stop", false);
+        get_auto_control_trigger(serial, &cfg->start, "start", true);
+        get_auto_control_trigger(serial, &cfg->stop, "stop", false);
         json_objEnd(serial, more);
 }
-
-static void set_speed_time(struct auto_logger_trigger *alst,
-                           const char* name,
-                           const jsmntok_t* root)
-{
-        const jsmntok_t* tok = jsmn_find_node(root, name);
-        if (!tok)
-                return;
-
-        jsmn_exists_set_val_float(tok, "thresh", &alst->threshold);
-        jsmn_exists_set_val_bool(tok, "gt", &alst->greater_than);
-        jsmn_exists_set_val_int(tok, "time", &alst->time);
-}
-
 
 bool auto_logger_set_config(struct auto_logger_config* cfg,
                             const jsmntok_t *json)
 {
         jsmn_exists_set_val_bool(json, "active", &cfg->active);
         jsmn_exists_set_val_string(json, "channel", cfg->channel, DEFAULT_LABEL_LENGTH, true);
-        set_speed_time(&cfg->start, "start", json);
-        set_speed_time(&cfg->stop, "stop", json);
+        set_auto_control_trigger(&cfg->start, "start", json);
+        set_auto_control_trigger(&cfg->stop, "stop", json);
         return true;
-}
-
-static bool should_start_logging(const float current_value,
-                                 const tiny_millis_t uptime)
-{
-        const tiny_millis_t trig_time =
-                (tiny_millis_t) auto_logger_state.cfg->start.time * 1000;
-        const float threshold = auto_logger_state.cfg->start.threshold;
-        const bool gt = auto_logger_state.cfg->start.greater_than;
-
-        if (0 == trig_time)
-                return false;
-
-        if ((gt && current_value < threshold) || (!gt && current_value > threshold)) {
-          auto_logger_state.timestamp_start = 0;
-                return false;
-        }
-
-        if (0 == auto_logger_state.timestamp_start) {
-                auto_logger_state.timestamp_start = uptime;
-                return false;
-        }
-
-        const tiny_millis_t time_diff =
-                uptime - auto_logger_state.timestamp_start;
-        return time_diff > trig_time;
-}
-
-static bool should_stop_logging(const float current_value,
-                                const tiny_millis_t uptime)
-{
-        const tiny_millis_t trig_time =
-                (tiny_millis_t) auto_logger_state.cfg->stop.time * 1000;
-        const float threshold = auto_logger_state.cfg->stop.threshold;
-        const bool gt = auto_logger_state.cfg->stop.greater_than;
-
-        if (0 == trig_time)
-                return false;
-
-        if ((gt && current_value < threshold) || (!gt && current_value > threshold)) {
-          auto_logger_state.timestamp_stop = 0;
-                return false;
-        }
-
-        if (0 == auto_logger_state.timestamp_stop) {
-                auto_logger_state.timestamp_stop = uptime;
-                return false;
-        }
-
-        const tiny_millis_t time_diff =
-                uptime - auto_logger_state.timestamp_stop;
-        return time_diff > trig_time;
 }
 
 static void auto_logger_sample_cb(const struct sample* sample,
@@ -177,21 +87,21 @@ static void auto_logger_sample_cb(const struct sample* sample,
         if (!get_sample_value_by_name(sample, auto_logger_state.cfg->channel, &value))
                 return;
 
-        const tiny_millis_t uptime = getUptime();
-        if (!auto_logger_state.logging) {
-                if (!should_start_logging(value, uptime))
-                        return;
-
-                pr_info(LOG_PFX "Auto-starting logging\r\n");
-                startLogging();
-                auto_logger_state.logging = true;
-        } else {
-                if (!should_stop_logging(value, uptime))
-                        return;
-
-                pr_info(LOG_PFX "Auto-stopping logging\r\n");
-                stopLogging();
-                auto_logger_state.logging = false;
+        enum auto_control_trigger_result res = auto_control_check_trigger(value,
+                                                                          &auto_logger_state.cfg->start,
+                                                                          &auto_logger_state.cfg->stop,
+                                                                          &auto_logger_state.control_state);
+        switch(res){
+                case AUTO_CONTROL_TRIGGERED:
+                        startLogging();
+                        pr_info(LOG_PFX "Auto-starting logging\r\n");
+                        break;
+                case AUTO_CONTROL_UNTRIGGERED:
+                        stopLogging();
+                        pr_info(LOG_PFX "Auto-stopping logging\r\n");
+                        break;
+                default:
+                        break;
         }
 }
 
@@ -201,9 +111,7 @@ bool auto_logger_init(struct auto_logger_config* cfg)
                 return false;
 
         auto_logger_state.cfg = cfg;
-        auto_logger_state.logging = false;
-        auto_logger_state.timestamp_start = 0;
-        auto_logger_state.timestamp_stop = 0;
+        auto_control_init_state(&auto_logger_state.control_state);
 
         logger_sample_create_callback(auto_logger_sample_cb, 10, NULL);
         return true;

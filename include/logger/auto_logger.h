@@ -29,20 +29,17 @@
 #include "gps.h"
 #include <stdbool.h>
 #include "channel_config.h"
+#include "auto_control.h"
+
 
 CPP_GUARD_BEGIN
 
-struct auto_logger_trigger {
-        float threshold;
-        bool greater_than;
-        uint32_t time;
-};
 
 struct auto_logger_config {
         bool active;
         char channel[DEFAULT_LABEL_LENGTH];
-        struct auto_logger_trigger start;
-        struct auto_logger_trigger stop;
+        struct auto_control_trigger start;
+        struct auto_control_trigger stop;
 };
 
 void auto_logger_reset_config(struct auto_logger_config* cfg);
