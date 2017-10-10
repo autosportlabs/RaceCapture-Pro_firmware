@@ -50,7 +50,7 @@ static struct {
 
 void auto_logger_reset_config(struct auto_logger_config* cfg)
 {
-        cfg->enabled = false;
+        cfg->enabled = true;
         strcpy(cfg->channel, DEFAULT_AUTO_LOGGER_CHANNEL);
         auto_control_reset_trigger(&cfg->start, &cfg->stop);
 }
