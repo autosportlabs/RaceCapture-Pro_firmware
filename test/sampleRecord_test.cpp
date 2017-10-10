@@ -441,3 +441,28 @@ void SampleRecordTest::testLoggerMessageAlwaysHasTime() {
 
         CPPUNIT_ASSERT_EQUAL(true, tick < 1000);
 }
+
+void SampleRecordTest::test_get_sample_value_by_name()
+{
+		lc->ADCConfigs[7].scalingMode = SCALING_MODE_RAW;
+		ADC_mock_set_value(7, 123);
+		ADC_sample_all();
+
+        increment_tick();
+        CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
+
+        populate_sample_buffer(&s, 0);
+
+
+		double value;
+		bool result = get_sample_value_by_name(&s, "Speed", &value);
+		CPPUNIT_ASSERT_EQUAL(true, result);
+		CPPUNIT_ASSERT_EQUAL((double)0, value);
+
+		result = get_sample_value_by_name(&s, "Battery", &value);
+		CPPUNIT_ASSERT_EQUAL(true, result);
+		CPPUNIT_ASSERT_EQUAL((double)123 * 0.0048828125f, value);
+
+		result = get_sample_value_by_name(&s, "FooBar", &value);
+		CPPUNIT_ASSERT_EQUAL(false, result);
+}
