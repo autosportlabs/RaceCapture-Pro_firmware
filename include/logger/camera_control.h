@@ -36,7 +36,7 @@ enum camera_make_model {
 };
 
 struct camera_control_config {
-        bool active;
+        bool enabled;
         uint8_t make_model;
         char channel[DEFAULT_LABEL_LENGTH];
         struct auto_control_trigger start;

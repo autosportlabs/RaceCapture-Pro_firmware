@@ -40,7 +40,7 @@ static struct {
 
 void camera_control_reset_config(struct camera_control_config* cfg)
 {
-        cfg->active = false;
+        cfg->enabled = false;
         strcpy(cfg->channel, DEFAULT_CAMERA_CONTROL_CHANNEL);
         cfg->make_model = CAMERA_MAKEMODEL_GOPRO_HERO2_3;
         auto_control_reset_trigger(&cfg->start, &cfg->stop);
@@ -51,7 +51,7 @@ void camera_control_get_config(struct camera_control_config* cfg,
                             const bool more)
 {
         json_objStartString(serial, "camCtrlCfg");
-        json_bool(serial, "active", cfg->active, true);
+        json_bool(serial, "en", cfg->enabled, true);
         json_int(serial, "makeModel", cfg->make_model, true);
         json_string(serial, "channel", cfg->channel, true);
         get_auto_control_trigger(serial, &cfg->start, "start", true);
@@ -62,7 +62,7 @@ void camera_control_get_config(struct camera_control_config* cfg,
 bool camera_control_set_config(struct camera_control_config* cfg,
                             const jsmntok_t *json)
 {
-        jsmn_exists_set_val_bool(json, "active", &cfg->active);
+        jsmn_exists_set_val_bool(json, "en", &cfg->enabled);
         jsmn_exists_set_val_string(json, "channel", cfg->channel, DEFAULT_LABEL_LENGTH, true);
         jsmn_exists_set_val_uint8(json, "makeModel", &cfg->make_model, NULL);
         set_auto_control_trigger(&cfg->start, "start", json);
@@ -73,7 +73,7 @@ bool camera_control_set_config(struct camera_control_config* cfg,
 static void camera_control_sample_cb(const struct sample* sample,
                            const int tick, void* data)
 {
-        if (!camera_control_state.cfg || !camera_control_state.cfg->active)
+        if (!camera_control_state.cfg || !camera_control_state.cfg->enabled)
                 return;
 
         double value;

@@ -50,7 +50,7 @@ static struct {
 
 void auto_logger_reset_config(struct auto_logger_config* cfg)
 {
-        cfg->active = false;
+        cfg->enabled = false;
         strcpy(cfg->channel, DEFAULT_AUTO_LOGGER_CHANNEL);
         auto_control_reset_trigger(&cfg->start, &cfg->stop);
 }
@@ -60,7 +60,7 @@ void auto_logger_get_config(struct auto_logger_config* cfg,
                             const bool more)
 {
         json_objStartString(serial, "autoLoggerCfg");
-        json_bool(serial, "active", cfg->active, true);
+        json_bool(serial, "en", cfg->enabled, true);
         json_string(serial, "channel", cfg->channel, true);
         get_auto_control_trigger(serial, &cfg->start, "start", true);
         get_auto_control_trigger(serial, &cfg->stop, "stop", false);
@@ -70,7 +70,7 @@ void auto_logger_get_config(struct auto_logger_config* cfg,
 bool auto_logger_set_config(struct auto_logger_config* cfg,
                             const jsmntok_t *json)
 {
-        jsmn_exists_set_val_bool(json, "active", &cfg->active);
+        jsmn_exists_set_val_bool(json, "en", &cfg->enabled);
         jsmn_exists_set_val_string(json, "channel", cfg->channel, DEFAULT_LABEL_LENGTH, true);
         set_auto_control_trigger(&cfg->start, "start", json);
         set_auto_control_trigger(&cfg->stop, "stop", json);
@@ -80,7 +80,7 @@ bool auto_logger_set_config(struct auto_logger_config* cfg,
 static void auto_logger_sample_cb(const struct sample* sample,
                            const int tick, void* data)
 {
-        if (!auto_logger_state.cfg || !auto_logger_state.cfg->active)
+        if (!auto_logger_state.cfg || !auto_logger_state.cfg->enabled)
                 return;
 
         double value;

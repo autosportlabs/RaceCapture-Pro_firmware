@@ -1,1 +1,1 @@
-{"setAutoLoggerCfg":{"active": true, "channel":"Bar", "start":{"thresh":45.6, "gt":true, "time":3},"stop":{"time":42,"thresh":34.5, "gt":false}}}
+{"setAutoLoggerCfg":{"en": true, "channel":"Bar", "start":{"thresh":45.6, "gt":true, "time":3},"stop":{"time":42,"thresh":34.5, "gt":false}}}

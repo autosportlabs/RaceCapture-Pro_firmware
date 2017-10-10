@@ -1645,7 +1645,7 @@ void LoggerApiTest::testGetAutoLoggerCfgDefault() {
         stringToJson(response, json);
 
         Object galc = json["autoLoggerCfg"];
-        CPPUNIT_ASSERT_EQUAL(alc.active, (bool)(Boolean)galc["active"]);
+        CPPUNIT_ASSERT_EQUAL(alc.enabled, (bool)(Boolean)galc["en"]);
         CPPUNIT_ASSERT_EQUAL(string(alc.channel), (string)(String)galc["channel"]);
 
         Object start_st = galc["start"];
@@ -1662,7 +1662,7 @@ void LoggerApiTest::testSetAutoLoggerCfg() {
         char *response = processApiGeneric("set_auto_logger_cfg.json");
 
         const struct auto_logger_config* cfg = &lc->auto_logger_cfg;
-        CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+        CPPUNIT_ASSERT_EQUAL(true, cfg->enabled);
 
         CPPUNIT_ASSERT_EQUAL((float) 45.6, cfg->start.threshold);
 	       CPPUNIT_ASSERT_EQUAL((uint32_t) 3, cfg->start.time);
@@ -1685,7 +1685,7 @@ void LoggerApiTest::testGetCameraControlCfgDefault() {
         stringToJson(response, json);
 
         Object galc = json["camCtrlCfg"];
-        CPPUNIT_ASSERT_EQUAL(ccc.active, (bool)(Boolean)galc["active"]);
+        CPPUNIT_ASSERT_EQUAL(ccc.enabled, (bool)(Boolean)galc["en"]);
         CPPUNIT_ASSERT_EQUAL((int)ccc.make_model, (int)(Number)galc["makeModel"]);
         CPPUNIT_ASSERT_EQUAL(string("Speed"), (string)(String)galc["channel"]);
 
@@ -1705,7 +1705,7 @@ void LoggerApiTest::testSetCameraControlCfg() {
         char *response = processApiGeneric("set_camera_control_cfg.json");
 
         const struct camera_control_config* cfg = &lc->camera_control_cfg;
-        CPPUNIT_ASSERT_EQUAL(true, cfg->active);
+        CPPUNIT_ASSERT_EQUAL(true, cfg->enabled);
         CPPUNIT_ASSERT_EQUAL(1, (int)cfg->make_model);
         CPPUNIT_ASSERT_EQUAL(string("Foo"), (string)(String)cfg->channel);
 

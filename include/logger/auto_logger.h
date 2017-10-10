@@ -34,7 +34,7 @@ CPP_GUARD_BEGIN
 
 
 struct auto_logger_config {
-        bool active;
+        bool enabled;
         char channel[DEFAULT_LABEL_LENGTH];
         struct auto_control_trigger start;
         struct auto_control_trigger stop;
