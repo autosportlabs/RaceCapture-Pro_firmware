@@ -59,7 +59,7 @@ void auto_logger_get_config(struct auto_logger_config* cfg,
                             struct Serial* serial,
                             const bool more)
 {
-        json_objStartString(serial, "autoLoggerCfg");
+        json_objStartString(serial, "sdLogCtrlCfg");
         json_bool(serial, "en", cfg->enabled, true);
         json_string(serial, "channel", cfg->channel, true);
         get_auto_control_trigger(serial, &cfg->start, "start", true);

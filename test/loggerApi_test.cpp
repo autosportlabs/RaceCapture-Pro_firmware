@@ -1644,7 +1644,7 @@ void LoggerApiTest::testGetAutoLoggerCfgDefault() {
         Object json;
         stringToJson(response, json);
 
-        Object galc = json["autoLoggerCfg"];
+        Object galc = json["sdLogCtrlCfg"];
         CPPUNIT_ASSERT_EQUAL(alc.enabled, (bool)(Boolean)galc["en"]);
         CPPUNIT_ASSERT_EQUAL(string(alc.channel), (string)(String)galc["channel"]);
 
@@ -1672,7 +1672,7 @@ void LoggerApiTest::testSetAutoLoggerCfg() {
         CPPUNIT_ASSERT_EQUAL((float) 34.5, cfg->stop.threshold);
         CPPUNIT_ASSERT_EQUAL(false, cfg->stop.greater_than);
 
-        assertGenericResponse(response, "setAutoLoggerCfg", API_SUCCESS);
+        assertGenericResponse(response, "setSdLogCtrlCfg", API_SUCCESS);
 }
 
 void LoggerApiTest::testGetCameraControlCfgDefault() {

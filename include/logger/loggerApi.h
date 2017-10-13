@@ -73,8 +73,8 @@ CPP_GUARD_BEGIN
 
 #if SDCARD_SUPPORT
 #define AUTOLOGGING_METHODS                                     \
-    API_METHOD("getAutoLoggerCfg", api_get_auto_logger_cfg)     \
-    API_METHOD("setAutoLoggerCfg", api_set_auto_logger_cfg)
+    API_METHOD("getSdLogCtrlCfg", api_get_auto_logger_cfg)     \
+    API_METHOD("setSdLogCtrlCfg", api_set_auto_logger_cfg)
 #else
 #define AUTOLOGGING_METHODS
 #endif
