@@ -40,6 +40,7 @@ CPP_GUARD_BEGIN
 #define CELLULAR_SUPPORT	1
 #define BLUETOOTH_SUPPORT	1
 #define WIFI_SUPPORT		1
+#define CAMERA_CONTROL      1
 
 //configuration
 #define MAX_TRACKS				240

@@ -15,6 +15,7 @@
 #define USB_SERIAL_SUPPORT	    1
 #define VIRTUAL_CHANNEL_SUPPORT	1
 #define WIFI_SUPPORT		    1
+#define CAMERA_CONTROL          1
 
 /* Wifi Specific Info */
 #define WIFI_MAX_BAUD           921600

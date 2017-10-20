@@ -19,100 +19,93 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "api.h"
-#include "auto_logger.h"
+#include "camera_control.h"
 #include "cpp_guard.h"
 #include "dateTime.h"
-#include "loggerTaskEx.h"
+#include "api.h"
 #include "printk.h"
 #include <stdbool.h>
+#include "wifi.h"
 #include "loggerSampleData.h"
 #include <string.h>
 
-#define LOG_PFX   "[auto_logger] "
+#define LOG_PFX			"[cam_ctrl] "
 
-#define DEFAULT_AUTO_LOGGER_CHANNEL "Speed"
-
-/*
- * NOTE:
- * We use the logging bool here because it helps us prevent contention
- * with manual user directives.  In example it will allow a user to start
- * logging using the manual button and not have the auto logger fight them
- * by shutting logging off right away.  Vice versa applies when coming off
- * the track.  It runs on the assumption that changing logging to a state
- * that it is already in is a no-op.
- */
+#define DEFAULT_CAMERA_CONTROL_CHANNEL "Speed"
 
 static struct {
-        struct auto_logger_config *cfg;
+        struct camera_control_config *cfg;
         struct auto_control_state control_state;
-} auto_logger_state;
+} camera_control_state;
 
-void auto_logger_reset_config(struct auto_logger_config* cfg)
+void camera_control_reset_config(struct camera_control_config* cfg)
 {
-        cfg->enabled = true;
-        strcpy(cfg->channel, DEFAULT_AUTO_LOGGER_CHANNEL);
+        cfg->enabled = false;
+        strcpy(cfg->channel, DEFAULT_CAMERA_CONTROL_CHANNEL);
+        cfg->make_model = CAMERA_MAKEMODEL_GOPRO_HERO2_3;
         auto_control_reset_trigger(&cfg->start, &cfg->stop);
 }
 
-void auto_logger_get_config(struct auto_logger_config* cfg,
+void camera_control_get_config(struct camera_control_config* cfg,
                             struct Serial* serial,
                             const bool more)
 {
-        json_objStartString(serial, "sdLogCtrlCfg");
+        json_objStartString(serial, "camCtrlCfg");
         json_bool(serial, "en", cfg->enabled, true);
+        json_int(serial, "makeModel", cfg->make_model, true);
         json_string(serial, "channel", cfg->channel, true);
         get_auto_control_trigger(serial, &cfg->start, "start", true);
         get_auto_control_trigger(serial, &cfg->stop, "stop", false);
         json_objEnd(serial, more);
 }
 
-bool auto_logger_set_config(struct auto_logger_config* cfg,
+bool camera_control_set_config(struct camera_control_config* cfg,
                             const jsmntok_t *json)
 {
         jsmn_exists_set_val_bool(json, "en", &cfg->enabled);
         jsmn_exists_set_val_string(json, "channel", cfg->channel, DEFAULT_LABEL_LENGTH, true);
+        jsmn_exists_set_val_uint8(json, "makeModel", &cfg->make_model, NULL);
         set_auto_control_trigger(&cfg->start, "start", json);
         set_auto_control_trigger(&cfg->stop, "stop", json);
         return true;
 }
 
-static void auto_logger_sample_cb(const struct sample* sample,
+static void camera_control_sample_cb(const struct sample* sample,
                            const int tick, void* data)
 {
-        if (!auto_logger_state.cfg || !auto_logger_state.cfg->enabled)
+        if (!camera_control_state.cfg || !camera_control_state.cfg->enabled)
                 return;
 
         double value;
-        if (!get_sample_value_by_name(sample, auto_logger_state.cfg->channel, &value))
+        if (!get_sample_value_by_name(sample, camera_control_state.cfg->channel, &value))
                 return;
 
         enum auto_control_trigger_result res = auto_control_check_trigger(value,
-                                                                          &auto_logger_state.cfg->start,
-                                                                          &auto_logger_state.cfg->stop,
-                                                                          &auto_logger_state.control_state);
+                                                                             &camera_control_state.cfg->start,
+                                                                             &camera_control_state.cfg->stop,
+                                                                             &camera_control_state.control_state);
         switch(res){
                 case AUTO_CONTROL_TRIGGERED:
-                        startLogging();
-                        pr_info(LOG_PFX "Auto-starting logging\r\n");
+                        wifi_trigger_camera(true);
+                        pr_info(LOG_PFX "Auto-starting camera\r\n");
                         break;
                 case AUTO_CONTROL_UNTRIGGERED:
-                        stopLogging();
-                        pr_info(LOG_PFX "Auto-stopping logging\r\n");
+                        wifi_trigger_camera(false);
+                        pr_info(LOG_PFX "Auto-stopping camera\r\n");
                         break;
                 default:
                         break;
         }
 }
 
-bool auto_logger_init(struct auto_logger_config* cfg)
+bool camera_control_init(struct camera_control_config* cfg)
 {
         if (!cfg)
                 return false;
 
-        auto_logger_state.cfg = cfg;
-        auto_control_init_state(&auto_logger_state.control_state);
+        camera_control_state.cfg = cfg;
+        auto_control_init_state(&camera_control_state.control_state);
 
-        logger_sample_create_callback(auto_logger_sample_cb, 10, NULL);
+        logger_sample_create_callback(camera_control_sample_cb, 10, NULL);
         return true;
 }

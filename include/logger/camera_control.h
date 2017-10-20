@@ -19,38 +19,41 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _AUTO_LOGGER_H_
-#define _AUTO_LOGGER_H_
+#ifndef _CAMERA_CONTROL_H_
+#define _CAMERA_CONTROL_H_
 
 #include "cpp_guard.h"
-#include "serial.h"
-#include "jsmn.h"
 #include <stdbool.h>
+#include "jsmn.h"
+#include "gps.h"
 #include "channel_config.h"
 #include "auto_control.h"
-
-
 CPP_GUARD_BEGIN
 
+enum camera_make_model {
+    CAMERA_MAKEMODEL_GOPRO_HERO2_3 = 0,
+    CAMERA_MAKEMODEL_GOPRO_HERO4_5 = 1,
+};
 
-struct auto_logger_config {
+struct camera_control_config {
         bool enabled;
+        uint8_t make_model;
         char channel[DEFAULT_LABEL_LENGTH];
         struct auto_control_trigger start;
         struct auto_control_trigger stop;
 };
 
-void auto_logger_reset_config(struct auto_logger_config* cfg);
+void camera_control_reset_config(struct camera_control_config* cfg);
 
-void auto_logger_get_config(struct auto_logger_config* cfg,
+void camera_control_get_config(struct camera_control_config* cfg,
                             struct Serial* serial,
                             const bool more);
 
-bool auto_logger_set_config(struct auto_logger_config* cfg,
+bool camera_control_set_config(struct camera_control_config* cfg,
                             const jsmntok_t *json);
 
-bool auto_logger_init(struct auto_logger_config* cfg);
+bool camera_control_init(struct camera_control_config* cfg);
 
 CPP_GUARD_END
 
-#endif /* _AUTO_LOGGER_H_ */
+#endif /* _CAMERA_CONTROL_H_ */

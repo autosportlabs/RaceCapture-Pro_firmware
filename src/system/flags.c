@@ -90,6 +90,14 @@ static const char* feature_flags[] = {
 #if WIFI_SUPPORT > 0
         FEATURE_FLAG("wifi")
 #endif
+
+#if SDCARD_SUPPORT
+		FEATURE_FLAG("sd")
+#endif
+
+#if CAMERA_CONTROL
+		FEATURE_FLAG("camctl")
+#endif
         NULL, /* Always NULL terminated! */
 };
 

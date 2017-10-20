@@ -1,1 +1,1 @@
-{"setAutoLoggerCfg":{"active": true,"start":{"speed":45.6,"time":3},"stop":{"time":42,"speed":34.5}}}
+{"setSdLogCtrlCfg":{"en": true, "channel":"Bar", "start":{"thresh":45.6, "gt":true, "time":3},"stop":{"time":42,"thresh":34.5, "gt":false}}}

@@ -38,7 +38,6 @@ CPP_GUARD_BEGIN
 	API_METHOD("calImu", api_calibrateImu)				\
 	API_METHOD("facReset", api_factoryReset)			\
 	API_METHOD("flashCfg", api_flashConfig)				\
-	API_METHOD("getAutoLoggerCfg", api_get_auto_logger_cfg)		\
 	API_METHOD("getCanCfg", api_getCanConfig)			\
 	API_METHOD("getCanChanCfg", api_get_can_channel_config) \
 	API_METHOD("setCanChanCfg", api_set_can_channel_config) \
@@ -59,7 +58,6 @@ CPP_GUARD_BEGIN
 	API_METHOD("log", api_log)					\
 	API_METHOD("s", api_sampleData)					\
 	API_METHOD("setActiveTrack", api_set_active_track)		\
-	API_METHOD("setAutoLoggerCfg", api_set_auto_logger_cfg)		\
 	API_METHOD("setCanCfg", api_setCanConfig)			\
 	API_METHOD("setConnCfg", api_setConnectivityConfig)		\
 	API_METHOD("setGpsCfg", api_setGpsConfig)			\
@@ -71,6 +69,23 @@ CPP_GUARD_BEGIN
 	API_METHOD("setTrackCfg", api_setTrackConfig)			\
 	API_METHOD("setWifiCfg", api_set_wifi_cfg)			\
 	API_METHOD("sysReset", api_systemReset)				\
+
+
+#if SDCARD_SUPPORT
+#define AUTOLOGGING_METHODS                                     \
+    API_METHOD("getSdLogCtrlCfg", api_get_auto_logger_cfg)     \
+    API_METHOD("setSdLogCtrlCfg", api_set_auto_logger_cfg)
+#else
+#define AUTOLOGGING_METHODS
+#endif
+
+#if CAMERA_CONTROL  > 0
+#define CAMERA_CONTROL_METHODS                                  \
+    API_METHOD("getCamCtrlCfg", api_get_camera_control_cfg)     \
+    API_METHOD("setCamCtrlCfg", api_set_camera_control_cfg)
+#else
+#define CAMERA_CONTROL_METHODS
+#endif
 
 #if ANALOG_CHANNELS > 0
 #define ANALOG_API_METHODS                              \
@@ -114,6 +129,8 @@ CPP_GUARD_BEGIN
 #endif
 
 #define API_METHODS                             \
+        AUTOLOGGING_METHODS                     \
+        CAMERA_CONTROL_METHODS                  \
         BASE_API_METHODS                        \
         ANALOG_API_METHODS                      \
         PWM_API_METHODS                         \
@@ -186,8 +203,16 @@ int api_set_telemetry(struct Serial *serial, const jsmntok_t *json);
 /* Volatile setter of active Track */
 int api_set_active_track(struct Serial *serial, const jsmntok_t *json);
 
+#if SDCARD_SUPPORT
 int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
+#if CAMERA_CONTROL
+int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
 CPP_GUARD_END
 
 #endif /* LOGGERAPI_H_ */

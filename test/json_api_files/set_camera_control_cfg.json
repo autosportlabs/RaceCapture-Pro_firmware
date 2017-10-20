@@ -1,0 +1,1 @@
+{"setCamCtrlCfg":{"en": true, "channel": "Foo", "makeModel" : 1, "start":{"thresh":11.1, "gt":true, "time":5},"stop":{"time":33,"gt":false, "thresh":9.9}}}

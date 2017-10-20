@@ -111,7 +111,9 @@ $(RCP_SRC)/imu/imu.c \
 $(RCP_SRC)/jsmn/jsmn.c \
 $(RCP_SRC)/lap_stats/lap_stats.c \
 $(RCP_SRC)/launch_control.c \
+$(RCP_SRC)/logger/auto_control.c \
 $(RCP_SRC)/logger/auto_logger.c \
+$(RCP_SRC)/logger/camera_control.c \
 $(RCP_SRC)/logger/channel_config.c \
 $(RCP_SRC)/logger/connectivityTask.c \
 $(RCP_SRC)/logger/fileWriter.c \
