@@ -52,7 +52,7 @@ struct wifi_cfg {
         struct wifi_ap_cfg ap;
 };
 
-void wifi_trigger_camera(bool enabled);
+void wifi_trigger_camera(bool enabled, uint8_t make_model);
 
 bool wifi_init_task(const int wifi_task_priority,
                     const int wifi_drv_priority);

@@ -86,11 +86,11 @@ static void camera_control_sample_cb(const struct sample* sample,
                                                                              &camera_control_state.control_state);
         switch(res){
                 case AUTO_CONTROL_TRIGGERED:
-                        wifi_trigger_camera(true);
+                        wifi_trigger_camera(true, camera_control_state.cfg->make_model);
                         pr_info(LOG_PFX "Auto-starting camera\r\n");
                         break;
                 case AUTO_CONTROL_UNTRIGGERED:
-                        wifi_trigger_camera(false);
+                        wifi_trigger_camera(false, camera_control_state.cfg->make_model);
                         pr_info(LOG_PFX "Auto-stopping camera\r\n");
                         break;
                 default:

@@ -129,6 +129,11 @@ struct wifi_sample_data {
         size_t tick;
 };
 
+struct wifi_camera_control {
+        bool camera_state;
+        uint8_t camera_make_model;
+};
+
 /**
  * Event struct used for all events that come into our wifi task
  */
@@ -141,7 +146,7 @@ struct wifi_event {
                 TASK_CAMERA_CONTROL
         } task;
         union {
-        		bool camera_state;
+                struct wifi_camera_control camera_control;
                 struct wifi_sample_data sample;
                 struct Serial* serial;
         } data;
@@ -221,11 +226,12 @@ static void wifi_sample_cb(const struct sample* sample,
 	send_event(&event, "Sample CB", false);
 }
 
-void wifi_trigger_camera(bool enabled)
+void wifi_trigger_camera(bool enabled, uint8_t make_model)
 {
         struct wifi_event event = {
-                .task = TASK_CAMERA_CONTROL,
-				.data.camera_state = enabled,
+                    .task = TASK_CAMERA_CONTROL,
+                    .data.camera_control = {.camera_state = enabled,
+                    .camera_make_model = make_model},
         };
 
         /* Send the message here to wake the timer */
@@ -531,23 +537,22 @@ do_beacon_exit:
 /* TODO this should get broken out to a modular design */
 
 /* Camera control for Hero 4+, including session */
-/*
-static void send_camera_control(struct Serial* serial, const char* ips[])
+
+static void send_camera_control_gopro4_5(struct Serial* serial, const bool enabled)
 {
-    if (start) {
+    if (enabled) {
             serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=1 HTTP/1.0\r\n\r\n");
     }
     else {
             serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=0 HTTP/1.0\r\n\r\n");
     }
-    start = !start;
 }
-*/
+
 
 /* Camera control for Hero 2,3
  * Format is: GET /bacpac/SH?t=<wifi-password>&p=<shutter-param>
  */
-static void send_camera_control(struct Serial* serial, const bool enabled)
+static void send_camera_control_gopro2_3(struct Serial* serial, const bool enabled)
 {
     static const char preamble[] = "GET /bacpac/SH?t=";
     static const char epilogue[] = " HTTP/1.0\r\n\r\n";
@@ -565,13 +570,16 @@ static void send_camera_control(struct Serial* serial, const bool enabled)
     serial_write_s(serial, command);
 }
 
-static void do_camera_control(const bool enabled)
+static void do_camera_control(struct wifi_camera_control *camera_control)
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
 
-        if (!is_valid_ipv4(client_ipv4->address))
-                    /* Then don't bother since we don't have a clinet address */
-                    return;
+        if (!is_valid_ipv4(client_ipv4->address)){
+                /* Then don't bother since we don't have a clinet address */
+                pr_warning(LOG_PFX "Cannot control camera: WiFi Client not connected\r\n");
+                return;
+
+        }
 
 
         /*
@@ -599,12 +607,22 @@ static void do_camera_control(const bool enabled)
 
         struct Serial* serial = state.camera_control.serial;
         if (!serial) {
-                pr_warning("Unable to create Serial for Camera Control\r\n");
+                pr_warning(LOG_PFX "Unable to create Serial for Camera Control\r\n");
                 goto do_camera_control_exit;
         }
 
-        send_camera_control(serial, enabled);
-        pr_info_str_msg(LOG_PFX "Camera control: ", enabled ? "starting" : "stopping");
+        switch(camera_control->camera_make_model) {
+                case CAMERA_MAKEMODEL_GOPRO_HERO2_3:
+                        send_camera_control_gopro2_3(serial, camera_control->camera_state);
+                        break;
+                case CAMERA_MAKEMODEL_GOPRO_HERO4_5:
+                        send_camera_control_gopro4_5(serial, camera_control->camera_state);
+                        break;
+                default:
+                        pr_warning_int_msg(LOG_PFX "Invalid camera make/model: ", camera_control->camera_make_model);
+                        break;
+        }
+        pr_info_str_msg(LOG_PFX "Camera control: ", camera_control->camera_state ? "starting" : "stopping");
 
         /* Now flush all incomming data since we don't care about it. */
         serial_purge_rx_queue(serial);
@@ -663,7 +681,7 @@ static void _task(void *params)
                         process_sample(&event.data.sample);
                         break;
                 case TASK_CAMERA_CONTROL:
-                        do_camera_control(event.data.camera_state);
+                        do_camera_control(&event.data.camera_control);
                         break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);

@@ -434,12 +434,12 @@ static void socket_state_changed_cb(const size_t chan_id,
 		pr_info_int_msg(LOG_PFX "Socket closed on channel ",
 				chan_id);
 		socket_disconnect_handler(chan_id);
-		if (esp8266_state.last_socket_connect && ticksToMs(getCurrentTicks() - esp8266_state.last_socket_connect) < BAD_WIFI_STATE_TIMEOUT_MS) {
-		        pr_info("Wifi in bad state!\r\n");
-		        delayMs(5000);
-	            esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
-	            cmd_set_check(CHECK_WIFI_DEVICE);
-		}
+//		if (esp8266_state.last_socket_connect && ticksToMs(getCurrentTicks() - esp8266_state.last_socket_connect) < BAD_WIFI_STATE_TIMEOUT_MS) {
+//		        pr_info("Wifi in bad state!\r\n");
+//		        delayMs(10000);
+//	            esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
+//	            cmd_set_check(CHECK_WIFI_DEVICE);
+//		}
 		break;
 	case SOCKET_ACTION_CONNECT:
 		pr_info_int_msg(LOG_PFX "Socket connected on channel ",
