@@ -64,7 +64,7 @@
 
 //system info
 #define DEVICE_NAME                 "RCT"
-#define FRIENDLY_DEVICE_NAME        "RaceCapture"
+#define FRIENDLY_DEVICE_NAME        "RaceCapture/Track"
 
 /* LUA Configuration */
 
