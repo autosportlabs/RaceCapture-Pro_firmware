@@ -399,7 +399,7 @@ bool jsmn_exists_set_val_uint32(const jsmntok_t* root, const char* field,
     if (!node)
         return false;
 
-    *val = atoi(node->data);
+    *val = strtoul(node->data, NULL, 10);
     return true;
 }
 

@@ -1485,7 +1485,7 @@ int api_getObd2Config(struct Serial *serial, const jsmntok_t *json)
         json_objStart(serial);
         json_channelConfig(serial, &(pidCfg->mapping.channel_cfg), 1);
         json_put_can_mapping(serial, &(pidCfg->mapping), 1);
-        json_int(serial,"pid",pidCfg->pid, 1);
+        json_uint(serial,"pid",pidCfg->pid, 1);
         json_int(serial, "mode", pidCfg->mode, 1);
         json_bool(serial, "pass", pidCfg->passive, 0);
         json_objEnd(serial, i < enabledPids - 1);
