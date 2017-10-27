@@ -345,7 +345,6 @@ static bool sara_u280_get_sim_info(struct serial_buffer *sb,
         bool status = false;
         status = sara_u280_get_subscriber_number(sb, ci);
         status = sara_u280_get_imei(sb, ci) && status;
-        status = sara_u280_get_signal_strength(sb, ci) && status;
         return status;
 }
 
@@ -355,6 +354,7 @@ static bool sara_u280_register_on_network(struct serial_buffer *sb,
         /* Check our status on the network */
         for (size_t tries = NET_REG_ATTEMPTS; tries; --tries) {
                 sara_u280_get_net_reg_status(sb, ci);
+                sara_u280_get_signal_strength(sb, ci);
 
                 switch(ci->net_status) {
                 case CELLULAR_NETWORK_DENIED:
