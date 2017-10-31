@@ -1,3 +1,13 @@
+= 2.13.0 =
+* Add GoPro camera control (experimental)
+* Switch default APN to FreedomPop
+* Expose current channel values in Lua (inc. direct CAN mapping)
+* Enable auto-logger by default
+* Increase Lua memory availability by 20%
+* Read cellular signal after registered on network to ensure getting a valid value
+* Ensure OBDII PID mode is returned as unsigned value
+* Update firmware 'friendly name' for RaceCapture/Track to RaceCapture/Track (was just RaceCapture)
+
 = 2.12.0 = 
 * Added obd2 channels capacity in getCapabilities API #940
 * Increase number of OBDII channels from 5 to 10 for RaceCapture/Track; 10 to 20 for RaceCapture/Pro #936
