@@ -210,7 +210,12 @@ void loggerTaskEx(void *params)
 
                 const bool is_logging = logging_is_active();
 
-                if ((is_logging && currentTicks % loggingSampleRate == 0) || (currentTicks % BACKGROUND_SAMPLE_RATE == 0))
+                /**
+                 * Ensure we refresh the internal sensors at either the
+                 * logging rate or at least at background sample rate
+                 */
+                if ((is_logging && currentTicks % loggingSampleRate == 0) ||
+                                (currentTicks % BACKGROUND_SAMPLE_RATE == 0))
                         doBackgroundSampling();
 
                 if (g_loggingShouldRun && !is_logging) {
