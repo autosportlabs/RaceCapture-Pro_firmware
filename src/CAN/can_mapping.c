@@ -22,6 +22,8 @@
 #include "byteswap.h"
 #include "units_conversion.h"
 #include "panic.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
@@ -42,9 +44,12 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
         uint32_t raw_value = (raw_data >> (64 - offset - length)) & bitmask;
 
         /* normalize endian */
+        printf("the raw value before swap %u\n", raw_value);
+
         if (!mapping->big_endian) {
                 raw_value = swap_uint_length(raw_value, length);
         }
+        printf("the raw value after swap %u (%d)\n", raw_value, length);
 
         /* convert type */
         switch (mapping->type) {

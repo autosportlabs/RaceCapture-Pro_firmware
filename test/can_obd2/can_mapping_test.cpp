@@ -30,6 +30,7 @@
  * #define CAN_MAPPING_TEST_DEBUG
  */
 
+
 CPPUNIT_TEST_SUITE_REGISTRATION( CANMappingTest );
 
 
@@ -79,7 +80,7 @@ void CANMappingTest::extract_test_bit_mode(void)
 
         for (size_t bitpattern = 0; bitpattern <= 1; bitpattern++){
                 for (size_t endian = 0; endian <= 1; endian++){
-                        for (uint8_t length = 1; length <= 32; length++ ) {
+                        for (uint8_t length = 0; length <= 32; length++ ) {
 
                                 uint64_t test_value;
                                 if (!bitpattern) {
@@ -90,9 +91,10 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         /* test with bit pattern of 101010... */
                                         test_value = 0x5555555555555555 & (((uint64_t)1 << length) - 1);
                                 }
-
+                                printf("test value %d\n", test_value);
                                 /* shift it all the way to the left */
                                 uint64_t shifted_test_value = test_value << (64-length);
+                                printf("shifted test value %llu\n", shifted_test_value);
 
                                 for (uint8_t offset = 0; offset < (CAN_MSG_SIZE * 8) - length + 1; offset++) {
                                         CAN_msg msg;
@@ -108,20 +110,26 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         /* now shift the value by the offset */
                                         uint64_t offset_test_value = shifted_test_value >> offset;
 
+                                        printf("offset test value %llu\n", shifted_test_value);
+
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+                                        printf("swapping\n");
                                         /* account for platform's endian-ness */
-                                        offset_test_value= swap_uint64(offset_test_value);
+                                        offset_test_value = swap_uint64(offset_test_value);
 #endif
+                                        printf("offset test value after swap %llu\n", offset_test_value);
+
                                         msg.data64 = offset_test_value;
 
                                         float value = canmapping_extract_value(msg.data64, &mapping);
 
                                         /* prepare the comparison value */
                                         uint64_t compare_value = test_value;
-                                        if (!mapping.big_endian) {
-                                                compare_value = swap_uint_length(test_value, length);
-                                        }
-#ifdef CAN_MAPPING_TEST_DEBUG
+//                                        if (!mapping.big_endian) {
+  //                                              compare_value = swap_uint_length(test_value, length);
+    //                                    }
+//#ifdef CAN_MAPPING_TEST_DEBUG
+                                        printf("compare value after maybe swapping %llu\n", compare_value);
                                         printf("bitmode test: endian=%u / test_value=%lu / offset=%d / length=%d / return = %f\r\n" ,
                                                mapping.big_endian, compare_value, offset, length, value);
                                         printf("CAN data: ");
@@ -142,7 +150,7 @@ void CANMappingTest::extract_test_bit_mode(void)
                                                 printf("%s ", b);
                                         }
                                         printf("\r\n");
-#endif
+//#endif
 
                                         CPPUNIT_ASSERT_EQUAL((float)compare_value, value);
                                 }
