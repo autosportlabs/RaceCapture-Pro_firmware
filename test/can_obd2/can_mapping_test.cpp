@@ -175,7 +175,7 @@ void CANMappingTest::extract_test(void)
                         test_value = (test_value << 8) + length;
                         uint32_t can_value = test_value;
                         if (!endian) {
-                                can_value = to_little_endian_bitmode(can_value, length * 8);
+                                can_value = decode_little_endian_bitmode(can_value, length * 8);
                         }
 
                         for (uint8_t offset = 0; offset < CAN_MSG_SIZE - length + 1; offset++) {

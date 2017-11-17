@@ -61,7 +61,7 @@ uint64_t swap_uint64( uint64_t val );
 /*
  * Byte swap based on specified bit length
  */
-uint64_t to_little_endian_bitmode(uint64_t val, size_t bit_length);
+uint64_t decode_little_endian_bitmode(uint64_t val, size_t bit_length);
 CPP_GUARD_END
 
 #endif /* _BYTESWAP_H_ */

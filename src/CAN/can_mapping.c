@@ -45,7 +45,7 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 
         /* normalize endian */
         if (!mapping->big_endian) {
-                raw_value = to_little_endian_bitmode(raw_value, length);
+                raw_value = decode_little_endian_bitmode(raw_value, length);
         }
 
         /* convert type */
