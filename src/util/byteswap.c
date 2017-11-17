@@ -59,7 +59,17 @@ uint64_t swap_uint64(uint64_t val)
              (val & 0x00FF000000000000UL) >> 40 | (val & 0xFF00000000000000UL) >> 56;
 }
 
-uint64_t swap_uint_length(uint64_t val, size_t bit_length)
+uint64_t to_little_endian_bitmode(uint64_t val, size_t bit_length)
+/*
+ * Convert a uint64 to little endian with variable bit length, using byte level granularity for endian-ness
+ * example conversion:
+ * incoming 12 bit big endian: xxxxHHHH LLLLLLLL
+ * converts to: LLLLLLLL HHHHxxxx
+ *
+ * @param val incoming value
+ * @param bit_length number of bits to swap
+ * @return byte swapped value
+ */
 {
     if (bit_length <= 8) return val;
     if (bit_length <= 16){
