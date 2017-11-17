@@ -91,10 +91,23 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         /* test with bit pattern of 101010... */
                                         test_value = 0x5555555555555555 & (((uint64_t)1 << length) - 1);
                                 }
-                                printf("test value %d\n", test_value);
+
+                                uint64_t encoded_value = test_value;
+                                if (endian == 0) {
+                                        /* perform byte oriented endian flip that accounts for variable bit length */
+                                        if (length > 8 && length <=16) {
+                                                encoded_value = ((encoded_value & 0xFF) << (length - 8)) + (encoded_value >> 8);
+                                        }
+                                        if (length > 16 && length <=24) {
+                                                encoded_value = (swap_uint16(encoded_value) << (length - 16)) + (encoded_value >> 16);
+                                        }
+                                        if (length > 24 && length <=32) {
+                                                encoded_value = (swap_uint24(encoded_value) << (length - 24)) + (encoded_value >> 24);
+                                        }
+                                }
+
                                 /* shift it all the way to the left */
-                                uint64_t shifted_test_value = test_value << (64-length);
-                                printf("shifted test value %llu\n", shifted_test_value);
+                                uint64_t shifted_test_value = encoded_value << (64-length);
 
                                 for (uint8_t offset = 0; offset < (CAN_MSG_SIZE * 8) - length + 1; offset++) {
                                         CAN_msg msg;
@@ -110,28 +123,18 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         /* now shift the value by the offset */
                                         uint64_t offset_test_value = shifted_test_value >> offset;
 
-                                        printf("offset test value %llu\n", shifted_test_value);
-
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-                                        printf("swapping\n");
                                         /* account for platform's endian-ness */
                                         offset_test_value = swap_uint64(offset_test_value);
 #endif
-                                        printf("offset test value after swap %llu\n", offset_test_value);
-
                                         msg.data64 = offset_test_value;
 
                                         float value = canmapping_extract_value(msg.data64, &mapping);
 
                                         /* prepare the comparison value */
-                                        uint64_t compare_value = test_value;
-//                                        if (!mapping.big_endian) {
-  //                                              compare_value = swap_uint_length(test_value, length);
-    //                                    }
 //#ifdef CAN_MAPPING_TEST_DEBUG
-                                        printf("compare value after maybe swapping %llu\n", compare_value);
                                         printf("bitmode test: endian=%u / test_value=%lu / offset=%d / length=%d / return = %f\r\n" ,
-                                               mapping.big_endian, compare_value, offset, length, value);
+                                               mapping.big_endian, test_value, offset, length, value);
                                         printf("CAN data: ");
                                         for (size_t di = 0; di < CAN_MSG_SIZE; di++){
                                                 uint8_t d = msg.data[di];
@@ -152,7 +155,7 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         printf("\r\n");
 //#endif
 
-                                        CPPUNIT_ASSERT_EQUAL((float)compare_value, value);
+                                        CPPUNIT_ASSERT_EQUAL((float)test_value, value);
                                 }
                         }
                 }
