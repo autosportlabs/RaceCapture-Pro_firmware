@@ -519,9 +519,6 @@ typedef struct _LoggerConfig {
     /* stores the version of this firmware */
     VersionInfo RcpVersionInfo;
 
-    //PWM/Analog out configurations
-    unsigned short PWMClockFrequency;
-
     // Time Config
     struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
 
@@ -532,6 +529,8 @@ typedef struct _LoggerConfig {
 
 #if PWM_CHANNELS > 0
     //PWM configuration
+    //PWM/Analog out configurations
+    unsigned short PWMClockFrequency;
     PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 #endif
 
@@ -558,8 +557,10 @@ typedef struct _LoggerConfig {
     //OBD2 Config
     OBD2Config OBD2Configs;
 
+#if GPS_HARDWARE_SUPPORT
     //GPS Configuration
     GPSConfig GPSConfigs;
+#endif
 
     //Lap Configuration
     LapConfig LapConfigs;
@@ -628,6 +629,7 @@ void reset_logger_config(void);
 int flash_default_logger_config(void);
 
 void logger_config_reset_gps_config(GPSConfig *cfg);
+uint16_t logger_config_get_gps_sample_rate(void);
 
 enum CANMappingType filter_can_mapping_type(enum CANMappingType type);
 

@@ -1157,6 +1157,7 @@ int api_setTimerConfig(struct Serial *serial, const jsmntok_t *json)
 }
 #endif
 
+#if GPS_HARDWARE_SUPPORT
 static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg)
 {
     unsigned short rate = SAMPLE_DISABLED;
@@ -1268,6 +1269,7 @@ int api_setGpsConfig(struct Serial *serial, const jsmntok_t *json)
 	configChanged();
 	return API_SUCCESS;
 }
+#endif
 
 int api_getCanConfig(struct Serial *serial, const jsmntok_t *json)
 {

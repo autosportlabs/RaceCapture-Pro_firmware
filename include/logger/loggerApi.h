@@ -42,7 +42,6 @@ CPP_GUARD_BEGIN
 	API_METHOD("setCanChanCfg", api_set_can_channel_config) \
 	API_METHOD("getCapabilities", api_getCapabilities)		\
 	API_METHOD("getConnCfg", api_getConnectivityConfig)		\
-	API_METHOD("getGpsCfg", api_getGpsConfig)			\
 	API_METHOD("getLapCfg", api_getLapConfig)			\
 	API_METHOD("getLogfile", api_getLogfile)			\
 	API_METHOD("getMeta", api_getMeta)				\
@@ -58,7 +57,6 @@ CPP_GUARD_BEGIN
 	API_METHOD("setActiveTrack", api_set_active_track)		\
 	API_METHOD("setCanCfg", api_setCanConfig)			\
 	API_METHOD("setConnCfg", api_setConnectivityConfig)		\
-	API_METHOD("setGpsCfg", api_setGpsConfig)			\
 	API_METHOD("setLapCfg", api_setLapConfig)			\
 	API_METHOD("setLogfileLevel", api_setLogfileLevel)		\
 	API_METHOD("setObd2Cfg", api_setObd2Config)			\
@@ -67,6 +65,14 @@ CPP_GUARD_BEGIN
 	API_METHOD("setWifiCfg", api_set_wifi_cfg)			\
 	API_METHOD("sysReset", api_systemReset)				\
 
+#if GPS_HARDWARE_SUPPORT
+#define GPS_API_METHODS                         \
+    API_METHOD("getGpsCfg", api_getGpsConfig)   \
+    API_METHOD("setGpsCfg", api_setGpsConfig)   \
+
+#else
+#define GPS_API_METHODS
+#endif
 
 #if SDCARD_SUPPORT
 #define AUTOLOGGING_METHODS                                     \
@@ -138,6 +144,7 @@ CPP_GUARD_BEGIN
         AUTOLOGGING_METHODS                     \
         CAMERA_CONTROL_METHODS                  \
         BASE_API_METHODS                        \
+        GPS_API_METHODS                         \
         IMU_API_METHODS                         \
         ANALOG_API_METHODS                      \
         PWM_API_METHODS                         \

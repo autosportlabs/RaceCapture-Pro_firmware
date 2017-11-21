@@ -221,6 +221,7 @@ float get_imu_sample(int channelId)
 }
 #endif
 
+#if GPS_HARDWARE_SUPPORT
 static void* get_altitude_getter(const ChannelConfig *cc)
 {
 	return UNIT_LENGTH_METERS == units_get_unit(cc->units) ?
@@ -238,6 +239,7 @@ static void* get_speed_getter(const ChannelConfig *cc)
 	return UNIT_SPEED_KILOMETERS_HOUR == units_get_unit(cc->units) ?
 		getGPSSpeed : getGpsSpeedInMph;
 }
+#endif
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 {
@@ -325,6 +327,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     }
 #endif /* VIRTUAL_CHANNEL_SUPPORT */
 
+#if GPS_HARDWARE_SUPPORT
     GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
     chanCfg = &(gpsConfig->latitude);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getLatitude);
@@ -345,7 +348,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, GPS_getQuality);
     chanCfg = &(gpsConfig->DOP);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
-
+#endif
 
     LapConfig *trackConfig = &(loggerConfig->LapConfigs);
     chanCfg = &(trackConfig->lapCountCfg);

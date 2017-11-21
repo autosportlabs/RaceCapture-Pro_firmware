@@ -9,6 +9,7 @@
 #define MS_PER_TICK 1
 
 /* Support Flags */
+#define GPS_HARDWARE_SUPPORT     1
 #define BLUETOOTH_SUPPORT           0
 #define CELLULAR_SUPPORT	        0
 #define LUA_SUPPORT		            0

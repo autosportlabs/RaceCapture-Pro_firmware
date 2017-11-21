@@ -254,6 +254,14 @@ void logger_config_reset_gps_config(GPSConfig *cfg)
 	strcpy(cfg->speed.units, units_get_label(UNIT_SPEED_MILES_HOUR));
 }
 
+uint16_t logger_config_get_gps_sample_rate(void)
+{
+#if GPS_HARDWARE_SUPPORT
+        return getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate;
+#else
+        return 0;
+#endif
+}
 static void resetLapConfig(LapConfig *cfg)
 {
     *cfg = (LapConfig) DEFAULT_LAP_CONFIG;
@@ -536,6 +544,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
             }
     }
 
+#if GPS_HARDWARE_SUPPORT
     GPSConfig *gpsConfig = &(config->GPSConfigs);
     sr = gpsConfig->latitude.sampleRate;
     s = getHigherSampleRate(sr, s);
@@ -560,7 +569,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
 
     sr = gpsConfig->DOP.sampleRate;
     s = getHigherSampleRate(sr, s);
-
+#endif
 
     LapConfig *trackCfg = &(config->LapConfigs);
     sr = trackCfg->lapCountCfg.sampleRate;
@@ -647,6 +656,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
             }
     }
 
+#if GPS_HARDWARE_SUPPORT
     GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
     if (gpsConfigs->latitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
@@ -656,6 +666,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
     if (gpsConfigs->satellites.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->quality.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->DOP.sampleRate != SAMPLE_DISABLED) channels++;
+#endif
 
     LapConfig *lapConfig = &loggerConfig->LapConfigs;
     if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
@@ -709,7 +720,11 @@ void reset_logger_config(void)
     resetCanConfig(&lc->CanConfig);
     _reset_can_mapping_config(&lc->can_channel_cfg);
     resetOBD2Config(&lc->OBD2Configs);
+
+#if GPS_HARDWARE_SUPPORT
     logger_config_reset_gps_config(&lc->GPSConfigs);
+#endif
+
     resetLapConfig(&lc->LapConfigs);
     resetTrackConfig(&lc->TrackConfigs);
     resetConnectivityConfig(&lc->ConnectivityConfigs);
