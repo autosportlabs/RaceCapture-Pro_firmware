@@ -223,10 +223,16 @@ void loggerTaskEx(void *params)
                 /* Only reset the watchdog when we are configured and ready to rock */
                 watchdog_reset();
 
-                if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
+                const bool is_logging = logging_is_active();
+
+                /**
+                 * Ensure we refresh the internal sensors at either the
+                 * logging rate or at least at background sample rate
+                 */
+                if ((is_logging && currentTicks % loggingSampleRate == 0) ||
+                                (currentTicks % BACKGROUND_SAMPLE_RATE == 0))
                         doBackgroundSampling();
 
-                const bool is_logging = logging_is_active();
                 if (g_loggingShouldRun && !is_logging) {
                         logging_started();
                         const LoggerMessage logStartMsg = getLogStartMessage();
