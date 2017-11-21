@@ -202,6 +202,7 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
         if (obd2_channel_count == 0) {
         		/* if no OBD2 channels are enabled, don't malloc */
 				obd2_state.current_channel_states = NULL;
+    obd2_state.is_stale = false;
 				return true;
         }
 
