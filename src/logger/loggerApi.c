@@ -170,8 +170,10 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
         json_objEnd(serial, 1);
 
         json_objStartString(serial,"sampleRates");
-        json_int(serial, "sensor", MAX_SENSOR_SAMPLE_RATE, 1);
-        json_int(serial, "gps", MAX_GPS_SAMPLE_RATE, 0);
+#if GPS_HARDWARE_SUPPORT
+        json_int(serial, "gps", MAX_GPS_SAMPLE_RATE, 1);
+#endif
+        json_int(serial, "sensor", MAX_SENSOR_SAMPLE_RATE, 0);
         json_objEnd(serial, 1);
 
         json_objStartString(serial,"db");
