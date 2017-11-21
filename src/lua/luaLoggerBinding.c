@@ -121,12 +121,6 @@ static int lua_get_bg_streaming(lua_State *L)
         return 1;
 }
 
-static int lua_calibrate_imu_zero(lua_State *L)
-{
-        imu_calibrate_zero();
-        return 0;
-}
-
 static int lua_get_gps_at_start_finish(lua_State *L)
 {
         lua_pushboolean(L, getAtStartFinish());
@@ -593,6 +587,13 @@ static int lua_get_ticks_per_second(lua_State *L)
         return 1;
 }
 
+#if IMU_CHANNELS > 0
+static int lua_calibrate_imu_zero(lua_State *L)
+{
+        imu_calibrate_zero();
+        return 0;
+}
+
 static void validate_imu_channel(lua_State *l, const size_t channel)
 {
         if (channel >= CONFIG_IMU_CHANNELS)
@@ -623,7 +624,7 @@ static int lua_imu_read_raw(lua_State *L)
         lua_pushinteger(L, imu_read(channel));
         return 1;
 }
-
+#endif
 
 static int lua_init_can(lua_State *L)
 {
@@ -949,8 +950,11 @@ void registerLuaLoggerBindings(lua_State *L)
 
         lua_registerlight(L, "getAnalog", lua_get_analog);
 
+#if IMU_CHANNELS > 0
         lua_registerlight(L, "getImu", lua_imu_read);
         lua_registerlight(L, "getImuRaw", lua_imu_read_raw);
+        lua_registerlight(L, "calibrateImuZero", lua_calibrate_imu_zero);
+#endif
 
         lua_registerlight(L, "getGpsSats", lua_get_gps_sat_count);
         lua_registerlight(L, "getGpsPos", lua_get_gps_position);
@@ -987,8 +991,6 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "writeSer", lua_serial_write_line);
 
         lua_registerlight(L, "flashLoggerCfg", lua_flash_config);
-
-        lua_registerlight(L, "calibrateImuZero", lua_calibrate_imu_zero);
 
         lua_registerlight(L, "setBgStream", lua_set_bg_streaming);
         lua_registerlight(L, "getBgStream", lua_get_bg_streaming);

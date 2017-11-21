@@ -35,7 +35,6 @@ CPP_GUARD_BEGIN
 
 #define BASE_API_METHODS						\
 	API_METHOD("addTrackDb", api_addTrackDb)			\
-	API_METHOD("calImu", api_calibrateImu)				\
 	API_METHOD("facReset", api_factoryReset)			\
 	API_METHOD("flashCfg", api_flashConfig)				\
 	API_METHOD("getCanCfg", api_getCanConfig)			\
@@ -44,7 +43,6 @@ CPP_GUARD_BEGIN
 	API_METHOD("getCapabilities", api_getCapabilities)		\
 	API_METHOD("getConnCfg", api_getConnectivityConfig)		\
 	API_METHOD("getGpsCfg", api_getGpsConfig)			\
-	API_METHOD("getImuCfg", api_getImuConfig)			\
 	API_METHOD("getLapCfg", api_getLapConfig)			\
 	API_METHOD("getLogfile", api_getLogfile)			\
 	API_METHOD("getMeta", api_getMeta)				\
@@ -61,7 +59,6 @@ CPP_GUARD_BEGIN
 	API_METHOD("setCanCfg", api_setCanConfig)			\
 	API_METHOD("setConnCfg", api_setConnectivityConfig)		\
 	API_METHOD("setGpsCfg", api_setGpsConfig)			\
-	API_METHOD("setImuCfg", api_setImuConfig)			\
 	API_METHOD("setLapCfg", api_setLapConfig)			\
 	API_METHOD("setLogfileLevel", api_setLogfileLevel)		\
 	API_METHOD("setObd2Cfg", api_setObd2Config)			\
@@ -85,6 +82,15 @@ CPP_GUARD_BEGIN
     API_METHOD("setCamCtrlCfg", api_set_camera_control_cfg)
 #else
 #define CAMERA_CONTROL_METHODS
+#endif
+
+#if IMU_CHANNELS > 0
+#define IMU_API_METHODS                             \
+        API_METHOD("calImu", api_calibrateImu)      \
+        API_METHOD("getImuCfg", api_getImuConfig)   \
+        API_METHOD("setImuCfg", api_setImuConfig)
+#else
+#define IMU_API_METHODS
 #endif
 
 #if ANALOG_CHANNELS > 0
@@ -132,6 +138,7 @@ CPP_GUARD_BEGIN
         AUTOLOGGING_METHODS                     \
         CAMERA_CONTROL_METHODS                  \
         BASE_API_METHODS                        \
+        IMU_API_METHODS                         \
         ANALOG_API_METHODS                      \
         PWM_API_METHODS                         \
         GPIO_API_METHODS                        \

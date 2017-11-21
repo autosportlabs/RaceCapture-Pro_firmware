@@ -743,6 +743,8 @@ int api_getAnalogConfig(struct Serial *serial, const jsmntok_t * json)
     }
 }
 
+#if IMU_CHANNELS > 0
+
 static const jsmntok_t * setImuExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg)
 {
     ImuConfig *imuCfg = (ImuConfig *)cfg;
@@ -810,31 +812,6 @@ int api_getImuConfig(struct Serial *serial, const jsmntok_t *json)
     } else {
         return API_ERROR_PARAMETER;
     }
-}
-
-#ifdef FALSE
-// DELETE ME after June 1, 2014 if not used.
-static void setConfigGeneric(struct Serial *serial, const jsmntok_t * json, void *cfg, setExtField_func setExtField)
-{
-    int size = json->size;
-    if (json->type == JSMN_OBJECT && json->size % 2 == 0) {
-        json++;
-        for (int i = 0; i < size; i += 2 ) {
-            const jsmntok_t *nameTok = json;
-            jsmn_trimData(nameTok);
-            json++;
-            const jsmntok_t *valueTok = json;
-            json++;
-            if (valueTok->type == JSMN_PRIMITIVE || valueTok->type == JSMN_STRING)
-                jsmn_trimData(valueTok);
-
-            const char *name = nameTok->data;
-            const char *value = valueTok->data;
-
-            setExtField(valueTok, name, value, cfg);
-        }
-    }
-
 }
 #endif
 
