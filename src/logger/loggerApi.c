@@ -191,6 +191,7 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
+#if IMU_CHANNELS > 0
 static void get_imu_status(struct Serial *serial, const bool more)
 {
         const bool imu_init =
@@ -200,6 +201,7 @@ static void get_imu_status(struct Serial *serial, const bool more)
         json_bool(serial, "init", imu_init, false);
         json_objEnd(serial, more);
 }
+#endif
 
 static void get_wifi_status(struct Serial* serial, const bool more)
 {
