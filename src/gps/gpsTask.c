@@ -44,7 +44,7 @@ void setGpsDataLogging(bool enable)
 void GPSTask(void *pvParameters)
 {
         struct Serial *serial = serial_device_get(SERIAL_GPS);
-        const uint8_t targetSampleRate = logger_config_get_gps_sample_rate();
+        const uint8_t targetSampleRate = decodeSampleRate(logger_config_get_gps_sample_rate());
 
         /* Call this here to effectively reset lapstats */
         lapstats_config_changed();
