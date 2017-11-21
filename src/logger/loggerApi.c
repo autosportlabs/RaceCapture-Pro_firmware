@@ -308,7 +308,9 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
 	json_int(serial, "armed", lc_is_armed(), 0);
 	json_objEnd(serial, true);
 
+#if IMU_CHANNELS > 0
 	get_imu_status(serial, true);
+#endif
 	get_wifi_status(serial, false);
 
 	json_objEnd(serial, 0);
