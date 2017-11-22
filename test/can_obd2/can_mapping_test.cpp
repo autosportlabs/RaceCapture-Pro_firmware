@@ -88,8 +88,8 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         test_value = ((uint64_t)1 << length) - 1;
                                 }
                                 else {
-                                        /* test with bit pattern of 101010... */
-                                        test_value = 0x5555555555555555 & (((uint64_t)1 << length) - 1);
+                                        /* test with bit pattern ... */
+                                        test_value = 0xAA55AA55AA55AA55 & (((uint64_t)1 << length) - 1);
                                 }
 
                                 uint64_t encoded_value = test_value;
