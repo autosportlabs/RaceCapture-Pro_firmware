@@ -73,20 +73,20 @@ uint64_t decode_little_endian_bitmode(uint64_t val, size_t bit_length)
  * @return byte swapped value
  */
 {
-        if (bit_length <= 8) return val;
+        if (bit_length <= 8) return val & ((1 << bit_length) - 1);
         if (bit_length <= 16){
-                size_t partial_bit_length = bit_length - 8;
-                uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
+                const size_t partial_bit_length = bit_length - 8;
+                const uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
                 return ((val & partial_bit_mask) << 8) + ((val >> partial_bit_length) & 0xFF);
         }
         if (bit_length <= 24) {
-                size_t partial_bit_length = bit_length - 16;
-                uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
+                const size_t partial_bit_length = bit_length - 16;
+                const uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
                 return ((val & partial_bit_mask) << 16) + swap_uint16(val >> partial_bit_length);
         }
         if (bit_length <= 32) {
-                size_t partial_bit_length = bit_length - 24;
-                uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
+                const size_t partial_bit_length = bit_length - 24;
+                const uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
                 return ((val & partial_bit_mask) << 24) + swap_uint24(val >> partial_bit_length);
         }
         panic(PANIC_CAUSE_UNREACHABLE);
