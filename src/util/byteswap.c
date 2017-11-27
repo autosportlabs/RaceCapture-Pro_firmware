@@ -59,13 +59,36 @@ uint64_t swap_uint64(uint64_t val)
              (val & 0x00FF000000000000UL) >> 40 | (val & 0xFF00000000000000UL) >> 56;
 }
 
-uint64_t swap_uint_length(uint64_t val, size_t bit_length)
+uint64_t decode_little_endian_bitmode(uint64_t val, size_t bit_length)
+/*
+ * Convert a variable bit length little endian encoded stream, accounting for byte-level
+ * endian granularity, also accounting for remaining bits
+ *
+ * example conversion:
+ * incoming 12 bit stream:  LLLLLLLL HHHHxxxx
+ * converts to: xxxxHHHH LLLLLLLL
+ *
+ * @param val incoming value
+ * @param bit_length number of bits to swap
+ * @return byte swapped value
+ */
 {
-    if (bit_length <= 8) return val;
-    if (bit_length <= 16) return swap_uint16(val);
-    if (bit_length <= 24) return swap_uint24(val);
-    if (bit_length <= 32) return swap_uint32(val);
-    if (bit_length <= 64) return swap_uint64(val);
-    panic(PANIC_CAUSE_UNREACHABLE);
-    return 0; /* to make compiler happy */
+        if (bit_length <= 8) return val & ((1 << bit_length) - 1);
+        if (bit_length <= 16){
+                const size_t partial_bit_length = bit_length - 8;
+                const uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
+                return ((val & partial_bit_mask) << 8) + ((val >> partial_bit_length) & 0xFF);
+        }
+        if (bit_length <= 24) {
+                const size_t partial_bit_length = bit_length - 16;
+                const uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
+                return ((val & partial_bit_mask) << 16) + swap_uint16(val >> partial_bit_length);
+        }
+        if (bit_length <= 32) {
+                const size_t partial_bit_length = bit_length - 24;
+                const uint8_t partial_bit_mask = (1 << partial_bit_length) - 1;
+                return ((val & partial_bit_mask) << 24) + swap_uint24(val >> partial_bit_length);
+        }
+        panic(PANIC_CAUSE_UNREACHABLE);
+        return 0; /* to make compiler happy */
 }
