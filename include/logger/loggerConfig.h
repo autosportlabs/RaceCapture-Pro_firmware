@@ -344,11 +344,13 @@ typedef struct _CANMapping {
 
     /* the conversion filter to apply to quickly convert units without changing mapping */
     uint8_t conversion_filter_id;
+
+    /* sub ID index. If defined (>=0) then this uses the first byte to mach on a sub address */
+    int8_t sub_id;
 } CANMapping;
 
 typedef struct _CANChannel {
     /* The standard channel configuration */
-    ChannelConfig channel_cfg;
     CANMapping mapping;
 } CANChannel;
 

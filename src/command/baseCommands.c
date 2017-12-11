@@ -85,6 +85,15 @@ void ShowStats(struct Serial *serial, unsigned int argc, char **argv)
     putDataRowHeader(serial, "Size of ChannelSample");
     put_int(serial, sizeof(ChannelSample));
     put_crlf(serial);
+
+    putDataRowHeader(serial, "Size of CANChannel");
+    put_int(serial, sizeof(CANChannel));
+    put_crlf(serial);
+
+    putDataRowHeader(serial, "Size of PIDConfig");
+    put_int(serial, sizeof(PidConfig));
+    put_crlf(serial);
+
 }
 
 void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)

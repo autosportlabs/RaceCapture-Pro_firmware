@@ -1114,6 +1114,7 @@ void LoggerApiTest::check_can_mapping_config(Object &jch, CANMapping *mapping)
     CPPUNIT_ASSERT_EQUAL((float)(Number)jch["mult"], (float)mapping->multiplier);
     CPPUNIT_ASSERT_EQUAL((float)(Number)jch["div"], (float)mapping->divider);
     CPPUNIT_ASSERT_EQUAL((int)(Number)jch["id"], (int)mapping->can_id);
+    CPPUNIT_ASSERT_EQUAL((int)(Number)jch["subId"], (int)mapping->sub_id);
     CPPUNIT_ASSERT_EQUAL((int)(Number)jch["idMask"], (int)mapping->can_mask);
 }
 
@@ -1141,12 +1142,13 @@ void LoggerApiTest::testGetCanChanCfgFile(string filename)
 
     for(size_t i = 0; i < CONFIG_CAN_MAPPINGS; i++) {
         CANChannel *ch = &(cfg->can_channels[i]);
-        populateChannelConfig(&(ch->channel_cfg), i, 100);
+        populateChannelConfig(&(ch->mapping.channel_cfg), i, 100);
         CANMapping *mp = &(ch->mapping);
         mp->big_endian = true;
         mp->bit_mode = true;
         mp->can_channel = 2;
         mp->can_id = 1 + i;
+        mp->sub_id = 7 + i;
         mp->can_mask = 2 + i;
         mp->conversion_filter_id = 3 + i;
         mp->divider = (float)4 + i;
@@ -1167,11 +1169,12 @@ void LoggerApiTest::testGetCanChanCfgFile(string filename)
         string iString = stringStream.str();
 
         Object ch = (Object)json["canChanCfg"]["chans"][i];
-        check_channel_config(ch, &(cfg->can_channels[i].channel_cfg));
+        check_channel_config(ch, &(cfg->can_channels[i].mapping.channel_cfg));
         CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)ch["bigEndian"]);
         CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)ch["bm"]);
         CPPUNIT_ASSERT_EQUAL(2, (int)(Number)ch["bus"]);
         CPPUNIT_ASSERT_EQUAL((int)(1 + i), (int)(Number)ch["id"]);
+        CPPUNIT_ASSERT_EQUAL((int)(7 + i), (int)(Number)ch["subId"]);
         CPPUNIT_ASSERT_EQUAL((int)(2 + i), (int)(Number)ch["idMask"]);
         CPPUNIT_ASSERT_EQUAL((int)(3 + i), (int)(Number)ch["filtId"]);
         CPPUNIT_ASSERT_EQUAL((float)(4 + i), (float)(Number)ch["div"]);
@@ -1207,7 +1210,7 @@ void LoggerApiTest::testSetCanChanCfgFile(string filename)
             return; //no further testing needed
 
         CANChannel *ch = &(cfg->can_channels[index]);
-        ChannelConfig *ch_cfg = &(ch->channel_cfg);
+        ChannelConfig *ch_cfg = &(ch->mapping.channel_cfg);
         CANMapping *mapping = &(ch->mapping);
 
         Object jch = (Object)json["setCanChanCfg"]["chans"][index];

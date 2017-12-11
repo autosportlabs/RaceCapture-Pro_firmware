@@ -224,7 +224,6 @@ static void resetOBD2Config(OBD2Config *cfg)
     for (int i = 0; i < OBD2_CHANNELS; ++i) {
         PidConfig *c = &cfg->pids[i];
         memset(c, 0, sizeof(PidConfig));
-        sPrintStrInt(c->mapping.channel_cfg.label, "OBD2 Pid ", i + 1);
     }
 
     /* TODO BAP - hacked in some defaults */
@@ -539,7 +538,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
             const size_t enabled_can_channels = ccc->enabled_mappings;
             bool enabled = ccc->enabled;
             for (size_t i = 0; i < enabled_can_channels && enabled; i++) {
-					sr = config->can_channel_cfg.can_channels[i].channel_cfg.sampleRate;
+					sr = config->can_channel_cfg.can_channels[i].mapping.channel_cfg.sampleRate;
 					s = getHigherSampleRate(sr, s);
             }
     }
@@ -651,7 +650,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
             CANChannelConfig *ccc = &(loggerConfig->can_channel_cfg);
             const size_t enabled_can_channels = ccc->enabled_mappings;
             for (size_t i=0; i < enabled_can_channels && ccc->enabled; i++) {
-                if (ccc->can_channels[i].channel_cfg.sampleRate != SAMPLE_DISABLED)
+                if (ccc->can_channels[i].mapping.channel_cfg.sampleRate != SAMPLE_DISABLED)
                     ++channels;
             }
     }
