@@ -313,7 +313,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 
     CANChannelConfig *ccc = &(loggerConfig->can_channel_cfg);
     for (size_t i = 0; i < ccc->enabled_mappings && ccc->enabled; i++) {
-            chanCfg = &(ccc->can_channels[i].channel_cfg);
+            chanCfg = &(ccc->can_channels[i].mapping.channel_cfg);
             sample = processChannelSampleWithFloatGetter(sample, chanCfg, i,
                                                        CAN_get_current_channel_value);
     }

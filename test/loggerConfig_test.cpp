@@ -147,7 +147,7 @@ void LoggerConfigTest::testLoggerInitObd2Config() {
    CPPUNIT_ASSERT(c->enabled == 0);
 
    for (int i = 0; i < OBD2_CHANNELS; ++i) {
-      CPPUNIT_ASSERT(strlen(c->pids[i].mapping.channel_cfg.label));
+      CPPUNIT_ASSERT(strlen(c->pids[i].mapping.channel_cfg.label)== 0);
       CPPUNIT_ASSERT(c->pids[i].mapping.channel_cfg.sampleRate == 0);
    }
 }

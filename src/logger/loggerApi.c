@@ -1344,6 +1344,7 @@ static void json_put_can_mapping(struct Serial *serial, const CANMapping * mappi
         json_bool(serial, "bm", mapping->bit_mode, 1);
         json_int(serial, "bus", mapping->can_channel, 1);
         json_int(serial, "id", mapping->can_id, 1);
+        json_int(serial, "subId", mapping->sub_id, 1);
         json_int(serial, "idMask", mapping->can_mask, 1);
         json_bool(serial, "bigEndian", mapping->big_endian, 1);
         json_int(serial, "offset", mapping->offset, 1);
@@ -1368,7 +1369,7 @@ int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
         const CANChannel *can_channel = &can_channel_cfg->can_channels[i];
 
         json_objStart(serial);
-        json_channelConfig(serial, &(can_channel->channel_cfg), 1);
+        json_channelConfig(serial, &(can_channel->mapping.channel_cfg), 1);
         json_put_can_mapping(serial, &(can_channel->mapping), 0);
         json_objEnd(serial, i < enabled_mappings - 1);
     }
@@ -1393,6 +1394,7 @@ static void set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
     jsmn_exists_set_val_uint8(json_mapping, "bus", &mapping->can_channel, filter_can_bus_channel);
 
     jsmn_exists_set_val_int(json_mapping, "id", &mapping->can_id);
+    jsmn_exists_set_val_int(json_mapping, "subId", &mapping->sub_id);
     jsmn_exists_set_val_int(json_mapping, "idMask", &mapping->can_mask);
     jsmn_exists_set_val_bool(json_mapping, "bigEndian", &mapping->big_endian);
     jsmn_exists_set_val_float(json_mapping, "mult", &mapping->multiplier);
@@ -1437,10 +1439,10 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
         }
 
         for (chans_tok++; index < channel_max; index++) {
-            CANChannel *pid_cfg = can_channel_cfg->can_channels + index;
-            ChannelConfig *chCfg = &(pid_cfg->channel_cfg);
+            CANChannel *chan = can_channel_cfg->can_channels + index;
+            ChannelConfig *chCfg = &(chan->mapping.channel_cfg);
 
-            set_can_mapping(chans_tok, &(pid_cfg->mapping));
+            set_can_mapping(chans_tok, &(chan->mapping));
             chans_tok = setChannelConfig(serial, chans_tok, chCfg, NULL, NULL);
         }
         if (index > can_channel_cfg->enabled_mappings || last)

@@ -132,7 +132,7 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         float value = canmapping_extract_value(msg.data64, &mapping);
 
                                         /* prepare the comparison value */
-//#ifdef CAN_MAPPING_TEST_DEBUG
+#ifdef CAN_MAPPING_TEST_DEBUG
                                         printf("bitmode test: endian=%u / test_value=%lu / offset=%d / length=%d / return = %f\r\n" ,
                                                mapping.big_endian, test_value, offset, length, value);
                                         printf("CAN data: ");
@@ -153,7 +153,7 @@ void CANMappingTest::extract_test_bit_mode(void)
                                                 printf("%s ", b);
                                         }
                                         printf("\r\n");
-//#endif
+#endif
 
                                         CPPUNIT_ASSERT_EQUAL((float)test_value, value);
                                 }
@@ -358,6 +358,7 @@ void CANMappingTest::id_match_test(void)
                 msg.addressValue = 0xFF;
                 mapping.can_id = 0xFF;
                 mapping.can_mask = 0;
+                mapping.sub_id = -1;
                 CPPUNIT_ASSERT_EQUAL(true, canmapping_match_id(&msg, &mapping));
                 mapping.can_mask = 0xFF;
                 CPPUNIT_ASSERT_EQUAL(true, canmapping_match_id(&msg, &mapping));
@@ -421,6 +422,7 @@ void CANMappingTest::mapping_test(void)
         mapping.adder = adder;
 
         mapping.can_id = 0x1122;
+        mapping.sub_id = -1;
         mapping.can_mask = 0;
 
         bool result;
