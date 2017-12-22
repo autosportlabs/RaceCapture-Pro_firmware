@@ -230,6 +230,7 @@ static int lua_get_analog(lua_State *L)
         return 1;
 }
 
+#if TIMER_CHANNELS > 0
 static float get_ppr(const size_t chan_id)
 {
         TimerConfig *c = get_timer_config(chan_id);
@@ -307,6 +308,7 @@ static int lua_get_timer_count(lua_State *L)
         lua_pushinteger(L, timer_get_count(channel));
         return 1;
 }
+#endif
 
 #if GPIO_CHANNELS > 0
 static int lua_get_button(lua_State *L)
@@ -949,12 +951,14 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getPwmClockFreq", lua_get_pwm_clk_freq);
 #endif
 
+#if TIMER_CHANNELS > 0
         lua_registerlight(L, "getTimerRpm", lua_get_rpm);
         lua_registerlight(L, "getTimerPeriodMs", lua_get_period_ms);
         lua_registerlight(L, "getTimerFreq", lua_get_freq);
         lua_registerlight(L, "getTimerRaw", lua_get_timer_raw);
         lua_registerlight(L, "resetTimerCount", lua_reset_timer_count);
         lua_registerlight(L, "getTimerCount", lua_get_timer_count);
+#endif
 
         lua_registerlight(L, "getAnalog", lua_get_analog);
 
