@@ -308,11 +308,13 @@ static int lua_get_timer_count(lua_State *L)
         return 1;
 }
 
+#if GPIO_CHANNELS > 0
 static int lua_get_button(lua_State *L)
 {
         lua_pushboolean(L, GPIO_is_button_pressed());
         return 1;
 }
+#endif
 
 static struct Serial* lua_get_serial(lua_State *L, const serial_id_t pid)
 {
@@ -499,6 +501,7 @@ static int lua_serial_write_char(lua_State *L)
         return 0;
 }
 
+#if GPIO_CHANNELS > 1
 static int lua_get_gpio(lua_State *L)
 {
         lua_validate_args_count(L, 1, 1);
@@ -519,6 +522,7 @@ static int lua_set_gpio(lua_State *L)
         GPIO_set(channel, state);
         return 0;
 }
+#endif
 
 static int lua_get_gps_sat_count(lua_State *L)
 {
