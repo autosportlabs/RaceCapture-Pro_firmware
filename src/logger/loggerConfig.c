@@ -247,10 +247,12 @@ void logger_config_reset_gps_config(GPSConfig *cfg)
 {
 	*cfg = (GPSConfig) DEFAULT_GPS_CONFIG;
 
+#if GPS_HARDWARE_SUPPORT
 	/* Setting here b/c this now uses units.h labels */
 	strcpy(cfg->altitude.units, units_get_label(UNIT_LENGTH_FEET));
-	strcpy(cfg->distance.units, units_get_label(UNIT_LENGTH_MILES));
 	strcpy(cfg->speed.units, units_get_label(UNIT_SPEED_MILES_HOUR));
+#endif
+ strcpy(cfg->distance.units, units_get_label(UNIT_LENGTH_MILES));
 }
 
 uint16_t logger_config_get_gps_sample_rate(void)
@@ -554,9 +556,6 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     sr = gpsConfig->speed.sampleRate;
     s = getHigherSampleRate(sr, s);
 
-    sr = gpsConfig->distance.sampleRate;
-    s = getHigherSampleRate(sr, s);
-
     sr = gpsConfig->altitude.sampleRate;
     s = getHigherSampleRate(sr, s);
 
@@ -569,6 +568,8 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     sr = gpsConfig->DOP.sampleRate;
     s = getHigherSampleRate(sr, s);
 #endif
+    sr = gpsConfig->distance.sampleRate;
+    s = getHigherSampleRate(sr, s);
 
     LapConfig *trackCfg = &(config->LapConfigs);
     sr = trackCfg->lapCountCfg.sampleRate;
@@ -660,12 +661,12 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
     if (gpsConfigs->latitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->speed.sampleRate != SAMPLE_DISABLED) channels++;
-    if (gpsConfigs->distance.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->altitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->satellites.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->quality.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->DOP.sampleRate != SAMPLE_DISABLED) channels++;
 #endif
+    if (gpsConfigs->distance.sampleRate != SAMPLE_DISABLED) channels++;
 
     LapConfig *lapConfig = &loggerConfig->LapConfigs;
     if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
@@ -720,9 +721,7 @@ void reset_logger_config(void)
     _reset_can_mapping_config(&lc->can_channel_cfg);
     resetOBD2Config(&lc->OBD2Configs);
 
-#if GPS_HARDWARE_SUPPORT
     logger_config_reset_gps_config(&lc->GPSConfigs);
-#endif
 
     resetLapConfig(&lc->LapConfigs);
     resetTrackConfig(&lc->TrackConfigs);

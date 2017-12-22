@@ -384,14 +384,16 @@ typedef struct _OBD2Config {
 } OBD2Config;
 
 typedef struct _GPSConfig {
+#if GPS_HARDWARE_SUPPORT
     ChannelConfig latitude;
     ChannelConfig longitude;
     ChannelConfig speed;
-    ChannelConfig distance;
     ChannelConfig altitude;
     ChannelConfig satellites;
     ChannelConfig quality;
     ChannelConfig DOP;
+#endif
+    ChannelConfig distance;
 } GPSConfig;
 
 #define DEFAULT_GPS_SAMPLE_RATE SAMPLE_10Hz
@@ -409,11 +411,11 @@ typedef struct _GPSConfig {
 		DEFAULT_GPS_LATITUDE_CONFIG,           \
 		DEFAULT_GPS_LONGITUDE_CONFIG,          \
 		DEFAULT_GPS_SPEED_CONFIG,              \
-		DEFAULT_GPS_DISTANCE_CONFIG,           \
 		DEFAULT_GPS_ALTITUDE_CONFIG,           \
 		DEFAULT_GPS_SATELLITE_CONFIG,          \
 		DEFAULT_GPS_QUALITY_CONFIG,            \
-		DEFAULT_GPS_DOP_CONFIG                 \
+		DEFAULT_GPS_DOP_CONFIG,                \
+  DEFAULT_GPS_DISTANCE_CONFIG            \
          }
 
 typedef struct _LapConfig {
@@ -559,10 +561,8 @@ typedef struct _LoggerConfig {
     //OBD2 Config
     OBD2Config OBD2Configs;
 
-#if GPS_HARDWARE_SUPPORT
     //GPS Configuration
     GPSConfig GPSConfigs;
-#endif
 
     //Lap Configuration
     LapConfig LapConfigs;

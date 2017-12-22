@@ -284,15 +284,6 @@ void SampleRecordTest::testInitSampleRecord()
                 ts++;
         }
 
-        if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED){
-                CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance,
-                                     (void *) ts->cfg);
-                CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles,
-                                     (void *) ts->get_float_sample);
-                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
-                ts++;
-        }
-
         if (gpsConfig->altitude.sampleRate != SAMPLE_DISABLED){
                 CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->altitude,
                                      (void *) ts->cfg);
@@ -324,6 +315,15 @@ void SampleRecordTest::testInitSampleRecord()
                 CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->DOP,
                                      (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) GPS_getDOP,
+                                     (void *) ts->get_float_sample);
+                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+                ts++;
+        }
+
+        if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED){
+                CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance,
+                                     (void *) ts->cfg);
+                CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles,
                                      (void *) ts->get_float_sample);
                 CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
                 ts++;
