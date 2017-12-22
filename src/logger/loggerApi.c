@@ -152,7 +152,7 @@ int api_getCapabilities(struct Serial *serial, const jsmntok_t *json)
         json_objStartString(serial,"channels");
         json_int(serial, "analog", CONFIG_ADC_CHANNELS, 1);
         json_int(serial, "imu", CONFIG_IMU_CHANNELS, 1);
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
         json_int(serial, "gpio", CONFIG_GPIO_CHANNELS, 1);
 #endif
 #if TIMER_CHANNELS > 0
@@ -1017,7 +1017,7 @@ int api_setPwmConfig(struct Serial *serial, const jsmntok_t *json)
 }
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
 static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
     if (channelId < GPIO_CHANNELS) {

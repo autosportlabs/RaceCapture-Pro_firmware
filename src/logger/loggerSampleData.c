@@ -70,7 +70,7 @@ static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
     return ++s;
 }
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
 static ChannelSample* processChannelSampleWithIntGetter(ChannelSample *s,
         ChannelConfig *cfg,
         const size_t index,
@@ -287,7 +287,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     }
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     for (int i=0; i < CONFIG_GPIO_CHANNELS; i++) {
         GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
         chanCfg = &(config->cfg);

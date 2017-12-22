@@ -150,7 +150,7 @@ char filterPwmLoggingMode(int config)
 }
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
 GPIOConfig * getGPIOConfigChannel(int channel)
 {
     GPIOConfig *c = NULL;
@@ -505,7 +505,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     }
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++) {
         sr = config->GPIOConfigs[i].cfg.sampleRate;
         s = getHigherSampleRate(sr, s);
@@ -626,7 +626,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
             ++channels;
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     for (size_t i=0; i < CONFIG_GPIO_CHANNELS; i++)
         if (loggerConfig->GPIOConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
             ++channels;
@@ -705,7 +705,7 @@ void reset_logger_config(void)
     resetPwmConfig(lc->PWMConfigs);
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     resetGpioConfig(lc->GPIOConfigs);
 #endif
 
