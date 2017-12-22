@@ -228,18 +228,18 @@ static void* get_altitude_getter(const ChannelConfig *cc)
 		gps_get_altitude_meters : getAltitude;
 }
 
-static void* get_distance_getter(const ChannelConfig *cc)
-{
-	return UNIT_LENGTH_KILOMETERS == units_get_unit(cc->units) ?
-		getLapDistance : getLapDistanceInMiles;
-}
-
 static void* get_speed_getter(const ChannelConfig *cc)
 {
 	return UNIT_SPEED_KILOMETERS_HOUR == units_get_unit(cc->units) ?
 		getGPSSpeed : getGpsSpeedInMph;
 }
 #endif
+
+static void* get_distance_getter(const ChannelConfig *cc)
+{
+ return UNIT_LENGTH_KILOMETERS == units_get_unit(cc->units) ?
+  getLapDistance : getLapDistanceInMiles;
+}
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 {
@@ -327,8 +327,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     }
 #endif /* VIRTUAL_CHANNEL_SUPPORT */
 
-#if GPS_HARDWARE_SUPPORT
     GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
+#if GPS_HARDWARE_SUPPORT
     chanCfg = &(gpsConfig->latitude);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getLatitude);
     chanCfg = &(gpsConfig->longitude);
@@ -336,9 +336,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     chanCfg = &(gpsConfig->speed);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
 						      get_speed_getter(chanCfg));
-    chanCfg = &(gpsConfig->distance);
-    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
-						      get_distance_getter(chanCfg));
     chanCfg = &(gpsConfig->altitude);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
 						      get_altitude_getter(chanCfg));
@@ -349,6 +346,9 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     chanCfg = &(gpsConfig->DOP);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
 #endif
+    chanCfg = &(gpsConfig->distance);
+    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+            get_distance_getter(chanCfg));
 
     LapConfig *trackConfig = &(loggerConfig->LapConfigs);
     chanCfg = &(trackConfig->lapCountCfg);
