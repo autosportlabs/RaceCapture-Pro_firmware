@@ -545,8 +545,8 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
             }
     }
 
-#if GPS_HARDWARE_SUPPORT
     GPSConfig *gpsConfig = &(config->GPSConfigs);
+#if GPS_HARDWARE_SUPPORT
     sr = gpsConfig->latitude.sampleRate;
     s = getHigherSampleRate(sr, s);
 
@@ -656,8 +656,8 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
             }
     }
 
-#if GPS_HARDWARE_SUPPORT
     GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
+#if GPS_HARDWARE_SUPPORT
     if (gpsConfigs->latitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->speed.sampleRate != SAMPLE_DISABLED) channels++;
