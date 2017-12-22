@@ -115,7 +115,7 @@ CPP_GUARD_BEGIN
 #define PWM_API_METHODS
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
 #define GPIO_API_METHODS                                \
         API_METHOD("getGpioCfg", api_getGpioConfig)     \
         API_METHOD("setGpioCfg", api_setGpioConfig)

@@ -544,7 +544,7 @@ typedef struct _LoggerConfig {
     PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     //GPIO configurations
     GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
 #endif

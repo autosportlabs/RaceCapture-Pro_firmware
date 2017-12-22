@@ -929,9 +929,13 @@ static int lua_set_virt_channel_value(lua_State *L)
 
 void registerLuaLoggerBindings(lua_State *L)
 {
+#if GPIO_CHANNELS > 0
+        lua_registerlight(L,"getButton", lua_get_button);
+#endif
+#if GPIO_CHANNELS > 1
         lua_registerlight(L,"getGpio", lua_get_gpio);
         lua_registerlight(L,"setGpio", lua_set_gpio);
-        lua_registerlight(L,"getButton", lua_get_button);
+#endif
 
 #if PWM_CHANNELS > 0
         lua_registerlight(L, "setPwmDutyCycle", lua_set_pwm_duty_cycle);
