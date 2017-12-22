@@ -25,10 +25,11 @@
 #include "cpp_guard.h"
 #include "stddef.h"
 #include "devices_common.h"
+#include "dateTime.h"
 
 CPP_GUARD_BEGIN
 
-int null_device_init_connection(DeviceConfig *config);
+int null_device_init_connection(DeviceConfig *config, millis_t * connected_at);
 int null_device_check_connection_status(DeviceConfig *config);
 
 CPP_GUARD_END

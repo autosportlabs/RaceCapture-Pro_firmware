@@ -37,6 +37,7 @@ typedef enum {
 
 gps_status_t GPS_device_init(uint8_t targetSampleRate, struct Serial *serial);
 gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *serial);
+void GPS_set_UTC_time(millis_t time);
 CPP_GUARD_END
 
 #endif /* GPS_DEVICE_H_ */

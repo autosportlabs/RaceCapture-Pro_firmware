@@ -403,6 +403,18 @@ bool jsmn_exists_set_val_uint32(const jsmntok_t* root, const char* field,
     return true;
 }
 
+bool jsmn_exists_set_val_uint64(const jsmntok_t* root, const char* field,
+                             uint64_t* val)
+{
+    const jsmntok_t *node = jsmn_find_get_node_value_prim(root, field);
+
+    if (!node)
+        return false;
+
+    *val = strtoull(node->data, NULL, 10);
+    return true;
+}
+
 bool jsmn_exists_set_val_int(const jsmntok_t* root, const char* field,
                              void* val)
 {

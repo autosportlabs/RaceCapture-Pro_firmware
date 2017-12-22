@@ -29,7 +29,7 @@
 #include "sampleRecord.h"
 #include "serial.h"
 #include "task.h"
-
+#include "dateTime.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -39,7 +39,7 @@ typedef struct _ConnParams {
         bool always_streaming;
         char * connectionName;
         int (*disconnect)(DeviceConfig *config);
-        int (*init_connection)(DeviceConfig *config);
+        int (*init_connection)(DeviceConfig *config, millis_t * connected_at);
         int (*check_connection_status)(DeviceConfig *config);
         serial_id_t serial;
         size_t periodicMeta;
