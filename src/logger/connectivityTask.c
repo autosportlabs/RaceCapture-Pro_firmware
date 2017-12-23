@@ -43,6 +43,7 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "usart.h"
+#include "gps_device.h"
 
 
 #if (CONNECTIVITY_CHANNELS == 1)
@@ -307,8 +308,8 @@ void connectivityTask(void *params)
             pr_info("conn: not connected. retrying\r\n");
             vTaskDelay(INIT_DELAY);
         }
-
-        pr_info_int_msg("Connected at ", connected_at);
+        if (connected_at > 0)
+                GPS_set_UTC_time(connected_at);
 
         serial_flush(serial);
         rxCount = 0;
