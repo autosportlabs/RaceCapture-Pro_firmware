@@ -1547,7 +1547,6 @@ void set_consistent_sample_rates(LapConfig *lc)
 		&lc->lapTimeCfg,
 		&lc->sectorCfg,
 		&lc->sectorTimeCfg,
-		&lc->predTimeCfg,
 		&lc->elapsed_time_cfg,
 		&lc->current_lap_cfg,
 		NULL,
