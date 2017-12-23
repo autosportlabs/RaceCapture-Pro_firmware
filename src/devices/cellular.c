@@ -45,7 +45,7 @@
 #define PROBE_READ_TIMEOUT_MS	500
 /* Good balance between SIM900 and Ublox sara module */
 #define RESET_MODEM_DELAY_MS	1100
-#define TELEM_AUTH_JSMN_TOKENS	5
+#define TELEM_AUTH_JSMN_TOKENS	8
 #define TELEM_AUTH_RX_TRIES	3
 #define TELEM_AUTH_RX_WAIT_MS	5000
 
@@ -360,7 +360,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
 
         /* Parse the incoming JSON */
         jsmn_parser parser;
-        jsmntok_t toks[TELEM_AUTH_JSMN_TOKENS];
+        jsmntok_t toks[TELEM_AUTH_JSMN_TOKENS] = {};
 
         for (size_t tries = TELEM_AUTH_RX_TRIES; tries; --tries) {
                 if (!serial_buffer_rx(sb, TELEM_AUTH_RX_WAIT_MS))
