@@ -89,7 +89,7 @@ bool get_sample_value_by_name(const struct sample *s, const char * name, double 
                             return false;
             }
     }
-    pr_debug_str_msg(LOG_PFX "Unknown channel name: ", name);
+    pr_trace_str_msg(LOG_PFX "Unknown channel name: ", name);
     return false;
 }
 

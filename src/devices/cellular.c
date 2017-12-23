@@ -45,7 +45,7 @@
 #define PROBE_READ_TIMEOUT_MS	500
 /* Good balance between SIM900 and Ublox sara module */
 #define RESET_MODEM_DELAY_MS	1100
-#define TELEM_AUTH_JSMN_TOKENS	8
+#define TELEM_AUTH_JSMN_TOKENS	5
 #define TELEM_AUTH_RX_TRIES	3
 #define TELEM_AUTH_RX_WAIT_MS	5000
 
