@@ -45,7 +45,6 @@
 #define STOP_DM_RX_EVENTS	10
 #define STOP_DM_RX_TIMEOUT_MS	1000
 #define SARA_U280_SUBSCRIBER_NUMBER_RETRIES 3
-#define FAILED_READ_BACKOFF_MS 100
 
 static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
                                             struct cellular_info *ci)
@@ -56,8 +55,6 @@ static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
         bool status = false;
         for (size_t i = 0; i < SARA_U280_SUBSCRIBER_NUMBER_RETRIES && !status; ++i)
                 status = gsm_get_subscriber_number(sb, ci);
-                if (!status)
-                        delayMs(FAILED_READ_BACKOFF_MS);
 
         if (!status)
                 pr_warning("[cell] Phone number not available\r\n");

@@ -92,11 +92,11 @@ bool gsm_get_subscriber_number(struct serial_buffer *sb,
                 goto read_fail;
 
         *num_end = '\0';
-        strntcpy(ci->number, num_start, sizeof(ci->number));
+        strncpy(ci->number, num_start, sizeof(ci->number));
         return true;
 
 read_fail:
-        strcpy(ci->number, "Not available");
+        strncpy(ci->number, "Not available", sizeof(ci->number));
         return false;
 }
 
