@@ -79,24 +79,24 @@ bool gsm_get_subscriber_number(struct serial_buffer *sb,
 
         if (!status) {
                 pr_debug("[gsm] Failed to read phone number\r\n");
-                return false;
+                goto read_fail;
         }
 
         char *num_start = strstr(msgs[0], ",\"");
         if (!num_start)
-                goto parse_fail;
+                goto read_fail;
 
         num_start += 2;
         char *num_end = strstr(num_start, "\"");
         if (!num_end)
-                goto parse_fail;
+                goto read_fail;
 
         *num_end = '\0';
-        strntcpy(ci->number, num_start, sizeof(ci->number));
+        strncpy(ci->number, num_start, sizeof(ci->number));
         return true;
 
-parse_fail:
-        pr_warning("[gsm] Failed to parse phone number\r\n");
+read_fail:
+        strncpy(ci->number, "Not available", sizeof(ci->number));
         return false;
 }
 

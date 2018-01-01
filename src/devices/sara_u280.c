@@ -40,6 +40,7 @@
 #define GPRS_ATTACH_ATTEMPTS	5
 #define GPRS_ATTACH_BACKOFF_MS	1000
 #define NET_REG_ATTEMPTS	50
+#define SARA_U280_ERROR_THRESHOLD 6
 #define NET_REG_BACKOFF_MS	1000
 #define STOP_DM_RX_EVENTS	10
 #define STOP_DM_RX_TIMEOUT_MS	1000
@@ -56,7 +57,7 @@ static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
                 status = gsm_get_subscriber_number(sb, ci);
 
         if (!status)
-                pr_warning("[cell] Failed to read phone number\r\n");
+                pr_warning("[cell] Phone number not available\r\n");
         return status;
 }
 
@@ -351,11 +352,11 @@ static bool sara_u280_get_sim_info(struct serial_buffer *sb,
 static bool sara_u280_register_on_network(struct serial_buffer *sb,
                                           struct cellular_info *ci)
 {
+        size_t errors = 0;
         /* Check our status on the network */
-        for (size_t tries = NET_REG_ATTEMPTS; tries; --tries) {
-                sara_u280_get_net_reg_status(sb, ci);
-                sara_u280_get_signal_strength(sb, ci);
-
+        for (size_t tries = NET_REG_ATTEMPTS; tries && errors < SARA_U280_ERROR_THRESHOLD; --tries) {
+                errors += (sara_u280_get_net_reg_status(sb, ci) == CELLULAR_NETWORK_STATUS_UNKNOWN);
+                errors += (sara_u280_get_signal_strength(sb, ci) == false);
                 switch(ci->net_status) {
                 case CELLULAR_NETWORK_DENIED:
                 case CELLULAR_NETWORK_REGISTERED:
