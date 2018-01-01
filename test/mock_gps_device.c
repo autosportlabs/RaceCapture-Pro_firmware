@@ -33,3 +33,8 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
 {
     return GPS_MSG_SUCCESS;
 }
+
+void GPS_set_UTC_time(millis_t time)
+{
+        /* Do nothing, this driver always sets UTC time on it's own */
+}

@@ -337,7 +337,8 @@ static void print_registration_failure()
 }
 
 static bool auth_telem_stream(struct serial_buffer *sb,
-                              const TelemetryConfig *tc)
+                              const TelemetryConfig *tc,
+                              millis_t * connected_at)
 {
         serial_buffer_reset(sb);
 
@@ -359,7 +360,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
 
         /* Parse the incoming JSON */
         jsmn_parser parser;
-        jsmntok_t toks[TELEM_AUTH_JSMN_TOKENS];
+        jsmntok_t toks[TELEM_AUTH_JSMN_TOKENS] = {};
 
         for (size_t tries = TELEM_AUTH_RX_TRIES; tries; --tries) {
                 if (!serial_buffer_rx(sb, TELEM_AUTH_RX_WAIT_MS))
@@ -381,6 +382,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                         /* Could be success or failure.  Handle both */
                         const char *status = status_val->data;
                         if (0 == strcmp(status, "ok")) {
+                                jsmn_exists_set_val_uint64(toks, "utc", (uint64_t *)connected_at);
                                 pr_info("[cell] Server authenticated\r\n");
                                 return true;
                         }
@@ -404,7 +406,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         return false;
 }
 
-int cellular_init_connection(DeviceConfig *config)
+int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
 {
 	telemetry_info.active_since = 0;
 
@@ -465,7 +467,7 @@ int cellular_init_connection(DeviceConfig *config)
         }
 
         /* Auth against RCL */
-        if (!auth_telem_stream(sb, telemetryConfig)){
+        if (!auth_telem_stream(sb, telemetryConfig, connected_at)){
                 telemetry_info.status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
                 return DEVICE_INIT_FAIL;
         }
