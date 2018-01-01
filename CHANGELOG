@@ -1,12 +1,21 @@
 = 2.13.0 =
-* Add GoPro camera control (experimental)
-* Switch default APN to FreedomPop
-* Expose current channel values in Lua (inc. direct CAN mapping)
-* Enable auto-logger by default
-* Increase Lua memory availability by 20%
-* Read cellular signal after registered on network to ensure getting a valid value
-* Ensure OBDII PID mode is returned as unsigned value
-* Update firmware 'friendly name' for RaceCapture/Track to RaceCapture/Track (was just RaceCapture)
+* Core: Ensure Distance channel is always enabled, even if hardware GPS is disabled
+* Core: Improve debouncing of front panel Action button
+* Core: Update firmware friendly name for RaceCapture/Track to RaceCapture/Track (was just RaceCapture)
+* Core: Properly Disable IMU channels if device does not support it
+* Logging: Add GoPro camera control (experimental)
+* Logging: Ensure action button remains active if GPIO hardware isn't present
+* Logging: Enable auto-logger by default
+* Lua: current channel values in Lua (inc. direct CAN mapping)
+* Lua: Increase Lua memory availability by 20%
+* CAN Mapping: Properly decode bit mode little endian values
+* CAN Mapping: Add sub-id CAN mapping capabilities
+* OBDII: Ensure OBDII PID mode is returned as unsigned value
+* OBDII: Support additional OBDII modes
+* Telemetry: Set UTC time from telemetry link if UTC time isn't locally available
+* Cellular: Improve cell module connection time by reducing time lingering when cell module is in a bad state
+* Cellular: read signal strength after registered on network to ensure getting a valid value
+* Cellular: Switch default APN to FreedomPop
 
 = 2.12.0 = 
 * Added obd2 channels capacity in getCapabilities API #940
