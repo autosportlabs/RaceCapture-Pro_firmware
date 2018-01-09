@@ -3,6 +3,7 @@
 * Core: Improve debouncing of front panel Action button
 * Core: Update firmware friendly name for RaceCapture/Track to RaceCapture/Track (was just RaceCapture)
 * Core: Properly Disable IMU channels if device does not support it
+* Core: Fix periodic crash/resets when uploading full configuration via bluetooth
 * Logging: Add GoPro camera control (experimental)
 * Logging: Ensure action button remains active if GPIO hardware isn't present
 * Logging: Enable auto-logger by default
@@ -16,7 +17,6 @@
 * Cellular: Improve cell module connection time by reducing time lingering when cell module is in a bad state
 * Cellular: read signal strength after registered on network to ensure getting a valid value
 * Cellular: Switch default APN to FreedomPop
-
 = 2.12.0 = 
 * Added obd2 channels capacity in getCapabilities API #940
 * Increase number of OBDII channels from 5 to 10 for RaceCapture/Track; 10 to 20 for RaceCapture/Pro #936
