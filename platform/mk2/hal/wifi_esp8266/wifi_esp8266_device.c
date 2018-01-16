@@ -21,12 +21,15 @@
 
 #include "wifi_device.h"
 #include <stdbool.h>
+#include "taskUtil.h"
+#define ESP8266_BOOT_DURATION_MS 500
 
 /**
  * Perform a hard reset of the ESP8266 module
  */
 bool wifi_device_reset()
 {
+        delayMs(ESP8266_BOOT_DURATION_MS);
         /*No ability to hard reset the ESP8266 on MK2, so this is NOOP */
         return false;
 }

@@ -31,7 +31,7 @@
 /* How long we wait after reset.
  * Approximately the boot time for the ESP8266
  */
-#define ESP8266_BOOT_DURATION_MS 200
+#define ESP8266_BOOT_DURATION_MS 500
 
 /* I/O definitions for ESP8266 BOOT (PA3)*/
 #define ESP8266_BOOT_PIN GPIO_Pin_3
