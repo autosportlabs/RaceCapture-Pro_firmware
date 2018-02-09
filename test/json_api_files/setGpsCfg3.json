@@ -11,8 +11,8 @@
 	"dop": 0,
 	"units": {
 	    "alt": "m",
-	    "dist": "km",
-	    "speed": "kph"
+	    "dist": "Km",
+	    "speed": "Kph"
 	}
     }
 }

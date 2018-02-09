@@ -455,14 +455,17 @@ void SampleRecordTest::test_get_sample_value_by_name()
 
 
 		double value;
-		bool result = get_sample_value_by_name(&s, "Speed", &value);
+		char *units;
+		bool result = get_sample_value_by_name(&s, "Speed", &value, &units);
 		CPPUNIT_ASSERT_EQUAL(true, result);
 		CPPUNIT_ASSERT_EQUAL((double)0, value);
+		CPPUNIT_ASSERT_EQUAL(string("MPH"), string(units));
 
-		result = get_sample_value_by_name(&s, "Battery", &value);
+		result = get_sample_value_by_name(&s, "Battery", &value, &units);
 		CPPUNIT_ASSERT_EQUAL(true, result);
 		CPPUNIT_ASSERT_EQUAL((double)123 * 0.0048828125f, value);
+		CPPUNIT_ASSERT_EQUAL(string("Volts"), string(units));
 
-		result = get_sample_value_by_name(&s, "FooBar", &value);
+		result = get_sample_value_by_name(&s, "FooBar", &value, &units);
 		CPPUNIT_ASSERT_EQUAL(false, result);
 }
