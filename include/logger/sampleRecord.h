@@ -115,9 +115,10 @@ void free_sample_buffer(struct sample *s);
  * @param s the sample to fetch a value from
  * @param name the name of the channel
  * @param value pointer to the value to set if sample is found
+ * @param units pointer to the units label, if sample is found
  * @return true if the sample was found and set
  */
-bool get_sample_value_by_name(const struct sample *s, const char * name, double *value);
+bool get_sample_value_by_name(const struct sample *s, const char * name, double *value, char ** units);
 
 /**
  * Creates a LoggerMessage for use in the messaging between threads.

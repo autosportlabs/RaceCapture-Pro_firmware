@@ -77,7 +77,8 @@ static void camera_control_sample_cb(const struct sample* sample,
                 return;
 
         double value;
-        if (!get_sample_value_by_name(sample, camera_control_state.cfg->channel, &value))
+        char * units;
+        if (!get_sample_value_by_name(sample, camera_control_state.cfg->channel, &value, &units))
                 return;
 
         enum auto_control_trigger_result res = auto_control_check_trigger(value,

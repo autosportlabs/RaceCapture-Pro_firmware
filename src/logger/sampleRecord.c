@@ -56,7 +56,7 @@ void free_sample_buffer(struct sample *s)
         s->channel_samples = NULL;
 }
 
-bool get_sample_value_by_name(const struct sample *s, const char * name, double *value)
+bool get_sample_value_by_name(const struct sample *s, const char * name, double *value, char ** units)
 {
     if (!s || !value || !name) return false;
 
@@ -66,6 +66,7 @@ bool get_sample_value_by_name(const struct sample *s, const char * name, double 
 
             if (!sam->populated) return false;
 
+            *units = sam->cfg->units;
             switch(sam->sampleData) {
                     case SampleData_Float:
                     case SampleData_Float_Noarg:

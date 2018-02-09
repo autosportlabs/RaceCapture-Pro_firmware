@@ -84,7 +84,8 @@ static void auto_logger_sample_cb(const struct sample* sample,
                 return;
 
         double value;
-        if (!get_sample_value_by_name(sample, auto_logger_state.cfg->channel, &value))
+        char * units;
+        if (!get_sample_value_by_name(sample, auto_logger_state.cfg->channel, &value, &units))
                 return;
 
         enum auto_control_trigger_result res = auto_control_check_trigger(value,
