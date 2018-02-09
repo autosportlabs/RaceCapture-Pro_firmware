@@ -459,7 +459,7 @@ void SampleRecordTest::test_get_sample_value_by_name()
 		bool result = get_sample_value_by_name(&s, "Speed", &value, &units);
 		CPPUNIT_ASSERT_EQUAL(true, result);
 		CPPUNIT_ASSERT_EQUAL((double)0, value);
-		CPPUNIT_ASSERT_EQUAL(string("mph"), string(units));
+		CPPUNIT_ASSERT_EQUAL(string("MPH"), string(units));
 
 		result = get_sample_value_by_name(&s, "Battery", &value, &units);
 		CPPUNIT_ASSERT_EQUAL(true, result);
