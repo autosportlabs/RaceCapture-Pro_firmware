@@ -112,7 +112,7 @@ struct TimeConfig {
 #define SCALING_MODE_MAP                    2
 #define DEFAULT_SCALING_MODE                SCALING_MODE_LINEAR
 #define LINEAR_SCALING_PRECISION            7
-#define FILTER_ALPHA_PRECISION              2
+#define FILTER_ALPHA_PRECISION              3
 #define SCALING_MAP_BIN_PRECISION           2
 #define DEFAULT_ANALOG_SCALING_PRECISION    2
 #define DEFAULT_VOLTAGE_SCALING_PRECISION   2
