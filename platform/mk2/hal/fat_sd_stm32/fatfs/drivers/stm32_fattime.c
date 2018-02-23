@@ -2,12 +2,12 @@
 
 #include "dateTime.h"
 #include "ff.h"
-#include "gps.h"
+#include "gps_device.h"
 
 DWORD get_fattime (void)
 {
     DateTime dt;
-    getDateTimeFromEpochMillis(&dt, getLastFix());
+    getDateTimeFromEpochMillis(&dt, GPS_get_UTC_time());
 
     if (!isValidDateTime(dt))
         return (DWORD) 0;

@@ -38,3 +38,8 @@ void GPS_set_UTC_time(millis_t time)
 {
         /* Do nothing, this driver always sets UTC time on it's own */
 }
+
+millis_t GPS_get_UTC_time()
+{
+        return 0;
+}

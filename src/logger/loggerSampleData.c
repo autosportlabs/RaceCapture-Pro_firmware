@@ -29,6 +29,7 @@
 #include "dateTime.h"
 #include "geopoint.h"
 #include "gps.h"
+#include "gps_device.h"
 #include "imu.h"
 #include "lap_stats.h"
 #include "linear_interpolate.h"
@@ -241,6 +242,10 @@ static void* get_distance_getter(const ChannelConfig *cc)
   getLapDistance : getLapDistanceInMiles;
 }
 
+static long long get_utc_time_helper(void){
+        return (long long)GPS_get_UTC_time();
+}
+
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 {
         buff->ticks = 0;
@@ -261,7 +266,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     tc = &(loggerConfig->TimeConfigs[1]);
     chanCfg = &(tc->cfg);
     chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
-    sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, getMillisSinceEpochAsLongLong);
+    sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, get_utc_time_helper);
 
 #if ANALOG_CHANNELS > 0
     for (int i=0; i < CONFIG_ADC_CHANNELS; i++) {
