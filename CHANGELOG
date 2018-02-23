@@ -1,3 +1,9 @@
+= 2.13.3 = 
+* GPS: Get UTC time directly from GPS driver
+* WiFi: Fix wifi initialization problem on WiFi modules running older firmware
+* Lua: prevent a critical Lua error if getchannel fails to find a channel by name; return nil instead.
+* Analog: Increase smoothing range by 2x
+
 = 2.13.0 =
 * Core: Ensure Distance channel is always enabled, even if hardware GPS is disabled
 * Core: Improve debouncing of front panel Action button
