@@ -22,8 +22,6 @@
 #include "byteswap.h"
 #include "units_conversion.h"
 #include "panic.h"
-#include <stdlib.h>
-
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
@@ -45,7 +43,7 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 
         /* normalize endian */
         if (!mapping->big_endian) {
-                raw_value = decode_little_endian_bitmode(raw_value, length);
+                raw_value = swap_uint_length(raw_value, length);
         }
 
         /* convert type */
@@ -93,16 +91,10 @@ bool canmapping_match_id(const CAN_msg *can_msg, const CANMapping *mapping)
         uint32_t can_id  = can_msg->addressValue;
         if (mapping->can_id == 0) return true;
 
-        /* apply mask to CAN ID, if specified (non zero) */
         if (mapping->can_mask)
                 can_id &= mapping->can_mask;
 
-        /* If no match, give up. */
-        if (can_id != mapping->can_id)
-                return false;
-
-        /* Match the sub ID index with the first data byte, if specified (>= 0) */
-        return (mapping->sub_id < 0 || mapping->sub_id == can_msg->data[0]);
+        return can_id == mapping->can_id;
 }
 
 bool canmapping_map_value(float *value, const CAN_msg *can_msg, const CANMapping *mapping)
