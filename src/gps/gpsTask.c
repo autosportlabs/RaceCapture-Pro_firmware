@@ -34,13 +34,6 @@
 #define GPS_TASK_STACK_SIZE	256
 #define MSG_FAILURES_TRIGGER	3
 
-static bool g_enableGpsDataLogging = false;
-
-void setGpsDataLogging(bool enable)
-{
-    g_enableGpsDataLogging = enable;
-}
-
 void GPSTask(void *pvParameters)
 {
         struct Serial *serial = serial_device_get(SERIAL_GPS);
