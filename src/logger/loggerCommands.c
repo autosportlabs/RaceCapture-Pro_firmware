@@ -56,11 +56,6 @@ static const char* log_type_str(enum serial_log_type type)
         }
 }
 
-static const char* enable_str(const bool enable)
-{
-        return enable ? "Enabled" : "Disabled";
-}
-
 void TestSD(struct Serial *serial, unsigned int argc, char **argv)
 {
     /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
@@ -200,23 +195,6 @@ void SetLogLevel(struct Serial *serial, unsigned int argc, char **argv)
     enum log_level level = (enum log_level) atoi(argv[1]);
     set_log_level(level);
     put_commandOK(serial);
-}
-
-void LogGpsData(struct Serial *serial, unsigned int argc, char **argv)
-{
-    if (argc != 2) {
-        serial_write_s(serial, "Must pass one argument only.  Enter 0 to disable, "
-                      "or non-zero to enable\r\n");
-        put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-    } else {
-        const bool enable = (argv[1][0] != '0');
-        setGpsDataLogging(enable);
-        serial_write_s(serial, enable_str(enable));
-        serial_write_s(serial, " the printing of raw GPS data to the log.\r\n");
-        put_commandOK(serial);
-    }
-
-    serial_flush(serial);
 }
 
 void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)

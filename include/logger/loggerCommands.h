@@ -24,22 +24,28 @@
 
 #include "cpp_guard.h"
 #include "command.h"
+#include "capabilities.h"
 
 CPP_GUARD_BEGIN
+
+#if SDCARD_SUPPORT
+#define TEST_SD_COMMAND SYSTEM_COMMAND("testSD", "Test Write to SD card.",\
+                "<lineWrites> <periodicFlush> <quietMode>",               \
+                TestSD)
+#else
+#define TEST_SD_COMMAND
+#endif
+
 
 #define LOGGER_COMMANDS                                                 \
         SYSTEM_COMMAND("resetConfig", "Resets All configuration Data "  \
                        "to factory default", "", ResetConfig)           \
-        SYSTEM_COMMAND("testSD", "Test Write to SD card.",              \
-                       "<lineWrites> <periodicFlush> <quietMode>",      \
-                       TestSD)                                          \
+        TEST_SD_COMMAND \
         SYSTEM_COMMAND("startTerminal", "Starts a debugging terminal "  \
                        "session on the specified port.",                \
                        "<port> <baud> [echo 1|0]", StartTerminal)       \
         SYSTEM_COMMAND("setLogLevel", "Sets the log level", "<level>",  \
                        SetLogLevel)                                     \
-        SYSTEM_COMMAND("logGpsData", "Enables logging of raw GPS data " \
-                       "from the GPS Mouse", "<1|0>", LogGpsData)       \
         SYSTEM_COMMAND("viewLog", "Prints out logging messages to the " \
                        "terminal as they happen", "", ViewLog)          \
         SYSTEM_COMMAND("setSerialLog", "Enables/disables logging of  "  \
@@ -56,7 +62,6 @@ void TestSD(struct Serial *serial, unsigned int argc, char **argv);
 void StartTerminal(struct Serial *serial, unsigned int argc, char **argv);
 void ViewLog(struct Serial *serial, unsigned int argc, char **argv);
 void SetLogLevel(struct Serial *serial, unsigned int argc, char **argv);
-void LogGpsData(struct Serial *serial, unsigned int argc, char **argv);
 void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv);
 void FlashConfig(struct Serial *serial, unsigned int argc, char **argv);
 
