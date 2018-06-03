@@ -184,6 +184,33 @@ rct: rct-build
 
 
 #
+# RCT_MK2
+#
+RCT_MK2_DIR := platform/rct_mk2
+PHONY += rct_mk2-build
+rct_mk2-build: lua-build
+	$(MAKE) -C $(RCT_MK2_DIR) all
+
+PHONY += rct_mk2-clean
+rct_mk2-clean:
+	$(MAKE) -C $(RCT_MK2_DIR) clean
+
+PHONY += rct_mk2-pristine
+mk3-pristine: lua-pristine rct_mk2-clean
+	$(MAKE) rct_mk2-build
+
+PHONY += rct_mk2-package
+rct_mk2-package: rct_mk2-pristine
+	./bin/package_release.sh "RaceCaptureTrack_MK2" $(VERSION) $(RCT_MK2_DIR)
+
+PHONY += rct_mk2-flash
+rct_mk2-flash: rct_mk2-build
+	cd $(RCT_MK2_DIR) && openocd -f openocd_stlinkv2_flash.cfg
+
+PHONY += rct_mk2
+rct_mk2: rct_mk2-build
+
+#
 # Common targets.
 #
 PHONY += clean
@@ -208,6 +235,7 @@ package: clean
 	$(MAKE) mk2-package
 	$(MAKE) mk3-package	
 	$(MAKE) rct-package
+	$(MAKE) rct_mk2-package
 	$(MAKE) hashes
 
 PHONY += TAGS
