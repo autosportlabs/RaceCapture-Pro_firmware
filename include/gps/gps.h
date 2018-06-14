@@ -90,6 +90,8 @@ int GPS_getQuality();
 
 float GPS_getDOP();
 
+void GPS_sample_update(GpsSample *newSample);
+
 int GPS_getSatellitesUsedForPosition();
 
 float getGPSSpeed();

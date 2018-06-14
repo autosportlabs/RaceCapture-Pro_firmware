@@ -29,7 +29,7 @@
 #include "task.h"
 
 #define FLASH_PAUSE_DELAY_MS 	5000
-#define FLASH_DELAY_MS		1000
+#define FLASH_DELAY_MS		500
 
 /**
  * Called when the system hits a non-recoverable error.  Ensure to use

@@ -45,7 +45,7 @@
 #include "watchdog.h"
 #include "camera_control.h"
 
-#define LOGGER_STACK_SIZE	152
+#define LOGGER_STACK_SIZE	220
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
 
 #define BACKGROUND_SAMPLE_RATE	SAMPLE_50Hz

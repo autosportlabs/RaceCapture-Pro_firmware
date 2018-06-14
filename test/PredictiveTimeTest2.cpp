@@ -9,7 +9,6 @@
 #include "dateTime.h"
 #include "geopoint.h"
 #include "gps.h"
-#include "gps.testing.h"
 #include "lap_stats.h"
 #include "loggerConfig.h"
 #include "mock_serial.h"

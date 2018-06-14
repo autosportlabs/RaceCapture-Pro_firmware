@@ -934,6 +934,49 @@ static int lua_set_virt_channel_value(lua_State *L)
         return 0;
 }
 
+static int lua_update_gps(lua_State *L)
+/* Internal function to stimulate lap timer via lua script */
+{
+        lua_validate_args_count(L, 3, 8);
+
+        GpsSample s;
+
+        s.time = getUptime();
+        s.altitude = 0;
+        s.quality = GPS_QUALITY_3D_DGNSS;
+        s.DOP = 0;
+        s.satellites = 0;
+
+        switch(lua_gettop(L)) {
+                case 8:
+                        s.satellites = lua_tointeger(L, 8);
+                case 7:
+                        s.DOP = lua_tonumber(L, 7);
+                case 6:
+                        s.quality = lua_tointeger(L, 6);
+                case 5:
+                        s.altitude = lua_tonumber(L, 5);
+                case 4:
+                        s.time = lua_tointeger(L, 4);
+                default:
+                        /**
+                         * Minimum data needed to drive lap timer is
+                         * Latitude, Longitude and Speed
+                         */
+                        s.speed = lua_tonumber(L, 3);
+                        GeoPoint gp;
+                        gp.longitude = lua_tonumber(L, 2);
+                        gp.latitude = lua_tonumber(L, 1);
+                        s.point = gp;
+        }
+        GPS_sample_update(&s);
+        if (isGpsSignalUsable(s.quality)){
+                GpsSnapshot snap = getGpsSnapshot();
+                lapstats_processUpdate(&snap);
+        }
+        return 0;
+}
+
 void registerLuaLoggerBindings(lua_State *L)
 {
 #if GPIO_CHANNELS > 0
@@ -1014,4 +1057,6 @@ void registerLuaLoggerBindings(lua_State *L)
 
         lua_registerlight(L, "getUptime", lua_get_uptime);
         lua_registerlight(L, "getDateTime", lua_get_date_time);
+
+        lua_registerlight(L, "updateGps", lua_update_gps);
 }
