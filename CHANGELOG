@@ -1,5 +1,8 @@
 = 2.13.5 =
-* Restore 2.12.x bit mode little endian behavior to resolve regression with E46 CAN bus
+* Core: Restore 2.12.x bit mode little endian behavior to resolve regression with E46 CAN bus
+* Core: Resolve logger crashing randomly when lap is completed
+* Core: Clean up Command Line Interface options, remove obsolete functions
+* Core: Add internal test function for stimulating lap timer
 
 = 2.13.3 = 
 * GPS: Get UTC time directly from GPS driver
