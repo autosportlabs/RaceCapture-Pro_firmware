@@ -27,7 +27,7 @@
 #define RX_MAX_MSG_LEN	768
 
 /* Configuration */
-#define MAX_TRACKS	160
+#define MAX_TRACKS	0
 #define MAX_SECTORS	20
 #define MAX_VIRTUAL_CHANNELS	100
 #define LOGGER_MESSAGE_BUFFER_SIZE	10
