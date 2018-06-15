@@ -196,7 +196,7 @@ rct_mk2-clean:
 	$(MAKE) -C $(RCT_MK2_DIR) clean
 
 PHONY += rct_mk2-pristine
-mk3-pristine: lua-pristine rct_mk2-clean
+rct_mk2-pristine: lua-pristine rct_mk2-clean
 	$(MAKE) rct_mk2-build
 
 PHONY += rct_mk2-package
