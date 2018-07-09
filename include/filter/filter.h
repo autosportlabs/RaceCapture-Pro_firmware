@@ -23,17 +23,21 @@
 #define _FILTER_H_
 
 #include "cpp_guard.h"
+#include <stdint.h>
 
 CPP_GUARD_BEGIN
 
 typedef struct _Filter {
-    float alpha;
-    int current_value;
+        float alpha;
+        int32_t total;
+        int32_t current_value;
+        int32_t count;
+        int32_t max_samples;
 } Filter;
 
 void init_filter(Filter *filter, float alpha);
 
-int update_filter(Filter *filter, int value);
+int32_t update_filter(Filter *filter, int32_t value);
 
 CPP_GUARD_END
 
