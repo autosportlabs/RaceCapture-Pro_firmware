@@ -35,9 +35,9 @@ typedef struct _Filter {
         int32_t max_samples;
 } Filter;
 
-void init_filter(Filter *filter, float alpha);
+void init_filter(Filter *filter, const float alpha);
 
-int32_t update_filter(Filter *filter, int32_t value);
+int32_t update_filter(Filter *filter, const int32_t value);
 
 CPP_GUARD_END
 
