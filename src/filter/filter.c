@@ -21,13 +21,13 @@
 
 
 #include "filter.h"
-#include "stdutil.h"
+#include "math.h"
 
 //Implements a fast Exponential Moving Average filter
 #define MIN_ALPHA 0.0001
 void init_filter(Filter *filter, const float alpha)
 {
-        filter->max_samples = (int32_t)(1 / MAX(alpha, MIN_ALPHA));
+        filter->max_samples = (1 / fmaxf(alpha, MIN_ALPHA));
         filter->current_value = 0;
         filter->total = 0;
         filter->count = 0;
