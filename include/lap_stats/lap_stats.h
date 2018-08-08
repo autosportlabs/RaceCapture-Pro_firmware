@@ -52,7 +52,7 @@ void lapstats_config_changed(void);
 
 void lapstats_reset(void);
 
-void lapstats_processUpdate(const GpsSnapshot *gpsSnapshot);
+void lapstats_processUpdate(GpsSnapshot *gpsSnapshot);
 
 track_status_t lapstats_get_track_status( void );
 

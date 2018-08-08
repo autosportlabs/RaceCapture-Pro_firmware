@@ -53,7 +53,7 @@ void GPSTask(void *pvParameters)
                 for (;;) {
                         gps_msg_result_t result = GPS_processUpdate(serial);
                         if (result == GPS_MSG_SUCCESS) {
-                                const GpsSnapshot snap = getGpsSnapshot();
+                                GpsSnapshot snap = getGpsSnapshot();
                                 lapstats_processUpdate(&snap);
 
                                 if (failures > 0)

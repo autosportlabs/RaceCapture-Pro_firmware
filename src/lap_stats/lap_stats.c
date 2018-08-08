@@ -26,6 +26,8 @@
 #include "geoTrigger.h"
 #include "geopoint.h"
 #include "gps.h"
+#include "macros.h"
+#include "math.h"
 #include "lap_stats.h"
 #include "launch_control.h"
 #include "loggerConfig.h"
@@ -45,6 +47,9 @@
 /* In Millis */
 #define START_FINISH_TIME_THRESHOLD 	10000
 #define TIME_NULL -1
+
+/* Threshold where we start interpolating between GPS samples. 10Hz */
+#define INTERPOLATION_THRESHOLD_MS 100
 
 static Track g_active_track;
 static float g_geo_circle_radius;
@@ -675,14 +680,149 @@ static void lapstats_setup(const GpsSnapshot *gps_snapshot)
         set_active_track(track, radius_in_meters, track_status);
 }
 
-void lapstats_processUpdate(const GpsSnapshot *gps_snapshot)
+static void debug_print_gps_snapshot(const GpsSnapshot *gps_snapshot)
 {
-	if (!g_configured)
-		lapstats_setup(gps_snapshot);
+        pr_debug("GPS Snap:");
+        pr_debug("\r\nlat/lon:       ");
+        pr_debug_float(gps_snapshot->sample.point.latitude);
+        pr_debug(",");
+        pr_debug_float(gps_snapshot->sample.point.longitude);
+        pr_debug("\r\nTime:          ");
+        pr_debug_int(gps_snapshot->sample.time);
+        pr_debug("\r\nSpeed:         ");
+        pr_debug_float(gps_snapshot->sample.speed);
+        pr_trace("\r\nAltitude:      ");
+        pr_trace_float(gps_snapshot->sample.altitude);
+        pr_trace("\r\nSats:          ");
+        pr_trace_int(gps_snapshot->sample.satellites);
+        pr_trace("\r\nFixmode:       ");
+        pr_trace_int(gps_snapshot->sample.fixMode);
+        pr_trace("\r\nDOP:           ");
+        pr_trace_float(gps_snapshot->sample.DOP);
+        pr_debug("\r\ndeltaFirstFix: ");
+        pr_debug_int(gps_snapshot->deltaFirstFix);
+        pr_debug("\r\ndeltaLastSam:  ");
+        pr_debug_int(gps_snapshot->delta_last_sample);
+        pr_debug("\r\nprevPoint:     ");
+        pr_debug_float(gps_snapshot->previousPoint.latitude);
+        pr_debug(",");
+        pr_debug_float(gps_snapshot->previousPoint.longitude);
+        pr_debug("\r\nprevSpeed:     ");
+        pr_debug_float(gps_snapshot->previous_speed);
+        pr_debug("\r\n\r\n");
+}
 
-	if (isGpsDataCold())
-		return; /* No valid GPS data to work with */
+void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
+{
+        if (!g_configured)
+          lapstats_setup(gps_snapshot);
 
-	if (g_configured)
-		lapstats_location_updated(gps_snapshot);
+        if (isGpsDataCold())
+          return; /* No valid GPS data to work with */
+
+        if (! g_configured)
+         return;
+
+
+        /**
+         * Split samples into even intervals, with a minimum of 1 sample as a bozo filter
+         * This allows us to up-sample slow GPS sources to 10Hz as neccessary
+         */
+        int32_t delta_since_last = gps_snapshot->delta_last_sample;
+        uint32_t interval_count = MAX(1, delta_since_last / INTERPOLATION_THRESHOLD_MS);
+
+        if (interval_count == 1) {
+                /* GPS data is arriving fast enough; no interpolation needed */
+                lapstats_location_updated(gps_snapshot);
+                return;
+        }
+
+        /**
+         * ============================================
+         * Set up interpolation for GPS Point
+         * ============================================
+         */
+        float lat1 = gps_snapshot->previousPoint.latitude;
+        float lon1 = gps_snapshot->previousPoint.longitude;
+        float lat2 = gps_snapshot->sample.point.latitude;
+        float lon2 = gps_snapshot->sample.point.longitude;
+
+        /**
+         * Evenly split up difference in latitiude into intervals
+         * longitude is linearly interpolated based on changing latitude
+         */
+        float lat_interval = fabs(lat2 - lat1) / (float)interval_count;
+        if (lat1 > lat2)
+                /* Account for reverse direction */
+                lat_interval = -lat_interval;
+
+        /* Set the starting interpolated latitude */
+        float interp_lat = lat1;
+
+        /**
+         * ============================================
+         * Set up interpolation for Speed
+         * ============================================
+         */
+        float speed1 = gps_snapshot->previous_speed;
+        float speed2 = gps_snapshot->sample.speed;
+
+        /* evenly split up changes in speed based on the interval */
+        float speed_interval = fabs(speed2 - speed1)/ (float)interval_count;
+        if (speed1 > speed2)
+                /* Account for reverse direction */
+                speed_interval = -speed_interval;
+
+        /* Set the starting speed */
+        float interp_speed = speed1;
+
+        /**
+         * ============================================
+         * Set up interpolation for Time
+         * ============================================
+         */
+        millis_t interp_time = gps_snapshot->sample.time - delta_since_last;
+        tiny_millis_t interp_delta_ff = gps_snapshot->deltaFirstFix - delta_since_last;
+
+        /* Evenly split up time between current and last sample */
+        tiny_millis_t time_interval = delta_since_last / interval_count;
+
+        if (DEBUG_LEVEL)
+        {
+                pr_debug("---------------\r\n");
+                pr_debug_float_msg("Interval count: ", interval_count);
+                pr_debug_float_msg("Speed interval: ", speed_interval);
+                pr_debug_float_msg("Lat. interval:  ", lat_interval);
+                pr_debug_int_msg  ("Time interval:  ", time_interval);
+        }
+
+        for (size_t i = 0; i < interval_count; i++)
+        {
+                /* Linearly interpolate longitude from latitude */
+                float interp_lon = lon1 + (interp_lat - lat1) * ((lon2 - lon1) / (lat2 - lat1));
+
+                /* Update current GPS snapshot with interpolated values */
+                gps_snapshot->sample.point.latitude = interp_lat;
+                gps_snapshot->sample.point.longitude = interp_lon;
+                gps_snapshot->sample.time = interp_time;
+                gps_snapshot->sample.speed = interp_speed;
+                gps_snapshot->delta_last_sample = time_interval;
+                gps_snapshot->deltaFirstFix = interp_delta_ff;
+
+                if (DEBUG_LEVEL)
+                        debug_print_gps_snapshot(gps_snapshot);
+
+                lapstats_location_updated(gps_snapshot);
+
+                /* update interpolated intervals */
+                gps_snapshot->previousPoint = gps_snapshot->sample.point;
+
+                interp_lat += lat_interval;
+                interp_time += time_interval;
+                interp_delta_ff += time_interval;
+
+                gps_snapshot->previous_speed = interp_speed;
+                interp_speed += speed_interval;
+        }
+        pr_debug("---------------\r\n");
 }
