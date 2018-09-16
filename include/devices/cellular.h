@@ -127,7 +127,7 @@ telemetry_status_t cellular_get_connection_status();
 enum cellular_net_status cellmodem_get_status(void);
 int32_t cellular_active_time();
 int cellular_disconnect(DeviceConfig *config);
-int cellular_init_connection(DeviceConfig *config);
+int cellular_init_connection(DeviceConfig *config, millis_t * connected_at);
 int cellular_check_connection_status(DeviceConfig *config);
 const char* readsCell(struct serial_buffer *sb, size_t timeout);
 void putsCell(struct serial_buffer *sb, const char *data);

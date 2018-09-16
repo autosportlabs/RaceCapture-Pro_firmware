@@ -284,15 +284,6 @@ void SampleRecordTest::testInitSampleRecord()
                 ts++;
         }
 
-        if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED){
-                CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance,
-                                     (void *) ts->cfg);
-                CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles,
-                                     (void *) ts->get_float_sample);
-                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
-                ts++;
-        }
-
         if (gpsConfig->altitude.sampleRate != SAMPLE_DISABLED){
                 CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->altitude,
                                      (void *) ts->cfg);
@@ -324,6 +315,15 @@ void SampleRecordTest::testInitSampleRecord()
                 CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->DOP,
                                      (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL((void *) GPS_getDOP,
+                                     (void *) ts->get_float_sample);
+                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+                ts++;
+        }
+
+        if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED){
+                CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance,
+                                     (void *) ts->cfg);
+                CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles,
                                      (void *) ts->get_float_sample);
                 CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
                 ts++;
@@ -440,4 +440,32 @@ void SampleRecordTest::testLoggerMessageAlwaysHasTime() {
         }
 
         CPPUNIT_ASSERT_EQUAL(true, tick < 1000);
+}
+
+void SampleRecordTest::test_get_sample_value_by_name()
+{
+		lc->ADCConfigs[7].scalingMode = SCALING_MODE_RAW;
+		ADC_mock_set_value(7, 123);
+		ADC_sample_all();
+
+        increment_tick();
+        CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
+
+        populate_sample_buffer(&s, 0);
+
+
+		double value;
+		char *units;
+		bool result = get_sample_value_by_name(&s, "Speed", &value, &units);
+		CPPUNIT_ASSERT_EQUAL(true, result);
+		CPPUNIT_ASSERT_EQUAL((double)0, value);
+		CPPUNIT_ASSERT_EQUAL(string("MPH"), string(units));
+
+		result = get_sample_value_by_name(&s, "Battery", &value, &units);
+		CPPUNIT_ASSERT_EQUAL(true, result);
+		CPPUNIT_ASSERT_EQUAL((double)123 * 0.0048828125f, value);
+		CPPUNIT_ASSERT_EQUAL(string("Volts"), string(units));
+
+		result = get_sample_value_by_name(&s, "FooBar", &value, &units);
+		CPPUNIT_ASSERT_EQUAL(false, result);
 }

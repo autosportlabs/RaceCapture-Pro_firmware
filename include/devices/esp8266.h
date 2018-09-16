@@ -40,6 +40,7 @@ CPP_GUARD_BEGIN
 #define ESP8266_SERIAL_DEF_BITS		8
 #define ESP8266_SERIAL_DEF_PARITY	0
 #define ESP8266_SERIAL_DEF_STOP		1
+#define ESP8266_RESET_HARD_DELAY    5000
 
 bool esp8266_setup(struct Serial *s, const size_t max_cmd_len);
 

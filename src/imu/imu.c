@@ -26,17 +26,26 @@
 #include "filter.h"
 #include "stddef.h"
 #include "printk.h"
+#include "capabilities.h"
 
 //Channel Filters
-static Filter g_imu_filter[CONFIG_IMU_CHANNELS] = {0};
+#if IMU_CHANNELS > 0
+#define IMU_INITIALIZER {0}
+#else
+#define IMU_INITIALIZER {}
+#endif
+
+static Filter g_imu_filter[CONFIG_IMU_CHANNELS] = IMU_INITIALIZER;
 
 static void init_filters(LoggerConfig *loggerConfig)
 {
+#if IMU_CHANNELS > 0
     ImuConfig *config  = loggerConfig->ImuConfigs;
     for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++) {
         float alpha = (config + i)->filterAlpha;
         init_filter(&g_imu_filter[i], alpha);
     }
+#endif
 }
 
 void imu_sample_all()

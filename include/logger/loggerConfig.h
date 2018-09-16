@@ -23,6 +23,7 @@
 #define LOGGERCONFIG_H_
 
 #include "auto_logger.h"
+#include "camera_control.h"
 #include "capabilities.h"
 #include "channel_config.h"
 #include "cpp_guard.h"
@@ -111,7 +112,7 @@ struct TimeConfig {
 #define SCALING_MODE_MAP                    2
 #define DEFAULT_SCALING_MODE                SCALING_MODE_LINEAR
 #define LINEAR_SCALING_PRECISION            7
-#define FILTER_ALPHA_PRECISION              2
+#define FILTER_ALPHA_PRECISION              3
 #define SCALING_MAP_BIN_PRECISION           2
 #define DEFAULT_ANALOG_SCALING_PRECISION    2
 #define DEFAULT_VOLTAGE_SCALING_PRECISION   2
@@ -343,11 +344,13 @@ typedef struct _CANMapping {
 
     /* the conversion filter to apply to quickly convert units without changing mapping */
     uint8_t conversion_filter_id;
+
+    /* sub ID index. If defined (>=0) then this uses the first byte to mach on a sub address */
+    int8_t sub_id;
 } CANMapping;
 
 typedef struct _CANChannel {
     /* The standard channel configuration */
-    ChannelConfig channel_cfg;
     CANMapping mapping;
 } CANChannel;
 
@@ -381,14 +384,16 @@ typedef struct _OBD2Config {
 } OBD2Config;
 
 typedef struct _GPSConfig {
+#if GPS_HARDWARE_SUPPORT
     ChannelConfig latitude;
     ChannelConfig longitude;
     ChannelConfig speed;
-    ChannelConfig distance;
     ChannelConfig altitude;
     ChannelConfig satellites;
     ChannelConfig quality;
     ChannelConfig DOP;
+#endif
+    ChannelConfig distance;
 } GPSConfig;
 
 #define DEFAULT_GPS_SAMPLE_RATE SAMPLE_10Hz
@@ -402,16 +407,22 @@ typedef struct _GPSConfig {
 #define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
 
-#define DEFAULT_GPS_CONFIG {                   \
+#if GPS_HARDWARE_SUPPORT
+#define DEFAULT_GPS_CONFIG {             \
 		DEFAULT_GPS_LATITUDE_CONFIG,           \
 		DEFAULT_GPS_LONGITUDE_CONFIG,          \
 		DEFAULT_GPS_SPEED_CONFIG,              \
-		DEFAULT_GPS_DISTANCE_CONFIG,           \
 		DEFAULT_GPS_ALTITUDE_CONFIG,           \
 		DEFAULT_GPS_SATELLITE_CONFIG,          \
 		DEFAULT_GPS_QUALITY_CONFIG,            \
-		DEFAULT_GPS_DOP_CONFIG                 \
-         }
+		DEFAULT_GPS_DOP_CONFIG,                \
+  DEFAULT_GPS_DISTANCE_CONFIG            \
+}
+#else
+#define DEFAULT_GPS_CONFIG {             \
+  DEFAULT_GPS_DISTANCE_CONFIG            \
+}
+#endif
 
 typedef struct _LapConfig {
     ChannelConfig lapCountCfg;
@@ -463,7 +474,7 @@ typedef struct _BluetoothConfig {
 #define CELL_APN_USER_LENGTH 30
 #define CELL_APN_PASS_LENGTH 30
 #define DNS_ADDR_LEN 16
-#define DEFAULT_APN_HOST "epc.tmobile.com"
+#define DEFAULT_APN_HOST "fp.com.attz"
 #define DEFAULT_APN_USER ""
 #define DEFAULT_APN_PASS ""
 #define DEFAULT_CELL_ENABLED 0
@@ -518,9 +529,6 @@ typedef struct _LoggerConfig {
     /* stores the version of this firmware */
     VersionInfo RcpVersionInfo;
 
-    //PWM/Analog out configurations
-    unsigned short PWMClockFrequency;
-
     // Time Config
     struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
 
@@ -531,10 +539,12 @@ typedef struct _LoggerConfig {
 
 #if PWM_CHANNELS > 0
     //PWM configuration
+    //PWM/Analog out configurations
+    unsigned short PWMClockFrequency;
     PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     //GPIO configurations
     GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
 #endif
@@ -569,8 +579,14 @@ typedef struct _LoggerConfig {
     //Connectivity Configuration
     ConnectivityConfig ConnectivityConfigs;
 
-        struct logging_config logging_cfg;
-        struct auto_logger_config auto_logger_cfg;
+    struct logging_config logging_cfg;
+#if SDCARD_SUPPORT
+    struct auto_logger_config auto_logger_cfg;
+#endif
+
+#if CAMERA_CONTROL
+    struct camera_control_config camera_control_cfg;
+#endif
     //Padding data to accommodate flash routine
     char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
@@ -621,6 +637,7 @@ void reset_logger_config(void);
 int flash_default_logger_config(void);
 
 void logger_config_reset_gps_config(GPSConfig *cfg);
+uint16_t logger_config_get_gps_sample_rate(void);
 
 enum CANMappingType filter_can_mapping_type(enum CANMappingType type);
 

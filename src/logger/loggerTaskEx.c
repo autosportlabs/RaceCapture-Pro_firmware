@@ -43,8 +43,9 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "watchdog.h"
+#include "camera_control.h"
 
-#define LOGGER_STACK_SIZE	152
+#define LOGGER_STACK_SIZE	220
 #define IDLE_TIMEOUT	configTICK_RATE_HZ / 1
 
 #define BACKGROUND_SAMPLE_RATE	SAMPLE_50Hz
@@ -52,11 +53,17 @@
 int g_loggingShouldRun;
 int g_configChanged;
 int g_telemetryBackgroundStreaming;
+struct sample * current_sample = NULL;
 
 xSemaphoreHandle onTick;
 
 /* This should be 0'd out accroding to C standards */
 static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE] = {0};
+
+struct sample * get_current_sample(void)
+{
+		return current_sample;
+}
 
 static LoggerMessage getLogStartMessage()
 {
@@ -176,6 +183,14 @@ void loggerTaskEx(void *params)
         logging_set_logging_start(0);
         g_configChanged = 1;
 
+#if CAMERA_CONTROL
+        camera_control_init(&loggerConfig->camera_control_cfg);
+#endif
+
+#if SDCARD_SUPPORT
+        auto_logger_init(&loggerConfig->auto_logger_cfg);
+#endif
+
         while (1) {
                 xSemaphoreTake(onTick, portMAX_DELAY);
                 ++currentTicks;
@@ -208,10 +223,16 @@ void loggerTaskEx(void *params)
                 /* Only reset the watchdog when we are configured and ready to rock */
                 watchdog_reset();
 
-                if (currentTicks % BACKGROUND_SAMPLE_RATE == 0)
+                const bool is_logging = logging_is_active();
+
+                /**
+                 * Ensure we refresh the internal sensors at either the
+                 * logging rate or at least at background sample rate
+                 */
+                if ((is_logging && currentTicks % loggingSampleRate == 0) ||
+                                (currentTicks % BACKGROUND_SAMPLE_RATE == 0))
                         doBackgroundSampling();
 
-                const bool is_logging = logging_is_active();
                 if (g_loggingShouldRun && !is_logging) {
                         logging_started();
                         const LoggerMessage logStartMsg = getLogStartMessage();
@@ -270,6 +291,8 @@ void loggerTaskEx(void *params)
 
                 ++bufferIndex;
                 bufferIndex %= buffer_size;
+
+                current_sample = sample;
         }
 
         panic(PANIC_CAUSE_UNREACHABLE);

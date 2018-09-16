@@ -23,7 +23,6 @@
 #include "dateTime.h"
 #include "date_time_test.h"
 #include "gps.h"
-#include "gps.testing.h"
 #include "mock_serial.h"
 #include "task.h"
 #include "task_testing.h"

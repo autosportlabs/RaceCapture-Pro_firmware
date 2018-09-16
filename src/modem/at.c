@@ -28,6 +28,7 @@
 #include <ctype.h>
 #include <string.h>
 
+#define LOG_PFX "[AT] "
 #define AT_DEFAULT_QP_MS	250
 #define AT_DEFAULT_DELIMETER	"\r\n"
 
@@ -45,6 +46,7 @@ static const struct at_rsp_status_msgs {
         AT_STATUS_MSG("FAIL", AT_RSP_STATUS_FAILED),
         AT_STATUS_MSG("ERROR", AT_RSP_STATUS_ERROR),
         AT_STATUS_MSG("ABORTED", AT_RSP_STATUS_ABORTED),
+        AT_STATUS_MSG("busy s...", AT_RSP_STATUS_BUSY),
 };
 
 static bool is_timed_out(const tiny_millis_t t_start,
@@ -113,7 +115,7 @@ static void at_task_run_no_bytes(struct at_info *ati)
                  */
                 if (is_timed_out(ati->timing.urc_start_ms,
                                  AT_URC_TIMEOUT_MS)) {
-                        pr_warning("[at] Timed out in a URC!?!. "
+                        pr_warning(LOG_PFX "Timed out in a URC!?!. "
                                    "Should never happen. Likely a bug.\r\n");
                         return complete_urc(ati, AT_RSP_STATUS_TIMEOUT);
                 }
@@ -169,7 +171,7 @@ static bool _process_msg_generic(struct at_info *ati,
                                  char *msg)
 {
         if (AT_RSP_MAX_MSGS <= ati->rsp.msg_count) {
-                pr_error("[at] BUG: Received more messages than can "
+                pr_error(LOG_PFX "BUG: Received more messages than can "
                          "handle. Dropping.\r\n");
                 return false;
         }
@@ -224,7 +226,7 @@ static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
 	 * Gotta figure out what type of message this is before we
 	 * process it.
 	 */
-	if (ati->sparse_urc_cb && ati->sparse_urc_cb(msg)) {
+	if (ati->sparse_urc_cb && ati->sparse_urc_cb(ati, msg)) {
 		/* It was a sparse URC that was handled. */
 		return;
 	}
@@ -250,7 +252,7 @@ static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
 	 * have an unhandled message (and these should not happen).
 	 * Log it and move on with life.
 	 */
-	pr_warning_str_msg("[at] Unhandled msg received: ", msg);
+	pr_debug_str_msg(LOG_PFX "Unhandled msg received: ", msg);
 
 	/* Need clean the buffer for new msgs */
 	serial_buffer_clear(ati->sb);
@@ -360,7 +362,7 @@ void at_task(struct at_info *ati, const size_t ms_delay)
 void at_reset(struct at_info *ati)
 {
         if (!ati->sb) {
-                pr_error("[at] AT machine not yet initialized!\r\n");
+                pr_error(LOG_PFX "AT machine not yet initialized!\r\n");
                 return;
         }
 
@@ -382,7 +384,7 @@ void at_reset(struct at_info *ati)
 bool at_info_init(struct at_info *ati, struct serial_buffer *sb)
 {
         if (!ati || !sb) {
-                pr_error("[at] Bad init parameter\r\n");
+                pr_error(LOG_PFX "Bad init parameter\r\n");
                 return false;
         }
 
@@ -426,13 +428,13 @@ struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
 {
         if (ati->cmd_queue.count >= AT_CMD_MAX_CMDS) {
                  /* Full up */
-                pr_warning("[at] Command queue full");
+                pr_warning(LOG_PFX "Command queue full");
                 return NULL;
         }
 
         if (strlen(cmd) >= AT_CMD_MAX_LEN) {
                 /* Command too long */
-                pr_warning_str_msg("[at] Command too long: ", cmd);
+                pr_warning_str_msg(LOG_PFX "Command too long: ", cmd);
                 return NULL;
         }
 
@@ -476,14 +478,14 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
 {
         if (ati->urc_list.count >= AT_URC_MAX_URCS) {
                  /* Full up */
-                pr_warning("[at] URC list full\r\n");
+                pr_warning(LOG_PFX "URC list full\r\n");
                 return NULL;
         }
 
         const size_t pfx_len = strlen(pfx);
         if (pfx_len >= AT_URC_MAX_LEN) {
                 /* URC prefix is too long */
-                pr_warning_str_msg("[at] URC prefix too long: ", pfx);
+                pr_warning_str_msg(LOG_PFX "URC prefix too long: ", pfx);
                 return NULL;
         }
 
@@ -512,7 +514,7 @@ bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
                          const char *delim, const enum at_dev_cfg_flag flags)
 {
         if (!delim || strlen(delim) >= AT_DEV_CVG_DELIM_MAX_LEN) {
-                pr_error("[at] Failed to set delimeter\r\n");
+                pr_error(LOG_PFX "Failed to set delimeter\r\n");
                 return false;
         }
 

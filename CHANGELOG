@@ -1,3 +1,34 @@
+= 2.13.5 =
+* Core: Restore 2.12.x bit mode little endian behavior to resolve regression with E46 CAN bus
+* Core: Resolve logger crashing randomly when lap is completed
+* Core: Clean up Command Line Interface options, remove obsolete functions
+* Core: Add internal test function for stimulating lap timer
+
+= 2.13.3 = 
+* GPS: Get UTC time directly from GPS driver
+* WiFi: Fix wifi initialization problem on WiFi modules running older firmware
+* Lua: prevent a critical Lua error if getchannel fails to find a channel by name; return nil instead.
+* Analog: Increase smoothing range by 2x
+
+= 2.13.0 =
+* Core: Ensure Distance channel is always enabled, even if hardware GPS is disabled
+* Core: Improve debouncing of front panel Action button
+* Core: Update firmware friendly name for RaceCapture/Track to RaceCapture/Track (was just RaceCapture)
+* Core: Properly Disable IMU channels if device does not support it
+* Core: Fix periodic crash/resets when uploading full configuration via bluetooth
+* Logging: Add GoPro camera control (experimental)
+* Logging: Ensure action button remains active if GPIO hardware isn't present
+* Logging: Enable auto-logger by default
+* Lua: current channel values in Lua (inc. direct CAN mapping)
+* Lua: Increase Lua memory availability by 20%
+* CAN Mapping: Properly decode bit mode little endian values
+* CAN Mapping: Add sub-id CAN mapping capabilities
+* OBDII: Ensure OBDII PID mode is returned as unsigned value
+* OBDII: Support additional OBDII modes
+* Telemetry: Set UTC time from telemetry link if UTC time isn't locally available
+* Cellular: Improve cell module connection time by reducing time lingering when cell module is in a bad state
+* Cellular: read signal strength after registered on network to ensure getting a valid value
+* Cellular: Switch default APN to FreedomPop
 = 2.12.0 = 
 * Added obd2 channels capacity in getCapabilities API #940
 * Increase number of OBDII channels from 5 to 10 for RaceCapture/Track; 10 to 20 for RaceCapture/Pro #936

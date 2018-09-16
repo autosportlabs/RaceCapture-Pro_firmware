@@ -32,7 +32,7 @@ CPP_GUARD_BEGIN
 #define TICK_RATE_HZ			1000
 #define MS_PER_TICK 5
 
-//USB support
+#define GPS_HARDWARE_SUPPORT 1
 #define USB_SERIAL_SUPPORT	1
 #define LUA_SUPPORT		1
 #define VIRTUAL_CHANNEL_SUPPORT	1
@@ -40,6 +40,7 @@ CPP_GUARD_BEGIN
 #define CELLULAR_SUPPORT	1
 #define BLUETOOTH_SUPPORT	1
 #define WIFI_SUPPORT		1
+#define CAMERA_CONTROL      1
 
 //configuration
 #define MAX_TRACKS				240

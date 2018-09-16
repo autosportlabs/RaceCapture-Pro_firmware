@@ -43,6 +43,7 @@
 #include "task.h"
 #include "taskUtil.h"
 #include "usart.h"
+#include "gps_device.h"
 
 
 #if (CONNECTIVITY_CHANNELS == 1)
@@ -61,7 +62,7 @@
 #define BUFFER_SIZE 							1025
 #define TELEMETRY_DISCONNECT_TIMEOUT            60000
 
-#define TELEMETRY_STACK_SIZE	256
+#define TELEMETRY_STACK_SIZE	300
 #define BAD_MESSAGE_THRESHOLD					10
 
 #define METADATA_SAMPLE_INTERVAL				100
@@ -298,14 +299,17 @@ void connectivityTask(void *params)
     bool logging_enabled = false;
 
     while (1) {
+        millis_t connected_at = 0;
         bool should_stream = logging_enabled ||
                              logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
                              connParams->always_streaming;
 
-        while (should_stream && connParams->init_connection(&deviceConfig) != DEVICE_INIT_SUCCESS) {
+        while (should_stream && connParams->init_connection(&deviceConfig, &connected_at) != DEVICE_INIT_SUCCESS) {
             pr_info("conn: not connected. retrying\r\n");
             vTaskDelay(INIT_DELAY);
         }
+        if (connected_at > 0)
+                GPS_set_UTC_time(connected_at);
 
         serial_flush(serial);
         rxCount = 0;

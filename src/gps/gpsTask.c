@@ -21,7 +21,6 @@
 
 
 #include "FreeRTOS.h"
-#include "auto_logger.h"
 #include "gps.h"
 #include "gpsTask.h"
 #include "gps_device.h"
@@ -35,24 +34,13 @@
 #define GPS_TASK_STACK_SIZE	256
 #define MSG_FAILURES_TRIGGER	3
 
-static bool g_enableGpsDataLogging = false;
-
-void setGpsDataLogging(bool enable)
-{
-    g_enableGpsDataLogging = enable;
-}
-
 void GPSTask(void *pvParameters)
 {
-        LoggerConfig *lc = getWorkingLoggerConfig();
         struct Serial *serial = serial_device_get(SERIAL_GPS);
-        const uint8_t targetSampleRate =
-                decodeSampleRate(lc->GPSConfigs.speed.sampleRate);
+        const uint8_t targetSampleRate = decodeSampleRate(logger_config_get_gps_sample_rate());
 
         /* Call this here to effectively reset lapstats */
         lapstats_config_changed();
-
-        auto_logger_init(&lc->auto_logger_cfg);
 
         while(1) {
                 size_t failures = 0;
@@ -67,14 +55,13 @@ void GPSTask(void *pvParameters)
                         if (result == GPS_MSG_SUCCESS) {
                                 const GpsSnapshot snap = getGpsSnapshot();
                                 lapstats_processUpdate(&snap);
-                                auto_logger_gps_sample_cb(&snap.sample);
 
                                 if (failures > 0)
                                         --failures;
                         } else {
                                 pr_debug("GPS: Msx Rx Failure\r\n");
                                 if (++failures >= MSG_FAILURES_TRIGGER) {
-                                        pr_warning("GPS: Too many failures.  "
+                                        pr_debug("GPS: Too many failures.  "
                                                    "Reenum\r\n");
                                         break;
                                 }

@@ -79,7 +79,7 @@ static void cmd_failure(const char *cmd_name, const char *msg)
 /**
  * This is the callback invoked when an IPD URC is seen.
  */
-static void ipd_urc_cb(char *msg)
+static void ipd_urc_cb(struct at_info *ati, char *msg)
 {
 	if (!state.hooks.data_received_cb)
 		return;
@@ -97,7 +97,7 @@ static void ipd_urc_cb(char *msg)
         const int chan_id = atoi(toks[1]);
         const size_t len = atoi(toks[2]);
         char *data = toks[3];
-	const size_t serial_len = strlen(data);
+        size_t serial_len = strlen(data);
 
 
 	/*
@@ -109,12 +109,13 @@ static void ipd_urc_cb(char *msg)
 	 * comes from the command messages.
 	 */
 	if (serial_len < len) {
-		pr_error(LOG_PFX "IPD Length Mismatch.  Dropping. \r\n");
-		pr_info_int_msg(LOG_PFX "Length Expected: ", (int) len);
-		pr_info_int_msg(LOG_PFX "Length Actual: ", (int) serial_len);
-		pr_info_str_msg(LOG_PFX "Data: ", data);
-		return;
+	    pr_debug(LOG_PFX "Received less data than expected: ");
+	    pr_debug_int(serial_len);
+	    pr_debug("/");
+	    pr_debug_int(len);
+	    pr_debug_str_msg("; data: ", data);
 	}
+
 	data[len] = 0;
 
 
@@ -189,11 +190,11 @@ static bool channel_action_cb(const char* msg)
  * the standard URC callbacks.  Used for the silly messages like
  * `0,CONNECT` where there is no prefix for the URC like their should be.
  */
-static bool sparse_urc_cb(char* msg)
+static bool sparse_urc_cb(struct at_info *ati, char* msg)
 {
 	/* + IPD,... - Incoming data. */
 	if (strncmp(msg, "+IPD,", 5) == 0) {
-		ipd_urc_cb(msg);
+		ipd_urc_cb(ati, msg);
 		return true;
 	}
 
@@ -365,8 +366,6 @@ static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
 
 	/* Reset Serial to default values first */
 	struct Serial* serial = state.ati->sb->serial;
-	serial_clear(serial);
-	esp8266_set_default_serial_params(serial);
 
 	/* Wait for the ready notice from the modem and ping test. */
 	esp8266_wait_for_ready(serial);
@@ -398,6 +397,15 @@ static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
  */
 static bool init_soft_reset()
 {
+    /* Initialize the esp8266 hardware */
+
+        wifi_device_init();
+        struct Serial* serial = state.ati->sb->serial;
+        serial_clear(serial);
+        esp8266_set_default_serial_params(serial);
+
+
+
         const char cmd[] = "AT+RST";
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
                                   init_soft_reset_cb, NULL);
@@ -1016,8 +1024,10 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
 	}
         case AT_RSP_STATUS_SEND_OK:
                 /* Then we have successfully sent the message */
-		status = true;
+                status = true;
                 goto fini;
+        case AT_RSP_STATUS_BUSY:
+                pr_warning(LOG_PFX "Got busy response!");
         default:
                 /* Then bad things happened */
                 cmd_failure("send_data_cb", "Bad response value");
@@ -1070,7 +1080,7 @@ bool esp8266_send_data(const unsigned int chan_id, struct Serial *serial,
         char cmd[32];
         snprintf(cmd, ARRAY_LEN(cmd),"AT+CIPSEND=%d,%d", chan_id, (int) len);
 
-        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_SUPER_MS,
                                   send_data_cb, ti);
 }
 

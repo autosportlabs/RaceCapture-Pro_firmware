@@ -8,6 +8,7 @@
 #define MS_PER_TICK	1
 
 /* Support Flags */
+#define GPS_HARDWARE_SUPPORT 1
 #define BLUETOOTH_SUPPORT	1
 #define CELLULAR_SUPPORT	1
 #define LUA_SUPPORT		1
@@ -15,6 +16,7 @@
 #define USB_SERIAL_SUPPORT	1
 #define VIRTUAL_CHANNEL_SUPPORT	1
 #define WIFI_SUPPORT		1
+#define CAMERA_CONTROL      0
 
 /* Wifi Specific Info */
 #define WIFI_MAX_BAUD		230400
@@ -48,7 +50,7 @@
  * LUA allocate before we say no.  This keeps LUA from crashing the system
  * when a memory hog LUA script is running.  Set to 0 for no limit.
  */
-#define LUA_MEM_MAX (1024 * 50)
+#define LUA_MEM_MAX (1024 * 60)
 
 /*
  * These values dictate how the LUA garbage collector will behave.

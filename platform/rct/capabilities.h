@@ -9,6 +9,7 @@
 #define MS_PER_TICK 1
 
 /* Support Flags */
+#define GPS_HARDWARE_SUPPORT     1
 #define BLUETOOTH_SUPPORT           0
 #define CELLULAR_SUPPORT	        0
 #define LUA_SUPPORT		            0
@@ -16,6 +17,7 @@
 #define USB_SERIAL_SUPPORT	        1
 #define VIRTUAL_CHANNEL_SUPPORT	    0
 #define WIFI_SUPPORT		        1
+#define CAMERA_CONTROL              1
 
 /* Wifi Specific Info */
 #define WIFI_MAX_BAUD		        921600
@@ -63,7 +65,7 @@
 
 //system info
 #define DEVICE_NAME                 "RCT"
-#define FRIENDLY_DEVICE_NAME        "RaceCapture"
+#define FRIENDLY_DEVICE_NAME        "RaceCapture/Track"
 
 /* LUA Configuration */
 

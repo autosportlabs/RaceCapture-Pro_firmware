@@ -30,6 +30,7 @@
  * #define CAN_MAPPING_TEST_DEBUG
  */
 
+
 CPPUNIT_TEST_SUITE_REGISTRATION( CANMappingTest );
 
 
@@ -347,6 +348,7 @@ void CANMappingTest::id_match_test(void)
                 msg.addressValue = 0xFF;
                 mapping.can_id = 0xFF;
                 mapping.can_mask = 0;
+                mapping.sub_id = -1;
                 CPPUNIT_ASSERT_EQUAL(true, canmapping_match_id(&msg, &mapping));
                 mapping.can_mask = 0xFF;
                 CPPUNIT_ASSERT_EQUAL(true, canmapping_match_id(&msg, &mapping));
@@ -410,6 +412,7 @@ void CANMappingTest::mapping_test(void)
         mapping.adder = adder;
 
         mapping.can_id = 0x1122;
+        mapping.sub_id = -1;
         mapping.can_mask = 0;
 
         bool result;

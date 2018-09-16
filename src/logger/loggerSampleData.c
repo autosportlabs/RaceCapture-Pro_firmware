@@ -29,6 +29,7 @@
 #include "dateTime.h"
 #include "geopoint.h"
 #include "gps.h"
+#include "gps_device.h"
 #include "imu.h"
 #include "lap_stats.h"
 #include "linear_interpolate.h"
@@ -70,7 +71,7 @@ static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
     return ++s;
 }
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
 static ChannelSample* processChannelSampleWithIntGetter(ChannelSample *s,
         ChannelConfig *cfg,
         const size_t index,
@@ -221,22 +222,28 @@ float get_imu_sample(int channelId)
 }
 #endif
 
+#if GPS_HARDWARE_SUPPORT
 static void* get_altitude_getter(const ChannelConfig *cc)
 {
 	return UNIT_LENGTH_METERS == units_get_unit(cc->units) ?
 		gps_get_altitude_meters : getAltitude;
 }
 
-static void* get_distance_getter(const ChannelConfig *cc)
-{
-	return UNIT_LENGTH_KILOMETERS == units_get_unit(cc->units) ?
-		getLapDistance : getLapDistanceInMiles;
-}
-
 static void* get_speed_getter(const ChannelConfig *cc)
 {
 	return UNIT_SPEED_KILOMETERS_HOUR == units_get_unit(cc->units) ?
 		getGPSSpeed : getGpsSpeedInMph;
+}
+#endif
+
+static void* get_distance_getter(const ChannelConfig *cc)
+{
+ return UNIT_LENGTH_KILOMETERS == units_get_unit(cc->units) ?
+  getLapDistance : getLapDistanceInMiles;
+}
+
+static long long get_utc_time_helper(void){
+        return (long long)GPS_get_UTC_time();
 }
 
 void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
@@ -259,7 +266,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     tc = &(loggerConfig->TimeConfigs[1]);
     chanCfg = &(tc->cfg);
     chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
-    sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, getMillisSinceEpochAsLongLong);
+    sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, get_utc_time_helper);
 
 #if ANALOG_CHANNELS > 0
     for (int i=0; i < CONFIG_ADC_CHANNELS; i++) {
@@ -285,7 +292,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     }
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     for (int i=0; i < CONFIG_GPIO_CHANNELS; i++) {
         GPIOConfig *config = &(loggerConfig->GPIOConfigs[i]);
         chanCfg = &(config->cfg);
@@ -311,7 +318,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 
     CANChannelConfig *ccc = &(loggerConfig->can_channel_cfg);
     for (size_t i = 0; i < ccc->enabled_mappings && ccc->enabled; i++) {
-            chanCfg = &(ccc->can_channels[i].channel_cfg);
+            chanCfg = &(ccc->can_channels[i].mapping.channel_cfg);
             sample = processChannelSampleWithFloatGetter(sample, chanCfg, i,
                                                        CAN_get_current_channel_value);
     }
@@ -326,6 +333,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 #endif /* VIRTUAL_CHANNEL_SUPPORT */
 
     GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
+#if GPS_HARDWARE_SUPPORT
     chanCfg = &(gpsConfig->latitude);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getLatitude);
     chanCfg = &(gpsConfig->longitude);
@@ -333,9 +341,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     chanCfg = &(gpsConfig->speed);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
 						      get_speed_getter(chanCfg));
-    chanCfg = &(gpsConfig->distance);
-    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
-						      get_distance_getter(chanCfg));
     chanCfg = &(gpsConfig->altitude);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
 						      get_altitude_getter(chanCfg));
@@ -345,7 +350,10 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
     sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, GPS_getQuality);
     chanCfg = &(gpsConfig->DOP);
     sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
-
+#endif
+    chanCfg = &(gpsConfig->distance);
+    sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+            get_distance_getter(chanCfg));
 
     LapConfig *trackConfig = &(loggerConfig->LapConfigs);
     chanCfg = &(trackConfig->lapCountCfg);

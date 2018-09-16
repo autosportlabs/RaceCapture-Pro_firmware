@@ -145,6 +145,10 @@ bool jsmn_exists_set_val_bool(const jsmntok_t* root, const char* field,
 
 bool jsmn_exists_set_val_uint32(const jsmntok_t* root, const char* field,
                              uint32_t* val);
+
+bool jsmn_exists_set_val_uint64(const jsmntok_t* root, const char* field,
+                             uint64_t* val);
+
 /**
  * Searches for a node based on the specified field name, and if found, set the pointed-to uchar value. Also passes it through a filter function if provided.
  * @param root the node to start searching from.

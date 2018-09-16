@@ -35,17 +35,13 @@ CPP_GUARD_BEGIN
 
 #define BASE_API_METHODS						\
 	API_METHOD("addTrackDb", api_addTrackDb)			\
-	API_METHOD("calImu", api_calibrateImu)				\
 	API_METHOD("facReset", api_factoryReset)			\
 	API_METHOD("flashCfg", api_flashConfig)				\
-	API_METHOD("getAutoLoggerCfg", api_get_auto_logger_cfg)		\
 	API_METHOD("getCanCfg", api_getCanConfig)			\
 	API_METHOD("getCanChanCfg", api_get_can_channel_config) \
 	API_METHOD("setCanChanCfg", api_set_can_channel_config) \
 	API_METHOD("getCapabilities", api_getCapabilities)		\
 	API_METHOD("getConnCfg", api_getConnectivityConfig)		\
-	API_METHOD("getGpsCfg", api_getGpsConfig)			\
-	API_METHOD("getImuCfg", api_getImuConfig)			\
 	API_METHOD("getLapCfg", api_getLapConfig)			\
 	API_METHOD("getLogfile", api_getLogfile)			\
 	API_METHOD("getMeta", api_getMeta)				\
@@ -59,11 +55,8 @@ CPP_GUARD_BEGIN
 	API_METHOD("log", api_log)					\
 	API_METHOD("s", api_sampleData)					\
 	API_METHOD("setActiveTrack", api_set_active_track)		\
-	API_METHOD("setAutoLoggerCfg", api_set_auto_logger_cfg)		\
 	API_METHOD("setCanCfg", api_setCanConfig)			\
 	API_METHOD("setConnCfg", api_setConnectivityConfig)		\
-	API_METHOD("setGpsCfg", api_setGpsConfig)			\
-	API_METHOD("setImuCfg", api_setImuConfig)			\
 	API_METHOD("setLapCfg", api_setLapConfig)			\
 	API_METHOD("setLogfileLevel", api_setLogfileLevel)		\
 	API_METHOD("setObd2Cfg", api_setObd2Config)			\
@@ -71,6 +64,40 @@ CPP_GUARD_BEGIN
 	API_METHOD("setTrackCfg", api_setTrackConfig)			\
 	API_METHOD("setWifiCfg", api_set_wifi_cfg)			\
 	API_METHOD("sysReset", api_systemReset)				\
+
+#if GPS_HARDWARE_SUPPORT
+#define GPS_API_METHODS                         \
+    API_METHOD("getGpsCfg", api_getGpsConfig)   \
+    API_METHOD("setGpsCfg", api_setGpsConfig)   \
+
+#else
+#define GPS_API_METHODS
+#endif
+
+#if SDCARD_SUPPORT
+#define AUTOLOGGING_METHODS                                     \
+    API_METHOD("getSdLogCtrlCfg", api_get_auto_logger_cfg)     \
+    API_METHOD("setSdLogCtrlCfg", api_set_auto_logger_cfg)
+#else
+#define AUTOLOGGING_METHODS
+#endif
+
+#if CAMERA_CONTROL  > 0
+#define CAMERA_CONTROL_METHODS                                  \
+    API_METHOD("getCamCtrlCfg", api_get_camera_control_cfg)     \
+    API_METHOD("setCamCtrlCfg", api_set_camera_control_cfg)
+#else
+#define CAMERA_CONTROL_METHODS
+#endif
+
+#if IMU_CHANNELS > 0
+#define IMU_API_METHODS                             \
+        API_METHOD("calImu", api_calibrateImu)      \
+        API_METHOD("getImuCfg", api_getImuConfig)   \
+        API_METHOD("setImuCfg", api_setImuConfig)
+#else
+#define IMU_API_METHODS
+#endif
 
 #if ANALOG_CHANNELS > 0
 #define ANALOG_API_METHODS                              \
@@ -88,7 +115,7 @@ CPP_GUARD_BEGIN
 #define PWM_API_METHODS
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
 #define GPIO_API_METHODS                                \
         API_METHOD("getGpioCfg", api_getGpioConfig)     \
         API_METHOD("setGpioCfg", api_setGpioConfig)
@@ -114,7 +141,11 @@ CPP_GUARD_BEGIN
 #endif
 
 #define API_METHODS                             \
+        AUTOLOGGING_METHODS                     \
+        CAMERA_CONTROL_METHODS                  \
         BASE_API_METHODS                        \
+        GPS_API_METHODS                         \
+        IMU_API_METHODS                         \
         ANALOG_API_METHODS                      \
         PWM_API_METHODS                         \
         GPIO_API_METHODS                        \
@@ -186,8 +217,16 @@ int api_set_telemetry(struct Serial *serial, const jsmntok_t *json);
 /* Volatile setter of active Track */
 int api_set_active_track(struct Serial *serial, const jsmntok_t *json);
 
+#if SDCARD_SUPPORT
 int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
+#if CAMERA_CONTROL
+int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
 CPP_GUARD_END
 
 #endif /* LOGGERAPI_H_ */

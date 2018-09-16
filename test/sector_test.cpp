@@ -19,7 +19,6 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gps.testing.h"
 #include "lap_stats.h"
 #include "loggerConfig.h"
 #include "mock_serial.h"

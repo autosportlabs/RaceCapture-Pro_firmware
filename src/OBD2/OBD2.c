@@ -40,6 +40,10 @@
 
 #define OBD2_MODE_RESPONSE_OFFSET       0x40
 #define OBD2_MODE_SHOW_CURRENT_DATA     0x01
+#define OBD2_MODE_REQUEST_TROUBLE_CODES 0x03
+#define OBD2_MODE_CLEAR_TROUBLE_CODES   0x04
+#define OBD2_MODE_O2_SENSOR_MONITOR   0x05
+#define OBD2_MODE_BODY_INFO             0x09
 #define OBD2_MODE_ENHANCED_DATA         0x22
 #define OBD2_TIMEOUT_DISABLE_THRESHOLD  10
 
@@ -202,6 +206,7 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
         if (obd2_channel_count == 0) {
         		/* if no OBD2 channels are enabled, don't malloc */
 				obd2_state.current_channel_states = NULL;
+    obd2_state.is_stale = false;
 				return true;
         }
 
@@ -363,6 +368,8 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
 
         /* Did we get an OBDII PID we were waiting for? */
 
+        uint8_t mode = pid_config->mode;
+
         /* valid OBD2 request timestamp? */
         if (obd2_state.last_obd2_query_timestamp &&
 
@@ -370,11 +377,24 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
             (msg->addressValue == OBD2_11BIT_PID_RESPONSE || msg->addressValue == OBD2_29BIT_PID_RESPONSE) &&
 
             /* does the returned mode + response offeset match the one expected in the current query? ? */
-            msg->data[1] == pid_config->mode + OBD2_MODE_RESPONSE_OFFSET &&
+            msg->data[1] == mode + OBD2_MODE_RESPONSE_OFFSET &&
+
+            (
 
             /* does the 1 byte or 2 byte response match the current query? enhanced mode = 2 byte PID*/
-            ((msg->data[2] == pid_config->pid && msg->data[1] == OBD2_MODE_SHOW_CURRENT_DATA + OBD2_MODE_RESPONSE_OFFSET) ||
-            ((msg->data[2] * 256 + msg->data[3]) == pid_config->pid && msg->data[1] == OBD2_MODE_ENHANCED_DATA + OBD2_MODE_RESPONSE_OFFSET) )) {
+            (msg->data[2] == pid_config->pid && msg->data[1] == OBD2_MODE_SHOW_CURRENT_DATA + OBD2_MODE_RESPONSE_OFFSET) ||
+
+            /* or does it match match on miscellaneous modes */
+            (mode == OBD2_MODE_REQUEST_TROUBLE_CODES) ||
+            (mode == OBD2_MODE_CLEAR_TROUBLE_CODES) ||
+            (mode == OBD2_MODE_O2_SENSOR_MONITOR) ||
+            (mode == OBD2_MODE_BODY_INFO) ||
+
+            /* otherwise account for special mode with multi-byte PIDs (e.g. 0x22) */
+            ((msg->data[2] * 256 + msg->data[3]) == pid_config->pid && msg->data[1] == mode + OBD2_MODE_RESPONSE_OFFSET)
+
+            )
+            ) {
                     float value;
                     bool result = canmapping_map_value(&value, msg, &pid_config->mapping);
                     if (result) {

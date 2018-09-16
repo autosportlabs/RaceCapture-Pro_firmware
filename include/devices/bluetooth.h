@@ -25,6 +25,7 @@
 #include "cpp_guard.h"
 #include "devices_common.h"
 #include "stddef.h"
+#include "dateTime.h"
 
 CPP_GUARD_BEGIN
 
@@ -35,7 +36,7 @@ typedef enum {
 } bluetooth_status_t;
 
 bluetooth_status_t bt_get_status();
-int bt_init_connection(DeviceConfig *config);
+int bt_init_connection(DeviceConfig *config, millis_t * connected_at);
 int bt_disconnect(DeviceConfig *config);
 int bt_check_connection_status(DeviceConfig *config);
 

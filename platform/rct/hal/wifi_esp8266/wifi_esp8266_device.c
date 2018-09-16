@@ -26,12 +26,12 @@
 #include "stm32f30x_rcc.h"
 
 /* How long we hold the reset line for the ESP8266 */
-#define ESP8266_RESET_DURATION_MS 1
+#define ESP8266_RESET_DURATION_MS 10
 
 /* How long we wait after reset.
  * Approximately the boot time for the ESP8266
  */
-#define ESP8266_BOOT_DURATION_MS 50
+#define ESP8266_BOOT_DURATION_MS 500
 
 /* I/O definitions for ESP8266 BOOT (PA3)*/
 #define ESP8266_BOOT_PIN GPIO_Pin_3

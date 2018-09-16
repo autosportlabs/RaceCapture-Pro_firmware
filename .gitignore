@@ -34,3 +34,4 @@ openocd.cfg
 openocd.log
 test/rcpsim
 test/rcptest
+.autotools

@@ -29,7 +29,6 @@ CPP_GUARD_BEGIN
 
 void GPSTask( void *pvParameters );
 void startGPSTask();
-void setGpsDataLogging(bool);
 
 CPP_GUARD_END
 

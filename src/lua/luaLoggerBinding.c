@@ -121,12 +121,6 @@ static int lua_get_bg_streaming(lua_State *L)
         return 1;
 }
 
-static int lua_calibrate_imu_zero(lua_State *L)
-{
-        imu_calibrate_zero();
-        return 0;
-}
-
 static int lua_get_gps_at_start_finish(lua_State *L)
 {
         lua_pushboolean(L, getAtStartFinish());
@@ -236,6 +230,7 @@ static int lua_get_analog(lua_State *L)
         return 1;
 }
 
+#if TIMER_CHANNELS > 0
 static float get_ppr(const size_t chan_id)
 {
         TimerConfig *c = get_timer_config(chan_id);
@@ -313,12 +308,15 @@ static int lua_get_timer_count(lua_State *L)
         lua_pushinteger(L, timer_get_count(channel));
         return 1;
 }
+#endif
 
+#if GPIO_CHANNELS > 0
 static int lua_get_button(lua_State *L)
 {
         lua_pushboolean(L, GPIO_is_button_pressed());
         return 1;
 }
+#endif
 
 static struct Serial* lua_get_serial(lua_State *L, const serial_id_t pid)
 {
@@ -505,6 +503,7 @@ static int lua_serial_write_char(lua_State *L)
         return 0;
 }
 
+#if GPIO_CHANNELS > 1
 static int lua_get_gpio(lua_State *L)
 {
         lua_validate_args_count(L, 1, 1);
@@ -525,6 +524,7 @@ static int lua_set_gpio(lua_State *L)
         GPIO_set(channel, state);
         return 0;
 }
+#endif
 
 static int lua_get_gps_sat_count(lua_State *L)
 {
@@ -593,6 +593,13 @@ static int lua_get_ticks_per_second(lua_State *L)
         return 1;
 }
 
+#if IMU_CHANNELS > 0
+static int lua_calibrate_imu_zero(lua_State *L)
+{
+        imu_calibrate_zero();
+        return 0;
+}
+
 static void validate_imu_channel(lua_State *l, const size_t channel)
 {
         if (channel >= CONFIG_IMU_CHANNELS)
@@ -623,7 +630,7 @@ static int lua_imu_read_raw(lua_State *L)
         lua_pushinteger(L, imu_read(channel));
         return 1;
 }
-
+#endif
 
 static int lua_init_can(lua_State *L)
 {
@@ -896,19 +903,24 @@ static int lua_get_virtual_channel(lua_State *ls)
          * Numbers can be passed in as 123 or "123" in lua.  So handle
          * that case first
          */
-        VirtualChannel *vc;
         if (lua_isnumber(ls, 1)) {
+                VirtualChannel *vc;
                 vc = get_virtual_channel(lua_tointeger(ls, 1));
+                if (vc) {
+						                  lua_pushnumber(ls, vc->currentValue);
+						                  return 1;
+                }
         } else {
-                const int idx = find_virtual_channel(lua_tostring(ls, 1));
-                vc = get_virtual_channel(idx);
-        }
-
-        if (!vc)
-                return luaL_error(ls, "Virtual channel not found!");
-
-        lua_pushnumber(ls, vc->currentValue);
-        return 1;
+                struct sample * s = get_current_sample();
+				            double value;
+				            char * units;
+				            if (s && get_sample_value_by_name(s, lua_tostring(ls, 1), &value, &units)){
+						                  lua_pushnumber(ls, value);
+						                  return 1;
+        		      }
+		      }
+        /* Return nil, channel not found */
+		      return 0;
 }
 
 static int lua_set_virt_channel_value(lua_State *L)
@@ -922,11 +934,58 @@ static int lua_set_virt_channel_value(lua_State *L)
         return 0;
 }
 
+static int lua_update_gps(lua_State *L)
+/* Internal function to stimulate lap timer via lua script */
+{
+        lua_validate_args_count(L, 3, 8);
+
+        GpsSample s;
+
+        s.time = getUptime();
+        s.altitude = 0;
+        s.quality = GPS_QUALITY_3D_DGNSS;
+        s.DOP = 0;
+        s.satellites = 0;
+
+        switch(lua_gettop(L)) {
+                case 8:
+                        s.satellites = lua_tointeger(L, 8);
+                case 7:
+                        s.DOP = lua_tonumber(L, 7);
+                case 6:
+                        s.quality = lua_tointeger(L, 6);
+                case 5:
+                        s.altitude = lua_tonumber(L, 5);
+                case 4:
+                        s.time = lua_tointeger(L, 4);
+                default:
+                        /**
+                         * Minimum data needed to drive lap timer is
+                         * Latitude, Longitude and Speed
+                         */
+                        s.speed = lua_tonumber(L, 3);
+                        GeoPoint gp;
+                        gp.longitude = lua_tonumber(L, 2);
+                        gp.latitude = lua_tonumber(L, 1);
+                        s.point = gp;
+        }
+        GPS_sample_update(&s);
+        if (isGpsSignalUsable(s.quality)){
+                GpsSnapshot snap = getGpsSnapshot();
+                lapstats_processUpdate(&snap);
+        }
+        return 0;
+}
+
 void registerLuaLoggerBindings(lua_State *L)
 {
+#if GPIO_CHANNELS > 0
+        lua_registerlight(L,"getButton", lua_get_button);
+#endif
+#if GPIO_CHANNELS > 1
         lua_registerlight(L,"getGpio", lua_get_gpio);
         lua_registerlight(L,"setGpio", lua_set_gpio);
-        lua_registerlight(L,"getButton", lua_get_button);
+#endif
 
 #if PWM_CHANNELS > 0
         lua_registerlight(L, "setPwmDutyCycle", lua_set_pwm_duty_cycle);
@@ -936,17 +995,22 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getPwmClockFreq", lua_get_pwm_clk_freq);
 #endif
 
+#if TIMER_CHANNELS > 0
         lua_registerlight(L, "getTimerRpm", lua_get_rpm);
         lua_registerlight(L, "getTimerPeriodMs", lua_get_period_ms);
         lua_registerlight(L, "getTimerFreq", lua_get_freq);
         lua_registerlight(L, "getTimerRaw", lua_get_timer_raw);
         lua_registerlight(L, "resetTimerCount", lua_reset_timer_count);
         lua_registerlight(L, "getTimerCount", lua_get_timer_count);
+#endif
 
         lua_registerlight(L, "getAnalog", lua_get_analog);
 
+#if IMU_CHANNELS > 0
         lua_registerlight(L, "getImu", lua_imu_read);
         lua_registerlight(L, "getImuRaw", lua_imu_read_raw);
+        lua_registerlight(L, "calibrateImuZero", lua_calibrate_imu_zero);
+#endif
 
         lua_registerlight(L, "getGpsSats", lua_get_gps_sat_count);
         lua_registerlight(L, "getGpsPos", lua_get_gps_position);
@@ -984,8 +1048,6 @@ void registerLuaLoggerBindings(lua_State *L)
 
         lua_registerlight(L, "flashLoggerCfg", lua_flash_config);
 
-        lua_registerlight(L, "calibrateImuZero", lua_calibrate_imu_zero);
-
         lua_registerlight(L, "setBgStream", lua_set_bg_streaming);
         lua_registerlight(L, "getBgStream", lua_get_bg_streaming);
 
@@ -995,4 +1057,6 @@ void registerLuaLoggerBindings(lua_State *L)
 
         lua_registerlight(L, "getUptime", lua_get_uptime);
         lua_registerlight(L, "getDateTime", lua_get_date_time);
+
+        lua_registerlight(L, "updateGps", lua_update_gps);
 }

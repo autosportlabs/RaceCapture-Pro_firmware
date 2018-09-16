@@ -31,7 +31,7 @@
 #include "printk.h"
 #include "GPIO.h"
 
-#define DEBOUNCE_DELAY_PERIOD		10
+#define DEBOUNCE_DELAY_PERIOD		250
 #define GPIO_TASK_STACK_SIZE		64
 
 xSemaphoreHandle xOnPushbutton;

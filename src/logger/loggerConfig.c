@@ -150,7 +150,7 @@ char filterPwmLoggingMode(int config)
 }
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
 GPIOConfig * getGPIOConfigChannel(int channel)
 {
     GPIOConfig *c = NULL;
@@ -224,7 +224,6 @@ static void resetOBD2Config(OBD2Config *cfg)
     for (int i = 0; i < OBD2_CHANNELS; ++i) {
         PidConfig *c = &cfg->pids[i];
         memset(c, 0, sizeof(PidConfig));
-        sPrintStrInt(c->mapping.channel_cfg.label, "OBD2 Pid ", i + 1);
     }
 
     /* TODO BAP - hacked in some defaults */
@@ -248,12 +247,22 @@ void logger_config_reset_gps_config(GPSConfig *cfg)
 {
 	*cfg = (GPSConfig) DEFAULT_GPS_CONFIG;
 
+#if GPS_HARDWARE_SUPPORT
 	/* Setting here b/c this now uses units.h labels */
 	strcpy(cfg->altitude.units, units_get_label(UNIT_LENGTH_FEET));
-	strcpy(cfg->distance.units, units_get_label(UNIT_LENGTH_MILES));
 	strcpy(cfg->speed.units, units_get_label(UNIT_SPEED_MILES_HOUR));
+#endif
+ strcpy(cfg->distance.units, units_get_label(UNIT_LENGTH_MILES));
 }
 
+uint16_t logger_config_get_gps_sample_rate(void)
+{
+#if GPS_HARDWARE_SUPPORT
+        return getWorkingLoggerConfig()->GPSConfigs.speed.sampleRate;
+#else
+        return 0;
+#endif
+}
 static void resetLapConfig(LapConfig *cfg)
 {
     *cfg = (LapConfig) DEFAULT_LAP_CONFIG;
@@ -496,7 +505,7 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     }
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     for (int i = 0; i < CONFIG_GPIO_CHANNELS; i++) {
         sr = config->GPIOConfigs[i].cfg.sampleRate;
         s = getHigherSampleRate(sr, s);
@@ -531,12 +540,13 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
             const size_t enabled_can_channels = ccc->enabled_mappings;
             bool enabled = ccc->enabled;
             for (size_t i = 0; i < enabled_can_channels && enabled; i++) {
-					sr = config->can_channel_cfg.can_channels[i].channel_cfg.sampleRate;
+					sr = config->can_channel_cfg.can_channels[i].mapping.channel_cfg.sampleRate;
 					s = getHigherSampleRate(sr, s);
             }
     }
 
     GPSConfig *gpsConfig = &(config->GPSConfigs);
+#if GPS_HARDWARE_SUPPORT
     sr = gpsConfig->latitude.sampleRate;
     s = getHigherSampleRate(sr, s);
 
@@ -544,9 +554,6 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
     s = getHigherSampleRate(sr, s);
 
     sr = gpsConfig->speed.sampleRate;
-    s = getHigherSampleRate(sr, s);
-
-    sr = gpsConfig->distance.sampleRate;
     s = getHigherSampleRate(sr, s);
 
     sr = gpsConfig->altitude.sampleRate;
@@ -560,7 +567,9 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
 
     sr = gpsConfig->DOP.sampleRate;
     s = getHigherSampleRate(sr, s);
-
+#endif
+    sr = gpsConfig->distance.sampleRate;
+    s = getHigherSampleRate(sr, s);
 
     LapConfig *trackCfg = &(config->LapConfigs);
     sr = trackCfg->lapCountCfg.sampleRate;
@@ -617,7 +626,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
             ++channels;
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     for (size_t i=0; i < CONFIG_GPIO_CHANNELS; i++)
         if (loggerConfig->GPIOConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
             ++channels;
@@ -642,20 +651,22 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
             CANChannelConfig *ccc = &(loggerConfig->can_channel_cfg);
             const size_t enabled_can_channels = ccc->enabled_mappings;
             for (size_t i=0; i < enabled_can_channels && ccc->enabled; i++) {
-                if (ccc->can_channels[i].channel_cfg.sampleRate != SAMPLE_DISABLED)
+                if (ccc->can_channels[i].mapping.channel_cfg.sampleRate != SAMPLE_DISABLED)
                     ++channels;
             }
     }
 
     GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
+#if GPS_HARDWARE_SUPPORT
     if (gpsConfigs->latitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->speed.sampleRate != SAMPLE_DISABLED) channels++;
-    if (gpsConfigs->distance.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->altitude.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->satellites.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->quality.sampleRate != SAMPLE_DISABLED) channels++;
     if (gpsConfigs->DOP.sampleRate != SAMPLE_DISABLED) channels++;
+#endif
+    if (gpsConfigs->distance.sampleRate != SAMPLE_DISABLED) channels++;
 
     LapConfig *lapConfig = &loggerConfig->LapConfigs;
     if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
@@ -694,7 +705,7 @@ void reset_logger_config(void)
     resetPwmConfig(lc->PWMConfigs);
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
     resetGpioConfig(lc->GPIOConfigs);
 #endif
 
@@ -709,12 +720,21 @@ void reset_logger_config(void)
     resetCanConfig(&lc->CanConfig);
     _reset_can_mapping_config(&lc->can_channel_cfg);
     resetOBD2Config(&lc->OBD2Configs);
+
     logger_config_reset_gps_config(&lc->GPSConfigs);
+
     resetLapConfig(&lc->LapConfigs);
     resetTrackConfig(&lc->TrackConfigs);
     resetConnectivityConfig(&lc->ConnectivityConfigs);
     reset_logging_config(&lc->logging_cfg);
+
+#if SDCARD_SUPPORT
     auto_logger_reset_config(&lc->auto_logger_cfg);
+#endif
+
+#if CAMERA_CONTROL
+    camera_control_reset_config(&lc->camera_control_cfg);
+#endif
     strcpy(lc->padding_data, "");
 }
 

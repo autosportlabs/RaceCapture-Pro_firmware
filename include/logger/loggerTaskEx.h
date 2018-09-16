@@ -30,6 +30,8 @@
 
 CPP_GUARD_BEGIN
 
+struct sample * get_current_sample(void);
+
 void startLogging();
 void stopLogging();
 
@@ -37,6 +39,7 @@ void configChanged();
 
 void startLoggerTaskEx( int priority);
 void loggerTaskEx(void *params);
+
 
 CPP_GUARD_END
 

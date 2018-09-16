@@ -91,10 +91,16 @@ bool canmapping_match_id(const CAN_msg *can_msg, const CANMapping *mapping)
         uint32_t can_id  = can_msg->addressValue;
         if (mapping->can_id == 0) return true;
 
+        /* apply mask to CAN ID, if specified (non zero) */
         if (mapping->can_mask)
                 can_id &= mapping->can_mask;
 
-        return can_id == mapping->can_id;
+        /* If no match, give up. */
+        if (can_id != mapping->can_id)
+                return false;
+
+        /* Match the sub ID index with the first data byte, if specified (>= 0) */
+        return (mapping->sub_id < 0 || mapping->sub_id == can_msg->data[0]);
 }
 
 bool canmapping_map_value(float *value, const CAN_msg *can_msg, const CANMapping *mapping)
