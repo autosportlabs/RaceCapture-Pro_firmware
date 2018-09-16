@@ -237,3 +237,17 @@ void modp_dtoa(double value, char* str, int prec)
     *wstr='\0';
     strreverse(str, wstr-1);
 }
+
+void modp_uitoa16(uint32_t value, char* str)
+{
+    static const char* hexchars = "0123456789ABCDEF";
+    char *wstr = str
+    do
+    {
+        *wstr++ = hexchars[(value)&0x0000000F] ;
+        value = value >> 4 ;
+    } while(value > 0);
+
+    *wstr='\0';
+    strreverse(str, wstr-1);
+}

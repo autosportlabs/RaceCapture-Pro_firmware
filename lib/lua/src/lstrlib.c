@@ -854,6 +854,12 @@ static int str_format (lua_State *L)
                 modp_itoa10((LUA_INTFRM_T)luaL_checknumber(L, arg),buff);
                 break;
             }
+            case 'x':
+            case 'X': {
+                addintlen(form);
+                modp_itoaX((LUA_INTFRM_T)luaL_checknumber(L, arg),buff,16);
+                break;
+            }
             /* disabled until needed; avoiding use of sprintf
                 case 'o':  case 'u':  case 'x':  case 'X': {
                   addintlen(form);
