@@ -32,8 +32,8 @@
 CPP_GUARD_BEGIN
 
 struct GeoTrigger {
-    struct GeoCircle gc;
-    bool tripped;
+        struct GeoCircle gc;
+        bool tripped;
 };
 
 /**

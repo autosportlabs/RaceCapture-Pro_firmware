@@ -30,14 +30,14 @@ static xQueueHandle can_aux_queue[CAN_CHANNELS] = {0};
 
 bool CAN_aux_queue_init(void)
 {
-    for (size_t i = 0; i < CAN_CHANNELS; i++) {
-            can_aux_queue[i] = xQueueCreate(CAN_AUX_QUEUE_LENGTH, sizeof(CAN_msg));
-            if (! can_aux_queue[i]) {
-                    pr_error_int_msg(_LOG_PFX "Failed to alloc CAN aux queue with size ", CAN_AUX_QUEUE_LENGTH);
-                    return false;
-            }
-    }
-    return true;
+        for (size_t i = 0; i < CAN_CHANNELS; i++) {
+                can_aux_queue[i] = xQueueCreate(CAN_AUX_QUEUE_LENGTH, sizeof(CAN_msg));
+                if (! can_aux_queue[i]) {
+                        pr_error_int_msg(_LOG_PFX "Failed to alloc CAN aux queue with size ", CAN_AUX_QUEUE_LENGTH);
+                        return false;
+                }
+        }
+        return true;
 }
 
 bool CAN_aux_queue_put_msg(CAN_msg * can_msg, size_t timeout_ms)

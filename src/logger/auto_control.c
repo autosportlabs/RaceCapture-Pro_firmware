@@ -40,9 +40,9 @@ void auto_control_init_state(struct auto_control_state *state)
 }
 
 void get_auto_control_trigger(struct Serial* serial,
-                           struct auto_control_trigger *alst,
-                           const char* name,
-                           const bool more)
+                              struct auto_control_trigger *alst,
+                              const char* name,
+                              const bool more)
 {
         json_objStartString(serial, name);
         json_float(serial, "thresh", alst->threshold, 2, true);
@@ -52,8 +52,8 @@ void get_auto_control_trigger(struct Serial* serial,
 }
 
 void set_auto_control_trigger(struct auto_control_trigger *alst,
-                           const char* name,
-                           const jsmntok_t* root)
+                              const char* name,
+                              const jsmntok_t* root)
 {
         const jsmntok_t* tok = jsmn_find_node(root, name);
         if (!tok)
@@ -65,9 +65,9 @@ void set_auto_control_trigger(struct auto_control_trigger *alst,
 }
 
 bool auto_control_should_start(const float current_value,
-                                 const tiny_millis_t uptime,
-                                 const struct auto_control_trigger * auto_trigger,
-                                 struct auto_control_state * auto_state)
+                               const tiny_millis_t uptime,
+                               const struct auto_control_trigger * auto_trigger,
+                               struct auto_control_state * auto_state)
 {
         const tiny_millis_t trig_time =
                 (tiny_millis_t) auto_trigger->time * 1000;
@@ -78,7 +78,7 @@ bool auto_control_should_start(const float current_value,
                 return false;
 
         if ((gt && current_value < threshold) || (!gt && current_value > threshold)) {
-          auto_state->timestamp_start = 0;
+                auto_state->timestamp_start = 0;
                 return false;
         }
 
@@ -93,9 +93,9 @@ bool auto_control_should_start(const float current_value,
 }
 
 bool auto_control_should_stop(const float current_value,
-                                const tiny_millis_t uptime,
-                                const struct auto_control_trigger * auto_trigger,
-                                struct auto_control_state * auto_state)
+                              const tiny_millis_t uptime,
+                              const struct auto_control_trigger * auto_trigger,
+                              struct auto_control_state * auto_state)
 {
         const tiny_millis_t trig_time =
                 (tiny_millis_t) auto_trigger->time * 1000;
@@ -106,7 +106,7 @@ bool auto_control_should_stop(const float current_value,
                 return false;
 
         if ((gt && current_value < threshold) || (!gt && current_value > threshold)) {
-          auto_state->timestamp_stop = 0;
+                auto_state->timestamp_stop = 0;
                 return false;
         }
 
@@ -121,9 +121,9 @@ bool auto_control_should_stop(const float current_value,
 }
 
 enum auto_control_trigger_result auto_control_check_trigger(float value,
-                                                            struct auto_control_trigger *start,
-                                                            struct auto_control_trigger *stop,
-                                                            struct auto_control_state *state)
+                struct auto_control_trigger *start,
+                struct auto_control_trigger *stop,
+                struct auto_control_state *state)
 {
         const tiny_millis_t uptime = getUptime();
         if (!state->triggered) {

@@ -80,16 +80,16 @@ typedef int (*reInitConfig_func)(LoggerConfig *config);
 
 int api_systemReset(struct Serial *serial, const jsmntok_t *json)
 {
-    int loader = 0;
-    int reset_delay_ms = 0;
-    jsmn_exists_set_val_int(json, "loader", &loader);
-    jsmn_exists_set_val_int(json, "delay", &reset_delay_ms);
+        int loader = 0;
+        int reset_delay_ms = 0;
+        jsmn_exists_set_val_int(json, "loader", &loader);
+        jsmn_exists_set_val_int(json, "delay", &reset_delay_ms);
 
-    if (reset_delay_ms > 0) {
-        vTaskDelay(reset_delay_ms / portTICK_RATE_MS);
-    }
-    cpu_reset(loader);
-    return API_SUCCESS_NO_RETURN;
+        if (reset_delay_ms > 0) {
+                vTaskDelay(reset_delay_ms / portTICK_RATE_MS);
+        }
+        cpu_reset(loader);
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_factoryReset(struct Serial *serial, const jsmntok_t *json)
@@ -213,12 +213,12 @@ static void get_wifi_status(struct Serial* serial, const bool more)
         const bool ap_active = ap_cfg && ap_cfg->active;
         const bool client_active = clt_cfg && clt_cfg->active;
         const bool client_connected = esp8266_drv_client_connected();
-	const bool device_active = lc->ConnectivityConfigs.wifi.active;
-	const bool device_init = esp8266_drv_is_initialized();
+        const bool device_active = lc->ConnectivityConfigs.wifi.active;
+        const bool device_init = esp8266_drv_is_initialized();
 
         json_objStartString(serial, "wifi");
-	json_bool(serial, "active", device_active, true);
-	json_bool(serial, "initialized", device_init, true);
+        json_bool(serial, "active", device_active, true);
+        json_bool(serial, "initialized", device_init, true);
 
         json_objStartString(serial, "ap");
         json_bool(serial, "active", ap_active, false);
@@ -235,177 +235,177 @@ static void get_wifi_status(struct Serial* serial, const bool more)
 static void get_cellular_status(struct Serial* serial, const bool more)
 {
 #if CELLULAR_SUPPORT
-	const enum cellular_net_status ns = cellmodem_get_status();
-	const char* ns_val = cellular_net_status_api_key(ns);
+        const enum cellular_net_status ns = cellmodem_get_status();
+        const char* ns_val = cellular_net_status_api_key(ns);
 
-	json_objStartString(serial, "cell");
-	json_int(serial, "init", (int) ns, 1);
-	json_string(serial, "IMEI", cell_get_IMEI(), 1);
-	json_int(serial, "sig_str", cell_get_signal_strength(), 1);
-	json_string(serial, "number", cell_get_subscriber_number(), 1);
-	json_string(serial, "state", ns_val, 0);
-	json_objEnd(serial, 1);
+        json_objStartString(serial, "cell");
+        json_int(serial, "init", (int) ns, 1);
+        json_string(serial, "IMEI", cell_get_IMEI(), 1);
+        json_int(serial, "sig_str", cell_get_signal_strength(), 1);
+        json_string(serial, "number", cell_get_subscriber_number(), 1);
+        json_string(serial, "state", ns_val, 0);
+        json_objEnd(serial, 1);
 
-	const telemetry_status_t ts = cellular_get_connection_status();
-	const char *ts_val = cellular_telemetry_status_api_key(ts);
+        const telemetry_status_t ts = cellular_get_connection_status();
+        const char *ts_val = cellular_telemetry_status_api_key(ts);
 
-	json_objStartString(serial, "telemetry");
-	json_int(serial, "status", (int) ts, 1);
-	json_string(serial, "state", ts_val, 1);
-	json_int(serial, "dur", cellular_active_time(), 0);
-	json_objEnd(serial, more);
+        json_objStartString(serial, "telemetry");
+        json_int(serial, "status", (int) ts, 1);
+        json_string(serial, "state", ts_val, 1);
+        json_int(serial, "dur", cellular_active_time(), 0);
+        json_objEnd(serial, more);
 #endif
 }
 
 static void get_bt_status(struct Serial* serial, const bool more)
 {
 #if BLUETOOTH_SUPPORT
-	json_objStartString(serial, "bt");
-	json_int(serial, "init", (int)bt_get_status(), 0);
-	json_objEnd(serial, 1);
+        json_objStartString(serial, "bt");
+        json_int(serial, "init", (int)bt_get_status(), 0);
+        json_objEnd(serial, 1);
 #endif
 }
 
 static void get_logging_status(struct Serial* serial, const bool more)
 {
 #if SDCARD_SUPPORT
-	json_objStartString(serial, "logging");
-	json_int(serial, "status", (int)logging_get_status(), 1);
-	json_int(serial, "dur", logging_active_time(), 0);
-	json_objEnd(serial, 1);
+        json_objStartString(serial, "logging");
+        json_int(serial, "status", (int)logging_get_status(), 1);
+        json_int(serial, "dur", logging_active_time(), 0);
+        json_objEnd(serial, 1);
 #endif
 }
 
 int api_getStatus(struct Serial *serial, const jsmntok_t *json)
 {
-	json_objStart(serial);
-	json_objStartString(serial, "status");
+        json_objStart(serial);
+        json_objStartString(serial, "status");
 
-	json_objStartString(serial, "system");
-	json_string(serial, "model", FRIENDLY_DEVICE_NAME, 1);
-	rc_version_info(serial, 1, "ver_major", "ver_minor", "ver_bugfix");
-	json_uint(serial, "uptime", getUptimeAsInt(), 0);
-	json_objEnd(serial, 1);
+        json_objStartString(serial, "system");
+        json_string(serial, "model", FRIENDLY_DEVICE_NAME, 1);
+        rc_version_info(serial, 1, "ver_major", "ver_minor", "ver_bugfix");
+        json_uint(serial, "uptime", getUptimeAsInt(), 0);
+        json_objEnd(serial, 1);
 
-	json_objStartString(serial, "GPS");
-	json_int(serial, "init", (int)GPS_getStatus(), 1);
-	json_int(serial, "qual", GPS_getQuality(), 1);
-	json_float(serial, "lat", GPS_getLatitude(),
-		   DEFAULT_GPS_POSITION_PRECISION, 1);
-	json_float(serial, "lon", GPS_getLongitude(),
-		   DEFAULT_GPS_POSITION_PRECISION, 1);
-	json_int(serial, "sats", GPS_getSatellitesUsedForPosition(), 1);
-	json_int(serial, "DOP", GPS_getDOP(), 0);
-	json_objEnd(serial, 1);
+        json_objStartString(serial, "GPS");
+        json_int(serial, "init", (int)GPS_getStatus(), 1);
+        json_int(serial, "qual", GPS_getQuality(), 1);
+        json_float(serial, "lat", GPS_getLatitude(),
+                   DEFAULT_GPS_POSITION_PRECISION, 1);
+        json_float(serial, "lon", GPS_getLongitude(),
+                   DEFAULT_GPS_POSITION_PRECISION, 1);
+        json_int(serial, "sats", GPS_getSatellitesUsedForPosition(), 1);
+        json_int(serial, "DOP", GPS_getDOP(), 0);
+        json_objEnd(serial, 1);
 
-	get_cellular_status(serial, true);
-	get_bt_status(serial, true);
-	get_logging_status(serial, true);
+        get_cellular_status(serial, true);
+        get_bt_status(serial, true);
+        get_logging_status(serial, true);
 
-	json_objStartString(serial, "track");
-	json_int(serial, "status", lapstats_get_track_status(), 1);
-	json_bool(serial, "valid", lapstats_is_track_valid(), 1);
-	json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
-	json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
-	json_int(serial, "armed", lc_is_armed(), 0);
-	json_objEnd(serial, true);
+        json_objStartString(serial, "track");
+        json_int(serial, "status", lapstats_get_track_status(), 1);
+        json_bool(serial, "valid", lapstats_is_track_valid(), 1);
+        json_int(serial, "trackId", lapstats_get_selected_track_id(), 1);
+        json_int(serial, "inLap", (int)lapstats_lap_in_progress(), 1);
+        json_int(serial, "armed", lc_is_armed(), 0);
+        json_objEnd(serial, true);
 
 #if IMU_CHANNELS > 0
-	get_imu_status(serial, true);
+        get_imu_status(serial, true);
 #endif
-	get_wifi_status(serial, false);
+        get_wifi_status(serial, false);
 
-	json_objEnd(serial, 0);
-	json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 
-	return API_SUCCESS_NO_RETURN;
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_sampleData(struct Serial *serial, const jsmntok_t *json)
 {
-    int sendMeta = 0;
-    if (json->type == JSMN_OBJECT && json->size == 2) {
-        const jsmntok_t * meta = json + 1;
-        const jsmntok_t * value = json + 2;
+        int sendMeta = 0;
+        if (json->type == JSMN_OBJECT && json->size == 2) {
+                const jsmntok_t * meta = json + 1;
+                const jsmntok_t * value = json + 2;
 
-        jsmn_trimData(meta);
-        jsmn_trimData(value);
+                jsmn_trimData(meta);
+                jsmn_trimData(value);
 
-        if (STR_EQ("meta",meta->data)) {
-            sendMeta = atoi(value->data);
+                if (STR_EQ("meta",meta->data)) {
+                        sendMeta = atoi(value->data);
+                }
         }
-    }
 
-    LoggerConfig *config = getWorkingLoggerConfig();
-    size_t channelCount = get_enabled_channel_count(config);
+        LoggerConfig *config = getWorkingLoggerConfig();
+        size_t channelCount = get_enabled_channel_count(config);
 
-    if (0 == channelCount)
-        return API_ERROR_SEVERE;
+        if (0 == channelCount)
+                return API_ERROR_SEVERE;
 
-    struct sample s;
-    memset(&s, 0, sizeof(struct sample));
-    const size_t size = init_sample_buffer(&s, channelCount);
-    if (!size)
-       return API_ERROR_SEVERE;
+        struct sample s;
+        memset(&s, 0, sizeof(struct sample));
+        const size_t size = init_sample_buffer(&s, channelCount);
+        if (!size)
+                return API_ERROR_SEVERE;
 
-    populate_sample_buffer(&s, 0);
-    api_send_sample_record(serial, &s, 0, sendMeta);
+        populate_sample_buffer(&s, 0);
+        api_send_sample_record(serial, &s, 0, sendMeta);
 
-    free_sample_buffer(&s);
-    return API_SUCCESS_NO_RETURN;
+        free_sample_buffer(&s);
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json)
 {
-    json_objStart(serial);
-    json_int(serial, "hb", getUptimeAsInt(), 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_objStart(serial);
+        json_int(serial, "hb", getUptimeAsInt(), 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 void api_sendLogStart(struct Serial *serial)
 {
-    json_objStart(serial);
-    json_int(serial, "logStart", 1, 0);
-    json_objEnd(serial, 0);
+        json_objStart(serial);
+        json_int(serial, "logStart", 1, 0);
+        json_objEnd(serial, 0);
 }
 
 void api_sendLogEnd(struct Serial *serial)
 {
-    json_objStart(serial);
-    json_int(serial, "logEnd", 1, 0);
-    json_objEnd(serial, 0);
+        json_objStart(serial);
+        json_int(serial, "logEnd", 1, 0);
+        json_objEnd(serial, 0);
 }
 
 int api_log(struct Serial *serial, const jsmntok_t *json)
 {
-    if (json->type == JSMN_PRIMITIVE && json->size == 0) {
-        jsmn_trimData(json);
-        int doLogging = atoi(json->data);
-        //TODO when RCP simulator is fully working, enable this.
+        if (json->type == JSMN_PRIMITIVE && json->size == 0) {
+                jsmn_trimData(json);
+                int doLogging = atoi(json->data);
+                //TODO when RCP simulator is fully working, enable this.
 #ifndef RCP_TESTING
 
-        if (doLogging) {
-            startLogging();
-        } else {
-            stopLogging();
-        }
+                if (doLogging) {
+                        startLogging();
+                } else {
+                        stopLogging();
+                }
 #else
-        (void) doLogging;
+                (void) doLogging;
 #endif
 
-    }
-    return API_SUCCESS;
+        }
+        return API_SUCCESS;
 }
 
 static void json_channelConfig(struct Serial *serial, const ChannelConfig *cfg, int more)
 {
-    json_string(serial, "nm", cfg->label, 1);
-    json_string(serial, "ut", cfg->units, 1);
-    json_float(serial, "min", cfg->min, cfg->precision, 1);
-    json_float(serial, "max", cfg->max, cfg->precision, 1);
-    json_int(serial, "prec", (int) cfg->precision, 1);
-    json_int(serial, "sr", decodeSampleRate(cfg->sampleRate), more);
+        json_string(serial, "nm", cfg->label, 1);
+        json_string(serial, "ut", cfg->units, 1);
+        json_float(serial, "min", cfg->min, cfg->precision, 1);
+        json_float(serial, "max", cfg->max, cfg->precision, 1);
+        json_int(serial, "prec", (int) cfg->precision, 1);
+        json_int(serial, "sr", decodeSampleRate(cfg->sampleRate), more);
 }
 
 static void write_sample_meta(struct Serial *serial, const struct sample *sample,
@@ -428,25 +428,25 @@ static void write_sample_meta(struct Serial *serial, const struct sample *sample
 
 int api_getMeta(struct Serial *serial, const jsmntok_t *json)
 {
-    json_objStart(serial);
+        json_objStart(serial);
 
-    LoggerConfig * config = getWorkingLoggerConfig();
-    const size_t channelCount = get_enabled_channel_count(config);
+        LoggerConfig * config = getWorkingLoggerConfig();
+        const size_t channelCount = get_enabled_channel_count(config);
 
-    if (0 == channelCount)
-        return API_ERROR_SEVERE;
+        if (0 == channelCount)
+                return API_ERROR_SEVERE;
 
-    struct sample s;
-    memset(&s, 0, sizeof(struct sample));
-    const size_t size = init_sample_buffer(&s, channelCount);
-    if (!size)
-       return API_ERROR_SEVERE;
+        struct sample s;
+        memset(&s, 0, sizeof(struct sample));
+        const size_t size = init_sample_buffer(&s, channelCount);
+        if (!size)
+                return API_ERROR_SEVERE;
 
-    write_sample_meta(serial, &s, getConnectivitySampleRateLimit(), 0);
+        write_sample_meta(serial, &s, getConnectivitySampleRateLimit(), 0);
 
-    free_sample_buffer(&s);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        free_sample_buffer(&s);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 
@@ -527,50 +527,50 @@ void api_send_sample_record(struct Serial *serial,
 }
 
 static const jsmntok_t * setChannelConfig(struct Serial *serial, const jsmntok_t *cfg,
-        ChannelConfig *channelCfg,
-        setExtField_func setExtField,
-        void *extCfg)
+                ChannelConfig *channelCfg,
+                setExtField_func setExtField,
+                void *extCfg)
 {
 
-    if (cfg->type != JSMN_OBJECT || cfg->size % 2 != 0) {
+        if (cfg->type != JSMN_OBJECT || cfg->size % 2 != 0) {
+
+                return cfg;
+        }
+
+        int size = cfg->size;
+        cfg++;
+
+        for (int i = 0; i < size; i += 2 ) {
+                const jsmntok_t *nameTok = cfg;
+                jsmn_trimData(nameTok);
+                cfg++;
+
+                const jsmntok_t *valueTok = cfg;
+                cfg++;
+
+                if (valueTok->type == JSMN_PRIMITIVE || valueTok->type == JSMN_STRING)
+                        jsmn_trimData(valueTok);
+
+                char *name = nameTok->data;
+                char *value = valueTok->data;
+
+                if (STR_EQ("nm", name))
+                        jsmn_decode_string(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
+                else if (STR_EQ("ut", name))
+                        jsmn_decode_string(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
+                else if (STR_EQ("min", name))
+                        channelCfg->min = atof(value);
+                else if (STR_EQ("max", name))
+                        channelCfg->max = atof(value);
+                else if (STR_EQ("sr", name))
+                        channelCfg->sampleRate = encodeSampleRate(atoi(value));
+                else if (STR_EQ("prec", name))
+                        channelCfg->precision = (unsigned char) atoi(value);
+                else if (setExtField != NULL)
+                        cfg = setExtField(valueTok, name, value, extCfg);
+        }
 
         return cfg;
-    }
-
-    int size = cfg->size;
-    cfg++;
-
-    for (int i = 0; i < size; i += 2 ) {
-        const jsmntok_t *nameTok = cfg;
-        jsmn_trimData(nameTok);
-        cfg++;
-
-        const jsmntok_t *valueTok = cfg;
-        cfg++;
-
-        if (valueTok->type == JSMN_PRIMITIVE || valueTok->type == JSMN_STRING)
-            jsmn_trimData(valueTok);
-
-        char *name = nameTok->data;
-        char *value = valueTok->data;
-
-        if (STR_EQ("nm", name))
-		jsmn_decode_string(channelCfg->label, value, DEFAULT_LABEL_LENGTH);
-        else if (STR_EQ("ut", name))
-            jsmn_decode_string(channelCfg->units, value, DEFAULT_UNITS_LENGTH);
-        else if (STR_EQ("min", name))
-            channelCfg->min = atof(value);
-        else if (STR_EQ("max", name))
-            channelCfg->max = atof(value);
-        else if (STR_EQ("sr", name))
-            channelCfg->sampleRate = encodeSampleRate(atoi(value));
-        else if (STR_EQ("prec", name))
-            channelCfg->precision = (unsigned char) atoi(value);
-        else if (setExtField != NULL)
-            cfg = setExtField(valueTok, name, value, extCfg);
-    }
-
-    return cfg;
 }
 
 static int setMultiChannelConfigGeneric(struct Serial *serial, const jsmntok_t * json,
@@ -578,637 +578,637 @@ static int setMultiChannelConfigGeneric(struct Serial *serial, const jsmntok_t *
                                         setExtField_func setExtFieldFunc,
                                         reInitConfig_func reInitConfigFunc)
 {
-    if (json->type == JSMN_OBJECT && json->size % 2 == 0) {
-        for (int i = 1; i <= json->size; i += 2) {
-            const jsmntok_t *idTok = json + i;
-            const jsmntok_t *cfgTok = json + i + 1;
-            jsmn_trimData(idTok);
-            size_t id = atoi(idTok->data);
-            void *baseCfg = NULL;
-            ChannelConfig *channelCfg = NULL;
-            getConfigsFunc(id, &baseCfg, &channelCfg);
-            if (channelCfg && baseCfg) {
-                setChannelConfig(serial, cfgTok, channelCfg, setExtFieldFunc, baseCfg);
-            } else {
-                return API_ERROR_PARAMETER;
-            }
+        if (json->type == JSMN_OBJECT && json->size % 2 == 0) {
+                for (int i = 1; i <= json->size; i += 2) {
+                        const jsmntok_t *idTok = json + i;
+                        const jsmntok_t *cfgTok = json + i + 1;
+                        jsmn_trimData(idTok);
+                        size_t id = atoi(idTok->data);
+                        void *baseCfg = NULL;
+                        ChannelConfig *channelCfg = NULL;
+                        getConfigsFunc(id, &baseCfg, &channelCfg);
+                        if (channelCfg && baseCfg) {
+                                setChannelConfig(serial, cfgTok, channelCfg, setExtFieldFunc, baseCfg);
+                        } else {
+                                return API_ERROR_PARAMETER;
+                        }
+                }
         }
-    }
-    configChanged();
-    int initRes = reInitConfigFunc(getWorkingLoggerConfig());
-    return (initRes ? API_SUCCESS : API_ERROR_SEVERE);
+        configChanged();
+        int initRes = reInitConfigFunc(getWorkingLoggerConfig());
+        return (initRes ? API_SUCCESS : API_ERROR_SEVERE);
 }
 
 static const jsmntok_t * setScalingMapRaw(ADCConfig *adcCfg, const jsmntok_t *mapArrayTok)
 {
-    if (mapArrayTok->type == JSMN_ARRAY) {
-        int size = mapArrayTok->size;
-        for (int i = 0; i < size; i++) {
-            mapArrayTok++;
-            if (mapArrayTok->type == JSMN_PRIMITIVE) {
-                jsmn_trimData(mapArrayTok);
-                if (i < ANALOG_SCALING_BINS) {
-                    adcCfg->scalingMap.rawValues[i] = atof(mapArrayTok->data);
+        if (mapArrayTok->type == JSMN_ARRAY) {
+                int size = mapArrayTok->size;
+                for (int i = 0; i < size; i++) {
+                        mapArrayTok++;
+                        if (mapArrayTok->type == JSMN_PRIMITIVE) {
+                                jsmn_trimData(mapArrayTok);
+                                if (i < ANALOG_SCALING_BINS) {
+                                        adcCfg->scalingMap.rawValues[i] = atof(mapArrayTok->data);
+                                }
+                        }
                 }
-            }
         }
-    }
-    return mapArrayTok + 1;
+        return mapArrayTok + 1;
 }
 
 static const jsmntok_t * setScalingMapValues(ADCConfig *adcCfg, const jsmntok_t *mapArrayTok)
 {
-    if (mapArrayTok->type == JSMN_ARRAY) {
-        int size = mapArrayTok->size;
-        for (int i = 0; i < size; i++) {
-            mapArrayTok++;
-            if (mapArrayTok->type == JSMN_PRIMITIVE) {
-                jsmn_trimData(mapArrayTok);
-                if (i < ANALOG_SCALING_BINS) {
-                    adcCfg->scalingMap.scaledValues[i] = atof(mapArrayTok->data);
+        if (mapArrayTok->type == JSMN_ARRAY) {
+                int size = mapArrayTok->size;
+                for (int i = 0; i < size; i++) {
+                        mapArrayTok++;
+                        if (mapArrayTok->type == JSMN_PRIMITIVE) {
+                                jsmn_trimData(mapArrayTok);
+                                if (i < ANALOG_SCALING_BINS) {
+                                        adcCfg->scalingMap.scaledValues[i] = atof(mapArrayTok->data);
+                                }
+                        }
                 }
-            }
         }
-    }
-    return mapArrayTok + 1;
+        return mapArrayTok + 1;
 }
 
 static const jsmntok_t * setScalingRow(ADCConfig *adcCfg, const jsmntok_t *mapRow)
 {
-    if (mapRow->type == JSMN_STRING) {
-        jsmn_trimData(mapRow);
-        if (STR_EQ(mapRow->data, "raw"))
-            mapRow = setScalingMapRaw(adcCfg, mapRow + 1);
-        else if (STR_EQ("scal", mapRow->data))
-            mapRow = setScalingMapValues(adcCfg, mapRow + 1);
-    } else {
-        mapRow++;
-    }
-    return mapRow;
+        if (mapRow->type == JSMN_STRING) {
+                jsmn_trimData(mapRow);
+                if (STR_EQ(mapRow->data, "raw"))
+                        mapRow = setScalingMapRaw(adcCfg, mapRow + 1);
+                else if (STR_EQ("scal", mapRow->data))
+                        mapRow = setScalingMapValues(adcCfg, mapRow + 1);
+        } else {
+                mapRow++;
+        }
+        return mapRow;
 }
 
 static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg)
 {
-    ADCConfig *adcCfg = (ADCConfig *)cfg;
-    if (STR_EQ("scalMod", name))
-        adcCfg->scalingMode = filterAnalogScalingMode(atoi(value));
-    else if (STR_EQ("scaling", name))
-        adcCfg->linearScaling = atof(value);
-    else if (STR_EQ("offset", name))
-        adcCfg->linearOffset = atof(value);
-    else if (STR_EQ("alpha", name))
-        adcCfg->filterAlpha = atof(value);
-    else if (STR_EQ("cal", name))
-        adcCfg->calibration = atof(value);
-    else if (STR_EQ("map", name)) {
-        if (valueTok->type == JSMN_OBJECT) {
-            valueTok++;
-            valueTok = setScalingRow(adcCfg, valueTok);
-            valueTok = setScalingRow(adcCfg, valueTok);
-            valueTok--;
+        ADCConfig *adcCfg = (ADCConfig *)cfg;
+        if (STR_EQ("scalMod", name))
+                adcCfg->scalingMode = filterAnalogScalingMode(atoi(value));
+        else if (STR_EQ("scaling", name))
+                adcCfg->linearScaling = atof(value);
+        else if (STR_EQ("offset", name))
+                adcCfg->linearOffset = atof(value);
+        else if (STR_EQ("alpha", name))
+                adcCfg->filterAlpha = atof(value);
+        else if (STR_EQ("cal", name))
+                adcCfg->calibration = atof(value);
+        else if (STR_EQ("map", name)) {
+                if (valueTok->type == JSMN_OBJECT) {
+                        valueTok++;
+                        valueTok = setScalingRow(adcCfg, valueTok);
+                        valueTok = setScalingRow(adcCfg, valueTok);
+                        valueTok--;
+                }
         }
-    }
-    return valueTok + 1;
+        return valueTok + 1;
 }
 
 static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
-    if (channelId < ANALOG_CHANNELS) {
-        ADCConfig *c =&(getWorkingLoggerConfig()->ADCConfigs[channelId]);
-        *baseCfg = c;
-        *channelCfg = &c->cfg;
-    }
+        if (channelId < ANALOG_CHANNELS) {
+                ADCConfig *c =&(getWorkingLoggerConfig()->ADCConfigs[channelId]);
+                *baseCfg = c;
+                *channelCfg = &c->cfg;
+        }
 }
 
 int api_setAnalogConfig(struct Serial *serial, const jsmntok_t * json)
 {
-    int res = setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField, ADC_init);
-    return res;
+        int res = setMultiChannelConfigGeneric(serial, json, getAnalogConfigs, setAnalogExtendedField, ADC_init);
+        return res;
 }
 
 static void sendAnalogConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
 
-    json_objStart(serial);
-    json_objStartString(serial, "analogCfg");
-    for (size_t i = startIndex; i <= endIndex; i++) {
+        json_objStart(serial);
+        json_objStartString(serial, "analogCfg");
+        for (size_t i = startIndex; i <= endIndex; i++) {
 
-        ADCConfig *adcCfg = &(getWorkingLoggerConfig()->ADCConfigs[i]);
-        json_objStartInt(serial, i);
-        json_channelConfig(serial, &(adcCfg->cfg), 1);
-        json_int(serial, "scalMod", adcCfg->scalingMode, 1);
-        json_float(serial, "scaling", adcCfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
-        json_float(serial, "offset", adcCfg->linearOffset, LINEAR_SCALING_PRECISION, 1);
-        json_float(serial, "alpha", adcCfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
-        json_float(serial, "cal", adcCfg->calibration, LINEAR_SCALING_PRECISION, 1);
+                ADCConfig *adcCfg = &(getWorkingLoggerConfig()->ADCConfigs[i]);
+                json_objStartInt(serial, i);
+                json_channelConfig(serial, &(adcCfg->cfg), 1);
+                json_int(serial, "scalMod", adcCfg->scalingMode, 1);
+                json_float(serial, "scaling", adcCfg->linearScaling, LINEAR_SCALING_PRECISION, 1);
+                json_float(serial, "offset", adcCfg->linearOffset, LINEAR_SCALING_PRECISION, 1);
+                json_float(serial, "alpha", adcCfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
+                json_float(serial, "cal", adcCfg->calibration, LINEAR_SCALING_PRECISION, 1);
 
-        json_objStartString(serial, "map");
-        json_arrayStart(serial, "raw");
+                json_objStartString(serial, "map");
+                json_arrayStart(serial, "raw");
 
-        for (size_t b = 0; b < ANALOG_SCALING_BINS; b++) {
-            put_float(serial,  adcCfg->scalingMap.rawValues[b], SCALING_MAP_BIN_PRECISION);
-            if (b < ANALOG_SCALING_BINS - 1)
-                serial_write_c(serial, ',');
+                for (size_t b = 0; b < ANALOG_SCALING_BINS; b++) {
+                        put_float(serial,  adcCfg->scalingMap.rawValues[b], SCALING_MAP_BIN_PRECISION);
+                        if (b < ANALOG_SCALING_BINS - 1)
+                                serial_write_c(serial, ',');
+                }
+
+                json_arrayEnd(serial, 1);
+                json_arrayStart(serial, "scal");
+
+                for (size_t b = 0; b < ANALOG_SCALING_BINS; b++) {
+                        put_float(serial, adcCfg->scalingMap.scaledValues[b], DEFAULT_ANALOG_SCALING_PRECISION);
+                        if (b < ANALOG_SCALING_BINS - 1)
+                                serial_write_c(serial, ',');
+                }
+
+                json_arrayEnd(serial, 0);
+                json_objEnd(serial, 0); //map
+                json_objEnd(serial, i != endIndex); //index
         }
-
-        json_arrayEnd(serial, 1);
-        json_arrayStart(serial, "scal");
-
-        for (size_t b = 0; b < ANALOG_SCALING_BINS; b++) {
-            put_float(serial, adcCfg->scalingMap.scaledValues[b], DEFAULT_ANALOG_SCALING_PRECISION);
-            if (b < ANALOG_SCALING_BINS - 1)
-                serial_write_c(serial, ',');
-        }
-
-        json_arrayEnd(serial, 0);
-        json_objEnd(serial, 0); //map
-        json_objEnd(serial, i != endIndex); //index
-    }
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 }
 
 int api_getAnalogConfig(struct Serial *serial, const jsmntok_t * json)
 {
-    size_t startIndex = 0;
-    size_t endIndex = 0;
-    if (json->type == JSMN_PRIMITIVE) {
-        if (jsmn_isNull(json)) {
-            startIndex = 0;
-            endIndex = CONFIG_ADC_CHANNELS - 1;
-        } else {
-            jsmn_trimData(json);
-            startIndex = endIndex = atoi(json->data);
+        size_t startIndex = 0;
+        size_t endIndex = 0;
+        if (json->type == JSMN_PRIMITIVE) {
+                if (jsmn_isNull(json)) {
+                        startIndex = 0;
+                        endIndex = CONFIG_ADC_CHANNELS - 1;
+                } else {
+                        jsmn_trimData(json);
+                        startIndex = endIndex = atoi(json->data);
+                }
         }
-    }
-    if (startIndex <= CONFIG_ADC_CHANNELS) {
-        sendAnalogConfig(serial, startIndex, endIndex);
-        return API_SUCCESS_NO_RETURN;
-    } else {
-        return API_ERROR_PARAMETER;
-    }
+        if (startIndex <= CONFIG_ADC_CHANNELS) {
+                sendAnalogConfig(serial, startIndex, endIndex);
+                return API_SUCCESS_NO_RETURN;
+        } else {
+                return API_ERROR_PARAMETER;
+        }
 }
 
 #if IMU_CHANNELS > 0
 
 static const jsmntok_t * setImuExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg)
 {
-    ImuConfig *imuCfg = (ImuConfig *)cfg;
+        ImuConfig *imuCfg = (ImuConfig *)cfg;
 
-    if (STR_EQ("mode",name))
-        imuCfg->mode = filterImuMode(atoi(value));
-    else if (STR_EQ("chan",name))
-        imuCfg->physicalChannel = filterImuChannel(atoi(value));
-    else if (STR_EQ("zeroVal",name))
-        imuCfg->zeroValue = atoi(value);
-    else if (STR_EQ("alpha", name))
-        imuCfg->filterAlpha = atof(value);
-    return valueTok + 1;
+        if (STR_EQ("mode",name))
+                imuCfg->mode = filterImuMode(atoi(value));
+        else if (STR_EQ("chan",name))
+                imuCfg->physicalChannel = filterImuChannel(atoi(value));
+        else if (STR_EQ("zeroVal",name))
+                imuCfg->zeroValue = atoi(value);
+        else if (STR_EQ("alpha", name))
+                imuCfg->filterAlpha = atof(value);
+        return valueTok + 1;
 }
 
 static void getImuConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
-    if (channelId < IMU_CHANNELS) {
-        ImuConfig *c = &(getWorkingLoggerConfig()->ImuConfigs[channelId]);
-        *baseCfg = c;
-        *channelCfg = &c->cfg;
-    }
+        if (channelId < IMU_CHANNELS) {
+                ImuConfig *c = &(getWorkingLoggerConfig()->ImuConfigs[channelId]);
+                *baseCfg = c;
+                *channelCfg = &c->cfg;
+        }
 }
 
 int api_setImuConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    int res = setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField, imu_soft_init);
-    return res;
+        int res = setMultiChannelConfigGeneric(serial, json, getImuConfigs, setImuExtendedField, imu_soft_init);
+        return res;
 }
 
 static void sendImuConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
-    json_objStart(serial);
-    json_objStartString(serial, "imuCfg");
-    for (size_t i = startIndex; i <= endIndex; i++) {
-        ImuConfig *cfg = &(getWorkingLoggerConfig()->ImuConfigs[i]);
-        json_objStartInt(serial, i);
-        json_channelConfig(serial, &(cfg->cfg), 1);
-        json_uint(serial, "mode", cfg->mode, 1);
-        json_uint(serial, "chan", cfg->physicalChannel, 1);
-        json_int(serial, "zeroVal", cfg->zeroValue, 1);
-        json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 0 );
-        json_objEnd(serial, i != endIndex); //index
-    }
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_objStart(serial);
+        json_objStartString(serial, "imuCfg");
+        for (size_t i = startIndex; i <= endIndex; i++) {
+                ImuConfig *cfg = &(getWorkingLoggerConfig()->ImuConfigs[i]);
+                json_objStartInt(serial, i);
+                json_channelConfig(serial, &(cfg->cfg), 1);
+                json_uint(serial, "mode", cfg->mode, 1);
+                json_uint(serial, "chan", cfg->physicalChannel, 1);
+                json_int(serial, "zeroVal", cfg->zeroValue, 1);
+                json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 0 );
+                json_objEnd(serial, i != endIndex); //index
+        }
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 }
 
 int api_getImuConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    size_t startIndex = 0;
-    size_t endIndex = 0;
-    if (json->type == JSMN_PRIMITIVE) {
-        if (jsmn_isNull(json)) {
-            startIndex = 0;
-            endIndex = CONFIG_IMU_CHANNELS - 1;
-        } else {
-            jsmn_trimData(json);
-            startIndex = endIndex = atoi(json->data);
+        size_t startIndex = 0;
+        size_t endIndex = 0;
+        if (json->type == JSMN_PRIMITIVE) {
+                if (jsmn_isNull(json)) {
+                        startIndex = 0;
+                        endIndex = CONFIG_IMU_CHANNELS - 1;
+                } else {
+                        jsmn_trimData(json);
+                        startIndex = endIndex = atoi(json->data);
+                }
         }
-    }
-    if (startIndex <= CONFIG_IMU_CHANNELS) {
-        sendImuConfig(serial, startIndex, endIndex);
-        return API_SUCCESS_NO_RETURN;
-    } else {
-        return API_ERROR_PARAMETER;
-    }
+        if (startIndex <= CONFIG_IMU_CHANNELS) {
+                sendImuConfig(serial, startIndex, endIndex);
+                return API_SUCCESS_NO_RETURN;
+        } else {
+                return API_ERROR_PARAMETER;
+        }
 }
 #endif
 
 int api_getCellConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
-    json_objStart(serial);
-    json_objStartString(serial, "cellCfg");
-    json_string(serial, "apnHost", cfg->apnHost, 1);
-    json_string(serial, "apnUser", cfg->apnUser, 1);
-    json_string(serial, "apnPass", cfg->apnPass, 0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        CellularConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
+        json_objStart(serial);
+        json_objStartString(serial, "cellCfg");
+        json_string(serial, "apnHost", cfg->apnHost, 1);
+        json_string(serial, "apnUser", cfg->apnUser, 1);
+        json_string(serial, "apnPass", cfg->apnPass, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_getLogfile(struct Serial *serial, const jsmntok_t *json)
 {
-    json_objStart(serial);
-    json_valueStart(serial, "logfile");
-    serial_write_c(serial, '"');
-    read_log_to_serial(serial, 1);
-    serial_write_c(serial, '"');
-    json_objEnd(serial,0);
-    return API_SUCCESS_NO_RETURN;
+        json_objStart(serial);
+        json_valueStart(serial, "logfile");
+        serial_write_c(serial, '"');
+        read_log_to_serial(serial, 1);
+        serial_write_c(serial, '"');
+        json_objEnd(serial,0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_setLogfileLevel(struct Serial *serial, const jsmntok_t *json)
 {
-    int level;
-    if (jsmn_exists_set_val_int(json, "level", &level)) {
-        set_log_level((enum log_level) level);
-        return API_SUCCESS;
-    } else {
-        return API_ERROR_PARAMETER;
-    }
+        int level;
+        if (jsmn_exists_set_val_int(json, "level", &level)) {
+                set_log_level((enum log_level) level);
+                return API_SUCCESS;
+        } else {
+                return API_ERROR_PARAMETER;
+        }
 }
 
 static void setCellConfig(const jsmntok_t *root)
 {
-    const jsmntok_t *cellCfgNode = jsmn_find_node(root, "cellCfg");
-    if (cellCfgNode) {
-        CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
-        cellCfgNode++;
-        jsmn_exists_set_val_uint8(cellCfgNode, "cellEn", &cellCfg->cellEnabled, NULL);
-        jsmn_exists_set_val_string(cellCfgNode, "apnHost", cellCfg->apnHost,
-				   CELL_APN_HOST_LENGTH, true);
-        jsmn_exists_set_val_string(cellCfgNode, "apnUser", cellCfg->apnUser,
-				   CELL_APN_USER_LENGTH, true);
-        jsmn_exists_set_val_string(cellCfgNode, "apnPass", cellCfg->apnPass,
-				   CELL_APN_PASS_LENGTH, false);
-    }
+        const jsmntok_t *cellCfgNode = jsmn_find_node(root, "cellCfg");
+        if (cellCfgNode) {
+                CellularConfig *cellCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig);
+                cellCfgNode++;
+                jsmn_exists_set_val_uint8(cellCfgNode, "cellEn", &cellCfg->cellEnabled, NULL);
+                jsmn_exists_set_val_string(cellCfgNode, "apnHost", cellCfg->apnHost,
+                                           CELL_APN_HOST_LENGTH, true);
+                jsmn_exists_set_val_string(cellCfgNode, "apnUser", cellCfg->apnUser,
+                                           CELL_APN_USER_LENGTH, true);
+                jsmn_exists_set_val_string(cellCfgNode, "apnPass", cellCfg->apnPass,
+                                           CELL_APN_PASS_LENGTH, false);
+        }
 }
 
 static void setBluetoothConfig(const jsmntok_t *root)
 {
-    const jsmntok_t *btCfgNode = jsmn_find_node(root, "btCfg");
-    if (btCfgNode != NULL) {
-        btCfgNode++;
-        BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
-        jsmn_exists_set_val_uint8(btCfgNode, "btEn", &btCfg->btEnabled, NULL);
-        jsmn_exists_set_val_string(btCfgNode, "name", btCfg->new_name,
-				   BT_DEVICE_NAME_LENGTH, true);
-        jsmn_exists_set_val_string(btCfgNode, "pass", btCfg->new_pin,
-				   BT_PASSCODE_LENGTH, false);
-    }
+        const jsmntok_t *btCfgNode = jsmn_find_node(root, "btCfg");
+        if (btCfgNode != NULL) {
+                btCfgNode++;
+                BluetoothConfig *btCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);
+                jsmn_exists_set_val_uint8(btCfgNode, "btEn", &btCfg->btEnabled, NULL);
+                jsmn_exists_set_val_string(btCfgNode, "name", btCfg->new_name,
+                                           BT_DEVICE_NAME_LENGTH, true);
+                jsmn_exists_set_val_string(btCfgNode, "pass", btCfg->new_pin,
+                                           BT_PASSCODE_LENGTH, false);
+        }
 }
 
 static void setTelemetryConfig(const jsmntok_t *root)
 {
-    const jsmntok_t *telemetryCfgNode = jsmn_find_node(root, "telCfg");
-    if (telemetryCfgNode) {
-        telemetryCfgNode++;
-        TelemetryConfig *telemetryCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig);
-        jsmn_exists_set_val_string(telemetryCfgNode, "deviceId",
-				   telemetryCfg->telemetryDeviceId,
-				   DEVICE_ID_LENGTH, true);
-        jsmn_exists_set_val_string(telemetryCfgNode, "host",
-				   telemetryCfg->telemetryServerHost,
-				   TELEMETRY_SERVER_HOST_LENGTH, true);
-        jsmn_exists_set_val_uint8(telemetryCfgNode, "bgStream",
-				     &telemetryCfg->backgroundStreaming,
-				     filter_background_streaming_mode);
-    }
+        const jsmntok_t *telemetryCfgNode = jsmn_find_node(root, "telCfg");
+        if (telemetryCfgNode) {
+                telemetryCfgNode++;
+                TelemetryConfig *telemetryCfg = &(getWorkingLoggerConfig()->ConnectivityConfigs.telemetryConfig);
+                jsmn_exists_set_val_string(telemetryCfgNode, "deviceId",
+                                           telemetryCfg->telemetryDeviceId,
+                                           DEVICE_ID_LENGTH, true);
+                jsmn_exists_set_val_string(telemetryCfgNode, "host",
+                                           telemetryCfg->telemetryServerHost,
+                                           TELEMETRY_SERVER_HOST_LENGTH, true);
+                jsmn_exists_set_val_uint8(telemetryCfgNode, "bgStream",
+                                          &telemetryCfg->backgroundStreaming,
+                                          filter_background_streaming_mode);
+        }
 }
 
 int api_setConnectivityConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    setBluetoothConfig(json);
-    setCellConfig(json);
-    setTelemetryConfig(json);
-    configChanged();
-    return API_SUCCESS;
+        setBluetoothConfig(json);
+        setCellConfig(json);
+        setTelemetryConfig(json);
+        configChanged();
+        return API_SUCCESS;
 }
 
 int api_getConnectivityConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
-    json_objStart(serial);
-    json_objStartString(serial, "connCfg");
+        ConnectivityConfig *cfg = &(getWorkingLoggerConfig()->ConnectivityConfigs);
+        json_objStart(serial);
+        json_objStartString(serial, "connCfg");
 
-    json_objStartString(serial, "btCfg");
-    json_int(serial, "btEn", cfg->bluetoothConfig.btEnabled, 1);
-    /* Remove Name and Pass in next major API version change.  Issue #720 */
-    json_string(serial, "name", "", 1);
-    json_string(serial, "pass", "", 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "btCfg");
+        json_int(serial, "btEn", cfg->bluetoothConfig.btEnabled, 1);
+        /* Remove Name and Pass in next major API version change.  Issue #720 */
+        json_string(serial, "name", "", 1);
+        json_string(serial, "pass", "", 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "cellCfg");
-    json_int(serial, "cellEn", cfg->cellularConfig.cellEnabled, 1);
-    json_string(serial, "apnHost", cfg->cellularConfig.apnHost, 1);
-    json_string(serial, "apnUser", cfg->cellularConfig.apnUser, 1);
-    json_string(serial, "apnPass", cfg->cellularConfig.apnPass, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "cellCfg");
+        json_int(serial, "cellEn", cfg->cellularConfig.cellEnabled, 1);
+        json_string(serial, "apnHost", cfg->cellularConfig.apnHost, 1);
+        json_string(serial, "apnUser", cfg->cellularConfig.apnUser, 1);
+        json_string(serial, "apnPass", cfg->cellularConfig.apnPass, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "telCfg");
-    json_int(serial, "bgStream", cfg->telemetryConfig.backgroundStreaming, 1);
-    json_string(serial, "deviceId", cfg->telemetryConfig.telemetryDeviceId, 1);
-    json_string(serial, "host", cfg->telemetryConfig.telemetryServerHost, 0);
-    json_objEnd(serial, 0);
+        json_objStartString(serial, "telCfg");
+        json_int(serial, "bgStream", cfg->telemetryConfig.backgroundStreaming, 1);
+        json_string(serial, "deviceId", cfg->telemetryConfig.telemetryDeviceId, 1);
+        json_string(serial, "host", cfg->telemetryConfig.telemetryServerHost, 0);
+        json_objEnd(serial, 0);
 
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 #if PWM_CHANNELS > 0
 static void sendPwmConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
 
-    json_objStart(serial);
-    json_objStartString(serial, "pwmCfg");
-    for (size_t i = startIndex; i <= endIndex; i++) {
-        PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
-        json_objStartInt(serial, i);
-        json_channelConfig(serial, &(cfg->cfg), 1);
-        json_uint(serial, "outMode", cfg->outputMode, 1);
-        json_uint(serial, "logMode", cfg->loggingMode, 1);
-        json_uint(serial, "stDutyCyc", cfg->startupDutyCycle, 1);
-        json_uint(serial, "stPeriod", cfg->startupPeriod, 0);
-        json_objEnd(serial, i != endIndex); //index
-    }
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_objStart(serial);
+        json_objStartString(serial, "pwmCfg");
+        for (size_t i = startIndex; i <= endIndex; i++) {
+                PWMConfig *cfg = &(getWorkingLoggerConfig()->PWMConfigs[i]);
+                json_objStartInt(serial, i);
+                json_channelConfig(serial, &(cfg->cfg), 1);
+                json_uint(serial, "outMode", cfg->outputMode, 1);
+                json_uint(serial, "logMode", cfg->loggingMode, 1);
+                json_uint(serial, "stDutyCyc", cfg->startupDutyCycle, 1);
+                json_uint(serial, "stPeriod", cfg->startupPeriod, 0);
+                json_objEnd(serial, i != endIndex); //index
+        }
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 }
 
 
 int api_getPwmConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    size_t startIndex = 0;
-    size_t endIndex = 0;
-    if (json->type == JSMN_PRIMITIVE) {
-        if (jsmn_isNull(json)) {
-            startIndex = 0;
-            endIndex = CONFIG_PWM_CHANNELS - 1;
-        } else {
-            jsmn_trimData(json);
-            startIndex = endIndex = atoi(json->data);
+        size_t startIndex = 0;
+        size_t endIndex = 0;
+        if (json->type == JSMN_PRIMITIVE) {
+                if (jsmn_isNull(json)) {
+                        startIndex = 0;
+                        endIndex = CONFIG_PWM_CHANNELS - 1;
+                } else {
+                        jsmn_trimData(json);
+                        startIndex = endIndex = atoi(json->data);
+                }
         }
-    }
-    if (startIndex <= CONFIG_PWM_CHANNELS) {
-        sendPwmConfig(serial, startIndex, endIndex);
-        return API_SUCCESS_NO_RETURN;
-    } else {
-        return API_ERROR_PARAMETER;
-    }
+        if (startIndex <= CONFIG_PWM_CHANNELS) {
+                sendPwmConfig(serial, startIndex, endIndex);
+                return API_SUCCESS_NO_RETURN;
+        } else {
+                return API_ERROR_PARAMETER;
+        }
 }
 
 static void getPwmConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
-    if (channelId < PWM_CHANNELS) {
-        PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
-        *baseCfg = c;
-        *channelCfg = &c->cfg;
-    }
+        if (channelId < PWM_CHANNELS) {
+                PWMConfig *c =&(getWorkingLoggerConfig()->PWMConfigs[channelId]);
+                *baseCfg = c;
+                *channelCfg = &c->cfg;
+        }
 }
 
 static const jsmntok_t * setPwmExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg)
 {
-    PWMConfig *pwmCfg = (PWMConfig *)cfg;
+        PWMConfig *pwmCfg = (PWMConfig *)cfg;
 
-    if (STR_EQ("outMode", name))
-        pwmCfg->outputMode = filterPwmOutputMode(atoi(value));
-    if (STR_EQ("logMode", name))
-        pwmCfg->loggingMode = filterPwmLoggingMode(atoi(value));
-    if (STR_EQ("stDutyCyc", name))
-        pwmCfg->startupDutyCycle = filterPwmDutyCycle(atoi(value));
-    if (STR_EQ("stPeriod", name))
-        pwmCfg->startupPeriod = filterPwmPeriod(atoi(value));
-    return valueTok + 1;
+        if (STR_EQ("outMode", name))
+                pwmCfg->outputMode = filterPwmOutputMode(atoi(value));
+        if (STR_EQ("logMode", name))
+                pwmCfg->loggingMode = filterPwmLoggingMode(atoi(value));
+        if (STR_EQ("stDutyCyc", name))
+                pwmCfg->startupDutyCycle = filterPwmDutyCycle(atoi(value));
+        if (STR_EQ("stPeriod", name))
+                pwmCfg->startupPeriod = filterPwmPeriod(atoi(value));
+        return valueTok + 1;
 }
 
 int api_setPwmConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    int res = setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField, PWM_update_config);
-    return res;
+        int res = setMultiChannelConfigGeneric(serial, json, getPwmConfigs, setPwmExtendedField, PWM_update_config);
+        return res;
 }
 #endif
 
 #if GPIO_CHANNELS > 1
 static void getGpioConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
-    if (channelId < GPIO_CHANNELS) {
-        GPIOConfig *c =&(getWorkingLoggerConfig()->GPIOConfigs[channelId]);
-        *baseCfg = c;
-        *channelCfg = &c->cfg;
-    }
+        if (channelId < GPIO_CHANNELS) {
+                GPIOConfig *c =&(getWorkingLoggerConfig()->GPIOConfigs[channelId]);
+                *baseCfg = c;
+                *channelCfg = &c->cfg;
+        }
 }
 
 static const jsmntok_t * setGpioExtendedField(const jsmntok_t *valueTok, const char *name, const char *value, void *cfg)
 {
-    GPIOConfig *gpioCfg = (GPIOConfig *)cfg;
+        GPIOConfig *gpioCfg = (GPIOConfig *)cfg;
 
-    if (STR_EQ("mode", name))
-        gpioCfg->mode = filterGpioMode(atoi(value));
-    return valueTok + 1;
+        if (STR_EQ("mode", name))
+                gpioCfg->mode = filterGpioMode(atoi(value));
+        return valueTok + 1;
 }
 
 static void sendGpioConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
-    json_objStart(serial);
-    json_objStartString(serial, "gpioCfg");
-    for (size_t i = startIndex; i <= endIndex; i++) {
-        GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
-        json_objStartInt(serial, i);
-        json_channelConfig(serial, &(cfg->cfg), 1);
-        json_uint(serial, "mode", cfg->mode, 0);
-        json_objEnd(serial, i != endIndex);
-    }
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_objStart(serial);
+        json_objStartString(serial, "gpioCfg");
+        for (size_t i = startIndex; i <= endIndex; i++) {
+                GPIOConfig *cfg = &(getWorkingLoggerConfig()->GPIOConfigs[i]);
+                json_objStartInt(serial, i);
+                json_channelConfig(serial, &(cfg->cfg), 1);
+                json_uint(serial, "mode", cfg->mode, 0);
+                json_objEnd(serial, i != endIndex);
+        }
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 }
 
 
 int api_getGpioConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    size_t startIndex = 0;
-    size_t endIndex = 0;
-    if (json->type == JSMN_PRIMITIVE) {
-        if (jsmn_isNull(json)) {
-            startIndex = 0;
-            endIndex = CONFIG_GPIO_CHANNELS - 1;
-        } else {
-            jsmn_trimData(json);
-            startIndex = endIndex = atoi(json->data);
+        size_t startIndex = 0;
+        size_t endIndex = 0;
+        if (json->type == JSMN_PRIMITIVE) {
+                if (jsmn_isNull(json)) {
+                        startIndex = 0;
+                        endIndex = CONFIG_GPIO_CHANNELS - 1;
+                } else {
+                        jsmn_trimData(json);
+                        startIndex = endIndex = atoi(json->data);
+                }
         }
-    }
-    if (startIndex <= CONFIG_GPIO_CHANNELS) {
-        sendGpioConfig(serial, startIndex, endIndex);
-        return API_SUCCESS_NO_RETURN;
-    } else {
-        return API_ERROR_PARAMETER;
-    }
+        if (startIndex <= CONFIG_GPIO_CHANNELS) {
+                sendGpioConfig(serial, startIndex, endIndex);
+                return API_SUCCESS_NO_RETURN;
+        } else {
+                return API_ERROR_PARAMETER;
+        }
 }
 
 int api_setGpioConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    int res = setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField, GPIO_init);
-    return res;
+        int res = setMultiChannelConfigGeneric(serial, json, getGpioConfigs, setGpioExtendedField, GPIO_init);
+        return res;
 }
 #endif
 
 #if TIMER_CHANNELS > 0
 static void getTimerConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
-    if (channelId < TIMER_CHANNELS) {
-        TimerConfig *c =&(getWorkingLoggerConfig()->TimerConfigs[channelId]);
-        *baseCfg = c;
-        *channelCfg = &c->cfg;
-    }
+        if (channelId < TIMER_CHANNELS) {
+                TimerConfig *c =&(getWorkingLoggerConfig()->TimerConfigs[channelId]);
+                *baseCfg = c;
+                *channelCfg = &c->cfg;
+        }
 }
 
 static const jsmntok_t * setTimerExtendedField(const jsmntok_t *valueTok,
-                                               const char *name,
-                                               const char *value,
-                                               void *cfg)
+                const char *name,
+                const char *value,
+                void *cfg)
 {
-    TimerConfig *timerCfg = (TimerConfig *)cfg;
+        TimerConfig *timerCfg = (TimerConfig *)cfg;
 
-    if (STR_EQ("mode", name))
-        timerCfg->mode = filterTimerMode(atoi(value));
-    if (STR_EQ("alpha", name))
-        timerCfg->filterAlpha = atof(value);
-    if (STR_EQ("ppr", name))
-        timerCfg->pulsePerRevolution = atof(value);
-    if (STR_EQ("speed", name))
-        timerCfg->timerSpeed = filterTimerDivider(atoi(value));
-    if (STR_EQ("filter_period", name))
-            timerCfg->filter_period_us = atoi(value);
-    if (STR_EQ("edge", name))
-            timerCfg->edge = get_timer_edge_enum(value);
+        if (STR_EQ("mode", name))
+                timerCfg->mode = filterTimerMode(atoi(value));
+        if (STR_EQ("alpha", name))
+                timerCfg->filterAlpha = atof(value);
+        if (STR_EQ("ppr", name))
+                timerCfg->pulsePerRevolution = atof(value);
+        if (STR_EQ("speed", name))
+                timerCfg->timerSpeed = filterTimerDivider(atoi(value));
+        if (STR_EQ("filter_period", name))
+                timerCfg->filter_period_us = atoi(value);
+        if (STR_EQ("edge", name))
+                timerCfg->edge = get_timer_edge_enum(value);
 
-    return valueTok + 1;
+        return valueTok + 1;
 }
 
 static void sendTimerConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
-    json_objStart(serial);
-    json_objStartString(serial, "timerCfg");
-    for (size_t i = startIndex; i <= endIndex; i++) {
-        TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
-        json_objStartInt(serial, i);
-        json_channelConfig(serial, &(cfg->cfg), 1);
-         /* DEPRECATED.  Only here for compatibility */
-        json_uint(serial, "st", 0, 1);
-        json_uint(serial, "mode", cfg->mode, 1);
-        json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
-        json_float(serial, "ppr", cfg->pulsePerRevolution, 6, 1);
-        json_uint(serial, "speed", cfg->timerSpeed, 1);
-        json_int(serial, "filter_period", cfg->filter_period_us, 1);
-        json_string(serial, "edge", get_timer_edge_api_key(cfg->edge), 0);
-        json_objEnd(serial, i != endIndex);
-    }
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_objStart(serial);
+        json_objStartString(serial, "timerCfg");
+        for (size_t i = startIndex; i <= endIndex; i++) {
+                TimerConfig *cfg = &(getWorkingLoggerConfig()->TimerConfigs[i]);
+                json_objStartInt(serial, i);
+                json_channelConfig(serial, &(cfg->cfg), 1);
+                /* DEPRECATED.  Only here for compatibility */
+                json_uint(serial, "st", 0, 1);
+                json_uint(serial, "mode", cfg->mode, 1);
+                json_float(serial, "alpha", cfg->filterAlpha, FILTER_ALPHA_PRECISION, 1);
+                json_float(serial, "ppr", cfg->pulsePerRevolution, 6, 1);
+                json_uint(serial, "speed", cfg->timerSpeed, 1);
+                json_int(serial, "filter_period", cfg->filter_period_us, 1);
+                json_string(serial, "edge", get_timer_edge_api_key(cfg->edge), 0);
+                json_objEnd(serial, i != endIndex);
+        }
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 }
 
 int api_getTimerConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    size_t startIndex = 0;
-    size_t endIndex = 0;
-    if (json->type == JSMN_PRIMITIVE) {
-        if (jsmn_isNull(json)) {
-            startIndex = 0;
-            endIndex = CONFIG_TIMER_CHANNELS - 1;
-        } else {
-            jsmn_trimData(json);
-            startIndex = endIndex = atoi(json->data);
+        size_t startIndex = 0;
+        size_t endIndex = 0;
+        if (json->type == JSMN_PRIMITIVE) {
+                if (jsmn_isNull(json)) {
+                        startIndex = 0;
+                        endIndex = CONFIG_TIMER_CHANNELS - 1;
+                } else {
+                        jsmn_trimData(json);
+                        startIndex = endIndex = atoi(json->data);
+                }
         }
-    }
-    if (startIndex <= CONFIG_TIMER_CHANNELS) {
-        sendTimerConfig(serial, startIndex, endIndex);
-        return API_SUCCESS_NO_RETURN;
-    } else {
-        return API_ERROR_PARAMETER;
-    }
+        if (startIndex <= CONFIG_TIMER_CHANNELS) {
+                sendTimerConfig(serial, startIndex, endIndex);
+                return API_SUCCESS_NO_RETURN;
+        } else {
+                return API_ERROR_PARAMETER;
+        }
 }
 
 int api_setTimerConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    int res = setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField, timer_init);
-    return res;
+        int res = setMultiChannelConfigGeneric(serial, json, getTimerConfigs, setTimerExtendedField, timer_init);
+        return res;
 }
 #endif
 
 #if GPS_HARDWARE_SUPPORT
 static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg)
 {
-    unsigned short rate = SAMPLE_DISABLED;
+        unsigned short rate = SAMPLE_DISABLED;
 
-    rate = getHigherSampleRate(rate, cfg->latitude.sampleRate);
-    rate = getHigherSampleRate(rate, cfg->longitude.sampleRate);
-    rate = getHigherSampleRate(rate, cfg->speed.sampleRate);
-    rate = getHigherSampleRate(rate, cfg->distance.sampleRate);
-    rate = getHigherSampleRate(rate, cfg->altitude.sampleRate);
-    rate = getHigherSampleRate(rate, cfg->satellites.sampleRate);
-    rate = getHigherSampleRate(rate, cfg->quality.sampleRate);
-    rate = getHigherSampleRate(rate, cfg->DOP.sampleRate);
-    return rate;
+        rate = getHigherSampleRate(rate, cfg->latitude.sampleRate);
+        rate = getHigherSampleRate(rate, cfg->longitude.sampleRate);
+        rate = getHigherSampleRate(rate, cfg->speed.sampleRate);
+        rate = getHigherSampleRate(rate, cfg->distance.sampleRate);
+        rate = getHigherSampleRate(rate, cfg->altitude.sampleRate);
+        rate = getHigherSampleRate(rate, cfg->satellites.sampleRate);
+        rate = getHigherSampleRate(rate, cfg->quality.sampleRate);
+        rate = getHigherSampleRate(rate, cfg->DOP.sampleRate);
+        return rate;
 }
 
 int api_getGpsConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
-    GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+        GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
-    json_objStart(serial);
-    json_objStartString(serial, "gpsCfg");
+        json_objStart(serial);
+        json_objStartString(serial, "gpsCfg");
 
-    unsigned short highestRate = getGpsConfigHighSampleRate(gpsCfg);
-    json_int(serial, "sr", decodeSampleRate(highestRate), 1);
+        unsigned short highestRate = getGpsConfigHighSampleRate(gpsCfg);
+        json_int(serial, "sr", decodeSampleRate(highestRate), 1);
 
-    const int posEnabled = gpsCfg->latitude.sampleRate != SAMPLE_DISABLED &&
-                           gpsCfg->longitude.sampleRate != SAMPLE_DISABLED;
-    json_int(serial, "pos",  posEnabled, 1);
-    json_int(serial, "speed", gpsCfg->speed.sampleRate != SAMPLE_DISABLED, 1);
-    json_int(serial, "dist", gpsCfg->distance.sampleRate != SAMPLE_DISABLED, 1);
-    json_int(serial, "alt", gpsCfg->altitude.sampleRate != SAMPLE_DISABLED, 1);
-    json_int(serial, "sats", gpsCfg->satellites.sampleRate != SAMPLE_DISABLED, 1);
-    json_int(serial, "qual", gpsCfg->quality.sampleRate != SAMPLE_DISABLED, 1);
-    json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 1);
+        const int posEnabled = gpsCfg->latitude.sampleRate != SAMPLE_DISABLED &&
+                               gpsCfg->longitude.sampleRate != SAMPLE_DISABLED;
+        json_int(serial, "pos",  posEnabled, 1);
+        json_int(serial, "speed", gpsCfg->speed.sampleRate != SAMPLE_DISABLED, 1);
+        json_int(serial, "dist", gpsCfg->distance.sampleRate != SAMPLE_DISABLED, 1);
+        json_int(serial, "alt", gpsCfg->altitude.sampleRate != SAMPLE_DISABLED, 1);
+        json_int(serial, "sats", gpsCfg->satellites.sampleRate != SAMPLE_DISABLED, 1);
+        json_int(serial, "qual", gpsCfg->quality.sampleRate != SAMPLE_DISABLED, 1);
+        json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 1);
 
-    json_objStartString(serial, "units");
-    json_string(serial, "alt", gpsCfg->altitude.units, 1);
-    json_string(serial, "dist", gpsCfg->distance.units, 1);
-    json_string(serial, "speed", gpsCfg->speed.units, 0);
-    json_objEnd(serial, 0);
+        json_objStartString(serial, "units");
+        json_string(serial, "alt", gpsCfg->altitude.units, 1);
+        json_string(serial, "dist", gpsCfg->distance.units, 1);
+        json_string(serial, "speed", gpsCfg->speed.units, 0);
+        json_objEnd(serial, 0);
 
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 /**
@@ -1219,124 +1219,124 @@ int api_getGpsConfig(struct Serial *serial, const jsmntok_t *json)
  */
 static void gps_set_units(const jsmntok_t *json, GPSConfig *cfg)
 {
-	jsmn_exists_set_val_string(json, "alt", &cfg->altitude.units,
-				   DEFAULT_UNITS_LENGTH, true);
-	jsmn_exists_set_val_string(json, "dist", &cfg->distance.units,
-				   DEFAULT_UNITS_LENGTH, true);
-	jsmn_exists_set_val_string(json, "speed", &cfg->speed.units,
-				   DEFAULT_UNITS_LENGTH, true);
+        jsmn_exists_set_val_string(json, "alt", &cfg->altitude.units,
+                                   DEFAULT_UNITS_LENGTH, true);
+        jsmn_exists_set_val_string(json, "dist", &cfg->distance.units,
+                                   DEFAULT_UNITS_LENGTH, true);
+        jsmn_exists_set_val_string(json, "speed", &cfg->speed.units,
+                                   DEFAULT_UNITS_LENGTH, true);
 
-	/* Altitude supports only Meters or Feet */
-	if (UNIT_LENGTH_METERS != units_get_unit(cfg->altitude.units))
-		strcpy(cfg->altitude.units,
-		       units_get_label(UNIT_LENGTH_FEET));
+        /* Altitude supports only Meters or Feet */
+        if (UNIT_LENGTH_METERS != units_get_unit(cfg->altitude.units))
+                strcpy(cfg->altitude.units,
+                       units_get_label(UNIT_LENGTH_FEET));
 
-	/* Distance supports only Kilometers or Miles */
-	if (UNIT_LENGTH_KILOMETERS != units_get_unit(cfg->distance.units))
-		strcpy(cfg->distance.units,
-		       units_get_label(UNIT_LENGTH_MILES));
+        /* Distance supports only Kilometers or Miles */
+        if (UNIT_LENGTH_KILOMETERS != units_get_unit(cfg->distance.units))
+                strcpy(cfg->distance.units,
+                       units_get_label(UNIT_LENGTH_MILES));
 
-	/* Speed supports only Kilometers/Hr or Miles/Hr */
-	if (UNIT_SPEED_KILOMETERS_HOUR != units_get_unit(cfg->speed.units))
-		strcpy(cfg->speed.units,
-		       units_get_label(UNIT_SPEED_MILES_HOUR));
+        /* Speed supports only Kilometers/Hr or Miles/Hr */
+        if (UNIT_SPEED_KILOMETERS_HOUR != units_get_unit(cfg->speed.units))
+                strcpy(cfg->speed.units,
+                       units_get_label(UNIT_SPEED_MILES_HOUR));
 }
 
 static void gpsConfigTestAndSet(const jsmntok_t *json, ChannelConfig *cfg,
                                 const char *str, const unsigned short sr)
 {
-	unsigned char test = 0;
-	jsmn_exists_set_val_uint8(json, str, &test, NULL);
-	cfg->sampleRate = test == 0 ? SAMPLE_DISABLED : sr;
+        unsigned char test = 0;
+        jsmn_exists_set_val_uint8(json, str, &test, NULL);
+        cfg->sampleRate = test == 0 ? SAMPLE_DISABLED : sr;
 }
 
 int api_setGpsConfig(struct Serial *serial, const jsmntok_t *json)
 {
-	GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
+        GPSConfig *gpsCfg = &(getWorkingLoggerConfig()->GPSConfigs);
 
-	unsigned short sr = SAMPLE_DISABLED;
-	int tmp = 0;
-	if (jsmn_exists_set_val_int(json, "sr", &tmp))
-		sr = encodeSampleRate(tmp);
+        unsigned short sr = SAMPLE_DISABLED;
+        int tmp = 0;
+        if (jsmn_exists_set_val_int(json, "sr", &tmp))
+                sr = encodeSampleRate(tmp);
 
-	gpsConfigTestAndSet(json, &(gpsCfg->latitude), "pos", sr);
-	gpsConfigTestAndSet(json, &(gpsCfg->longitude), "pos", sr);
-	gpsConfigTestAndSet(json, &(gpsCfg->speed), "speed", sr);
-	gpsConfigTestAndSet(json, &(gpsCfg->distance), "dist", sr);
-	gpsConfigTestAndSet(json, &(gpsCfg->altitude), "alt", sr);
-	gpsConfigTestAndSet(json, &(gpsCfg->satellites), "sats", sr);
-	gpsConfigTestAndSet(json, &(gpsCfg->quality), "qual", sr);
-	gpsConfigTestAndSet(json, &(gpsCfg->DOP), "dop", sr);
+        gpsConfigTestAndSet(json, &(gpsCfg->latitude), "pos", sr);
+        gpsConfigTestAndSet(json, &(gpsCfg->longitude), "pos", sr);
+        gpsConfigTestAndSet(json, &(gpsCfg->speed), "speed", sr);
+        gpsConfigTestAndSet(json, &(gpsCfg->distance), "dist", sr);
+        gpsConfigTestAndSet(json, &(gpsCfg->altitude), "alt", sr);
+        gpsConfigTestAndSet(json, &(gpsCfg->satellites), "sats", sr);
+        gpsConfigTestAndSet(json, &(gpsCfg->quality), "qual", sr);
+        gpsConfigTestAndSet(json, &(gpsCfg->DOP), "dop", sr);
 
-	const jsmntok_t *units_tok = jsmn_find_node(json, "units");
-	if (units_tok)
-		gps_set_units(units_tok, gpsCfg);
+        const jsmntok_t *units_tok = jsmn_find_node(json, "units");
+        if (units_tok)
+                gps_set_units(units_tok, gpsCfg);
 
-	configChanged();
-	return API_SUCCESS;
+        configChanged();
+        return API_SUCCESS;
 }
 #endif
 
 int api_getCanConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
-    CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
-    json_objStart(serial);
-    json_objStartString(serial, "canCfg");
-    json_int(serial, "en", canCfg->enabled, 1);
-    json_arrayStart(serial, "baud");
-    for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++) {
-        json_arrayElementInt(serial, canCfg->baud[i], i < CONFIG_CAN_CHANNELS - 1);
-    }
+        CANConfig *canCfg = &getWorkingLoggerConfig()->CanConfig;
+        json_objStart(serial);
+        json_objStartString(serial, "canCfg");
+        json_int(serial, "en", canCfg->enabled, 1);
+        json_arrayStart(serial, "baud");
+        for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++) {
+                json_arrayElementInt(serial, canCfg->baud[i], i < CONFIG_CAN_CHANNELS - 1);
+        }
 #if CAN_SW_TERMINATION == true
-    json_arrayEnd(serial, 1);
-    json_arrayStart(serial, "term");
-    for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++) {
-        json_arrayElementInt(serial, canCfg->termination[i], i < CONFIG_CAN_CHANNELS - 1);
-    }
+        json_arrayEnd(serial, 1);
+        json_arrayStart(serial, "term");
+        for (size_t i = 0; i < CONFIG_CAN_CHANNELS; i++) {
+                json_arrayElementInt(serial, canCfg->termination[i], i < CONFIG_CAN_CHANNELS - 1);
+        }
 #endif
-    json_arrayEnd(serial, 0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_arrayEnd(serial, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 
 int api_setCanConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
-    LoggerConfig *lc = getWorkingLoggerConfig();
-    CANConfig *canCfg = &lc->CanConfig;
-    jsmn_exists_set_val_uint8( json, "en", &canCfg->enabled, NULL);
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        CANConfig *canCfg = &lc->CanConfig;
+        jsmn_exists_set_val_uint8( json, "en", &canCfg->enabled, NULL);
 
-    {
-            const jsmntok_t *tok = jsmn_find_node(json, "baud");
-            if (tok != NULL && (++tok)->type == JSMN_ARRAY) {
-                    size_t arr_size = json->size;
-                    if (arr_size > CONFIG_CAN_CHANNELS)
-                            arr_size = CONFIG_CAN_CHANNELS;
-                    size_t can_index = 0;
-                    for (tok++; can_index < arr_size; can_index++, tok++) {
-                            canCfg->baud[can_index] = atoi(tok->data);
-                    }
-            }
-    }
+        {
+                const jsmntok_t *tok = jsmn_find_node(json, "baud");
+                if (tok != NULL && (++tok)->type == JSMN_ARRAY) {
+                        size_t arr_size = json->size;
+                        if (arr_size > CONFIG_CAN_CHANNELS)
+                                arr_size = CONFIG_CAN_CHANNELS;
+                        size_t can_index = 0;
+                        for (tok++; can_index < arr_size; can_index++, tok++) {
+                                canCfg->baud[can_index] = atoi(tok->data);
+                        }
+                }
+        }
 #if CAN_SW_TERMINATION == true
-    {
-            const jsmntok_t *tok = jsmn_find_node(json, "term");
-            if (tok != NULL && (++tok)->type == JSMN_ARRAY) {
-                    size_t arr_size = json->size;
-                    if (arr_size > CONFIG_CAN_CHANNELS)
-                            arr_size = CONFIG_CAN_CHANNELS;
-                    size_t can_index = 0;
-                    for (tok++; can_index < arr_size; can_index++, tok++) {
-                            canCfg->termination[can_index] = atoi(tok->data);
-                    }
-            }
-    }
+        {
+                const jsmntok_t *tok = jsmn_find_node(json, "term");
+                if (tok != NULL && (++tok)->type == JSMN_ARRAY) {
+                        size_t arr_size = json->size;
+                        if (arr_size > CONFIG_CAN_CHANNELS)
+                                arr_size = CONFIG_CAN_CHANNELS;
+                        size_t can_index = 0;
+                        for (tok++; can_index < arr_size; can_index++, tok++) {
+                                canCfg->termination[can_index] = atoi(tok->data);
+                        }
+                }
+        }
 #endif
-    CAN_init(lc);
-    return API_SUCCESS;
+        CAN_init(lc);
+        return API_SUCCESS;
 }
 
 static void json_put_can_mapping(struct Serial *serial, const CANMapping * mapping, int more)
@@ -1358,182 +1358,182 @@ static void json_put_can_mapping(struct Serial *serial, const CANMapping * mappi
 
 int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 {
-    const CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
-    json_objStart(serial);
-    json_objStartString(serial, "canChanCfg");
-    json_int(serial, "en", can_channel_cfg->enabled, 1);
-    size_t enabled_mappings = can_channel_cfg->enabled_mappings;
-
-    json_arrayStart(serial, "chans");
-    for (size_t i = 0; i < can_channel_cfg->enabled_mappings; i++) {
-        const CANChannel *can_channel = &can_channel_cfg->can_channels[i];
-
+        const CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
         json_objStart(serial);
-        json_channelConfig(serial, &(can_channel->mapping.channel_cfg), 1);
-        json_put_can_mapping(serial, &(can_channel->mapping), 0);
-        json_objEnd(serial, i < enabled_mappings - 1);
-    }
-    json_arrayEnd(serial, 0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_objStartString(serial, "canChanCfg");
+        json_int(serial, "en", can_channel_cfg->enabled, 1);
+        size_t enabled_mappings = can_channel_cfg->enabled_mappings;
+
+        json_arrayStart(serial, "chans");
+        for (size_t i = 0; i < can_channel_cfg->enabled_mappings; i++) {
+                const CANChannel *can_channel = &can_channel_cfg->can_channels[i];
+
+                json_objStart(serial);
+                json_channelConfig(serial, &(can_channel->mapping.channel_cfg), 1);
+                json_put_can_mapping(serial, &(can_channel->mapping), 0);
+                json_objEnd(serial, i < enabled_mappings - 1);
+        }
+        json_arrayEnd(serial, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 static void set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
 {
-    jsmn_exists_set_val_bool(json_mapping, "bm", &mapping->bit_mode);
+        jsmn_exists_set_val_bool(json_mapping, "bm", &mapping->bit_mode);
 
-    jsmn_exists_set_val_uint8(json_mapping, "offset", &mapping->offset, NULL);
-    /* rail to maximum CAN mapping offset */
-    mapping->offset = MIN(mapping->offset, MAX_CAN_MAPPING_OFFSET_BYTES * (mapping->bit_mode ? 8 : 1));
+        jsmn_exists_set_val_uint8(json_mapping, "offset", &mapping->offset, NULL);
+        /* rail to maximum CAN mapping offset */
+        mapping->offset = MIN(mapping->offset, MAX_CAN_MAPPING_OFFSET_BYTES * (mapping->bit_mode ? 8 : 1));
 
-    jsmn_exists_set_val_uint8(json_mapping, "len", &mapping->length, NULL);
-    /* rail to maximum CAN mapping length */
-    mapping->length = MIN(mapping->length, MAX_CAN_MAPPING_LENGTH_BYTES * (mapping->bit_mode ? 8 : 1));
+        jsmn_exists_set_val_uint8(json_mapping, "len", &mapping->length, NULL);
+        /* rail to maximum CAN mapping length */
+        mapping->length = MIN(mapping->length, MAX_CAN_MAPPING_LENGTH_BYTES * (mapping->bit_mode ? 8 : 1));
 
-    jsmn_exists_set_val_uint8(json_mapping, "bus", &mapping->can_channel, filter_can_bus_channel);
+        jsmn_exists_set_val_uint8(json_mapping, "bus", &mapping->can_channel, filter_can_bus_channel);
 
-    jsmn_exists_set_val_int(json_mapping, "id", &mapping->can_id);
-    jsmn_exists_set_val_int(json_mapping, "subId", &mapping->sub_id);
-    jsmn_exists_set_val_int(json_mapping, "idMask", &mapping->can_mask);
-    jsmn_exists_set_val_bool(json_mapping, "bigEndian", &mapping->big_endian);
-    jsmn_exists_set_val_float(json_mapping, "mult", &mapping->multiplier);
-    jsmn_exists_set_val_float(json_mapping, "div", &mapping->divider);
-    jsmn_exists_set_val_float(json_mapping, "add", &mapping->adder);
-    jsmn_exists_set_val_uint8(json_mapping, "filtId", &mapping->conversion_filter_id, NULL);
-    uint8_t mapping_type;
-    if (jsmn_exists_set_val_uint8(json_mapping, "type", &mapping_type, NULL)) {
-            mapping->type = filter_can_mapping_type((enum CANMappingType)mapping_type);
-    }
+        jsmn_exists_set_val_int(json_mapping, "id", &mapping->can_id);
+        jsmn_exists_set_val_int(json_mapping, "subId", &mapping->sub_id);
+        jsmn_exists_set_val_int(json_mapping, "idMask", &mapping->can_mask);
+        jsmn_exists_set_val_bool(json_mapping, "bigEndian", &mapping->big_endian);
+        jsmn_exists_set_val_float(json_mapping, "mult", &mapping->multiplier);
+        jsmn_exists_set_val_float(json_mapping, "div", &mapping->divider);
+        jsmn_exists_set_val_float(json_mapping, "add", &mapping->adder);
+        jsmn_exists_set_val_uint8(json_mapping, "filtId", &mapping->conversion_filter_id, NULL);
+        uint8_t mapping_type;
+        if (jsmn_exists_set_val_uint8(json_mapping, "type", &mapping_type, NULL)) {
+                mapping->type = filter_can_mapping_type((enum CANMappingType)mapping_type);
+        }
 }
 
 int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
 {
-    CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
+        CANChannelConfig * can_channel_cfg = &(getWorkingLoggerConfig()->can_channel_cfg);
 
-    /* flag to indicate if this channel is the last in a series */
-    bool last = false;
-    jsmn_exists_set_val_bool(json, "last", &last);
+        /* flag to indicate if this channel is the last in a series */
+        bool last = false;
+        jsmn_exists_set_val_bool(json, "last", &last);
 
-    /* optional starting index. start at beginning by default */
-    unsigned index = 0;
-    jsmn_exists_set_val_int(json, "index", &index);
+        /* optional starting index. start at beginning by default */
+        unsigned index = 0;
+        jsmn_exists_set_val_int(json, "index", &index);
 
-    /* we can only start updating up to the item right after the last */
-    if (index >= CONFIG_CAN_MAPPINGS || index > can_channel_cfg->enabled_mappings)
-            return API_ERROR_PARAMETER;
+        /* we can only start updating up to the item right after the last */
+        if (index >= CONFIG_CAN_MAPPINGS || index > can_channel_cfg->enabled_mappings)
+                return API_ERROR_PARAMETER;
 
-    /* find the beginning of the channels json array */
-    const jsmntok_t *chans_tok = jsmn_find_node(json, "chans");
-    chans_tok = jsmn_find_node_type(chans_tok, JSMN_ARRAY);
+        /* find the beginning of the channels json array */
+        const jsmntok_t *chans_tok = jsmn_find_node(json, "chans");
+        chans_tok = jsmn_find_node_type(chans_tok, JSMN_ARRAY);
 
-    if (chans_tok) {
-        int channel_max = chans_tok->size;
-        if (channel_max > MAX_CAN_MESSAGE_CHANNELS) {
-            return API_ERROR_PARAMETER;
+        if (chans_tok) {
+                int channel_max = chans_tok->size;
+                if (channel_max > MAX_CAN_MESSAGE_CHANNELS) {
+                        return API_ERROR_PARAMETER;
+                }
+
+                channel_max += index;
+                if (channel_max > CONFIG_CAN_MAPPINGS) {
+                        return API_ERROR_PARAMETER;
+                }
+
+                for (chans_tok++; index < channel_max; index++) {
+                        CANChannel *chan = can_channel_cfg->can_channels + index;
+                        ChannelConfig *chCfg = &(chan->mapping.channel_cfg);
+
+                        set_can_mapping(chans_tok, &(chan->mapping));
+                        chans_tok = setChannelConfig(serial, chans_tok, chCfg, NULL, NULL);
+                }
+                if (index > can_channel_cfg->enabled_mappings || last)
+                        can_channel_cfg->enabled_mappings = index;
         }
 
-        channel_max += index;
-        if (channel_max > CONFIG_CAN_MAPPINGS) {
-            return API_ERROR_PARAMETER;
-        }
-
-        for (chans_tok++; index < channel_max; index++) {
-            CANChannel *chan = can_channel_cfg->can_channels + index;
-            ChannelConfig *chCfg = &(chan->mapping.channel_cfg);
-
-            set_can_mapping(chans_tok, &(chan->mapping));
-            chans_tok = setChannelConfig(serial, chans_tok, chCfg, NULL, NULL);
-        }
-        if (index > can_channel_cfg->enabled_mappings || last)
-                can_channel_cfg->enabled_mappings = index;
-    }
-
-    /* set the global enabled flag, if present */
-    jsmn_exists_set_val_uint8(json, "en", &can_channel_cfg->enabled, NULL);
-    CAN_state_stale();
-    configChanged();
-    return API_SUCCESS;
+        /* set the global enabled flag, if present */
+        jsmn_exists_set_val_uint8(json, "en", &can_channel_cfg->enabled, NULL);
+        CAN_state_stale();
+        configChanged();
+        return API_SUCCESS;
 }
 
 int api_getObd2Config(struct Serial *serial, const jsmntok_t *json)
 {
-    json_objStart(serial);
-    json_objStartString(serial, "obd2Cfg");
-
-    OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
-
-    int enabledPids = obd2Cfg->enabledPids;
-    json_int(serial,"en", obd2Cfg->enabled, 1);
-    json_arrayStart(serial, "pids");
-
-    for (int i = 0; i < enabledPids; i++) {
-        PidConfig *pidCfg = &obd2Cfg->pids[i];
         json_objStart(serial);
-        json_channelConfig(serial, &(pidCfg->mapping.channel_cfg), 1);
-        json_put_can_mapping(serial, &(pidCfg->mapping), 1);
-        json_uint(serial,"pid",pidCfg->pid, 1);
-        json_int(serial, "mode", pidCfg->mode, 1);
-        json_bool(serial, "pass", pidCfg->passive, 0);
-        json_objEnd(serial, i < enabledPids - 1);
-    }
+        json_objStartString(serial, "obd2Cfg");
 
-    json_arrayEnd(serial, 0);
-    json_objEnd(serial,0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
+
+        int enabledPids = obd2Cfg->enabledPids;
+        json_int(serial,"en", obd2Cfg->enabled, 1);
+        json_arrayStart(serial, "pids");
+
+        for (int i = 0; i < enabledPids; i++) {
+                PidConfig *pidCfg = &obd2Cfg->pids[i];
+                json_objStart(serial);
+                json_channelConfig(serial, &(pidCfg->mapping.channel_cfg), 1);
+                json_put_can_mapping(serial, &(pidCfg->mapping), 1);
+                json_uint(serial,"pid",pidCfg->pid, 1);
+                json_int(serial, "mode", pidCfg->mode, 1);
+                json_bool(serial, "pass", pidCfg->passive, 0);
+                json_objEnd(serial, i < enabledPids - 1);
+        }
+
+        json_arrayEnd(serial, 0);
+        json_objEnd(serial,0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
 {
-    OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
+        OBD2Config *obd2Cfg = &(getWorkingLoggerConfig()->OBD2Configs);
 
-    /* flag to indicate if this channel is the last in a series */
-    bool is_last = false;
-    jsmn_exists_set_val_bool(json, "last", &is_last);
+        /* flag to indicate if this channel is the last in a series */
+        bool is_last = false;
+        jsmn_exists_set_val_bool(json, "last", &is_last);
 
-    /* optional starting index. start at beginning by default */
-    unsigned index = 0;
-    jsmn_exists_set_val_int(json, "index", &index);
+        /* optional starting index. start at beginning by default */
+        unsigned index = 0;
+        jsmn_exists_set_val_int(json, "index", &index);
 
-    /* we can only start updating up to the item right after the last */
-    if (index >= CONFIG_OBD2_CHANNELS || index > obd2Cfg->enabledPids) {
-        return API_ERROR_PARAMETER;
-    }
-
-    /* find the beginning of the pids json array */
-    const jsmntok_t *pids_tok = jsmn_find_node(json, "pids");
-    pids_tok = jsmn_find_node_type(pids_tok, JSMN_ARRAY);
-
-    if (pids_tok) {
-        int pid_max = pids_tok->size;
-        if (pid_max > MAX_OBD2_MESSAGE_PIDS) {
-            return API_ERROR_PARAMETER;
-        }
-        pid_max += index;
-        if (pid_max > CONFIG_OBD2_CHANNELS) {
-            return API_ERROR_PARAMETER;
+        /* we can only start updating up to the item right after the last */
+        if (index >= CONFIG_OBD2_CHANNELS || index > obd2Cfg->enabledPids) {
+                return API_ERROR_PARAMETER;
         }
 
-        for (pids_tok++; index < pid_max; index++) {
-            PidConfig *pid_cfg = obd2Cfg->pids + index;
-            set_can_mapping(pids_tok, &(pid_cfg->mapping));
-            jsmn_exists_set_val_bool(pids_tok, "pass", &pid_cfg->passive);
-            jsmn_exists_set_val_uint32(pids_tok, "pid", &pid_cfg->pid);
-            jsmn_exists_set_val_uint8(pids_tok, "mode", &pid_cfg->mode, NULL);
-            pids_tok = setChannelConfig(serial, pids_tok, &(pid_cfg->mapping.channel_cfg), NULL, NULL);
+        /* find the beginning of the pids json array */
+        const jsmntok_t *pids_tok = jsmn_find_node(json, "pids");
+        pids_tok = jsmn_find_node_type(pids_tok, JSMN_ARRAY);
+
+        if (pids_tok) {
+                int pid_max = pids_tok->size;
+                if (pid_max > MAX_OBD2_MESSAGE_PIDS) {
+                        return API_ERROR_PARAMETER;
+                }
+                pid_max += index;
+                if (pid_max > CONFIG_OBD2_CHANNELS) {
+                        return API_ERROR_PARAMETER;
+                }
+
+                for (pids_tok++; index < pid_max; index++) {
+                        PidConfig *pid_cfg = obd2Cfg->pids + index;
+                        set_can_mapping(pids_tok, &(pid_cfg->mapping));
+                        jsmn_exists_set_val_bool(pids_tok, "pass", &pid_cfg->passive);
+                        jsmn_exists_set_val_uint32(pids_tok, "pid", &pid_cfg->pid);
+                        jsmn_exists_set_val_uint8(pids_tok, "mode", &pid_cfg->mode, NULL);
+                        pids_tok = setChannelConfig(serial, pids_tok, &(pid_cfg->mapping.channel_cfg), NULL, NULL);
+                }
+                /* update the number of PIDs enabled in the list as needed */
+                if (index > obd2Cfg->enabledPids || is_last)
+                        obd2Cfg->enabledPids = index;
         }
-        /* update the number of PIDs enabled in the list as needed */
-        if (index > obd2Cfg->enabledPids || is_last)
-                obd2Cfg->enabledPids = index;
-    }
 
-    /* set the global enabled flag, if present */
-    jsmn_exists_set_val_uint8(json, "en", &obd2Cfg->enabled, NULL);
+        /* set the global enabled flag, if present */
+        jsmn_exists_set_val_uint8(json, "en", &obd2Cfg->enabled, NULL);
 
-    configChanged();
-    OBD2_state_stale();
-    return API_SUCCESS;
+        configChanged();
+        OBD2_state_stale();
+        return API_SUCCESS;
 }
 
 /**
@@ -1542,315 +1542,315 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
  */
 void set_consistent_sample_rates(LapConfig *lc)
 {
-	ChannelConfig *lc_cfgs[] = {
-		&lc->lapCountCfg,
-		&lc->lapTimeCfg,
-		&lc->sectorCfg,
-		&lc->sectorTimeCfg,
-		&lc->elapsed_time_cfg,
-		&lc->current_lap_cfg,
-		NULL,
-	};
+        ChannelConfig *lc_cfgs[] = {
+                &lc->lapCountCfg,
+                &lc->lapTimeCfg,
+                &lc->sectorCfg,
+                &lc->sectorTimeCfg,
+                &lc->elapsed_time_cfg,
+                &lc->current_lap_cfg,
+                NULL,
+        };
 
-	/* Find the highest sample rate */
-	int high_sr = 0;
-	for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
-		high_sr = getHigherSampleRate(high_sr, (*cc_ptr)->sampleRate);
+        /* Find the highest sample rate */
+        int high_sr = 0;
+        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
+                high_sr = getHigherSampleRate(high_sr, (*cc_ptr)->sampleRate);
 
-	/* Now set them all to the highest rate. */
-	for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
-		(*cc_ptr)->sampleRate = high_sr;
+        /* Now set them all to the highest rate. */
+        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
+                (*cc_ptr)->sampleRate = high_sr;
 }
 
 int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
+        LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
 
-    const jsmntok_t *lapCount = jsmn_find_node(json, "lapCount");
-    if (lapCount != NULL)
-        setChannelConfig(serial, lapCount + 1, &lapCfg->lapCountCfg, NULL, NULL);
+        const jsmntok_t *lapCount = jsmn_find_node(json, "lapCount");
+        if (lapCount != NULL)
+                setChannelConfig(serial, lapCount + 1, &lapCfg->lapCountCfg, NULL, NULL);
 
-    const jsmntok_t *lapTime = jsmn_find_node(json, "lapTime");
-    if (lapTime != NULL)
-        setChannelConfig(serial, lapTime + 1, &lapCfg->lapTimeCfg, NULL, NULL);
+        const jsmntok_t *lapTime = jsmn_find_node(json, "lapTime");
+        if (lapTime != NULL)
+                setChannelConfig(serial, lapTime + 1, &lapCfg->lapTimeCfg, NULL, NULL);
 
-    const jsmntok_t *predTime = jsmn_find_node(json, "predTime");
-    if (predTime != NULL)
-        setChannelConfig(serial, predTime + 1, &lapCfg->predTimeCfg, NULL, NULL);
+        const jsmntok_t *predTime = jsmn_find_node(json, "predTime");
+        if (predTime != NULL)
+                setChannelConfig(serial, predTime + 1, &lapCfg->predTimeCfg, NULL, NULL);
 
-    const jsmntok_t *sector = jsmn_find_node(json, "sector");
-    if (sector != NULL)
-        setChannelConfig(serial, sector + 1, &lapCfg->sectorCfg, NULL, NULL);
+        const jsmntok_t *sector = jsmn_find_node(json, "sector");
+        if (sector != NULL)
+                setChannelConfig(serial, sector + 1, &lapCfg->sectorCfg, NULL, NULL);
 
-    const jsmntok_t *sectorTime = jsmn_find_node(json, "sectorTime");
-    if (sectorTime != NULL)
-        setChannelConfig(serial, sectorTime + 1, &lapCfg->sectorTimeCfg, NULL, NULL);
+        const jsmntok_t *sectorTime = jsmn_find_node(json, "sectorTime");
+        if (sectorTime != NULL)
+                setChannelConfig(serial, sectorTime + 1, &lapCfg->sectorTimeCfg, NULL, NULL);
 
-    const jsmntok_t *elapsed = jsmn_find_node(json, "elapsedTime");
-    if (elapsed != NULL)
-        setChannelConfig(serial, elapsed + 1,
-                         &lapCfg->elapsed_time_cfg,
-                         NULL, NULL);
+        const jsmntok_t *elapsed = jsmn_find_node(json, "elapsedTime");
+        if (elapsed != NULL)
+                setChannelConfig(serial, elapsed + 1,
+                                 &lapCfg->elapsed_time_cfg,
+                                 NULL, NULL);
 
-    const jsmntok_t *current_lap = jsmn_find_node(json, "currentLap");
-    if (current_lap != NULL)
-        setChannelConfig(serial, current_lap + 1,
-                         &lapCfg->current_lap_cfg,
-                         NULL, NULL);
+        const jsmntok_t *current_lap = jsmn_find_node(json, "currentLap");
+        if (current_lap != NULL)
+                setChannelConfig(serial, current_lap + 1,
+                                 &lapCfg->current_lap_cfg,
+                                 NULL, NULL);
 
-    set_consistent_sample_rates(lapCfg);
-    configChanged();
-    return API_SUCCESS;
+        set_consistent_sample_rates(lapCfg);
+        configChanged();
+        return API_SUCCESS;
 }
 
 int api_getLapConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
+        LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
 
-    json_objStart(serial);
-    json_objStartString(serial, "lapCfg");
+        json_objStart(serial);
+        json_objStartString(serial, "lapCfg");
 
-    json_objStartString(serial, "lapCount");
-    json_channelConfig(serial, &lapCfg->lapCountCfg, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "lapCount");
+        json_channelConfig(serial, &lapCfg->lapCountCfg, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "lapTime");
-    json_channelConfig(serial, &lapCfg->lapTimeCfg, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "lapTime");
+        json_channelConfig(serial, &lapCfg->lapTimeCfg, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "predTime");
-    json_channelConfig(serial, &lapCfg->predTimeCfg, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "predTime");
+        json_channelConfig(serial, &lapCfg->predTimeCfg, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "sector");
-    json_channelConfig(serial, &lapCfg->sectorCfg, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "sector");
+        json_channelConfig(serial, &lapCfg->sectorCfg, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "sectorTime");
-    json_channelConfig(serial, &lapCfg->sectorTimeCfg, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "sectorTime");
+        json_channelConfig(serial, &lapCfg->sectorTimeCfg, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "elapsed");
-    json_channelConfig(serial, &lapCfg->elapsed_time_cfg, 0);
-    json_objEnd(serial, 1);
+        json_objStartString(serial, "elapsed");
+        json_channelConfig(serial, &lapCfg->elapsed_time_cfg, 0);
+        json_objEnd(serial, 1);
 
-    json_objStartString(serial, "currentLap");
-    json_channelConfig(serial, &lapCfg->current_lap_cfg, 0);
-    json_objEnd(serial, 0);
+        json_objStartString(serial, "currentLap");
+        json_channelConfig(serial, &lapCfg->current_lap_cfg, 0);
+        json_objEnd(serial, 0);
 
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    return API_SUCCESS_NO_RETURN;
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
 }
 
 static void json_geoPointArray(struct Serial *serial, const char *name, const GeoPoint *point, int more)
 {
-    json_arrayStart(serial, name);
-    json_arrayElementFloat(serial, point->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
-    json_arrayElementFloat(serial, point->longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
-    json_arrayEnd(serial, more);
+        json_arrayStart(serial, name);
+        json_arrayElementFloat(serial, point->latitude, DEFAULT_GPS_POSITION_PRECISION, 1);
+        json_arrayElementFloat(serial, point->longitude, DEFAULT_GPS_POSITION_PRECISION, 0);
+        json_arrayEnd(serial, more);
 }
 
 static void json_track(struct Serial *serial, const Track *track)
 {
-    json_int(serial, "id", track->trackId, 1);
-    json_int(serial, "type", track->track_type, 1);
-    if (track->track_type == TRACK_TYPE_CIRCUIT) {
-        json_geoPointArray(serial, "sf", &track->circuit.startFinish, 1);
-        json_arrayStart(serial, "sec");
-        for (size_t i = 0; i < CIRCUIT_SECTOR_COUNT; i++) {
-            json_geoPointArray(serial, NULL, &track->circuit.sectors[i], i < CIRCUIT_SECTOR_COUNT - 1);
+        json_int(serial, "id", track->trackId, 1);
+        json_int(serial, "type", track->track_type, 1);
+        if (track->track_type == TRACK_TYPE_CIRCUIT) {
+                json_geoPointArray(serial, "sf", &track->circuit.startFinish, 1);
+                json_arrayStart(serial, "sec");
+                for (size_t i = 0; i < CIRCUIT_SECTOR_COUNT; i++) {
+                        json_geoPointArray(serial, NULL, &track->circuit.sectors[i], i < CIRCUIT_SECTOR_COUNT - 1);
+                }
+                json_arrayEnd(serial, 0);
+        } else {
+                GeoPoint start = getStartPoint(track);
+                GeoPoint finish = getFinishPoint(track);
+                json_geoPointArray(serial, "st", &start, 1);
+                json_geoPointArray(serial, "fin", &finish, 1);
+                json_arrayStart(serial, "sec");
+                for (size_t i = 0; i < STAGE_SECTOR_COUNT; i++) {
+                        json_geoPointArray(serial, NULL, &track->stage.sectors[i], i < STAGE_SECTOR_COUNT - 1);
+                }
+                json_arrayEnd(serial, 0);
         }
-        json_arrayEnd(serial, 0);
-    } else {
-        GeoPoint start = getStartPoint(track);
-        GeoPoint finish = getFinishPoint(track);
-        json_geoPointArray(serial, "st", &start, 1);
-        json_geoPointArray(serial, "fin", &finish, 1);
-        json_arrayStart(serial, "sec");
-        for (size_t i = 0; i < STAGE_SECTOR_COUNT; i++) {
-            json_geoPointArray(serial, NULL, &track->stage.sectors[i], i < STAGE_SECTOR_COUNT - 1);
-        }
-        json_arrayEnd(serial, 0);
-    }
 }
 
 int api_getTrackConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
+        TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
 
-    json_objStart(serial);
-    json_objStartString(serial, "trackCfg");
-    json_float(serial, "rad", trackCfg->radius, DEFAULT_GPS_RADIUS_PRECISION, 1);
-    json_int(serial, "autoDetect", trackCfg->auto_detect, 1);
-    json_objStartString(serial, "track");
-    json_track(serial, &trackCfg->track);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_objStart(serial);
+        json_objStartString(serial, "trackCfg");
+        json_float(serial, "rad", trackCfg->radius, DEFAULT_GPS_RADIUS_PRECISION, 1);
+        json_int(serial, "autoDetect", trackCfg->auto_detect, 1);
+        json_objStartString(serial, "track");
+        json_track(serial, &trackCfg->track);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 
-    return API_SUCCESS_NO_RETURN;
+        return API_SUCCESS_NO_RETURN;
 }
 
 static int setGeoPointIfExists(const jsmntok_t *root, const char * name, GeoPoint *geoPoint)
 {
-    int success = 0;
-    const jsmntok_t *geoPointNode  = jsmn_find_node(root, name);
-    if (geoPointNode) {
-        geoPointNode++;
-        if (geoPointNode && geoPointNode->type == JSMN_ARRAY && geoPointNode->size == 2) {
-            geoPointNode += 1;
-            jsmn_trimData(geoPointNode);
-            geoPoint->latitude = atof(geoPointNode->data);
-            geoPointNode += 1;
-            jsmn_trimData(geoPointNode);
-            geoPoint->longitude = atof(geoPointNode->data);
-            success = 1;
+        int success = 0;
+        const jsmntok_t *geoPointNode  = jsmn_find_node(root, name);
+        if (geoPointNode) {
+                geoPointNode++;
+                if (geoPointNode && geoPointNode->type == JSMN_ARRAY && geoPointNode->size == 2) {
+                        geoPointNode += 1;
+                        jsmn_trimData(geoPointNode);
+                        geoPoint->latitude = atof(geoPointNode->data);
+                        geoPointNode += 1;
+                        jsmn_trimData(geoPointNode);
+                        geoPoint->longitude = atof(geoPointNode->data);
+                        success = 1;
+                }
         }
-    }
-    return success;
+        return success;
 }
 
 static void setTrack(const jsmntok_t *trackNode, Track *track)
 {
-    jsmn_exists_set_val_int(trackNode, "id", (int*)&(track->trackId));
-    unsigned char trackType;
-    if (jsmn_exists_set_val_uint8(trackNode, "type", &trackType, NULL)) {
-        track->track_type = (enum TrackType) trackType;
-        GeoPoint *sectorsList = track->circuit.sectors;
-        size_t maxSectors = CIRCUIT_SECTOR_COUNT;
-        if (trackType == TRACK_TYPE_CIRCUIT) {
-            setGeoPointIfExists(trackNode, "sf", &track->circuit.startFinish);
-        } else {
-            setGeoPointIfExists(trackNode, "st", &(track->stage.start));
-            setGeoPointIfExists(trackNode, "fin", &(track->stage.finish));
-            sectorsList = track->stage.sectors;
-            maxSectors = STAGE_SECTOR_COUNT;
-        }
-        const jsmntok_t *sectors = jsmn_find_node(trackNode, "sec");
-        if (sectors != NULL) {
-            sectors++;
-            if (sectors != NULL && sectors->type == JSMN_ARRAY) {
-                sectors++;
-                size_t sectorIndex = 0;
-                while (sectors != NULL && sectors->type == JSMN_ARRAY && sectors->size == 2 && sectorIndex < maxSectors) {
-                    GeoPoint *sector = sectorsList + sectorIndex;
-                    const jsmntok_t *lat = sectors + 1;
-                    const jsmntok_t *lon = sectors + 2;
-                    jsmn_trimData(lat);
-                    jsmn_trimData(lon);
-                    sector->latitude = atof(lat->data);
-                    sector->longitude = atof(lon->data);
-                    sectorIndex++;
-                    sectors +=3;
+        jsmn_exists_set_val_int(trackNode, "id", (int*)&(track->trackId));
+        unsigned char trackType;
+        if (jsmn_exists_set_val_uint8(trackNode, "type", &trackType, NULL)) {
+                track->track_type = (enum TrackType) trackType;
+                GeoPoint *sectorsList = track->circuit.sectors;
+                size_t maxSectors = CIRCUIT_SECTOR_COUNT;
+                if (trackType == TRACK_TYPE_CIRCUIT) {
+                        setGeoPointIfExists(trackNode, "sf", &track->circuit.startFinish);
+                } else {
+                        setGeoPointIfExists(trackNode, "st", &(track->stage.start));
+                        setGeoPointIfExists(trackNode, "fin", &(track->stage.finish));
+                        sectorsList = track->stage.sectors;
+                        maxSectors = STAGE_SECTOR_COUNT;
                 }
-                while (sectorIndex < maxSectors) {
-                    GeoPoint *sector = sectorsList + sectorIndex;
-                    sector->latitude = 0;
-                    sector->longitude = 0;
-                    sectorIndex++;
+                const jsmntok_t *sectors = jsmn_find_node(trackNode, "sec");
+                if (sectors != NULL) {
+                        sectors++;
+                        if (sectors != NULL && sectors->type == JSMN_ARRAY) {
+                                sectors++;
+                                size_t sectorIndex = 0;
+                                while (sectors != NULL && sectors->type == JSMN_ARRAY && sectors->size == 2 && sectorIndex < maxSectors) {
+                                        GeoPoint *sector = sectorsList + sectorIndex;
+                                        const jsmntok_t *lat = sectors + 1;
+                                        const jsmntok_t *lon = sectors + 2;
+                                        jsmn_trimData(lat);
+                                        jsmn_trimData(lon);
+                                        sector->latitude = atof(lat->data);
+                                        sector->longitude = atof(lon->data);
+                                        sectorIndex++;
+                                        sectors +=3;
+                                }
+                                while (sectorIndex < maxSectors) {
+                                        GeoPoint *sector = sectorsList + sectorIndex;
+                                        sector->latitude = 0;
+                                        sector->longitude = 0;
+                                        sectorIndex++;
+                                }
+                        }
                 }
-            }
         }
-    }
 }
 
 int api_resetMCU(struct Serial *serial, const jsmntok_t *json)
 {
-    return API_SUCCESS;
+        return API_SUCCESS;
 }
 
 int api_setTrackConfig(struct Serial *serial, const jsmntok_t *json)
 {
 
-    TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
-    jsmn_exists_set_val_float(json, "rad", &trackCfg->radius);
-    jsmn_exists_set_val_uint8(json, "autoDetect", &trackCfg->auto_detect, NULL);
+        TrackConfig *trackCfg = &(getWorkingLoggerConfig()->TrackConfigs);
+        jsmn_exists_set_val_float(json, "rad", &trackCfg->radius);
+        jsmn_exists_set_val_uint8(json, "autoDetect", &trackCfg->auto_detect, NULL);
 
-    const jsmntok_t *track = jsmn_find_node(json, "track");
-    if (track != NULL)
-        setTrack(track + 1, &trackCfg->track);
+        const jsmntok_t *track = jsmn_find_node(json, "track");
+        if (track != NULL)
+                setTrack(track + 1, &trackCfg->track);
 
-    configChanged();
-    lapstats_config_changed();
+        configChanged();
+        lapstats_config_changed();
 
-    return API_SUCCESS;
+        return API_SUCCESS;
 }
 
 int api_calibrateImu(struct Serial *serial, const jsmntok_t *json)
 {
-    imu_calibrate_zero();
-    return API_SUCCESS;
+        imu_calibrate_zero();
+        return API_SUCCESS;
 }
 
 int api_flashConfig(struct Serial *serial, const jsmntok_t *json)
 {
-    int rc = flashLoggerConfig();
-    return (rc == 0 ? 1 : rc); //success means on internal command; other errors passed through
+        int rc = flashLoggerConfig();
+        return (rc == 0 ? 1 : rc); //success means on internal command; other errors passed through
 }
 
 int api_addTrackDb(struct Serial *serial, const jsmntok_t *json)
 {
 
-    unsigned char mode = 0;
-    int index = 0;
+        unsigned char mode = 0;
+        int index = 0;
 
-    if (jsmn_exists_set_val_uint8(json, "mode", &mode, NULL) && jsmn_exists_set_val_int(json, "index", &index)) {
-        Track track;
-        const jsmntok_t *trackNode = jsmn_find_node(json, "track");
-        if (trackNode != NULL)
-            setTrack(trackNode + 1, &track);
-        const int result = (int) add_track(&track, index,
-                                     (enum track_add_mode) mode);
-        if (result == TRACK_ADD_RESULT_OK) {
-            if (mode == TRACK_ADD_MODE_COMPLETE) {
-                lapstats_config_changed();
-            }
-            return API_SUCCESS;
-        } else {
-            return API_ERROR_SEVERE;
+        if (jsmn_exists_set_val_uint8(json, "mode", &mode, NULL) && jsmn_exists_set_val_int(json, "index", &index)) {
+                Track track;
+                const jsmntok_t *trackNode = jsmn_find_node(json, "track");
+                if (trackNode != NULL)
+                        setTrack(trackNode + 1, &track);
+                const int result = (int) add_track(&track, index,
+                                                   (enum track_add_mode) mode);
+                if (result == TRACK_ADD_RESULT_OK) {
+                        if (mode == TRACK_ADD_MODE_COMPLETE) {
+                                lapstats_config_changed();
+                        }
+                        return API_SUCCESS;
+                } else {
+                        return API_ERROR_SEVERE;
+                }
         }
-    }
-    return API_ERROR_MALFORMED;
+        return API_ERROR_MALFORMED;
 }
 
 int api_getTrackDb(struct Serial *serial, const jsmntok_t *json)
 {
-    const Tracks * tracks = get_tracks();
+        const Tracks * tracks = get_tracks();
 
-    size_t track_count = tracks->count;
-    json_objStart(serial);
-    json_objStartString(serial, "trackDb");
-    json_int(serial,"size", track_count, 1);
-    json_int(serial, "max", MAX_TRACK_COUNT, 1);
-    json_arrayStart(serial, "tracks");
-    for (size_t track_index = 0; track_index < track_count; track_index++) {
-        const Track *track = tracks->tracks + track_index;
+        size_t track_count = tracks->count;
         json_objStart(serial);
-        json_track(serial, track);
-        json_objEnd(serial, track_index < track_count - 1);
-    }
-    json_arrayEnd(serial, 0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_objStartString(serial, "trackDb");
+        json_int(serial,"size", track_count, 1);
+        json_int(serial, "max", MAX_TRACK_COUNT, 1);
+        json_arrayStart(serial, "tracks");
+        for (size_t track_index = 0; track_index < track_count; track_index++) {
+                const Track *track = tracks->tracks + track_index;
+                json_objStart(serial);
+                json_track(serial, track);
+                json_objEnd(serial, track_index < track_count - 1);
+        }
+        json_arrayEnd(serial, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 
-    return API_SUCCESS_NO_RETURN;
+        return API_SUCCESS_NO_RETURN;
 }
 
 #if LUA_SUPPORT
 
 int api_getScript(struct Serial *serial, const jsmntok_t *json)
 {
-    const char *script = getScript();
+        const char *script = getScript();
 
-    json_objStart(serial);
-    json_objStartString(serial, "scriptCfg");
-    json_null(serial, "page", 1);
-    json_escapedString(serial, "data", script,0);
-    json_objEnd(serial, 0);
-    json_objEnd(serial, 0);
+        json_objStart(serial);
+        json_objStartString(serial, "scriptCfg");
+        json_null(serial, "page", 1);
+        json_escapedString(serial, "data", script,0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
 
-    return API_SUCCESS_NO_RETURN;
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_setScript(struct Serial *serial, const jsmntok_t *json)
@@ -1875,7 +1875,7 @@ int api_setScript(struct Serial *serial, const jsmntok_t *json)
         char *script = dataTok->data;
         unescapeScript(script);
         return flashScriptPage(page, script, mode) ?
-                API_SUCCESS : API_ERROR_SEVERE;
+               API_SUCCESS : API_ERROR_SEVERE;
 }
 
 int api_runScript(struct Serial *serial, const jsmntok_t *json)
@@ -1887,51 +1887,51 @@ int api_runScript(struct Serial *serial, const jsmntok_t *json)
 #endif /* LUA_SUPPORT */
 
 static void set_wifi_client_cfg(const jsmntok_t *json,
-				struct wifi_client_cfg* cfg,
-				const bool apply)
+                                struct wifi_client_cfg* cfg,
+                                const bool apply)
 {
-	jsmn_exists_set_val_bool(json, "active", &cfg->active);
-	jsmn_exists_set_val_string(json, "ssid", cfg->ssid,
-				   ARRAY_LEN(cfg->ssid), true);
-	jsmn_exists_set_val_string(json, "password", cfg->passwd,
-				   ARRAY_LEN(cfg->passwd), false);
+        jsmn_exists_set_val_bool(json, "active", &cfg->active);
+        jsmn_exists_set_val_string(json, "ssid", cfg->ssid,
+                                   ARRAY_LEN(cfg->ssid), true);
+        jsmn_exists_set_val_string(json, "password", cfg->passwd,
+                                   ARRAY_LEN(cfg->passwd), false);
 
-	if (apply)
-		wifi_update_client_config(cfg);
+        if (apply)
+                wifi_update_client_config(cfg);
 }
 
 static bool set_wifi_ap_cfg(const jsmntok_t *json,
-			    struct wifi_ap_cfg* cfg,
-			    const bool apply)
+                            struct wifi_ap_cfg* cfg,
+                            const bool apply)
 {
-	struct wifi_ap_cfg tmp_cfg;
-	memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
+        struct wifi_ap_cfg tmp_cfg;
+        memcpy(&tmp_cfg, cfg, sizeof(struct wifi_ap_cfg));
 
-	jsmn_exists_set_val_bool(json, "active", &tmp_cfg.active);
-	jsmn_exists_set_val_string(json, "ssid", tmp_cfg.ssid,
-				   ARRAY_LEN(tmp_cfg.ssid), true);
-	jsmn_exists_set_val_string(json, "password", tmp_cfg.password,
-				   ARRAY_LEN(tmp_cfg.password), false);
-	jsmn_exists_set_val_int(json, "channel", (int*) &tmp_cfg.channel);
+        jsmn_exists_set_val_bool(json, "active", &tmp_cfg.active);
+        jsmn_exists_set_val_string(json, "ssid", tmp_cfg.ssid,
+                                   ARRAY_LEN(tmp_cfg.ssid), true);
+        jsmn_exists_set_val_string(json, "password", tmp_cfg.password,
+                                   ARRAY_LEN(tmp_cfg.password), false);
+        jsmn_exists_set_val_int(json, "channel", (int*) &tmp_cfg.channel);
 
-	char enc_str[12];
-	jsmn_exists_set_val_string(json, "encryption", enc_str,
-				   ARRAY_LEN(enc_str), true);
-	tmp_cfg.encryption = wifi_api_get_encryption_enum_val(enc_str);
+        char enc_str[12];
+        jsmn_exists_set_val_string(json, "encryption", enc_str,
+                                   ARRAY_LEN(enc_str), true);
+        tmp_cfg.encryption = wifi_api_get_encryption_enum_val(enc_str);
 
-	if (!wifi_validate_ap_config(&tmp_cfg)) {
-		pr_info("Invalid Wifi AP config given\r\n");
-		return false;
-	}
+        if (!wifi_validate_ap_config(&tmp_cfg)) {
+                pr_info("Invalid Wifi AP config given\r\n");
+                return false;
+        }
 
-	/* Copy the validated config to our real config */
-	memcpy(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg));
+        /* Copy the validated config to our real config */
+        memcpy(cfg, &tmp_cfg, sizeof(struct wifi_ap_cfg));
 
-	/* Inform the Wifi device that settings may have changed */
-	if (apply)
-		wifi_update_ap_config(cfg);
+        /* Inform the Wifi device that settings may have changed */
+        if (apply)
+                wifi_update_ap_config(cfg);
 
-	return true;
+        return true;
 }
 
 int api_set_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
@@ -1944,10 +1944,10 @@ int api_set_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
         const jsmntok_t* client_json_root = jsmn_find_node(json, "client");
         const jsmntok_t* ap_json_root = jsmn_find_node(json, "ap");
 
-	jsmn_exists_set_val_bool(json, "active", &cfg->active);
+        jsmn_exists_set_val_bool(json, "active", &cfg->active);
 
-	bool apply = true;
-	jsmn_exists_set_val_bool(json, "apply", &apply);
+        bool apply = true;
+        jsmn_exists_set_val_bool(json, "apply", &apply);
 
         if (ap_json_root)
                 if (!set_wifi_ap_cfg(ap_json_root, ap_cfg, apply))
@@ -2013,20 +2013,20 @@ int api_set_telemetry(struct Serial *serial, const jsmntok_t *json)
 {
         int sample_rate = 0;
         jsmn_exists_set_val_int(json, "rate", &sample_rate);
-	void* data = (void*) (long) sample_rate;
+        void* data = (void*) (long) sample_rate;
 
         const enum serial_ioctl_status status =
-		serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY, data);
+                serial_ioctl(serial, SERIAL_IOCTL_TELEMETRY, data);
 
-	switch(status) {
+        switch(status) {
         case SERIAL_IOCTL_STATUS_OK:
                 return API_SUCCESS;
         case SERIAL_IOCTL_STATUS_UNSUPPORTED:
                 return API_ERROR_UNSUPPORTED;
-	case SERIAL_IOCTL_STATUS_ERR:
+        case SERIAL_IOCTL_STATUS_ERR:
         default:
                 return API_ERROR_UNSPECIFIED;
-	}
+        }
 }
 
 int api_set_active_track(struct Serial *serial, const jsmntok_t *json)
@@ -2080,7 +2080,7 @@ int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
                 &getWorkingLoggerConfig()->auto_logger_cfg;
 
         return auto_logger_set_config(cfg, json) ?
-                API_SUCCESS : API_ERROR_UNSPECIFIED;
+               API_SUCCESS : API_ERROR_UNSPECIFIED;
 }
 #endif
 
@@ -2103,7 +2103,7 @@ int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json)
                 &getWorkingLoggerConfig()->camera_control_cfg;
 
         return camera_control_set_config(cfg, json) ?
-                API_SUCCESS : API_ERROR_UNSPECIFIED;
+               API_SUCCESS : API_ERROR_UNSPECIFIED;
 }
 #endif
 

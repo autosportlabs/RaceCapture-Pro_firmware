@@ -58,15 +58,15 @@ static const char* log_type_str(enum serial_log_type type)
 
 void TestSD(struct Serial *serial, unsigned int argc, char **argv)
 {
-    /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
+        /* TODO BAP - could not remove TestSD from command list b/c statically defined array, fix somehow */
 #if SDCARD_SUPPORT
-    int lines = 1;
-    int doFlush = 0;
-    int quiet = 0;
-    if (argc > 1) lines = atoi(argv[1]);
-    if (argc > 2) doFlush = atoi(argv[2]);
-    if (argc > 3) quiet = atoi(argv[3]);
-    TestSDWrite(serial, lines, doFlush, quiet);
+        int lines = 1;
+        int doFlush = 0;
+        int quiet = 0;
+        if (argc > 1) lines = atoi(argv[1]);
+        if (argc > 2) doFlush = atoi(argv[2]);
+        if (argc > 3) quiet = atoi(argv[3]);
+        TestSDWrite(serial, lines, doFlush, quiet);
 #endif
 
 }
@@ -167,41 +167,41 @@ void StartTerminal(struct Serial *serial, unsigned int argc, char **argv)
 
 void ViewLog(struct Serial *serial, unsigned int argc, char **argv)
 {
-    serial_write_s(serial, "Starting logging mode.  Hit \"q\" to exit\r\n");
+        serial_write_s(serial, "Starting logging mode.  Hit \"q\" to exit\r\n");
 
-    while(1) {
-        // Write log to serial
-        read_log_to_serial(serial, 0);
+        while(1) {
+                // Write log to serial
+                read_log_to_serial(serial, 0);
 
-        // Look for 'q' to exit.
-        char c = 0;
-        serial_read_c_wait(serial, &c, msToTicks(5));
-        if (c == 'q') break;
-    }
+                // Look for 'q' to exit.
+                char c = 0;
+                serial_read_c_wait(serial, &c, msToTicks(5));
+                if (c == 'q') break;
+        }
 
-    // Give a little space when we finish up with log watching.
-    serial_write_s(serial, "\r\n\r\n");
-    serial_flush(serial);
+        // Give a little space when we finish up with log watching.
+        serial_write_s(serial, "\r\n\r\n");
+        serial_flush(serial);
 }
 
 void SetLogLevel(struct Serial *serial, unsigned int argc, char **argv)
 {
-    // XXX make this more robust maybe.
-    if (argc < 1 || argv[1][0] < '0' || argv[1][0] > '8') {
-        put_commandError(serial, ERROR_CODE_INVALID_PARAM);
-        return;
-    }
+        // XXX make this more robust maybe.
+        if (argc < 1 || argv[1][0] < '0' || argv[1][0] > '8') {
+                put_commandError(serial, ERROR_CODE_INVALID_PARAM);
+                return;
+        }
 
-    enum log_level level = (enum log_level) atoi(argv[1]);
-    set_log_level(level);
-    put_commandOK(serial);
+        enum log_level level = (enum log_level) atoi(argv[1]);
+        set_log_level(level);
+        put_commandOK(serial);
 }
 
 void SetSerialLog(struct Serial *serial, unsigned int argc, char **argv)
 {
         if (argc != 3) {
                 serial_write_s(serial, "Two arguments required to specify serial port "
-                              "and enable/disable option\r\n");
+                               "and enable/disable option\r\n");
                 put_commandError(serial, ERROR_CODE_INVALID_PARAM);
                 goto done;
         }

@@ -50,35 +50,35 @@ enum track_add_mode {
 #define DEFAULT_TRACK_TARGET_RADIUS	0.0001
 
 enum TrackType {
-    TRACK_TYPE_CIRCUIT = 0,
-    TRACK_TYPE_STAGE = 1,
+        TRACK_TYPE_CIRCUIT = 0,
+        TRACK_TYPE_STAGE = 1,
 };
 
 typedef struct _Circuit {
-    GeoPoint startFinish;
-    GeoPoint sectors[CIRCUIT_SECTOR_COUNT];
+        GeoPoint startFinish;
+        GeoPoint sectors[CIRCUIT_SECTOR_COUNT];
 } Circuit;
 
 typedef struct _Stage {
-    GeoPoint start;
-    GeoPoint finish;
-    GeoPoint sectors[STAGE_SECTOR_COUNT];
+        GeoPoint start;
+        GeoPoint finish;
+        GeoPoint sectors[STAGE_SECTOR_COUNT];
 } Stage;
 
 typedef struct _Track {
-    int32_t trackId;
-    enum TrackType track_type;
-    union {
-        GeoPoint allSectors[SECTOR_COUNT]; // Needed for Loading in data.
-        Stage stage;
-        Circuit circuit;
-    };
+        int32_t trackId;
+        enum TrackType track_type;
+        union {
+                GeoPoint allSectors[SECTOR_COUNT]; // Needed for Loading in data.
+                Stage stage;
+                Circuit circuit;
+        };
 } Track;
 
 typedef struct _Tracks {
-    VersionInfo versionInfo;
-    size_t count;
-    Track tracks[MAX_TRACK_COUNT];
+        VersionInfo versionInfo;
+        size_t count;
+        Track tracks[MAX_TRACK_COUNT];
 } Tracks;
 
 void initialize_tracks();

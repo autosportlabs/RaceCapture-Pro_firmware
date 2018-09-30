@@ -56,15 +56,15 @@ int flash_default_tracks(void)
 
 int flash_tracks(const Tracks *source, size_t rawSize)
 {
-    int result = memory_flash_region((void *)&g_tracks, (void *)source, rawSize);
-    if (result == 0) pr_info("win\r\n");
-    else pr_info("fail\r\n");
-    return result;
+        int result = memory_flash_region((void *)&g_tracks, (void *)source, rawSize);
+        if (result == 0) pr_info("win\r\n");
+        else pr_info("fail\r\n");
+        return result;
 }
 
 const Tracks * get_tracks()
 {
-    return (Tracks *)&g_tracks;
+        return (Tracks *)&g_tracks;
 }
 
 
@@ -133,51 +133,51 @@ enum track_add_result add_track(const Track *track, const size_t index,
 
 static int isStage(const Track *t)
 {
-    return t->track_type == TRACK_TYPE_STAGE;
+        return t->track_type == TRACK_TYPE_STAGE;
 }
 
 GeoPoint getFinishPoint(const Track *t)
 {
-    return isStage(t) ? t->stage.finish : t->circuit.startFinish;
+        return isStage(t) ? t->stage.finish : t->circuit.startFinish;
 }
 
 int isFinishPointValid(const Track *t)
 {
-    if (NULL == t)
-        return 0;
+        if (NULL == t)
+                return 0;
 
-    const GeoPoint p = getFinishPoint(t);
-    return isValidPoint(&p);
+        const GeoPoint p = getFinishPoint(t);
+        return isValidPoint(&p);
 }
 
 GeoPoint getStartPoint(const Track *t)
 {
-    return isStage(t) ? t->stage.start : t->circuit.startFinish;
+        return isStage(t) ? t->stage.start : t->circuit.startFinish;
 }
 
 int isStartPointValid(const Track *t)
 {
-    if (NULL == t)
-        return 0;
+        if (NULL == t)
+                return 0;
 
-    const GeoPoint p = getStartPoint(t);
-    return isValidPoint(&p);
+        const GeoPoint p = getStartPoint(t);
+        return isValidPoint(&p);
 }
 
 GeoPoint getSectorGeoPointAtIndex(const Track *t, int index)
 {
-    if (index < 0) index = 0;
-    const int max = isStage(t) ? STAGE_SECTOR_COUNT : CIRCUIT_SECTOR_COUNT;
-    const GeoPoint *sectors = isStage(t) ? t->stage.sectors : t->circuit.sectors;
+        if (index < 0) index = 0;
+        const int max = isStage(t) ? STAGE_SECTOR_COUNT : CIRCUIT_SECTOR_COUNT;
+        const GeoPoint *sectors = isStage(t) ? t->stage.sectors : t->circuit.sectors;
 
-    if (index < max && isValidPoint(sectors + index))
-        return sectors[index];
+        if (index < max && isValidPoint(sectors + index))
+                return sectors[index];
 
-    // If here, return the finish since that is logically the next sector point.
-    return getFinishPoint(t);
+        // If here, return the finish since that is logically the next sector point.
+        return getFinishPoint(t);
 }
 
 int areGeoPointsEqual(const GeoPoint a, const GeoPoint b)
 {
-    return a.latitude == b.latitude && a.longitude == b.longitude;
+        return a.latitude == b.latitude && a.longitude == b.longitude;
 }

@@ -33,20 +33,20 @@ float convert_mph_kph(const float mph)
 
 float convert_km_mi(const float km)
 {
-	return km * 0.621371;
+        return km * 0.621371;
 }
 
 float convert_mi_km(const float mi)
 {
-	return mi * 1.609344;
+        return mi * 1.609344;
 }
 
 float convert_ft_m(const float ft)
 {
-	return ft * 0.3048;
+        return ft * 0.3048;
 }
 
 float convert_m_ft(const float m)
 {
-	return m * 3.28084;
+        return m * 3.28084;
 }

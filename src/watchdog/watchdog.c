@@ -28,24 +28,24 @@
 
 void watchdog_reset(void)
 {
-    watchdog_device_reset();
+        watchdog_device_reset();
 }
 
 void watchdog_init(int timeoutMs)
 {
-	pr_info(LOG_PFX "Initializing...\r\n");
-	watchdog_device_init(timeoutMs);
+        pr_info(LOG_PFX "Initializing...\r\n");
+        watchdog_device_init(timeoutMs);
 
-	if (watchdog_is_watchdog_reset())
-		pr_warning(LOG_PFX "Detected watchdog reset!\r\n");
+        if (watchdog_is_watchdog_reset())
+                pr_warning(LOG_PFX "Detected watchdog reset!\r\n");
 }
 
 bool watchdog_is_watchdog_reset(void)
 {
-    return watchdog_device_is_watchdog_reset();
+        return watchdog_device_is_watchdog_reset();
 }
 
 bool watchdog_is_poweron_reset(void)
 {
-    return watchdog_device_is_poweron_reset();
+        return watchdog_device_is_poweron_reset();
 }

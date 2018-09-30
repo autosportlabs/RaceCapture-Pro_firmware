@@ -40,7 +40,7 @@
 static volatile struct {
         xQueueHandle event_queue;
         struct Serial* serial;
-	int ls_handle;
+        int ls_handle;
         struct {
                 struct rx_buff* buff;
         } rx;
@@ -109,53 +109,53 @@ static void usb_sample_cb(const struct sample* sample,
 
 static int set_telemetry(int rate)
 {
-	const char* serial_name = serial_get_name(usb_state.serial);
+        const char* serial_name = serial_get_name(usb_state.serial);
 
-	/* Stop the stream if the rate is <= 0 */
-	if (rate <= 0 || usb_state.ls_handle >= 0) {
-		pr_info_str_msg(LOG_PFX "Stopping telem stream on ",
-				serial_name);
+        /* Stop the stream if the rate is <= 0 */
+        if (rate <= 0 || usb_state.ls_handle >= 0) {
+                pr_info_str_msg(LOG_PFX "Stopping telem stream on ",
+                                serial_name);
 
-		if (!logger_sample_destroy_callback(usb_state.ls_handle))
-			return SERIAL_IOCTL_STATUS_ERR;
+                if (!logger_sample_destroy_callback(usb_state.ls_handle))
+                        return SERIAL_IOCTL_STATUS_ERR;
 
-		usb_state.ls_handle = -1;
-	}
+                usb_state.ls_handle = -1;
+        }
 
-	if (rate > 0) {
-		pr_info_str_msg(LOG_PFX "Starting telem stream on ",
-				serial_name);
-		usb_state.ls_handle =
-			logger_sample_create_callback(usb_sample_cb,
-						      rate, NULL);
-		if (usb_state.ls_handle < 0)
-			return SERIAL_IOCTL_STATUS_ERR;
-	}
+        if (rate > 0) {
+                pr_info_str_msg(LOG_PFX "Starting telem stream on ",
+                                serial_name);
+                usb_state.ls_handle =
+                        logger_sample_create_callback(usb_sample_cb,
+                                                      rate, NULL);
+                if (usb_state.ls_handle < 0)
+                        return SERIAL_IOCTL_STATUS_ERR;
+        }
 
-	return SERIAL_IOCTL_STATUS_OK;
+        return SERIAL_IOCTL_STATUS_OK;
 }
 
 static enum serial_ioctl_status usb_serial_ioctl(struct Serial* serial,
-						 unsigned long req,
-						 void* argp)
+                unsigned long req,
+                void* argp)
 {
         switch(req) {
         case SERIAL_IOCTL_TELEMETRY:
-		return set_telemetry((int) (long) argp);
-        default:
-                pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
-                                   (int) req);
-                return -1;
+                                return set_telemetry((int) (long) argp);
+                default:
+                        pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
+                                           (int) req);
+                        return -1;
+                }
         }
-}
 
 
-/* *** Task Handlers *** */
+        /* *** Task Handlers *** */
 
-/**
- *
- */
-static void process_rx_msgs()
+        /**
+         *
+         */
+        static void process_rx_msgs()
 {
         struct Serial* const s = usb_state.serial;
         struct rx_buff* const rxb = usb_state.rx.buff;
@@ -251,7 +251,7 @@ void startUSBCommTask(int priority)
 
         /* Set the Serial IOCTL handler here b/c this is managing task */
         serial_set_ioctl_cb(usb_state.serial, usb_serial_ioctl);
-	usb_state.ls_handle = -1;
+        usb_state.ls_handle = -1;
 
         /* Make all task names 16 chars including NULL char */
         static const signed portCHAR task_name[] = "USB Comm Task  ";

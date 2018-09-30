@@ -45,8 +45,8 @@ static uint32_t calc_quiet_period(const TimerConfig *tc,
                                   const float period)
 {
         const float ppr = tc->pulsePerRevolution;
-	if (!ppr)
-		return 0;
+        if (!ppr)
+                return 0;
 
         const float max_rpm = tc->cfg.max;
         const float max_hz = max_rpm * ppr * MAX_RPM_MULT / period;
@@ -84,41 +84,41 @@ int timer_init(LoggerConfig *loggerConfig)
 
 uint32_t timer_get_raw(size_t channel)
 {
-    return timer_device_get_period(channel);
+        return timer_device_get_period(channel);
 }
 
 uint32_t timer_get_hz(size_t channel)
 {
-    uint32_t usec = timer_get_usec(channel);
-    return usec > 0 ? 1000000 / usec : 0;
+        uint32_t usec = timer_get_usec(channel);
+        return usec > 0 ? 1000000 / usec : 0;
 }
 
 uint32_t timer_get_ms(size_t channel)
 {
-    return timer_get_usec(channel) / 1000;
+        return timer_get_usec(channel) / 1000;
 }
 
 uint32_t timer_get_rpm(size_t channel)
 {
-    return timer_get_hz(channel) * 60;
+        return timer_get_hz(channel) * 60;
 }
 
 uint32_t timer_get_usec(size_t channel)
 {
-    Filter *filter = &g_timer_filter[channel];
-    unsigned int period = timer_device_get_usec(channel);
-    update_filter(filter, period);
-    return filter->current_value;
+        Filter *filter = &g_timer_filter[channel];
+        unsigned int period = timer_device_get_usec(channel);
+        update_filter(filter, period);
+        return filter->current_value;
 }
 
 uint32_t timer_get_count(size_t channel)
 {
-    return timer_device_get_count(channel);
+        return timer_device_get_count(channel);
 }
 
 void timer_reset_count(size_t channel)
 {
-    timer_device_reset_count(channel);
+        timer_device_reset_count(channel);
 }
 
 float timer_get_sample(const int cid)
@@ -128,8 +128,8 @@ float timer_get_sample(const int cid)
 
         TimerConfig *c = getWorkingLoggerConfig()->TimerConfigs + cid;
         const float ppr = c->pulsePerRevolution;
-	if (0 == ppr)
-		return 0;
+        if (0 == ppr)
+                return 0;
 
         switch (c->mode) {
         case MODE_LOGGING_TIMER_RPM:

@@ -26,7 +26,7 @@
 
 int usb_comm_init()
 {
-    return 1;
+        return 1;
 }
 
 void usb_init_serial(struct Serial *serial)
@@ -39,12 +39,12 @@ void usb_flush(void) {}
 
 int usb_getcharWait(char *c, size_t delay)
 {
-    return 0;
+        return 0;
 }
 
 char usb_getchar(void)
 {
-    return 0;
+        return 0;
 }
 
 int usb_readLine(char *s, int len)
@@ -54,7 +54,7 @@ int usb_readLine(char *s, int len)
 
 int usb_readLineWait(char *s, int len, size_t delay)
 {
-    return 0;
+        return 0;
 }
 
 void usb_puts(const char *s)

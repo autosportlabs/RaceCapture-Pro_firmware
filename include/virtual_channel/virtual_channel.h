@@ -32,8 +32,8 @@
 CPP_GUARD_BEGIN
 
 typedef struct _VirtualChannel {
-    ChannelConfig config;
-    float currentValue;
+        ChannelConfig config;
+        float currentValue;
 } VirtualChannel;
 
 #define INVALID_VIRTUAL_CHANNEL -1

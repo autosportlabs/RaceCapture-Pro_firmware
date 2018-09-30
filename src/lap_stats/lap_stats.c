@@ -88,7 +88,7 @@ static struct GeoTrigger g_finish_geo_trigger = {0};
 
 static void reset_elapsed_time()
 {
-    g_elapsed_lap_time = 0;
+        g_elapsed_lap_time = 0;
 }
 
 void resetLapCount()
@@ -294,7 +294,7 @@ bool lapstats_is_track_valid()
 
 track_status_t lapstats_get_track_status(void)
 {
-    return g_track_status;
+        return g_track_status;
 }
 
 int32_t lapstats_get_selected_track_id(void)
@@ -304,7 +304,7 @@ int32_t lapstats_get_selected_track_id(void)
 
 bool lapstats_lap_in_progress()
 {
-    return g_lapStartTimestamp >= 0;
+        return g_lapStartTimestamp >= 0;
 }
 
 /**
@@ -312,7 +312,7 @@ bool lapstats_lap_in_progress()
  */
 static void start_lap_timing(const tiny_millis_t startTime)
 {
-    g_lapStartTimestamp = startTime;
+        g_lapStartTimestamp = startTime;
 }
 
 /**
@@ -320,8 +320,8 @@ static void start_lap_timing(const tiny_millis_t startTime)
  */
 static void end_lap_timing(const GpsSnapshot *gpsSnapshot)
 {
-    g_lastLapTime = gpsSnapshot->deltaFirstFix - g_lapStartTimestamp;
-    g_lapStartTimestamp = -1;
+        g_lastLapTime = gpsSnapshot->deltaFirstFix - g_lapStartTimestamp;
+        g_lapStartTimestamp = -1;
 }
 
 static void update_distance(const GpsSnapshot *gps_ss)
@@ -346,43 +346,43 @@ static void update_distance(const GpsSnapshot *gps_ss)
 
 static void set_distance(const float distance)
 {
-    g_distance = distance;
+        g_distance = distance;
 }
 
 void lapstats_reset_distance()
 {
-    set_distance(0);
+        set_distance(0);
 }
 
 /* This distance is in km */
 float getLapDistance()
 {
-	return g_distance;
+        return g_distance;
 }
 
 float getLapDistanceInMiles()
 {
-	return convert_km_mi(g_distance);
+        return convert_km_mi(g_distance);
 }
 
 int lapstats_current_lap()
 {
-    return g_lap;
+        return g_lap;
 }
 
 int getLapCount()
 {
-    return g_lapCount;
+        return g_lapCount;
 }
 
 int getSector()
 {
-    return g_sector;
+        return g_sector;
 }
 
 int getLastSector()
 {
-    return g_lastSector;
+        return g_lastSector;
 }
 
 bool lapstats_track_has_sectors()
@@ -397,50 +397,50 @@ float lapstats_get_geo_circle_radius()
 
 tiny_millis_t getLastLapTime()
 {
-    return g_lastLapTime;
+        return g_lastLapTime;
 }
 
 float getLastLapTimeInMinutes()
 {
-    return tinyMillisToMinutes(getLastLapTime());
+        return tinyMillisToMinutes(getLastLapTime());
 }
 
 void update_elapsed_time(const GpsSnapshot *snap)
 {
-    if (!lapstats_lap_in_progress())
-        return;
+        if (!lapstats_lap_in_progress())
+                return;
 
-    g_elapsed_lap_time = snap->deltaFirstFix - g_lapStartTimestamp;
+        g_elapsed_lap_time = snap->deltaFirstFix - g_lapStartTimestamp;
 }
 
 tiny_millis_t lapstats_elapsed_time()
 {
-    return g_elapsed_lap_time;
+        return g_elapsed_lap_time;
 }
 
 float lapstats_elapsed_time_minutes()
 {
-    return tinyMillisToMinutes(lapstats_elapsed_time());
+        return tinyMillisToMinutes(lapstats_elapsed_time());
 }
 
 tiny_millis_t getLastSectorTime()
 {
-    return g_lastSectorTime;
+        return g_lastSectorTime;
 }
 
 float getLastSectorTimeInMinutes()
 {
-    return tinyMillisToMinutes(getLastSectorTime());
+        return tinyMillisToMinutes(getLastSectorTime());
 }
 
 int getAtStartFinish()
 {
-    return g_at_sf;
+        return g_at_sf;
 }
 
 int getAtSector()
 {
-    return g_at_sector;
+        return g_at_sector;
 }
 
 /**
@@ -499,15 +499,15 @@ static void lap_started_event(const tiny_millis_t time, const GeoPoint *sp,
  */
 static void sector_boundary_event(const GpsSnapshot *gpsSnapshot)
 {
-    const tiny_millis_t millis = gpsSnapshot->deltaFirstFix;
+        const tiny_millis_t millis = gpsSnapshot->deltaFirstFix;
 
-    pr_debug_int_msg(_LOG_PFX "Sector boundary ", g_sector);
+        pr_debug_int_msg(_LOG_PFX "Sector boundary ", g_sector);
 
-    g_lastSectorTime = millis - g_lastSectorTimestamp;
-    g_lastSectorTimestamp = millis;
-    g_lastSector = g_sector;
-    g_at_sector = true;
-    update_sector_geo_circle(++g_sector);
+        g_lastSectorTime = millis - g_lastSectorTimestamp;
+        g_lastSectorTimestamp = millis;
+        g_lastSector = g_sector;
+        g_at_sector = true;
+        update_sector_geo_circle(++g_sector);
 }
 
 /**
@@ -515,18 +515,18 @@ static void sector_boundary_event(const GpsSnapshot *gpsSnapshot)
  */
 static void process_finish_logic(const GpsSnapshot *gpsSnapshot)
 {
-    if (!lapstats_lap_in_progress())
-        return;
+        if (!lapstats_lap_in_progress())
+                return;
 
-    if (!isGeoTriggerTripped(&g_finish_geo_trigger))
-        return;
+        if (!isGeoTriggerTripped(&g_finish_geo_trigger))
+                return;
 
-    const GeoPoint point = gpsSnapshot->sample.point;
-    if (!gc_isPointInGeoCircle(&point, g_geo_circles.finish))
-        return;
+        const GeoPoint point = gpsSnapshot->sample.point;
+        if (!gc_isPointInGeoCircle(&point, g_geo_circles.finish))
+                return;
 
-    // If we get here, then we have completed a lap.
-    lap_finished_event(gpsSnapshot);
+        // If we get here, then we have completed a lap.
+        lap_finished_event(gpsSnapshot);
 }
 
 static void process_start_logic_no_lc(const GpsSnapshot *gpsSnapshot)

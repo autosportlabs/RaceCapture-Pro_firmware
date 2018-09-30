@@ -170,10 +170,10 @@ void lua_validate_arg_boolean_flex(lua_State *l, const int idx)
  */
 bool lua_toboolean_flex(lua_State *l, const int idx)
 {
-	if (lua_isnumber(l, idx))
-		return 0 != lua_tonumber(l, idx);
+        if (lua_isnumber(l, idx))
+                return 0 != lua_tonumber(l, idx);
 
-	return lua_toboolean(l, idx);
+        return lua_toboolean(l, idx);
 }
 
 
@@ -226,7 +226,7 @@ static int log_print(lua_State *L, bool addNewline)
         case 2:
                 lua_validate_arg_number(L, 2);
                 level = lua_tointeger(L, 2);
-                /* Break intentionally missing here */
+        /* Break intentionally missing here */
         case 1:
                 lua_validate_arg_string(L, 1);
                 msg = lua_tostring(L, 1);

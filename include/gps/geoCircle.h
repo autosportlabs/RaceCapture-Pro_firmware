@@ -30,8 +30,8 @@
 CPP_GUARD_BEGIN
 
 struct GeoCircle {
-    GeoPoint point;
-    float radius;
+        GeoPoint point;
+        float radius;
 };
 
 /**

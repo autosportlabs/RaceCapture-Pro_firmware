@@ -60,7 +60,7 @@ void rx_buff_clear(struct rx_buff *rxb)
 struct rx_buff* rx_buff_create(const size_t cap)
 {
         struct rx_buff* rxb = (struct rx_buff*)
-		calloc(1, sizeof(struct rx_buff));
+                              calloc(1, sizeof(struct rx_buff));
 
         if (!rxb)
                 goto fail_obj_alloc;
@@ -101,8 +101,8 @@ void rx_buff_destroy(struct rx_buff *rxb)
 bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
 {
         xQueueHandle h = serial_get_rx_queue(s);
-	if (!h)
-		return false;
+        if (!h)
+                return false;
 
         char c = INVALID_CHAR;
         while (rxb->idx < rxb->cap && !rxb->msg_ready) {
@@ -133,7 +133,7 @@ bool rx_buff_read(struct rx_buff *rxb, struct Serial *s, const bool echo)
                 case '\r':
                 case '\0':
                         rxb->msg_ready = true;
-                        /* Break intentionally missing here */
+                /* Break intentionally missing here */
                 default:
                         /* If we are echoing, do it */
                         if (rxb->echo)
@@ -194,12 +194,12 @@ bool rx_buff_is_overflow(struct rx_buff *rxb)
  */
 enum rx_buff_status rx_buff_get_status(struct rx_buff *rxb)
 {
-	if (rxb->msg_ready)
-		return RX_BUFF_STATUS_READY;
+        if (rxb->msg_ready)
+                return RX_BUFF_STATUS_READY;
 
-	if (rx_buff_is_overflow(rxb))
-		return RX_BUFF_STATUS_OVERFLOW;
+        if (rx_buff_is_overflow(rxb))
+                return RX_BUFF_STATUS_OVERFLOW;
 
         return rxb->idx == 0 ?
-                RX_BUFF_STATUS_EMPTY : RX_BUFF_STATUS_PARTIAL;
+               RX_BUFF_STATUS_EMPTY : RX_BUFF_STATUS_PARTIAL;
 }
