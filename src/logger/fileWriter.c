@@ -57,25 +57,25 @@ static void error_led(const bool on)
 static FRESULT flush_file_buffer(void)
 {
         while(true) {
-		size_t available = 0;
-		const void* buff =
-			ring_buffer_dma_read_init(file_buff, &available);
+                size_t available = 0;
+                const void* buff =
+                        ring_buffer_dma_read_init(file_buff, &available);
 
-		/* If nothing to write, we are done. */
-		if (!available)
-			return FR_OK;
+                /* If nothing to write, we are done. */
+                if (!available)
+                        return FR_OK;
 
-		unsigned int written = 0;
-		const FRESULT res =
-			f_write(g_logfile, buff, available, &written);
+                unsigned int written = 0;
+                const FRESULT res =
+                        f_write(g_logfile, buff, available, &written);
 
-		ring_buffer_dma_read_fini(file_buff, written);
-		if (FR_OK != res) {
-			pr_debug_int_msg("[FileWriter] f_write failed "
-					 "with status: ", (int) res);
-			error_led(true);
-			return res;
-		}
+                ring_buffer_dma_read_fini(file_buff, written);
+                if (FR_OK != res) {
+                        pr_debug_int_msg("[FileWriter] f_write failed "
+                                         "with status: ", (int) res);
+                        error_led(true);
+                        return res;
+                }
         }
 }
 
@@ -296,7 +296,7 @@ static void open_log_file(struct logging_status *ls)
         pr_debug(_RCP_BASE_FILE_ "FS init success.  Opening file...\r\n");
         // Open a file if one is set, else create a new one.
         ls->writing_status = ls->name[0] ? open_existing_log_file(ls) :
-                open_new_log_file(ls);
+                             open_new_log_file(ls);
 
         if (WRITING_INACTIVE == ls->writing_status) {
                 pr_warning_str_msg(_RCP_BASE_FILE_ "Failed to open: ", ls->name);
@@ -305,7 +305,7 @@ static void open_log_file(struct logging_status *ls)
 
         pr_info_str_msg(_RCP_BASE_FILE_ "Opened " , ls->name);
         ls->flush_tick = xTaskGetTickCount();
-	ls->last_sample_tick = 0;
+        ls->last_sample_tick = 0;
 }
 
 TESTABLE_STATIC int logging_start(struct logging_status *ls)
@@ -336,20 +336,20 @@ TESTABLE_STATIC int logging_stop(struct logging_status *ls)
 
 static int write_samples(struct logging_status *ls, const LoggerMessage *msg)
 {
-	/* Ensure the LoggerMessage we are writing is valid */
-	if (!is_sample_data_valid(msg)) {
-		pr_warning(LOG_PFX "Sample invalid.  Skipping...\r\n");
-		return 0;
-	}
+        /* Ensure the LoggerMessage we are writing is valid */
+        if (!is_sample_data_valid(msg)) {
+                pr_warning(LOG_PFX "Sample invalid.  Skipping...\r\n");
+                return 0;
+        }
 
-	/* Ensure that we don't write a sample that is older than previous */
-	if (msg->ticks < ls->last_sample_tick) {
-		pr_debug(LOG_PFX "Sample is too old.  Skipping...\r\n");
-		return 0;
-	}
-	ls->last_sample_tick = msg->ticks;
+        /* Ensure that we don't write a sample that is older than previous */
+        if (msg->ticks < ls->last_sample_tick) {
+                pr_debug(LOG_PFX "Sample is too old.  Skipping...\r\n");
+                return 0;
+        }
+        ls->last_sample_tick = msg->ticks;
 
-	int rc = 0;
+        int rc = 0;
 
         /* If we haven't written to this file yet, start with the headers */
         if (0 == ls->rows_written) {
@@ -437,19 +437,19 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 
 static void update_logger_status(struct logging_status *ls)
 {
-    switch(ls->writing_status) {
-    case WRITING_INACTIVE:
-        logging_set_status(LOGGING_STATUS_IDLE);
-        break;
-    case WRITING_ACTIVE:
-        logging_set_status(LOGGING_STATUS_WRITING);
-        break;
-    case SD_CARD_NOT_PRESENT:
-        logging_set_status(LOGGING_STATUS_CARD_NOT_PRESENT);
-        break;
-    default:
-        break;
-    }
+        switch(ls->writing_status) {
+        case WRITING_INACTIVE:
+                logging_set_status(LOGGING_STATUS_IDLE);
+                break;
+        case WRITING_ACTIVE:
+                logging_set_status(LOGGING_STATUS_WRITING);
+                break;
+        case SD_CARD_NOT_PRESENT:
+                logging_set_status(LOGGING_STATUS_CARD_NOT_PRESENT);
+                break;
+        default:
+                break;
+        }
 }
 
 static void fileWriterTask(void *params)
@@ -463,11 +463,11 @@ static void fileWriterTask(void *params)
 
                 /* Get a sample. */
                 const char status = receive_logger_message(g_LoggerMessage_queue,
-                                                           &msg, portMAX_DELAY);
+                                    &msg, portMAX_DELAY);
 
                 /* If we fail to receive for any reason, keep trying */
                 if (pdPASS != status)
-                   continue;
+                        continue;
 
                 switch (msg.type) {
                 case LoggerMessageType_Sample:

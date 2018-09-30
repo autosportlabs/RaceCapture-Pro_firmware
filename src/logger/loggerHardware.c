@@ -38,30 +38,30 @@
 
 void InitLoggerHardware()
 {
-    LoggerConfig *loggerConfig = getWorkingLoggerConfig();
-    usart_init();
-    led_init();
+        LoggerConfig *loggerConfig = getWorkingLoggerConfig();
+        usart_init();
+        led_init();
 
 #if IMU_CHANNELS > 0
-    imu_init(loggerConfig);
+        imu_init(loggerConfig);
 #endif
 #if ANALOG_CHANNELS > 0
-    ADC_init(loggerConfig);
+        ADC_init(loggerConfig);
 #endif
 #if PWM_CHANNELS > 0
-    PWM_init(loggerConfig);
+        PWM_init(loggerConfig);
 #endif
 #if GPIO_CHANNELS > 0
-    GPIO_init(loggerConfig);
+        GPIO_init(loggerConfig);
 #endif
 #if TIMER_CHANNELS > 0
-    timer_init(loggerConfig);
+        timer_init(loggerConfig);
 #endif
 #if CAN_CHANNELS > 0
-    CAN_init(loggerConfig);
+        CAN_init(loggerConfig);
 #endif
 #if SDCARD_SUPPORT
-    InitFSHardware();
+        InitFSHardware();
 #endif
 
 }

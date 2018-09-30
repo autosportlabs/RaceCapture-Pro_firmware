@@ -66,16 +66,16 @@ static int sendBtCommandWaitResponse(DeviceConfig *config, const char *cmd,
 
         serial_flush(config->serial);
         if (serial_write_s(config->serial, cmd) <= 0) {
-		pr_error("BT: Failed to write serial command\r\n");
-		return 0;
-	};
+                pr_error("BT: Failed to write serial command\r\n");
+                return 0;
+        };
 
         const int len = serial_read_line_wait(config->serial, config->buffer,
-					      config->length, wait);
-	if (len < 0) {
-		pr_error("BT: Serial device closed\r\n");
-		return 0;
-	}
+                                              config->length, wait);
+        if (len < 0) {
+                pr_error("BT: Serial device closed\r\n");
+                return 0;
+        }
 
         config->buffer[len] = 0;
 
@@ -170,7 +170,7 @@ static int bt_find_working_baud(DeviceConfig *config,
         int rate = 0;
 
         if (set_check_bt_serial_baud(config, targetBaud))
-                        rate = targetBaud;
+                rate = targetBaud;
 
         for (size_t i = 0; rate == 0 && i < sizeof(rates)/sizeof(*rates); ++i) {
                 /* Skip the baud rate if we have already tried it */

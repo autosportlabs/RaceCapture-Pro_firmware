@@ -74,8 +74,8 @@
 /* how long we sleep in the task loop if the system is not initialized */
 #define TASKS_NOT_READY_DELAY 100
 struct connection {
-	struct Serial* serial;
-	int ls_handle;
+        struct Serial* serial;
+        int ls_handle;
 };
 
 static struct {
@@ -88,11 +88,11 @@ static struct {
                 struct Serial* serial;
         } beacon;
         struct {
-            struct Serial* serial;
+                struct Serial* serial;
         } camera_control;
-	struct connection connections[EXT_CONN_MAX];
-	bool conn_check_pending;
-	xSemaphoreHandle connection_mutex;
+        struct connection connections[EXT_CONN_MAX];
+        bool conn_check_pending;
+        xSemaphoreHandle connection_mutex;
 
 } state;
 
@@ -101,11 +101,11 @@ static struct {
  */
 static struct connection* find_connection(struct Serial* serial)
 {
-	for (int i = 0; i < ARRAY_LEN(state.connections); ++i)
-		if (state.connections[i].serial == serial)
-			return  state.connections + i;
+        for (int i = 0; i < ARRAY_LEN(state.connections); ++i)
+                if (state.connections[i].serial == serial)
+                        return  state.connections + i;
 
-	return NULL;
+        return NULL;
 }
 
 /**
@@ -113,8 +113,8 @@ static struct connection* find_connection(struct Serial* serial)
  */
 static void reset_connection(struct connection* c)
 {
-	c->serial = NULL;
-	c->ls_handle = -1;
+        c->serial = NULL;
+        c->ls_handle = -1;
 }
 
 /* *** All methods that are used to generate events *** */
@@ -153,17 +153,17 @@ struct wifi_event {
 };
 
 static bool send_event(struct wifi_event* event, const char* event_name,
-		       const bool high_priority)
+                       const bool high_priority)
 {
-	const bool sent = high_priority ?
-		xQueueSendToFront(state.event_queue, event, 0) :
-		xQueueSendToBack(state.event_queue, event, 0);
+        const bool sent = high_priority ?
+                          xQueueSendToFront(state.event_queue, event, 0) :
+                          xQueueSendToBack(state.event_queue, event, 0);
 
-	if (sent)
-		return true;
+        if (sent)
+                return true;
 
-	pr_debug_str_msg(LOG_PFX "Event overflow: ", event_name);
-	return false;
+        pr_debug_str_msg(LOG_PFX "Event overflow: ", event_name);
+        return false;
 }
 
 static void new_ext_conn_cb(struct Serial *s)
@@ -174,21 +174,21 @@ static void new_ext_conn_cb(struct Serial *s)
                 .data.serial = s,
         };
 
-	send_event(&event, "New Connection", true);
+        send_event(&event, "New Connection", true);
 }
 
 static void check_connections_cb(xTimerHandle xTimer)
 {
-	if (state.conn_check_pending)
-		    return;
+        if (state.conn_check_pending)
+                return;
 
 
-	/* Send event message here to wake the task */
+        /* Send event message here to wake the task */
         struct wifi_event event = {
                 .task = TASK_CHECK_CONNECTIONS,
         };
-	if (send_event(&event, "Connection Check", true))
-		    state.conn_check_pending = true;
+        if (send_event(&event, "Connection Check", true))
+                state.conn_check_pending = true;
 }
 
 static void beacon_timer_cb(xTimerHandle xTimer)
@@ -203,9 +203,9 @@ static void beacon_timer_cb(xTimerHandle xTimer)
 
 static void wifi_sample_cb(const struct sample* sample,
                            const int tick,
-			   void* data)
+                           void* data)
 {
-	struct Serial* const serial = data;
+        struct Serial* const serial = data;
 
         /*
          * Gotta malloc a small buff b/c stuff to send. We will free this
@@ -223,72 +223,74 @@ static void wifi_sample_cb(const struct sample* sample,
         };
 
         /* Send the message here to wake the timer */
-	send_event(&event, "Sample CB", false);
+        send_event(&event, "Sample CB", false);
 }
 
 void wifi_trigger_camera(bool enabled, uint8_t make_model)
 {
         struct wifi_event event = {
-                    .task = TASK_CAMERA_CONTROL,
-                    .data.camera_control = {.camera_state = enabled,
-                    .camera_make_model = make_model},
+                .task = TASK_CAMERA_CONTROL,
+                .data.camera_control = {
+                        .camera_state = enabled,
+                        .camera_make_model = make_model
+                },
         };
 
         /* Send the message here to wake the timer */
-	send_event(&event, "Cam Ctrl", false);
+        send_event(&event, "Cam Ctrl", false);
 }
 
 /* *** Wifi Serial IOCTL Handlers *** */
 
 static enum serial_ioctl_status set_telemetry(struct connection* conn,
-					      int rate)
+                int rate)
 {
-	const char* serial_name = serial_get_name(conn->serial);
+        const char* serial_name = serial_get_name(conn->serial);
 
-	if (rate <= 0 || conn->ls_handle >= 0) {
-		pr_info_str_msg(LOG_PFX "Stopping telem stream on ",
-				serial_name);
+        if (rate <= 0 || conn->ls_handle >= 0) {
+                pr_info_str_msg(LOG_PFX "Stopping telem stream on ",
+                                serial_name);
 
-		if (!logger_sample_destroy_callback(conn->ls_handle))
-			return SERIAL_IOCTL_STATUS_ERR;
+                if (!logger_sample_destroy_callback(conn->ls_handle))
+                        return SERIAL_IOCTL_STATUS_ERR;
 
-		conn->ls_handle = -1;
-	}
+                conn->ls_handle = -1;
+        }
 
-	if (rate > 0) {
-		pr_info_str_msg(LOG_PFX "Starting telem stream on ",
-				serial_name);
+        if (rate > 0) {
+                pr_info_str_msg(LOG_PFX "Starting telem stream on ",
+                                serial_name);
 
-		if (rate > WIFI_MAX_SAMPLE_RATE) {
-			pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
-					"high.  Reducing to ",
-					WIFI_MAX_SAMPLE_RATE);
-			rate = WIFI_MAX_SAMPLE_RATE;
-		}
+                if (rate > WIFI_MAX_SAMPLE_RATE) {
+                        pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
+                                        "high.  Reducing to ",
+                                        WIFI_MAX_SAMPLE_RATE);
+                        rate = WIFI_MAX_SAMPLE_RATE;
+                }
 
-		conn->ls_handle =
-			logger_sample_create_callback(wifi_sample_cb,
-						      rate, conn->serial);
+                conn->ls_handle =
+                        logger_sample_create_callback(wifi_sample_cb,
+                                                      rate, conn->serial);
 
-		if (conn->ls_handle < 0)
-			return SERIAL_IOCTL_STATUS_ERR;
-	}
+                if (conn->ls_handle < 0)
+                        return SERIAL_IOCTL_STATUS_ERR;
+        }
 
-	return SERIAL_IOCTL_STATUS_OK;
+        return SERIAL_IOCTL_STATUS_OK;
 }
 
 static enum serial_ioctl_status wifi_serial_ioctl(struct Serial* serial,
-						  unsigned long req, void* argp)
+                unsigned long req, void* argp)
 {
-	struct connection* conn = find_connection(serial);
-	if (!conn) {
-		pr_warning(LOG_PFX "Serial device not under our control\r\n");
-		return SERIAL_IOCTL_STATUS_ERR;
-	}
+        struct connection* conn = find_connection(serial);
+        if (!conn) {
+                pr_warning(LOG_PFX "Serial device not under our control\r\n");
+                return SERIAL_IOCTL_STATUS_ERR;
+        }
 
         switch(req) {
-	case SERIAL_IOCTL_TELEMETRY:
-		return set_telemetry(conn, (int) (long) argp);
+        case SERIAL_IOCTL_TELEMETRY:
+                return set_telemetry(conn, (int) (long) argp);
         default:
                 pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
                                    (int) req);
@@ -335,7 +337,7 @@ static void process_ready_msg(struct Serial* s)
  */
 static bool process_rx_msg(struct Serial* s)
 {
-	bool msg_handled = false;
+        bool msg_handled = false;
         struct rx_buff* const rxb = state.rx_msgs.rxb;
 
         while(true) {
@@ -353,27 +355,27 @@ static bool process_rx_msg(struct Serial* s)
 
                         /* If here, then rx timeout. */
                         pr_warning(LOG_PFX "Rx message timeout\r\n");
-			const char* buff = rx_buff_get_msg(rxb);
-			pr_debug_int_msg(LOG_PFX "Buff Length: ", strlen(buff));
-			pr_debug_str_msg(LOG_PFX "Buff contents: ", buff);
+                        const char* buff = rx_buff_get_msg(rxb);
+                        pr_debug_int_msg(LOG_PFX "Buff Length: ", strlen(buff));
+                        pr_debug_str_msg(LOG_PFX "Buff contents: ", buff);
                         goto rx_done;
                 case RX_BUFF_STATUS_READY:
                         /* A message awaits us */
                         process_ready_msg(s);
-			msg_handled = true;
+                        msg_handled = true;
                         goto rx_done;
-		case RX_BUFF_STATUS_OVERFLOW:
-			/* Something has gone wrong.  Dump it and move along */
-			pr_warning(LOG_PFX "RX buffer overflow. "
-				   "Dumping and moving on...\r\n");
-			goto rx_done;
+                case RX_BUFF_STATUS_OVERFLOW:
+                        /* Something has gone wrong.  Dump it and move along */
+                        pr_warning(LOG_PFX "RX buffer overflow. "
+                                   "Dumping and moving on...\r\n");
+                        goto rx_done;
                 }
         }
 
 rx_done:
         rx_buff_clear(rxb);
         state.rx_msgs.timeout = 0;
-	return msg_handled;
+        return msg_handled;
 }
 
 /**
@@ -383,72 +385,72 @@ rx_done:
  */
 static void check_connections()
 {
-	state.conn_check_pending = false;
+        state.conn_check_pending = false;
 
-	bool msg_handled = false;
-	for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
-		struct connection* conn = state.connections + i;
-		struct Serial* serial = conn->serial;
-		if (!serial)
-			continue;
+        bool msg_handled = false;
+        for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
+                struct connection* conn = state.connections + i;
+                struct Serial* serial = conn->serial;
+                if (!serial)
+                        continue;
 
-		/* Check if serial is closed.  If so, handle it */
-		if (!serial_is_connected(serial)) {
-			pr_info_str_msg(
-				LOG_PFX "Closing external connection: ",
-				serial_get_name(serial));
-			set_telemetry(conn, 0);
-			serial_close(serial);
-			reset_connection(conn);
-			continue;
-		}
+                /* Check if serial is closed.  If so, handle it */
+                if (!serial_is_connected(serial)) {
+                        pr_info_str_msg(
+                                LOG_PFX "Closing external connection: ",
+                                serial_get_name(serial));
+                        set_telemetry(conn, 0);
+                        serial_close(serial);
+                        reset_connection(conn);
+                        continue;
+                }
 
-		msg_handled |= process_rx_msg(serial);
-	}
+                msg_handled |= process_rx_msg(serial);
+        }
 
-	/*
-	 * Check if a message was handled.  If so then schedule again.
-	 * We do this to ensure we don't starve the event queue of resources
-	 * since this can take a while to do.
-	 */
-	if (msg_handled)
-		check_connections_cb(NULL);
+        /*
+         * Check if a message was handled.  If so then schedule again.
+         * We do this to ensure we don't starve the event queue of resources
+         * since this can take a while to do.
+         */
+        if (msg_handled)
+                check_connections_cb(NULL);
 }
 
 static void process_new_connection(struct Serial *s)
 {
-	/* Find an empy connection slot.  If none, close it */
-	for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
-		struct connection* conn = state.connections + i;
-		if (conn->serial)
-			continue;
+        /* Find an empy connection slot.  If none, close it */
+        for (int i = 0; i < ARRAY_LEN(state.connections); ++i) {
+                struct connection* conn = state.connections + i;
+                if (conn->serial)
+                        continue;
 
-		/*
-		 * If here, found slot. Set the serial IOCTL handler here
-		 * b/c this is managing task
-		 */
-		pr_info_str_msg(LOG_PFX "New external connection: ",
-				serial_get_name(s));
-		pr_debug_int_msg(LOG_PFX "External conn slot: ", i);
-		serial_set_ioctl_cb(s, wifi_serial_ioctl);
+                /*
+                 * If here, found slot. Set the serial IOCTL handler here
+                 * b/c this is managing task
+                 */
+                pr_info_str_msg(LOG_PFX "New external connection: ",
+                                serial_get_name(s));
+                pr_debug_int_msg(LOG_PFX "External conn slot: ", i);
+                serial_set_ioctl_cb(s, wifi_serial_ioctl);
 
-		reset_connection(conn);
-		conn->serial = s;
+                reset_connection(conn);
+                conn->serial = s;
 
-		return;
-	}
+                return;
+        }
 
-	/* If here, no slot found.  Close the Serial port */
-	pr_warning(LOG_PFX "Max external connections reached. Closing\r\n");
-	serial_close(s);
-	esp8266_drv_close(s);
+        /* If here, no slot found.  Close the Serial port */
+        pr_warning(LOG_PFX "Max external connections reached. Closing\r\n");
+        serial_close(s);
+        esp8266_drv_close(s);
 }
 
 static bool is_valid_ipv4(const char *address)
 {
         return address &&
-                *address &&
-                !(STR_EQ(address, IPV4_NO_IP_STR));
+               *address &&
+               !(STR_EQ(address, IPV4_NO_IP_STR));
 }
 
 /* *** All methods that are used to handle sending beacons *** */
@@ -488,17 +490,17 @@ static void do_beacon()
                 return;
         }
 
-	/*
-	 * Check if the socket is closed.  If so, whine about it then move
-	 * on and try re-opening it.
-	 */
-    xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
+        /*
+         * Check if the socket is closed.  If so, whine about it then move
+         * on and try re-opening it.
+         */
+        xSemaphoreTake(state.connection_mutex, portMAX_DELAY);
 
-	if (state.beacon.serial &&
-	    !serial_is_connected(state.beacon.serial)) {
-		pr_warning("Beacon socket closed!  WTF!\r\n");
-		state.beacon.serial = NULL;
-	}
+        if (state.beacon.serial &&
+            !serial_is_connected(state.beacon.serial)) {
+                pr_warning("Beacon socket closed!  WTF!\r\n");
+                state.beacon.serial = NULL;
+        }
 
         /*
          * If here then we have at least one IP.  Send the beacon.  Now
@@ -507,9 +509,9 @@ static void do_beacon()
          */
         if (NULL == state.beacon.serial) {
                 state.beacon.serial = esp8266_drv_connect(
-                            PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
-                            RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
-                            BEACON_SERIAL_BUFF_TX_SIZE);
+                                              PROTOCOL_UDP,IPV4_BROADCAST_ADDRESS_STR,
+                                              RCP_SERVICE_PORT, BEACON_SERIAL_BUFF_RX_SIZE,
+                                              BEACON_SERIAL_BUFF_TX_SIZE);
         }
 
         struct Serial* serial = state.beacon.serial;
@@ -540,12 +542,11 @@ do_beacon_exit:
 
 static void send_camera_control_gopro4_5(struct Serial* serial, const bool enabled)
 {
-    if (enabled) {
-            serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=1 HTTP/1.0\r\n\r\n");
-    }
-    else {
-            serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=0 HTTP/1.0\r\n\r\n");
-    }
+        if (enabled) {
+                serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=1 HTTP/1.0\r\n\r\n");
+        } else {
+                serial_write_s(serial, "GET /gp/gpControl/command/shutter?p=0 HTTP/1.0\r\n\r\n");
+        }
 }
 
 
@@ -554,27 +555,27 @@ static void send_camera_control_gopro4_5(struct Serial* serial, const bool enabl
  */
 static void send_camera_control_gopro2_3(struct Serial* serial, const bool enabled)
 {
-    static const char preamble[] = "GET /bacpac/SH?t=";
-    static const char epilogue[] = " HTTP/1.0\r\n\r\n";
-    static const char shutter_param[] = "&p=";
-    static const int command_size = sizeof(preamble) + WIFI_PASSWD_MAX_LEN + sizeof(shutter_param) + 2 + sizeof(epilogue) + 5;
-    char command[command_size];
+        static const char preamble[] = "GET /bacpac/SH?t=";
+        static const char epilogue[] = " HTTP/1.0\r\n\r\n";
+        static const char shutter_param[] = "&p=";
+        static const int command_size = sizeof(preamble) + WIFI_PASSWD_MAX_LEN + sizeof(shutter_param) + 2 + sizeof(epilogue) + 5;
+        char command[command_size];
 
-    snprintf(command, ARRAY_LEN(command), "%s%s%s%s%s",
-             preamble,
-             getWorkingLoggerConfig()->ConnectivityConfigs.wifi.client.passwd,
-             shutter_param,
-             enabled ? "%01" : "%00",
-             epilogue);
+        snprintf(command, ARRAY_LEN(command), "%s%s%s%s%s",
+                 preamble,
+                 getWorkingLoggerConfig()->ConnectivityConfigs.wifi.client.passwd,
+                 shutter_param,
+                 enabled ? "%01" : "%00",
+                 epilogue);
 
-    serial_write_s(serial, command);
+        serial_write_s(serial, command);
 }
 
 static void do_camera_control(struct wifi_camera_control *camera_control)
 {
         const struct esp8266_ipv4_info* client_ipv4 = get_client_ipv4_info();
 
-        if (!is_valid_ipv4(client_ipv4->address)){
+        if (!is_valid_ipv4(client_ipv4->address)) {
                 /* Then don't bother since we don't have a clinet address */
                 pr_warning(LOG_PFX "Cannot control camera: WiFi Client not connected\r\n");
                 return;
@@ -590,7 +591,7 @@ static void do_camera_control(struct wifi_camera_control *camera_control)
 
         if (state.camera_control.serial &&
             !serial_is_connected(state.camera_control.serial)) {
-            state.camera_control.serial = NULL;
+                state.camera_control.serial = NULL;
         }
 
         /*
@@ -600,9 +601,9 @@ static void do_camera_control(struct wifi_camera_control *camera_control)
          */
         if (NULL == state.camera_control.serial) {
                 state.camera_control.serial = esp8266_drv_connect(
-                            PROTOCOL_TCP, "10.5.5.9",
-                            80, 256,
-                            256);
+                                                      PROTOCOL_TCP, "10.5.5.9",
+                                                      80, 256,
+                                                      256);
         }
 
         struct Serial* serial = state.camera_control.serial;
@@ -612,15 +613,15 @@ static void do_camera_control(struct wifi_camera_control *camera_control)
         }
 
         switch(camera_control->camera_make_model) {
-                case CAMERA_MAKEMODEL_GOPRO_HERO2_3:
-                        send_camera_control_gopro2_3(serial, camera_control->camera_state);
-                        break;
-                case CAMERA_MAKEMODEL_GOPRO_HERO4_5:
-                        send_camera_control_gopro4_5(serial, camera_control->camera_state);
-                        break;
-                default:
-                        pr_warning_int_msg(LOG_PFX "Invalid camera make/model: ", camera_control->camera_make_model);
-                        break;
+        case CAMERA_MAKEMODEL_GOPRO_HERO2_3:
+                send_camera_control_gopro2_3(serial, camera_control->camera_state);
+                break;
+        case CAMERA_MAKEMODEL_GOPRO_HERO4_5:
+                send_camera_control_gopro4_5(serial, camera_control->camera_state);
+                break;
+        default:
+                pr_warning_int_msg(LOG_PFX "Invalid camera make/model: ", camera_control->camera_make_model);
+                break;
         }
         pr_info_str_msg(LOG_PFX "Camera control: ", camera_control->camera_state ? "starting" : "stopping");
 
@@ -644,11 +645,11 @@ static void process_sample(struct wifi_sample_data* data)
                 return;
         }
 
-	/* Only try to send if our Serial device is connected */
-	if (serial_is_connected(serial)) {
-		api_send_sample_record(serial, sample, ticks, meta);
-		put_crlf(serial);
-	}
+        /* Only try to send if our Serial device is connected */
+        if (serial_is_connected(serial)) {
+                api_send_sample_record(serial, sample, ticks, meta);
+                put_crlf(serial);
+        }
 }
 
 /* *** Task loop and all public methods *** */
@@ -691,12 +692,12 @@ static void _task(void *params)
 }
 
 static bool create_periodic_timer(const char* name, const size_t period_ms,
-				  tmrTIMER_CALLBACK cb)
+                                  tmrTIMER_CALLBACK cb)
 {
-	const size_t timer_ticks = msToTicks(period_ms);
+        const size_t timer_ticks = msToTicks(period_ms);
         const signed char* timer_name = (signed char*) name;
         xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
-                                                 true, NULL, cb);
+                                    true, NULL, cb);
         if (!timer_handle)
                 return false;
 
@@ -710,7 +711,7 @@ bool wifi_init_task(const int wifi_task_priority,
 {
         /* Do not initialze if the entire WiFi subsystem is disabled */
         if (!getWorkingLoggerConfig()->ConnectivityConfigs.wifi.active)
-		return false;
+                return false;
 
         pr_info(LOG_PFX "Initializing...\r\n");
 
@@ -734,28 +735,28 @@ bool wifi_init_task(const int wifi_task_priority,
         if (!esp8266_drv_init(s, wifi_drv_priority, new_ext_conn_cb))
                 goto init_failed;
 
-	/* Initialize our connection states */
-	for (int i = 0; i < EXT_CONN_MAX; ++i)
-		reset_connection(state.connections + i);
+        /* Initialize our connection states */
+        for (int i = 0; i < EXT_CONN_MAX; ++i)
+                reset_connection(state.connections + i);
 
         static const signed char task_name[] = THREAD_NAME;
         const size_t stack_size = STACK_SIZE;
         xTaskCreate(_task, task_name, stack_size, NULL,
-		    wifi_task_priority, NULL);
+                    wifi_task_priority, NULL);
 
-	if (!create_periodic_timer("WiFi Beacon Timer", BEACON_PERIOD_MS,
-				   beacon_timer_cb))
-		goto init_failed;
+        if (!create_periodic_timer("WiFi Beacon Timer", BEACON_PERIOD_MS,
+                                   beacon_timer_cb))
+                goto init_failed;
 
-	if (!create_periodic_timer("WiFi Connections Timer",
-				   EXT_CONN_PERIOD_MS, check_connections_cb))
-		goto init_failed;
+        if (!create_periodic_timer("WiFi Connections Timer",
+                                   EXT_CONN_PERIOD_MS, check_connections_cb))
+                goto init_failed;
 
         return true;
 
 init_failed:
-	pr_warning(LOG_PFX "Initialization failed!\r\n");
-	return false;
+        pr_warning(LOG_PFX "Initialization failed!\r\n");
+        return false;
 }
 
 
@@ -800,7 +801,7 @@ void wifi_reset_config(struct wifi_cfg *cfg)
         const char* prefix = FRIENDLY_DEVICE_NAME" ";
         const int cpu_serial_len = strlen(cpu_serial);
         int offset = cpu_serial_len - ARRAY_LEN(cfg->ap.ssid) +
-                strlen(prefix) + 1;
+                     strlen(prefix) + 1;
         if (offset < 0)
                 offset = 0;
         if (offset > cpu_serial_len)
@@ -825,10 +826,10 @@ void wifi_reset_config(struct wifi_cfg *cfg)
 bool wifi_validate_ap_config(const struct wifi_ap_cfg *wac)
 {
         return NULL != wac &&
-                wac->channel > 0 &&
-                wac->channel <= WIFI_MAX_CHANNEL &&
-                wac->encryption >= 0 &&
-                wac->encryption <= __ESP8266_ENCRYPTION_MAX;
+               wac->channel > 0 &&
+               wac->channel <= WIFI_MAX_CHANNEL &&
+               wac->encryption >= 0 &&
+               wac->encryption <= __ESP8266_ENCRYPTION_MAX;
 }
 
 /**

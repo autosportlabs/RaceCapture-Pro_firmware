@@ -54,8 +54,8 @@
 
 __attribute__((aligned (4)))
 static const struct app_info_block info_block = {
-    .magic_number = APP_INFO_MAGIC_NUMBER,
-    .info_crc = 0xDEADBEEF,
+        .magic_number = APP_INFO_MAGIC_NUMBER,
+        .info_crc = 0xDEADBEEF,
 };
 
 /*
@@ -105,7 +105,7 @@ void setupTask(void *param)
 #endif
 
         /* Removes this setup task from the scheduler */
-	pr_info("[main] Setup Task complete!\r\n");
+        pr_info("[main] Setup Task complete!\r\n");
         vTaskDelete(NULL);
 }
 

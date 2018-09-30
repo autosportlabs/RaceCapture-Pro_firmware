@@ -83,13 +83,13 @@ CPP_GUARD_BEGIN
 #define DEFAULT_CAN_MAPPING_PRECISION       5
 
 enum TimeType {
-    TimeType_Uptime,
-    TimeType_UtcMillis,
+        TimeType_Uptime,
+        TimeType_UtcMillis,
 };
 
 struct TimeConfig {
-    ChannelConfig cfg;
-    enum TimeType tt;
+        ChannelConfig cfg;
+        enum TimeType tt;
 };
 
 #define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
@@ -118,18 +118,18 @@ struct TimeConfig {
 #define DEFAULT_VOLTAGE_SCALING_PRECISION   2
 
 typedef struct _ScalingMap {
-    float rawValues[ANALOG_SCALING_BINS];
-    float scaledValues[ANALOG_SCALING_BINS];
+        float rawValues[ANALOG_SCALING_BINS];
+        float scaledValues[ANALOG_SCALING_BINS];
 } ScalingMap;
 
 typedef struct _ADCConfig {
-    ChannelConfig cfg;
-    float linearScaling;
-    float linearOffset;
-    float filterAlpha;
-    float calibration;
-    unsigned char scalingMode;
-    ScalingMap scalingMap;
+        ChannelConfig cfg;
+        float linearScaling;
+        float linearOffset;
+        float filterAlpha;
+        float calibration;
+        unsigned char scalingMode;
+        ScalingMap scalingMap;
 } ADCConfig;
 
 #define DEFAULT_LINEAR_SCALING (1)
@@ -165,8 +165,8 @@ typedef struct _ADCConfig {
          }
 
 typedef struct _GPIOConfig {
-    ChannelConfig cfg;
-    unsigned char mode;
+        ChannelConfig cfg;
+        unsigned char mode;
 } GPIOConfig;
 
 #define CONFIG_GPIO_IN  					0
@@ -197,11 +197,11 @@ enum imu_channel {
 };
 
 typedef struct _ImuConfig {
-    ChannelConfig cfg;
-    enum imu_mode mode;
-    enum imu_channel physicalChannel;
-    signed short zeroValue;
-    float filterAlpha;
+        ChannelConfig cfg;
+        enum imu_mode mode;
+        enum imu_channel physicalChannel;
+        signed short zeroValue;
+        float filterAlpha;
 } ImuConfig;
 
 /*
@@ -241,11 +241,11 @@ typedef struct _ImuConfig {
                 }
 
 typedef struct _PWMConfig {
-    ChannelConfig cfg;
-    unsigned char outputMode;
-    unsigned char loggingMode;
-    unsigned char startupDutyCycle;
-    unsigned short startupPeriod;
+        ChannelConfig cfg;
+        unsigned char outputMode;
+        unsigned char loggingMode;
+        unsigned char startupDutyCycle;
+        unsigned short startupPeriod;
 } PWMConfig;
 
 /// PWM frequency in Hz.
@@ -280,10 +280,10 @@ typedef struct _PWMConfig {
 #define DEFAULT_CAN_BAUD_RATE 500000
 
 typedef struct _CANConfig {
-    unsigned char enabled;
-    int baud[CONFIG_CAN_CHANNELS];
+        unsigned char enabled;
+        int baud[CONFIG_CAN_CHANNELS];
 #if CAN_SW_TERMINATION == true
-    bool termination[CONFIG_CAN_CHANNELS];
+        bool termination[CONFIG_CAN_CHANNELS];
 #endif
 } CANConfig;
 
@@ -292,108 +292,108 @@ typedef struct _CANConfig {
 #define MAX_CAN_MAPPING_LENGTH_BYTES 4
 
 enum CANMappingEndian {
-    CANMappingEndian_Big = 0,
-    CANMappingEndian_Little
+        CANMappingEndian_Big = 0,
+        CANMappingEndian_Little
 };
 
 enum CANMappingType {
-    CANMappingType_unsigned = 0,
-    CANMappingType_signed,
-    CANMappingType_IEEE754,
-    CANMappingType_sign_magnitude,
-    CANMappingType_ENUM_COUNT
+        CANMappingType_unsigned = 0,
+        CANMappingType_signed,
+        CANMappingType_IEEE754,
+        CANMappingType_sign_magnitude,
+        CANMappingType_ENUM_COUNT
 };
 
 
 typedef struct _CANMapping {
-    /* The standard channel configuration */
-    ChannelConfig channel_cfg;
+        /* The standard channel configuration */
+        ChannelConfig channel_cfg;
 
-    /* CAN ID to match this mapping */
-    uint32_t can_id;
+        /* CAN ID to match this mapping */
+        uint32_t can_id;
 
-    /* mask to apply to ID */
-    uint32_t can_mask;
+        /* mask to apply to ID */
+        uint32_t can_mask;
 
-    /* multiplier for conversion formula */
-    float multiplier;
+        /* multiplier for conversion formula */
+        float multiplier;
 
-    /* divider for conversion formula */
-    float divider;
+        /* divider for conversion formula */
+        float divider;
 
-    /* adder for conversion formula */
-    float adder;
+        /* adder for conversion formula */
+        float adder;
 
-    /* flag to indicate bit mode or byte mode for offset and length */
-    bool bit_mode;
+        /* flag to indicate bit mode or byte mode for offset and length */
+        bool bit_mode;
 
-    /* indicates the encoding of the raw data type: unsigned, signed, IEEE 754 floating point */
-    enum CANMappingType type;
+        /* indicates the encoding of the raw data type: unsigned, signed, IEEE 754 floating point */
+        enum CANMappingType type;
 
-    /* the can bus we expect the data to show up on */
-    uint8_t can_channel;
+        /* the can bus we expect the data to show up on */
+        uint8_t can_channel;
 
-    /* indicates endian-ness for multi-byte values */
-    bool big_endian;
+        /* indicates endian-ness for multi-byte values */
+        bool big_endian;
 
-    /* byte or bit offset of the data to extract within the CAN message */
-    uint8_t offset;
+        /* byte or bit offset of the data to extract within the CAN message */
+        uint8_t offset;
 
-    /* byte or bit length of the data to extract within the CAN message */
-    uint8_t length;
+        /* byte or bit length of the data to extract within the CAN message */
+        uint8_t length;
 
-    /* the conversion filter to apply to quickly convert units without changing mapping */
-    uint8_t conversion_filter_id;
+        /* the conversion filter to apply to quickly convert units without changing mapping */
+        uint8_t conversion_filter_id;
 
-    /* sub ID index. If defined (>=0) then this uses the first byte to mach on a sub address */
-    int8_t sub_id;
+        /* sub ID index. If defined (>=0) then this uses the first byte to mach on a sub address */
+        int8_t sub_id;
 } CANMapping;
 
 typedef struct _CANChannel {
-    /* The standard channel configuration */
-    CANMapping mapping;
+        /* The standard channel configuration */
+        CANMapping mapping;
 } CANChannel;
 
 typedef struct _CANChannelConfig {
-    /* all available CAN mappings */
-    CANChannel can_channels[CONFIG_CAN_MAPPINGS];
-    /* globally enables/disables CAN mappings */
-    uint8_t enabled;
-    /* number of mappings set within configuration */
-    uint16_t enabled_mappings;
+        /* all available CAN mappings */
+        CANChannel can_channels[CONFIG_CAN_MAPPINGS];
+        /* globally enables/disables CAN mappings */
+        uint8_t enabled;
+        /* number of mappings set within configuration */
+        uint16_t enabled_mappings;
 } CANChannelConfig;
 
 
 typedef struct _PidConfig {
-    CANMapping mapping;
+        CANMapping mapping;
 
-    /* flag for passive mode where we only listen for OBDII PID responses */
-    bool passive;
-    /* The OBDII mode specified in the query */
-    uint8_t mode;
+        /* flag for passive mode where we only listen for OBDII PID responses */
+        bool passive;
+        /* The OBDII mode specified in the query */
+        uint8_t mode;
 
-    /* The OBDII PID to query */
-    uint32_t pid;
+        /* The OBDII PID to query */
+        uint32_t pid;
 } PidConfig;
 
 
 typedef struct _OBD2Config {
-    unsigned char enabled;
-    unsigned short enabledPids;
-    PidConfig pids[CONFIG_OBD2_CHANNELS];
+        unsigned char enabled;
+        unsigned short enabledPids;
+        PidConfig pids[CONFIG_OBD2_CHANNELS];
 } OBD2Config;
 
 typedef struct _GPSConfig {
 #if GPS_HARDWARE_SUPPORT
-    ChannelConfig latitude;
-    ChannelConfig longitude;
-    ChannelConfig speed;
-    ChannelConfig altitude;
-    ChannelConfig satellites;
-    ChannelConfig quality;
-    ChannelConfig DOP;
+        ChannelConfig latitude;
+        ChannelConfig longitude;
+        ChannelConfig speed;
+        ChannelConfig altitude;
+        ChannelConfig satellites;
+        ChannelConfig quality;
+        ChannelConfig DOP;
 #endif
-    ChannelConfig distance;
+        ChannelConfig distance;
 } GPSConfig;
 
 #define DEFAULT_GPS_SAMPLE_RATE SAMPLE_10Hz
@@ -425,13 +425,13 @@ typedef struct _GPSConfig {
 #endif
 
 typedef struct _LapConfig {
-    ChannelConfig lapCountCfg;
-    ChannelConfig lapTimeCfg;
-    ChannelConfig sectorCfg;
-    ChannelConfig sectorTimeCfg;
-    ChannelConfig predTimeCfg;
-    ChannelConfig elapsed_time_cfg;
-    ChannelConfig current_lap_cfg;
+        ChannelConfig lapCountCfg;
+        ChannelConfig lapTimeCfg;
+        ChannelConfig sectorCfg;
+        ChannelConfig sectorTimeCfg;
+        ChannelConfig predTimeCfg;
+        ChannelConfig elapsed_time_cfg;
+        ChannelConfig current_lap_cfg;
 } LapConfig;
 
 #define DEFAULT_LAPSTATS_SAMPLE_RATE SAMPLE_10Hz
@@ -455,9 +455,9 @@ typedef struct _LapConfig {
                         }
 
 typedef struct _TrackConfig {
-    float radius;
-    unsigned char auto_detect;
-    Track track;
+        float radius;
+        unsigned char auto_detect;
+        Track track;
 } TrackConfig;
 
 #define BT_DEVICE_NAME_LENGTH 21
@@ -523,72 +523,72 @@ struct logging_config {
 };
 
 typedef struct _LoggerConfig {
-    /* The size of this logger config struct */
-    size_t config_size;
+        /* The size of this logger config struct */
+        size_t config_size;
 
-    /* stores the version of this firmware */
-    VersionInfo RcpVersionInfo;
+        /* stores the version of this firmware */
+        VersionInfo RcpVersionInfo;
 
-    // Time Config
-    struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
+        // Time Config
+        struct TimeConfig TimeConfigs[CONFIG_TIME_CHANNELS];
 
-    //ADC Calibrations
+        //ADC Calibrations
 #if ANALOG_CHANNELS > 0
-    ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
+        ADCConfig ADCConfigs[CONFIG_ADC_CHANNELS];
 #endif
 
 #if PWM_CHANNELS > 0
-    //PWM configuration
-    //PWM/Analog out configurations
-    unsigned short PWMClockFrequency;
-    PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
+        //PWM configuration
+        //PWM/Analog out configurations
+        unsigned short PWMClockFrequency;
+        PWMConfig PWMConfigs[CONFIG_PWM_CHANNELS];
 #endif
 
 #if GPIO_CHANNELS > 1
-    //GPIO configurations
-    GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
+        //GPIO configurations
+        GPIOConfig GPIOConfigs[CONFIG_GPIO_CHANNELS];
 #endif
 
 #if TIMER_CHANNELS > 0
-    //Timer Configurations
-    TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
+        //Timer Configurations
+        TimerConfig TimerConfigs[CONFIG_TIMER_CHANNELS];
 #endif
 
 #if IMU_CHANNELS > 0
-    //IMU Configurations
-    ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+        //IMU Configurations
+        ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
 #endif
 
-    //CAN Configuration
-    CANConfig CanConfig;
+        //CAN Configuration
+        CANConfig CanConfig;
 
-    CANChannelConfig can_channel_cfg;
+        CANChannelConfig can_channel_cfg;
 
-    //OBD2 Config
-    OBD2Config OBD2Configs;
+        //OBD2 Config
+        OBD2Config OBD2Configs;
 
-    //GPS Configuration
-    GPSConfig GPSConfigs;
+        //GPS Configuration
+        GPSConfig GPSConfigs;
 
-    //Lap Configuration
-    LapConfig LapConfigs;
+        //Lap Configuration
+        LapConfig LapConfigs;
 
-    //Track configuration
-    TrackConfig TrackConfigs;
+        //Track configuration
+        TrackConfig TrackConfigs;
 
-    //Connectivity Configuration
-    ConnectivityConfig ConnectivityConfigs;
+        //Connectivity Configuration
+        ConnectivityConfig ConnectivityConfigs;
 
-    struct logging_config logging_cfg;
+        struct logging_config logging_cfg;
 #if SDCARD_SUPPORT
-    struct auto_logger_config auto_logger_cfg;
+        struct auto_logger_config auto_logger_cfg;
 #endif
 
 #if CAMERA_CONTROL
-    struct camera_control_config camera_control_cfg;
+        struct camera_control_config camera_control_cfg;
 #endif
-    //Padding data to accommodate flash routine
-    char padding_data[FLASH_PAGE_SIZE];
+        //Padding data to accommodate flash routine
+        char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
 
 

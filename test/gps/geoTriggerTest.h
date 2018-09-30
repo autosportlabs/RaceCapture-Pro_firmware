@@ -25,18 +25,18 @@
 
 class GeoTriggerTest : public CppUnit::TestFixture
 {
-    CPPUNIT_TEST_SUITE( GeoTriggerTest );
-    CPPUNIT_TEST( testShouldTrigger );
-    CPPUNIT_TEST( testNoTrigger );
-    CPPUNIT_TEST( testReset );
-    CPPUNIT_TEST_SUITE_END();
+        CPPUNIT_TEST_SUITE( GeoTriggerTest );
+        CPPUNIT_TEST( testShouldTrigger );
+        CPPUNIT_TEST( testNoTrigger );
+        CPPUNIT_TEST( testReset );
+        CPPUNIT_TEST_SUITE_END();
 
 public:
-    void setUp();
-    void tearDown();
-    void testShouldTrigger();
-    void testNoTrigger();
-    void testReset();
+        void setUp();
+        void tearDown();
+        void testShouldTrigger();
+        void testNoTrigger();
+        void testReset();
 };
 
 

@@ -31,21 +31,21 @@
 CPP_GUARD_BEGIN
 
 enum GpsSignalQuality {
-    GPS_QUALITY_NO_FIX = 0,
-    GPS_QUALITY_2D = 1,
-    GPS_QUALITY_3D = 2,
-    GPS_QUALITY_3D_DGNSS = 3
+        GPS_QUALITY_NO_FIX = 0,
+        GPS_QUALITY_2D = 1,
+        GPS_QUALITY_3D = 2,
+        GPS_QUALITY_3D_DGNSS = 3
 };
 
 typedef struct _GpsSample {
-    enum GpsSignalQuality quality;
-    GeoPoint point;
-    millis_t time;
-    float speed;
-    float altitude;
-    uint8_t satellites;
-    uint8_t fixMode;
-    float DOP;
+        enum GpsSignalQuality quality;
+        GeoPoint point;
+        millis_t time;
+        float speed;
+        float altitude;
+        uint8_t satellites;
+        uint8_t fixMode;
+        float DOP;
 } GpsSample;
 
 typedef struct _GpsSnapshot {
@@ -57,9 +57,9 @@ typedef struct _GpsSnapshot {
 } GpsSnapshot;
 
 typedef enum {
-    GPS_STATUS_NOT_INIT = 0,
-    GPS_STATUS_PROVISIONED,
-    GPS_STATUS_ERROR
+        GPS_STATUS_NOT_INIT = 0,
+        GPS_STATUS_PROVISIONED,
+        GPS_STATUS_ERROR
 } gps_status_t;
 
 gps_status_t GPS_getStatus();

@@ -38,7 +38,7 @@
 void panic(const enum panic_cause cause)
 {
         taskDISABLE_INTERRUPTS();
-	led_device_set_all(false);
+        led_device_set_all(false);
 
         led_enable(LED_ERROR);
         for(;;) {
@@ -101,11 +101,11 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
  */
 void assert_failed(uint8_t* file, uint32_t line)
 {
-	pr_error("ASSERTION Failure\r\n");
-	panic(PANIC_CAUSE_ASSERT);
+        pr_error("ASSERTION Failure\r\n");
+        panic(PANIC_CAUSE_ASSERT);
 }
 
 void HardFault_Handler()
 {
-	panic(PANIC_CAUSE_ASSERT);
+        panic(PANIC_CAUSE_ASSERT);
 }

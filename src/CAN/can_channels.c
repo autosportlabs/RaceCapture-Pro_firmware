@@ -29,26 +29,27 @@
 
 /* manages the running state of the CAN channels*/
 struct CANState {
-		/* CAN bus channels current channel values */
-		float * CAN_current_values;
+        /* CAN bus channels current channel values */
+        float * CAN_current_values;
 
-		/* flag to indicate if state is stale */
-		bool stale;
+        /* flag to indicate if state is stale */
+        bool stale;
 };
 
 static struct CANState can_state = {0};
 
 void CAN_state_stale(void)
 {
-	can_state.stale = true;
+        can_state.stale = true;
 }
 
 bool CAN_is_state_stale(void)
 {
-	return can_state.stale;
+        return can_state.stale;
 }
 
-bool CAN_init_current_values(size_t values) {
+bool CAN_init_current_values(size_t values)
+{
         if (can_state.CAN_current_values != NULL)
                 portFree(can_state.CAN_current_values);
 
@@ -63,7 +64,8 @@ bool CAN_init_current_values(size_t values) {
         return can_state.CAN_current_values != NULL;
 }
 
-float CAN_get_current_channel_value(int index) {
+float CAN_get_current_channel_value(int index)
+{
         if (can_state.CAN_current_values == NULL)
                 return 0;
         return can_state.CAN_current_values[index];
@@ -92,5 +94,5 @@ void update_can_channels(CAN_msg *msg, CANChannelConfig *cfg, uint16_t enabled_m
                         continue;
 
                 CAN_set_current_channel_value(i, value);
-		}
+        }
 }

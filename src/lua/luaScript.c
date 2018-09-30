@@ -30,14 +30,15 @@
 static const volatile ScriptConfig g_scriptConfig  __attribute__((section(".script\n\t#")));
 #else
 static ScriptConfig g_scriptConfig = {MAGIC_NUMBER_SCRIPT_INIT,
-                                      DEFAULT_SCRIPT};
+                                      DEFAULT_SCRIPT
+                                     };
 #endif
 
 void initialize_script()
 {
-    if (g_scriptConfig.magicInit != MAGIC_NUMBER_SCRIPT_INIT) {
-        flash_default_script();
-    }
+        if (g_scriptConfig.magicInit != MAGIC_NUMBER_SCRIPT_INIT) {
+                flash_default_script();
+        }
 }
 
 int flash_default_script()
@@ -60,7 +61,7 @@ int flash_default_script()
 
         defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
         strntcpy(defaultScriptConfig->script, DEFAULT_SCRIPT,
-		 sizeof(DEFAULT_SCRIPT));
+                 sizeof(DEFAULT_SCRIPT));
         result = memory_flash_region((void *)&g_scriptConfig,
                                      (void *)defaultScriptConfig,
                                      sizeof (ScriptConfig));
@@ -77,46 +78,46 @@ int flash_default_script()
 
 const char * getScript()
 {
-    return (const char *)g_scriptConfig.script;
+        return (const char *)g_scriptConfig.script;
 }
 
 //unescapes a string in place
 void unescapeScript(char *data)
 {
-    char *result = data;
-    while (*data) {
-        if (*data == '\\') {
-            switch(*(data + 1)) {
-            case '_':
-                *result = ' ';
-                break;
-            case 'n':
-                *result = '\n';
-                break;
-            case 'r':
-                *result = '\r';
-                break;
-            case '\\':
-                *result = '\\';
-                break;
-            case '"':
-                *result = '\"';
-                break;
-            case '\0': //this should *NOT* happen
-                *result = '\0';
-                return;
-                break;
-            default: // unknown escape char?
-                *result = ' ';
-                break;
-            }
-            result++;
-            data+=2;
-        } else {
-            *result++ = *data++;
+        char *result = data;
+        while (*data) {
+                if (*data == '\\') {
+                        switch(*(data + 1)) {
+                        case '_':
+                                *result = ' ';
+                                break;
+                        case 'n':
+                                *result = '\n';
+                                break;
+                        case 'r':
+                                *result = '\r';
+                                break;
+                        case '\\':
+                                *result = '\\';
+                                break;
+                        case '"':
+                                *result = '\"';
+                                break;
+                        case '\0': //this should *NOT* happen
+                                *result = '\0';
+                                return;
+                                break;
+                        default: // unknown escape char?
+                                *result = ' ';
+                                break;
+                        }
+                        result++;
+                        data+=2;
+                } else {
+                        *result++ = *data++;
+                }
         }
-    }
-    *result='\0';
+        *result='\0';
 }
 
 enum script_add_result flashScriptPage(const unsigned int page,

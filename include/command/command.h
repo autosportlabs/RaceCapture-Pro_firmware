@@ -37,16 +37,16 @@ CPP_GUARD_BEGIN
 #define ERROR_CODE_CRITICAL_ERROR -4
 
 typedef struct _cmd_context {
-    struct Serial * serial;
-    char * lineBuffer;
-    size_t lineBufferSize;
+        struct Serial * serial;
+        char * lineBuffer;
+        size_t lineBufferSize;
 } cmd_context;
 
 typedef struct _cmd_t {
-    const char *cmd;
-    const char *help;
-    const char *paramHelp;
-    void (*func)(struct Serial *serial, unsigned int argc, char **argv);
+        const char *cmd;
+        const char *help;
+        const char *paramHelp;
+        void (*func)(struct Serial *serial, unsigned int argc, char **argv);
 } cmd_t;
 
 #define SYSTEM_COMMAND(_CMD, _DESC, _ARG_DESC, _METHOD) \

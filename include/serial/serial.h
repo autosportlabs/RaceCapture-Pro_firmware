@@ -33,10 +33,10 @@
 CPP_GUARD_BEGIN
 
 struct serial_cfg {
-	size_t baud;
-	size_t data_bits;
-	size_t parity_bits;
-	size_t stop_bits;
+        size_t baud;
+        size_t data_bits;
+        size_t parity_bits;
+        size_t stop_bits;
 };
 
 /**
@@ -113,12 +113,12 @@ int serial_read_byte(struct Serial *serial, uint8_t *b, const size_t delay);
 int serial_read_line(struct Serial *s, char *l, const size_t len);
 
 int serial_read_line_wait(struct Serial *s, char *l, const size_t len,
-			  const size_t delay);
+                          const size_t delay);
 
 int serial_write_c(struct Serial *s, const char c);
 
 int serial_write_buff_wait(struct Serial *s, const char *buf,
-			   const size_t len, const size_t delay);
+                           const size_t len, const size_t delay);
 
 int serial_write_buff(struct Serial *s, const char *buf, const size_t len);
 
@@ -131,9 +131,9 @@ xQueueHandle serial_get_rx_queue(struct Serial *s);
 xQueueHandle serial_get_tx_queue(struct Serial *s);
 
 enum serial_ioctl_status {
-	SERIAL_IOCTL_STATUS_OK = 0,
-	SERIAL_IOCTL_STATUS_ERR = -1,
-	SERIAL_IOCTL_STATUS_UNSUPPORTED	= -2,
+        SERIAL_IOCTL_STATUS_OK = 0,
+        SERIAL_IOCTL_STATUS_ERR = -1,
+        SERIAL_IOCTL_STATUS_UNSUPPORTED	= -2,
 };
 
 
@@ -150,12 +150,12 @@ enum serial_ioctl {
  * indicate an error.
  */
 typedef enum serial_ioctl_status serial_ioctl_cb_t(struct Serial *s,
-						   unsigned long req, void* data);
+                unsigned long req, void* data);
 
 void serial_set_ioctl_cb(struct Serial *s, serial_ioctl_cb_t* cb);
 
 enum serial_ioctl_status serial_ioctl(struct Serial *s,
-				      unsigned long req, void* argp);
+                                      unsigned long req, void* argp);
 
 const struct serial_cfg* serial_get_config(const struct Serial* s);
 

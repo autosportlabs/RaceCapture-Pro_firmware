@@ -27,23 +27,28 @@
 
 static portTickType ticks;
 
-portTickType xTaskGetTickCount() {
+portTickType xTaskGetTickCount()
+{
         return ticks;
 }
 
-void set_ticks(portTickType new_ticks){
-	ticks = new_ticks;
+void set_ticks(portTickType new_ticks)
+{
+        ticks = new_ticks;
 }
 
-void reset_ticks() {
+void reset_ticks()
+{
         ticks = 0;
 }
 
-void increment_tick() {
+void increment_tick()
+{
         ticks++;
 }
 
-void vTaskDelay(portTickType xTicksToDelay) {
+void vTaskDelay(portTickType xTicksToDelay)
+{
         usleep((useconds_t)xTicksToDelay * 1000);
 }
 

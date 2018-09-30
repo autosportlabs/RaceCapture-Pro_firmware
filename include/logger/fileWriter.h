@@ -34,18 +34,17 @@ CPP_GUARD_BEGIN
 #define FLUSH_INTERVAL_MS 1000
 
 enum writing_status {
-    WRITING_INACTIVE = 0,
-    WRITING_ACTIVE,
-    SD_CARD_NOT_PRESENT
+        WRITING_INACTIVE = 0,
+        WRITING_ACTIVE,
+        SD_CARD_NOT_PRESENT
 };
 
-struct logging_status
-{
+struct logging_status {
         bool logging;
         unsigned int rows_written;
         enum writing_status writing_status;
         portTickType flush_tick;
-	portTickType last_sample_tick;
+        portTickType last_sample_tick;
         char name[FILENAME_LEN];
 };
 

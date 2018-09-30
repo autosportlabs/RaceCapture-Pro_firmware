@@ -62,7 +62,7 @@ void GPSTask(void *pvParameters)
                                 pr_debug("GPS: Msx Rx Failure\r\n");
                                 if (++failures >= MSG_FAILURES_TRIGGER) {
                                         pr_debug("GPS: Too many failures.  "
-                                                   "Reenum\r\n");
+                                                 "Reenum\r\n");
                                         break;
                                 }
                         }

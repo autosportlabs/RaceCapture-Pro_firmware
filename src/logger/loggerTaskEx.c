@@ -62,7 +62,7 @@ static struct sample g_sample_buffer[LOGGER_MESSAGE_BUFFER_SIZE] = {0};
 
 struct sample * get_current_sample(void)
 {
-		return current_sample;
+        return current_sample;
 }
 
 static LoggerMessage getLogStartMessage()
@@ -80,37 +80,37 @@ static LoggerMessage getLogStopMessage()
  */
 void vApplicationTickHook(void)
 {
-    if (onTick)
-        xSemaphoreGiveFromISR(onTick, pdFALSE);
+        if (onTick)
+                xSemaphoreGiveFromISR(onTick, pdFALSE);
 }
 
 void configChanged()
 {
-    g_configChanged = 1;
+        g_configChanged = 1;
 }
 
 void startLogging()
 {
-    g_loggingShouldRun = 1;
+        g_loggingShouldRun = 1;
 }
 
 void stopLogging()
 {
-    g_loggingShouldRun = 0;
+        g_loggingShouldRun = 0;
 }
 
 static void logging_started()
 {
-    logging_set_logging_start(getUptimeAsInt());
-    led_disable(LED_LOGGER);
-    pr_info("Logging started\r\n");
+        logging_set_logging_start(getUptimeAsInt());
+        led_disable(LED_LOGGER);
+        pr_info("Logging started\r\n");
 }
 
 static void logging_stopped()
 {
-    logging_set_logging_start(0);
-    led_disable(LED_LOGGER);
-    pr_info("Logging stopped\r\n");
+        logging_set_logging_start(0);
+        led_disable(LED_LOGGER);
+        pr_info("Logging stopped\r\n");
 }
 
 void startLoggerTaskEx(int priority)
@@ -146,25 +146,25 @@ static int init_sample_ring_buffer(LoggerConfig *loggerConfig)
 
 static int calcTelemetrySampleRate(LoggerConfig *config, int desiredSampleRate)
 {
-    int maxRate = getConnectivitySampleRateLimit();
-    return isHigherSampleRate(desiredSampleRate, maxRate) ? maxRate : desiredSampleRate;
+        int maxRate = getConnectivitySampleRateLimit();
+        return isHigherSampleRate(desiredSampleRate, maxRate) ? maxRate : desiredSampleRate;
 }
 
 void updateSampleRates(LoggerConfig *loggerConfig, int *loggingSampleRate,
                        int *telemetrySampleRate, int *timebaseSampleRate)
 {
-    *loggingSampleRate = getHighestSampleRate(loggerConfig);
-    *timebaseSampleRate = *loggingSampleRate;
-    *timebaseSampleRate = getHigherSampleRate(BACKGROUND_SAMPLE_RATE, *timebaseSampleRate);
-    *telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
+        *loggingSampleRate = getHighestSampleRate(loggerConfig);
+        *timebaseSampleRate = *loggingSampleRate;
+        *timebaseSampleRate = getHigherSampleRate(BACKGROUND_SAMPLE_RATE, *timebaseSampleRate);
+        *telemetrySampleRate = calcTelemetrySampleRate(loggerConfig, *loggingSampleRate);
 
-    pr_info("timebase/logging/telemetry sample rate: ");
-    pr_info_int(decodeSampleRate(*timebaseSampleRate));
-    pr_info("/");
-    pr_info_int(decodeSampleRate(*loggingSampleRate));
-    pr_info("/");
-    pr_info_int(decodeSampleRate(*telemetrySampleRate));
-    pr_info("\r\n");
+        pr_info("timebase/logging/telemetry sample rate: ");
+        pr_info_int(decodeSampleRate(*timebaseSampleRate));
+        pr_info("/");
+        pr_info_int(decodeSampleRate(*loggingSampleRate));
+        pr_info("/");
+        pr_info_int(decodeSampleRate(*telemetrySampleRate));
+        pr_info("\r\n");
 }
 
 void loggerTaskEx(void *params)
@@ -230,7 +230,7 @@ void loggerTaskEx(void *params)
                  * logging rate or at least at background sample rate
                  */
                 if ((is_logging && currentTicks % loggingSampleRate == 0) ||
-                                (currentTicks % BACKGROUND_SAMPLE_RATE == 0))
+                    (currentTicks % BACKGROUND_SAMPLE_RATE == 0))
                         doBackgroundSampling();
 
                 if (g_loggingShouldRun && !is_logging) {
@@ -257,13 +257,13 @@ void loggerTaskEx(void *params)
 
                 /* Check if we need to actually populate the buffer. */
                 const int sampledRate = populate_sample_buffer(sample,
-                                                               currentTicks);
+                                        currentTicks);
                 if (sampledRate == SAMPLE_DISABLED)
                         continue;
 
                 /* If here, create the LoggerMessage to send with the sample */
                 const LoggerMessage msg = create_logger_message(
-                        LoggerMessageType_Sample, currentTicks, sample);
+                                                  LoggerMessageType_Sample, currentTicks, sample);
 
                 /*
                  * We only log to file if the user has manually pushed the
@@ -274,7 +274,7 @@ void loggerTaskEx(void *params)
                         /* XXX Move this to file writer? */
                         const portBASE_TYPE res = queue_logfile_record(&msg);
                         if (pdTRUE != res) {
-                            logging_set_status(LOGGING_STATUS_OVERFLOW);
+                                logging_set_status(LOGGING_STATUS_OVERFLOW);
                         }
                 }
 #endif

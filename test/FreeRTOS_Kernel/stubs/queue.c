@@ -88,19 +88,19 @@ xQueueHandle xQueueCreateMutex()
 }
 
 signed portBASE_TYPE xQueueGenericSendFromISR(xQueueHandle pxQueue,
-                                              const void * const pvItemToQueue,
-                                              signed portBASE_TYPE *pxHigherPriorityTaskWoken,
-                                              portBASE_TYPE xCopyPosition)
+                const void * const pvItemToQueue,
+                signed portBASE_TYPE *pxHigherPriorityTaskWoken,
+                portBASE_TYPE xCopyPosition)
 {
         return pdTRUE;
 }
 
 unsigned portBASE_TYPE uxQueueMessagesWaiting( const xQueueHandle xQueue )
 {
-	return 0;
+        return 0;
 }
 
 portBASE_TYPE xQueueGenericReset( xQueueHandle pxQueue, portBASE_TYPE xNewQueue )
 {
-	return pdTRUE;
+        return pdTRUE;
 }
