@@ -1,3 +1,7 @@
+= 2.13.8=
+* GPS: Prevent coarse updating of distance for channel data
+* GPS: Limit interpolation to reasonable value
+
 = 2.13.7=
 * GPS: Upsample GPS if GPS source is slower than 10Hz, to improve lap timing accuracy and reliability
 
