@@ -27,7 +27,7 @@
 #define GPS_LOCK_FLASH_COUNT 5
 #define GPS_NOFIX_FLASH_COUNT 25
 
-static GpsSnapshot g_gpsSnapshot ={0};
+static GpsSnapshot g_gpsSnapshot = {0};
 gps_status_t gps_status = GPS_STATUS_NOT_INIT;
 static int g_flashCount;
 static millis_t g_timeFirstFix;
@@ -35,22 +35,22 @@ static tiny_millis_t g_uptimeAtSample;
 
 bool isGpsSignalUsable(enum GpsSignalQuality q)
 {
-    return q != GPS_QUALITY_NO_FIX;
+        return q != GPS_QUALITY_NO_FIX;
 }
 
 gps_status_t GPS_init(uint8_t targetSampleRate, struct Serial *serial)
 {
-    memset(&g_gpsSnapshot, 0, sizeof(GpsSnapshot));
-    g_timeFirstFix = 0;
-    g_flashCount = 0;
-    g_uptimeAtSample = 0;
-    gps_status = GPS_device_init(targetSampleRate, serial);
-    return gps_status;
+        memset(&g_gpsSnapshot, 0, sizeof(GpsSnapshot));
+        g_timeFirstFix = 0;
+        g_flashCount = 0;
+        g_uptimeAtSample = 0;
+        gps_status = GPS_device_init(targetSampleRate, serial);
+        return gps_status;
 }
 
 gps_status_t GPS_getStatus()
 {
-    return gps_status;
+        return gps_status;
 }
 
 static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality)
@@ -61,7 +61,7 @@ static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality)
         g_flashCount++;
 
         const int targetFlashCount = isGpsSignalUsable(gpsQuality) ?
-                GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT;
+                                     GPS_LOCK_FLASH_COUNT : GPS_NOFIX_FLASH_COUNT;
 
         if (g_flashCount >= targetFlashCount) {
                 led_enable(LED_GPS);
@@ -74,12 +74,12 @@ static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality)
  */
 bool isGpsDataCold()
 {
-    return g_timeFirstFix == 0;
+        return g_timeFirstFix == 0;
 }
 
 static tiny_millis_t getDeltaSinceSample()
 {
-    return getUptime() - g_uptimeAtSample;
+        return getUptime() - g_uptimeAtSample;
 }
 
 /**
@@ -87,11 +87,11 @@ static tiny_millis_t getDeltaSinceSample()
  */
 millis_t getMillisSinceEpoch()
 {
-    // If we have no GPS data, return 0 to indicate that.
-    if (isGpsDataCold()) return 0;
+        // If we have no GPS data, return 0 to indicate that.
+        if (isGpsDataCold()) return 0;
 
-    //interpolate milliseconds from system clock
-    return g_gpsSnapshot.sample.time + getDeltaSinceSample();
+        //interpolate milliseconds from system clock
+        return g_gpsSnapshot.sample.time + getDeltaSinceSample();
 }
 
 /**
@@ -99,62 +99,62 @@ millis_t getMillisSinceEpoch()
  */
 tiny_millis_t getMillisSinceFirstFix()
 {
-    // If we have no GPS data, return 0 to indicate that.
-    if (isGpsDataCold()) return 0;
+        // If we have no GPS data, return 0 to indicate that.
+        if (isGpsDataCold()) return 0;
 
-    return (tiny_millis_t) (getMillisSinceEpoch() - g_timeFirstFix);
+        return (tiny_millis_t) (getMillisSinceEpoch() - g_timeFirstFix);
 }
 
 long long getMillisSinceEpochAsLongLong()
 {
-    return (long long) getMillisSinceEpoch();
+        return (long long) getMillisSinceEpoch();
 }
 
 tiny_millis_t getUptimeAtSample()
 {
-    return g_uptimeAtSample;
+        return g_uptimeAtSample;
 }
 
 float GPS_getLatitude()
 {
-    return g_gpsSnapshot.sample.point.latitude;
+        return g_gpsSnapshot.sample.point.latitude;
 }
 
 float GPS_getLongitude()
 {
-    return g_gpsSnapshot.sample.point.longitude;
+        return g_gpsSnapshot.sample.point.longitude;
 }
 
 /* Altitude is in ft */
 float getAltitude()
 {
-	return g_gpsSnapshot.sample.altitude;
+        return g_gpsSnapshot.sample.altitude;
 }
 
 float gps_get_altitude_meters()
 {
-	return convert_ft_m(g_gpsSnapshot.sample.altitude);
+        return convert_ft_m(g_gpsSnapshot.sample.altitude);
 }
 
 int GPS_getQuality()
 {
-    return (int)g_gpsSnapshot.sample.quality;
+        return (int)g_gpsSnapshot.sample.quality;
 }
 
 float GPS_getDOP()
 {
-    return g_gpsSnapshot.sample.DOP;
+        return g_gpsSnapshot.sample.DOP;
 }
 
 int GPS_getSatellitesUsedForPosition()
 {
-    return g_gpsSnapshot.sample.satellites;
+        return g_gpsSnapshot.sample.satellites;
 }
 
 /* GPS speed in KPH */
 float getGPSSpeed()
 {
-    return g_gpsSnapshot.sample.speed;
+        return g_gpsSnapshot.sample.speed;
 }
 
 float getGpsSpeedInMph()
@@ -164,34 +164,34 @@ float getGpsSpeedInMph()
 
 millis_t getLastFix()
 {
-    return g_gpsSnapshot.sample.time;
+        return g_gpsSnapshot.sample.time;
 }
 
 GeoPoint getGeoPoint()
 {
-    return g_gpsSnapshot.sample.point;
+        return g_gpsSnapshot.sample.point;
 }
 
 GeoPoint getPreviousGeoPoint()
 {
-    return g_gpsSnapshot.previousPoint;
+        return g_gpsSnapshot.previousPoint;
 }
 
 GpsSample getGpsSample()
 {
-    return g_gpsSnapshot.sample;
+        return g_gpsSnapshot.sample;
 }
 
 GpsSnapshot getGpsSnapshot()
 {
-    return g_gpsSnapshot;
+        return g_gpsSnapshot;
 }
 
 static void updateFullDateTime(GpsSample *gpsSample)
 {
-    g_uptimeAtSample = getUptime();
+        g_uptimeAtSample = getUptime();
 
-    if (g_timeFirstFix == 0) g_timeFirstFix = gpsSample->time;
+        if (g_timeFirstFix == 0) g_timeFirstFix = gpsSample->time;
 }
 
 void GPS_sample_update(GpsSample *newSample)
@@ -219,14 +219,14 @@ void GPS_sample_update(GpsSample *newSample)
 
 int GPS_processUpdate(struct Serial *serial)
 {
-    GpsSample s;
-    const gps_msg_result_t result = GPS_device_get_update(&s, serial);
+        GpsSample s;
+        const gps_msg_result_t result = GPS_device_get_update(&s, serial);
 
-    flashGpsStatusLed(s.quality);
+        flashGpsStatusLed(s.quality);
 
-    if (result == GPS_MSG_SUCCESS) {
-        GPS_sample_update(&s);
-    }
+        if (result == GPS_MSG_SUCCESS) {
+                GPS_sample_update(&s);
+        }
 
-    return result;
+        return result;
 }

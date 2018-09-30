@@ -27,8 +27,8 @@
 CPP_GUARD_BEGIN
 
 typedef struct _Filter {
-    float alpha;
-    int current_value;
+        float alpha;
+        int current_value;
 } Filter;
 
 void init_filter(Filter *filter, float alpha);

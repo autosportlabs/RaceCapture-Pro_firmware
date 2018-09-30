@@ -36,63 +36,63 @@ extern unsigned int _CONFIG_HEAP_SIZE;
 
 static void putHeader(struct Serial *serial, const char *str)
 {
-    put_crlf(serial);
-    serial_write_s(serial, "- - - ");
-    serial_write_s(serial, str);
-    serial_write_s(serial, " - - -");
-    put_crlf(serial);
+        put_crlf(serial);
+        serial_write_s(serial, "- - - ");
+        serial_write_s(serial, str);
+        serial_write_s(serial, " - - -");
+        put_crlf(serial);
 }
 
 static void putDataRowHeader(struct Serial *serial, const char *str)
 {
-    serial_write_s(serial, str);
-    serial_write_s(serial, " : ");
+        serial_write_s(serial, str);
+        serial_write_s(serial, " : ");
 }
 
 void ShowStats(struct Serial *serial, unsigned int argc, char **argv)
 {
-    // Memory Info
-    putHeader(serial, "Memory Info");
+        // Memory Info
+        putHeader(serial, "Memory Info");
 
-    putDataRowHeader(serial, "Total Memory");
-    put_uint(serial, (unsigned int) &_CONFIG_HEAP_SIZE);
-    put_crlf(serial);
+        putDataRowHeader(serial, "Total Memory");
+        put_uint(serial, (unsigned int) &_CONFIG_HEAP_SIZE);
+        put_crlf(serial);
 
-    putDataRowHeader(serial, "Free Memory");
-    put_uint(serial, portGetFreeHeapSize());
-    put_crlf(serial);
+        putDataRowHeader(serial, "Free Memory");
+        put_uint(serial, portGetFreeHeapSize());
+        put_crlf(serial);
 
 #if LUA_SUPPORT
-    struct lua_runtime_info ri = lua_task_get_runtime_info();
-    putHeader(serial, "Lua Info");
+        struct lua_runtime_info ri = lua_task_get_runtime_info();
+        putHeader(serial, "Lua Info");
 
-    putDataRowHeader(serial, "Lua Top");
-    put_int(serial, ri.top_index);
-    put_crlf(serial);
+        putDataRowHeader(serial, "Lua Top");
+        put_int(serial, ri.top_index);
+        put_crlf(serial);
 
-    putDataRowHeader(serial, "Lua Memory Usage (KB)");
-    put_int(serial, ri.mem_usage_kb);
-    put_crlf(serial);
+        putDataRowHeader(serial, "Lua Memory Usage (KB)");
+        put_int(serial, ri.mem_usage_kb);
+        put_crlf(serial);
 #endif /* LUA_SUPPORT */
 
-    // Misc Info
-    putHeader(serial, "Misc");
+        // Misc Info
+        putHeader(serial, "Misc");
 
-    putDataRowHeader(serial, "Size of LoggerConfig");
-    put_int(serial, sizeof(LoggerConfig));
-    put_crlf(serial);
+        putDataRowHeader(serial, "Size of LoggerConfig");
+        put_int(serial, sizeof(LoggerConfig));
+        put_crlf(serial);
 
-    putDataRowHeader(serial, "Size of ChannelSample");
-    put_int(serial, sizeof(ChannelSample));
-    put_crlf(serial);
+        putDataRowHeader(serial, "Size of ChannelSample");
+        put_int(serial, sizeof(ChannelSample));
+        put_crlf(serial);
 
-    putDataRowHeader(serial, "Size of CANChannel");
-    put_int(serial, sizeof(CANChannel));
-    put_crlf(serial);
+        putDataRowHeader(serial, "Size of CANChannel");
+        put_int(serial, sizeof(CANChannel));
+        put_crlf(serial);
 
-    putDataRowHeader(serial, "Size of PIDConfig");
-    put_int(serial, sizeof(PidConfig));
-    put_crlf(serial);
+        putDataRowHeader(serial, "Size of PIDConfig");
+        put_int(serial, sizeof(PidConfig));
+        put_crlf(serial);
 
 }
 
@@ -120,19 +120,19 @@ void ShowTaskInfo(struct Serial *serial, unsigned int argc, char **argv)
         put_crlf(serial);
         put_crlf(serial);
         serial_write_s(serial, "[Note] StackHR: If StackHR < 0; then "
-		       "stack smash");
+                       "stack smash");
         put_crlf(serial);
 }
 
 void GetVersion(struct Serial *serial, unsigned int argc, char **argv)
 {
-	putHeader(serial, "Version Info");
-	put_nameString(serial, "major", MAJOR_REV_STR);
-	put_nameString(serial, "minor", MINOR_REV_STR);
-	put_nameString(serial, "bugfix", BUGFIX_REV_STR);
-	put_nameString(serial, "full", version_full());
-	put_nameString(serial, "serial", cpu_get_serialnumber());
-	put_crlf(serial);
+        putHeader(serial, "Version Info");
+        put_nameString(serial, "major", MAJOR_REV_STR);
+        put_nameString(serial, "minor", MINOR_REV_STR);
+        put_nameString(serial, "bugfix", BUGFIX_REV_STR);
+        put_nameString(serial, "full", version_full());
+        put_nameString(serial, "serial", cpu_get_serialnumber());
+        put_crlf(serial);
 }
 
 void ResetSystem(struct Serial *serial, unsigned int argc, char **argv)

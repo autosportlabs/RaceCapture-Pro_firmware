@@ -109,7 +109,7 @@ static int lua_set_bg_streaming(lua_State *L)
 
         const bool val = lua_toboolean(L, 1);
         getWorkingLoggerConfig()->ConnectivityConfigs.
-                telemetryConfig.backgroundStreaming = (char) val;
+        telemetryConfig.backgroundStreaming = (char) val;
 
         return 0;
 }
@@ -193,7 +193,7 @@ static int lua_set_analog_out(lua_State *L)
         validate_pwm_channel(L, channel);
 
         const float dutyCycle = (float) lua_tonumber(L, 2) /
-                PWM_VOLTAGE_SCALING;
+                                PWM_VOLTAGE_SCALING;
         PWM_set_duty_cycle(channel, (unsigned short) dutyCycle);
         return 0;
 }
@@ -402,7 +402,7 @@ static int lua_serial_read_char(lua_State *L)
         char c;
         struct Serial *serial = lua_get_serial(L, port);
         if (0 < serial_read_c_wait(serial, &c, timeout)) {
-		lua_pushinteger(L, (int) c);
+                lua_pushinteger(L, (int) c);
         } else {
                 lua_pushnil(L);
         }
@@ -436,15 +436,15 @@ static int lua_serial_read_line(lua_State *L)
         }
 
         /* STIEG: Would be nice to be rid of this tempBuffer */
-	static char g_tempBuffer[TEMP_BUFFER_LEN];
-	struct Serial *serial = lua_get_serial(L, port);
+        static char g_tempBuffer[TEMP_BUFFER_LEN];
+        struct Serial *serial = lua_get_serial(L, port);
         int len = serial_read_line_wait(serial, g_tempBuffer,
-					TEMP_BUFFER_LEN - 1, timeout);
-	if (len < 0)
-		len = 0;
+                                        TEMP_BUFFER_LEN - 1, timeout);
+        if (len < 0)
+                len = 0;
 
-	g_tempBuffer[len] = 0;
-	lua_pushstring(L, g_tempBuffer);
+        g_tempBuffer[len] = 0;
+        lua_pushstring(L, g_tempBuffer);
 
         return 1;
 }
@@ -559,8 +559,8 @@ static int lua_get_gps_distance(lua_State *L)
 
 static int lua_get_predicted_lap_time(lua_State *L)
 {
-    lua_pushnumber(L, getPredictedTimeInMinutes());
-    return 1;
+        lua_pushnumber(L, getPredictedTimeInMinutes());
+        return 1;
 }
 
 static int lua_get_lap_time(lua_State *L)
@@ -639,13 +639,13 @@ static int lua_init_can(lua_State *L)
         bool termination_enabled = true;
         switch(lua_gettop(L)) {
         default:
-            return lua_panic(L);
+                return lua_panic(L);
         case 3:
-            lua_validate_arg_number(L, 3);
-            termination_enabled = (bool)lua_tonumber(L, 3);
+                lua_validate_arg_number(L, 3);
+                termination_enabled = (bool)lua_tonumber(L, 3);
         case 2:
-            lua_validate_arg_number(L, 2);
-            lua_validate_arg_number(L, 1);
+                lua_validate_arg_number(L, 2);
+                lua_validate_arg_number(L, 1);
         }
 
         const size_t port = lua_tointeger(L, 1);
@@ -656,33 +656,33 @@ static int lua_init_can(lua_State *L)
 
 static int lua_set_can_filter(lua_State *L)
 {
-	lua_validate_args_count(L, 5, 6);
+        lua_validate_args_count(L, 5, 6);
 
-	bool enable = true;
-	switch(lua_gettop(L)) {
-	default:
-		return lua_panic(L);
-	case 6:
-		lua_validate_arg_boolean(L, 6);
-		enable = lua_toboolean(L, 6);
-	case 5:
-		break;
-	}
+        bool enable = true;
+        switch(lua_gettop(L)) {
+        default:
+                return lua_panic(L);
+        case 6:
+                lua_validate_arg_boolean(L, 6);
+                enable = lua_toboolean(L, 6);
+        case 5:
+                break;
+        }
 
-	for (int i = 1; i <= 5; ++i)
-		lua_validate_arg_number(L, i);
+        for (int i = 1; i <= 5; ++i)
+                lua_validate_arg_number(L, i);
 
-	const uint8_t channel = lua_tointeger(L, 1);
-	const uint8_t id = lua_tointeger(L, 2);
-	const uint8_t extended = lua_tointeger(L, 3);
-	const uint32_t filter = lua_tointeger(L, 4);
-	const uint32_t mask = lua_tointeger(L, 5);
+        const uint8_t channel = lua_tointeger(L, 1);
+        const uint8_t id = lua_tointeger(L, 2);
+        const uint8_t extended = lua_tointeger(L, 3);
+        const uint32_t filter = lua_tointeger(L, 4);
+        const uint32_t mask = lua_tointeger(L, 5);
 
-	const int result = CAN_set_filter(channel, id, extended, filter,
-					  mask, enable);
-	lua_pushinteger(L, result);
+        const int result = CAN_set_filter(channel, id, extended, filter,
+                                          mask, enable);
+        lua_pushinteger(L, result);
 
-	return 1;
+        return 1;
 }
 
 static int lua_send_can_msg(lua_State *L)
@@ -777,11 +777,10 @@ static int lua_obd2_read(lua_State *L)
 
         float value;
         if (OBD2_get_value_for_pid(pid, &value)) {
-        		lua_pushnumber(L, value);
-        		return 1;
-        }
-        else
-        		return 0;
+                lua_pushnumber(L, value);
+                return 1;
+        } else
+                return 0;
 }
 
 static int lua_logging_start(lua_State *L)
@@ -806,7 +805,7 @@ static int lua_set_led(lua_State *ls)
 {
         lua_validate_args_count(ls, 2, 2);
         lua_validate_arg_number_or_string(ls, 1);
-	lua_validate_arg_boolean_flex(ls, 2);
+        lua_validate_arg_boolean_flex(ls, 2);
 
         /*
          * Numbers can be passed in as 123 or "123" in lua.  So handle
@@ -907,20 +906,20 @@ static int lua_get_virtual_channel(lua_State *ls)
                 VirtualChannel *vc;
                 vc = get_virtual_channel(lua_tointeger(ls, 1));
                 if (vc) {
-						                  lua_pushnumber(ls, vc->currentValue);
-						                  return 1;
+                        lua_pushnumber(ls, vc->currentValue);
+                        return 1;
                 }
         } else {
                 struct sample * s = get_current_sample();
-				            double value;
-				            char * units;
-				            if (s && get_sample_value_by_name(s, lua_tostring(ls, 1), &value, &units)){
-						                  lua_pushnumber(ls, value);
-						                  return 1;
-        		      }
-		      }
+                double value;
+                char * units;
+                if (s && get_sample_value_by_name(s, lua_tostring(ls, 1), &value, &units)) {
+                        lua_pushnumber(ls, value);
+                        return 1;
+                }
+        }
         /* Return nil, channel not found */
-		      return 0;
+        return 0;
 }
 
 static int lua_set_virt_channel_value(lua_State *L)
@@ -948,29 +947,29 @@ static int lua_update_gps(lua_State *L)
         s.satellites = 0;
 
         switch(lua_gettop(L)) {
-                case 8:
-                        s.satellites = lua_tointeger(L, 8);
-                case 7:
-                        s.DOP = lua_tonumber(L, 7);
-                case 6:
-                        s.quality = lua_tointeger(L, 6);
-                case 5:
-                        s.altitude = lua_tonumber(L, 5);
-                case 4:
-                        s.time = lua_tointeger(L, 4);
-                default:
-                        /**
-                         * Minimum data needed to drive lap timer is
-                         * Latitude, Longitude and Speed
-                         */
-                        s.speed = lua_tonumber(L, 3);
-                        GeoPoint gp;
-                        gp.longitude = lua_tonumber(L, 2);
-                        gp.latitude = lua_tonumber(L, 1);
-                        s.point = gp;
+        case 8:
+                s.satellites = lua_tointeger(L, 8);
+        case 7:
+                s.DOP = lua_tonumber(L, 7);
+        case 6:
+                s.quality = lua_tointeger(L, 6);
+        case 5:
+                s.altitude = lua_tonumber(L, 5);
+        case 4:
+                s.time = lua_tointeger(L, 4);
+        default:
+                /**
+                 * Minimum data needed to drive lap timer is
+                 * Latitude, Longitude and Speed
+                 */
+                s.speed = lua_tonumber(L, 3);
+                GeoPoint gp;
+                gp.longitude = lua_tonumber(L, 2);
+                gp.latitude = lua_tonumber(L, 1);
+                s.point = gp;
         }
         GPS_sample_update(&s);
-        if (isGpsSignalUsable(s.quality)){
+        if (isGpsSignalUsable(s.quality)) {
                 GpsSnapshot snap = getGpsSnapshot();
                 lapstats_processUpdate(&snap);
         }

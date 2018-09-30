@@ -238,11 +238,11 @@ size_t ring_buffer_write(struct ring_buff *rb, const void *data,
  */
 const void* ring_buffer_dma_read_init(struct ring_buff* rb, size_t* avail)
 {
-	const size_t used = ring_buffer_bytes_used(rb);
+        const size_t used = ring_buffer_bytes_used(rb);
         const size_t dist = rb->size + rb->buff - rb->tail;
-	*avail = MIN(used, dist);
+        *avail = MIN(used, dist);
 
-	return rb->tail;
+        return rb->tail;
 }
 
 /**
@@ -254,5 +254,5 @@ const void* ring_buffer_dma_read_init(struct ring_buff* rb, size_t* avail)
  */
 void ring_buffer_dma_read_fini(struct ring_buff* rb, const size_t read)
 {
-	rb->tail = get_new_ptr_val(rb, rb->tail, read);
+        rb->tail = get_new_ptr_val(rb, rb->tail, read);
 }

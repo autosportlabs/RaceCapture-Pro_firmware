@@ -26,12 +26,12 @@
 
 class GpsTest : public CppUnit::TestFixture
 {
-    CPPUNIT_TEST_SUITE( GpsTest );
-    CPPUNIT_TEST_SUITE_END();
+        CPPUNIT_TEST_SUITE( GpsTest );
+        CPPUNIT_TEST_SUITE_END();
 
 public:
-    void setUp();
-    void tearDown();
+        void setUp();
+        void tearDown();
 };
 
 #endif  // GPSTEST_H

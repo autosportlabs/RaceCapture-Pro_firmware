@@ -280,7 +280,7 @@ int cellular_disconnect(DeviceConfig *config)
         }
 
         return methods ? methods->close_telem_connection(
-                sb, &cell_info, &telemetry_info) : 0;
+                       sb, &cell_info, &telemetry_info) : 0;
 }
 
 static void reset_modem()
@@ -377,7 +377,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                 }
 
                 const jsmntok_t *status_val = jsmn_find_get_node_value_string(
-                        toks, "status");
+                                                      toks, "status");
                 if (status_val) {
                         /* Could be success or failure.  Handle both */
                         const char *status = status_val->data;
@@ -390,7 +390,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                         /* If here, then something went wrong. */
                         pr_warning_str_msg("[cell] Auth status: ", status);
                         const jsmntok_t *message_val = jsmn_find_get_node_value_string(
-                                toks, "message");
+                                                               toks, "message");
                         if (message_val)
                                 pr_warning_str_msg("[cell] Auth message: ",
                                                    message_val->data);
@@ -408,7 +408,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
 
 int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
 {
-	telemetry_info.active_since = 0;
+        telemetry_info.active_since = 0;
 
         LoggerConfig *loggerConfig = getWorkingLoggerConfig();
         CellularConfig *cellCfg =
@@ -467,7 +467,7 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
         }
 
         /* Auth against RCL */
-        if (!auth_telem_stream(sb, telemetryConfig, connected_at)){
+        if (!auth_telem_stream(sb, telemetryConfig, connected_at)) {
                 telemetry_info.status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
                 return DEVICE_INIT_FAIL;
         }
@@ -476,12 +476,12 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
         telemetry_info.status = TELEMETRY_STATUS_CONNECTED;
         telemetry_info.active_since = getUptime();
 
-	return DEVICE_INIT_SUCCESS;
+        return DEVICE_INIT_SUCCESS;
 }
 
 int cellular_check_connection_status(DeviceConfig *config)
 {
-	if (0 != strncmp(config->buffer, "DISCONNECT", 10))
+        if (0 != strncmp(config->buffer, "DISCONNECT", 10))
                 return 0;
 
         pr_info("[cell] socket disconnect\r\n");

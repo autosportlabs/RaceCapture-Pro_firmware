@@ -44,7 +44,7 @@
 #define STOP_DM_RX_TIMEOUT_MS	1000
 
 static bool sim900_set_multiple_connections(struct serial_buffer *sb,
-                                            const bool enable)
+                const bool enable)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -100,7 +100,7 @@ static bool sim900_init_settings(struct serial_buffer *sb,
 }
 
 static bool sim900_get_subscriber_number(struct serial_buffer *sb,
-                                         struct cellular_info *ci)
+                struct cellular_info *ci)
 {
         return gsm_get_subscriber_number(sb, ci);
 }
@@ -220,9 +220,9 @@ static bool sim900_connect_tcp_socket(struct serial_buffer *sb,
         const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
                                                msgs_len);
         return is_rsp_ok(msgs, 1) && (
-                0 == strcmp("CONNECT OK\r\n", msgs[count - 1]) ||
-                0 == strcmp("CONNECT\r\n", msgs[count - 1]) ||
-                0 == strcmp("ALREADY CONNECT\r\n", msgs[count - 1]));
+                       0 == strcmp("CONNECT OK\r\n", msgs[count - 1]) ||
+                       0 == strcmp("CONNECT\r\n", msgs[count - 1]) ||
+                       0 == strcmp("ALREADY CONNECT\r\n", msgs[count - 1]));
 }
 
 static bool sim900_close_tcp_socket(struct serial_buffer *sb,
@@ -241,7 +241,7 @@ static bool sim900_close_tcp_socket(struct serial_buffer *sb,
 static bool sim900_stop_direct_mode(struct serial_buffer *sb)
 {
         /* Must delay min 1000ms before stopping direct mode */
-	delayMs(2000);
+        delayMs(2000);
 
         /*
          * Using straight serial buffer logic here instead of
@@ -266,8 +266,8 @@ static bool sim900_get_sim_info(struct serial_buffer *sb,
                                 struct cellular_info *ci)
 {
         return sim900_get_imei(sb, ci) &&
-                sim900_get_signal_strength(sb, ci) &&
-                sim900_get_subscriber_number(sb, ci);
+               sim900_get_signal_strength(sb, ci) &&
+               sim900_get_subscriber_number(sb, ci);
 }
 
 static bool sim900_register_on_network(struct serial_buffer *sb,
@@ -361,9 +361,9 @@ static bool sim900_setup_pdp(struct serial_buffer *sb,
 }
 
 static bool sim900_connect_rcl_telem(struct serial_buffer *sb,
-                              struct cellular_info *ci,
-                              struct telemetry_info *ti,
-                              const TelemetryConfig *tc)
+                                     struct cellular_info *ci,
+                                     struct telemetry_info *ti,
+                                     const TelemetryConfig *tc)
 {
 
         if (!sim900_connect_tcp_socket(sb, tc->telemetryServerHost,

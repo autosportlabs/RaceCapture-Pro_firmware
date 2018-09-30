@@ -40,19 +40,19 @@ static Filter g_imu_filter[CONFIG_IMU_CHANNELS] = IMU_INITIALIZER;
 static void init_filters(LoggerConfig *loggerConfig)
 {
 #if IMU_CHANNELS > 0
-    ImuConfig *config  = loggerConfig->ImuConfigs;
-    for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++) {
-        float alpha = (config + i)->filterAlpha;
-        init_filter(&g_imu_filter[i], alpha);
-    }
+        ImuConfig *config  = loggerConfig->ImuConfigs;
+        for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++) {
+                float alpha = (config + i)->filterAlpha;
+                init_filter(&g_imu_filter[i], alpha);
+        }
 #endif
 }
 
 void imu_sample_all()
 {
-    for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++) {
-        update_filter(&g_imu_filter[i], imu_read(i));
-    }
+        for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++) {
+                update_filter(&g_imu_filter[i], imu_read(i));
+        }
 }
 
 float imu_read_value(enum imu_channel channel, ImuConfig *ac)
@@ -77,27 +77,27 @@ float imu_read_value(enum imu_channel channel, ImuConfig *ac)
 
 static void imu_flush_filter(size_t physicalChannel)
 {
-    for (size_t i = 0; i < 1000; i++) {
-        update_filter(&g_imu_filter[physicalChannel], imu_read(physicalChannel));
-    }
+        for (size_t i = 0; i < 1000; i++) {
+                update_filter(&g_imu_filter[physicalChannel], imu_read(physicalChannel));
+        }
 }
 
 void imu_calibrate_zero()
 {
-    for (size_t logicalChannel = 0; logicalChannel < CONFIG_IMU_CHANNELS; logicalChannel++) {
-        ImuConfig * c = getImuConfigChannel(logicalChannel);
-        size_t physicalChannel = c->physicalChannel;
-        imu_flush_filter(physicalChannel);
-        int zeroValue = g_imu_filter[physicalChannel].current_value;
-        float countsPerUnit = imu_device_counts_per_unit(physicalChannel);
-        if (logicalChannel == IMU_CHANNEL_Z) { //adjust for gravity
-            if (c->mode == IMU_MODE_INVERTED) {
-                countsPerUnit = -countsPerUnit;
-            }
-            zeroValue -= countsPerUnit;
+        for (size_t logicalChannel = 0; logicalChannel < CONFIG_IMU_CHANNELS; logicalChannel++) {
+                ImuConfig * c = getImuConfigChannel(logicalChannel);
+                size_t physicalChannel = c->physicalChannel;
+                imu_flush_filter(physicalChannel);
+                int zeroValue = g_imu_filter[physicalChannel].current_value;
+                float countsPerUnit = imu_device_counts_per_unit(physicalChannel);
+                if (logicalChannel == IMU_CHANNEL_Z) { //adjust for gravity
+                        if (c->mode == IMU_MODE_INVERTED) {
+                                countsPerUnit = -countsPerUnit;
+                        }
+                        zeroValue -= countsPerUnit;
+                }
+                c->zeroValue = zeroValue;
         }
-        c->zeroValue = zeroValue;
-    }
 }
 
 int imu_init(LoggerConfig *loggerConfig)
@@ -110,11 +110,11 @@ int imu_init(LoggerConfig *loggerConfig)
 
 int imu_soft_init(LoggerConfig *loggerConfig)
 {
-    init_filters(loggerConfig);
-    return 1;
+        init_filters(loggerConfig);
+        return 1;
 }
 
 int imu_read(enum imu_channel channel)
 {
-    return imu_device_read(channel);
+        return imu_device_read(channel);
 }

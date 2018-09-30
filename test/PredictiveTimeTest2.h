@@ -37,22 +37,22 @@ using std::vector;
 
 class PredictiveTimeTest2 : public CppUnit::TestFixture
 {
-    CPPUNIT_TEST_SUITE( PredictiveTimeTest2 );
-    //	CPPUNIT_TEST( testPredictedTimeGpsFeed );
-    CPPUNIT_TEST( testProjectedDistance );
-    CPPUNIT_TEST_SUITE_END();
+        CPPUNIT_TEST_SUITE( PredictiveTimeTest2 );
+        //	CPPUNIT_TEST( testPredictedTimeGpsFeed );
+        CPPUNIT_TEST( testProjectedDistance );
+        CPPUNIT_TEST_SUITE_END();
 
 public:
-    PredictiveTimeTest2();
-    void setUp();
-    void tearDown();
-    void testPredictedTimeGpsFeed();
-    void testProjectedDistance();
+        PredictiveTimeTest2();
+        void setUp();
+        void tearDown();
+        void testPredictedTimeGpsFeed();
+        void testProjectedDistance();
 
 private:
-    string readFile(string filename);
-    vector<string> split(string &s, char delim);
-    vector<string> & split(string &s, char delim, vector<string> &elems);
+        string readFile(string filename);
+        vector<string> split(string &s, char delim);
+        vector<string> & split(string &s, char delim, vector<string> &elems);
 };
 
 #endif /* PREDICTIVETIMETEST2_H_ */

@@ -58,10 +58,10 @@ struct at_info _ati = {0};
 static struct {
         struct serial_buffer *scb;
         struct at_info *ati;
-	struct {
-		esp8266_init_cb_t* cb;
-		enum dev_init_state state;
-	} init;
+        struct {
+                esp8266_init_cb_t* cb;
+                enum dev_init_state state;
+        } init;
         struct esp8266_event_hooks hooks;
 } state;
 
@@ -81,10 +81,10 @@ static void cmd_failure(const char *cmd_name, const char *msg)
  */
 static void ipd_urc_cb(struct at_info *ati, char *msg)
 {
-	if (!state.hooks.data_received_cb)
-		return;
+        if (!state.hooks.data_received_cb)
+                return;
 
-	static const char *cmd_name = "ipd_urc_cb";
+        static const char *cmd_name = "ipd_urc_cb";
 
         /* +IPD,<id>,<len>:<data> */
         char *toks[4];
@@ -100,58 +100,58 @@ static void ipd_urc_cb(struct at_info *ati, char *msg)
         size_t serial_len = strlen(data);
 
 
-	/*
-	 * Check that we at least got the number of characters expected.
-	 * Clip the message at the given len b/c sometimes esp8266 adds an
-	 * extra \r\n at the end.  This is actually a bug in how we process
-	 * messages from esp8266 since we always expect AT messages to end
-	 * in \r\n and the IPD URC does not always do this (the extra \r\n
-	 * comes from the command messages.
-	 */
-	if (serial_len < len) {
-	    pr_debug(LOG_PFX "Received less data than expected: ");
-	    pr_debug_int(serial_len);
-	    pr_debug("/");
-	    pr_debug_int(len);
-	    pr_debug_str_msg("; data: ", data);
-	}
+        /*
+         * Check that we at least got the number of characters expected.
+         * Clip the message at the given len b/c sometimes esp8266 adds an
+         * extra \r\n at the end.  This is actually a bug in how we process
+         * messages from esp8266 since we always expect AT messages to end
+         * in \r\n and the IPD URC does not always do this (the extra \r\n
+         * comes from the command messages.
+         */
+        if (serial_len < len) {
+                pr_debug(LOG_PFX "Received less data than expected: ");
+                pr_debug_int(serial_len);
+                pr_debug("/");
+                pr_debug_int(len);
+                pr_debug_str_msg("; data: ", data);
+        }
 
-	data[len] = 0;
+        data[len] = 0;
 
 
-	/* Check twice to ensure that it wasn't unset after first check */
-	if (state.hooks.data_received_cb)
-		state.hooks.data_received_cb(chan_id, len, data);
+        /* Check twice to ensure that it wasn't unset after first check */
+        if (state.hooks.data_received_cb)
+                state.hooks.data_received_cb(chan_id, len, data);
 }
 
 static void wifi_action_callback(const char* msg)
 {
-	/* Check for the hook */
-	if (!state.hooks.client_state_changed_cb)
-		return;
+        /* Check for the hook */
+        if (!state.hooks.client_state_changed_cb)
+                return;
 
-	enum client_action action;
-	/* Look at our 5th character to determin our action */
-	switch (msg[5]) {
-	case 'C':
-		/* WIFI CONNECT */
-		action = CLIENT_ACTION_CONNECT;
-		break;
-	case 'D':
-		/* WIFI DISCONNECT */
-		action = CLIENT_ACTION_DISCONNECT;
-		break;
-	case 'G':
-		/* WIFI GOT IP */
-		action = CLIENT_ACTION_GOT_IP;
-		break;
-	default:
-		pr_warning_str_msg(LOG_PFX "Unknown Wifi Action: ", msg);
-		action = CLIENT_ACTION_UNKNOWN;
-		break;
-	}
+        enum client_action action;
+        /* Look at our 5th character to determin our action */
+        switch (msg[5]) {
+        case 'C':
+                /* WIFI CONNECT */
+                action = CLIENT_ACTION_CONNECT;
+                break;
+        case 'D':
+                /* WIFI DISCONNECT */
+                action = CLIENT_ACTION_DISCONNECT;
+                break;
+        case 'G':
+                /* WIFI GOT IP */
+                action = CLIENT_ACTION_GOT_IP;
+                break;
+        default:
+                pr_warning_str_msg(LOG_PFX "Unknown Wifi Action: ", msg);
+                action = CLIENT_ACTION_UNKNOWN;
+                break;
+        }
 
-	state.hooks.client_state_changed_cb(action);
+        state.hooks.client_state_changed_cb(action);
 }
 
 static bool channel_action_cb(const char* msg)
@@ -172,16 +172,16 @@ static bool channel_action_cb(const char* msg)
         if (STR_EQ(m2, "CLOSED\r\n"))
                 action = SOCKET_ACTION_DISCONNECT;
 
-	if (STR_EQ(m2, "CONNECT FAIL\r\n"))
+        if (STR_EQ(m2, "CONNECT FAIL\r\n"))
                 action = SOCKET_ACTION_CONNECT_FAIL;
 
         if (state.hooks.socket_state_changed_cb &&
-	    action != SOCKET_ACTION_UNKNOWN) {
+            action != SOCKET_ACTION_UNKNOWN) {
                 state.hooks.socket_state_changed_cb(atoi(m1), action);
-		return true;
-	}
+                return true;
+        }
 
-	return false;
+        return false;
 
 }
 
@@ -192,20 +192,20 @@ static bool channel_action_cb(const char* msg)
  */
 static bool sparse_urc_cb(struct at_info *ati, char* msg)
 {
-	/* + IPD,... - Incoming data. */
-	if (strncmp(msg, "+IPD,", 5) == 0) {
-		ipd_urc_cb(ati, msg);
-		return true;
-	}
+        /* + IPD,... - Incoming data. */
+        if (strncmp(msg, "+IPD,", 5) == 0) {
+                ipd_urc_cb(ati, msg);
+                return true;
+        }
 
-	/* WIFI ... - Device actions */
+        /* WIFI ... - Device actions */
         if (strncmp(msg, "WIFI ", 5) == 0) {
-		wifi_action_callback(msg);
-		return true;
-	}
+                wifi_action_callback(msg);
+                return true;
+        }
 
-	/* <0-4>,... - Socket actions */
-	return channel_action_cb(msg);
+        /* <0-4>,... - Socket actions */
+        return channel_action_cb(msg);
 }
 
 /**
@@ -237,9 +237,9 @@ bool esp8266_setup(struct Serial *serial, const size_t max_cmd_len)
         if (!at_info_init(state.ati, state.scb))
                 return false;
 
-	at_configure_device(state.ati, ESP8266_QP_MS, ESP8266_CMD_DELIM,
-			    ESP8266_DEV_FLAGS);
-	at_set_sparse_urc_cb(state.ati, sparse_urc_cb);
+        at_configure_device(state.ati, ESP8266_QP_MS, ESP8266_CMD_DELIM,
+                            ESP8266_DEV_FLAGS);
+        at_set_sparse_urc_cb(state.ati, sparse_urc_cb);
 
         return true;
 }
@@ -257,27 +257,27 @@ void esp8266_do_loop(const size_t timeout)
 
 bool esp8266_set_default_serial_params(struct Serial* serial)
 {
-	return serial_config(serial, ESP8266_SERIAL_DEF_BITS,
-			     ESP8266_SERIAL_DEF_PARITY,
-			     ESP8266_SERIAL_DEF_STOP,
-			     ESP8266_SERIAL_DEF_BAUD);
+        return serial_config(serial, ESP8266_SERIAL_DEF_BITS,
+                             ESP8266_SERIAL_DEF_PARITY,
+                             ESP8266_SERIAL_DEF_STOP,
+                             ESP8266_SERIAL_DEF_BAUD);
 }
 
 static void init_complete(const bool success)
 {
-	/* Only do the callback once */
-	esp8266_init_cb_t* cb = state.init.cb;
-	state.init.cb = NULL;
+        /* Only do the callback once */
+        esp8266_init_cb_t* cb = state.init.cb;
+        state.init.cb = NULL;
 
-	if (success) {
-		pr_info(LOG_PFX "Initialized\r\n");
-		state.init.state = DEV_INIT_STATE_READY;
-	} else {
-		state.init.state = DEV_INIT_STATE_FAILED;
-	}
+        if (success) {
+                pr_info(LOG_PFX "Initialized\r\n");
+                state.init.state = DEV_INIT_STATE_READY;
+        } else {
+                state.init.state = DEV_INIT_STATE_FAILED;
+        }
 
-	if (cb)
-		cb(success);
+        if (cb)
+                cb(success);
 }
 
 /**
@@ -286,7 +286,7 @@ static void init_complete(const bool success)
  */
 static void init_failed(const char *msg)
 {
-	cmd_failure("Init", msg);
+        cmd_failure("Init", msg);
         init_complete(false);
 }
 
@@ -339,9 +339,9 @@ static bool init_set_mux_mode_cb(struct at_rsp *rsp, void *up)
         const bool status = at_ok(rsp);
         if (!status) {
                 init_failed("set_mux_mode_cb");
-	} else {
-		init_complete(true);
-	}
+        } else {
+                init_complete(true);
+        }
 
         return false;
 }
@@ -360,32 +360,32 @@ static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
 {
         const bool status = at_ok(rsp);
         if (!status) {
-		init_failed("Soft reset failed.");
-		return false;
-	}
+                init_failed("Soft reset failed.");
+                return false;
+        }
 
-	/* Reset Serial to default values first */
-	struct Serial* serial = state.ati->sb->serial;
+        /* Reset Serial to default values first */
+        struct Serial* serial = state.ati->sb->serial;
 
-	/* Wait for the ready notice from the modem and ping test. */
-	esp8266_wait_for_ready(serial);
-	if (!at_basic_ping(serial, AT_PROBE_TRIES, AT_PROBE_DELAY_MS)) {
-		init_failed("Post reset ping failed\r\n");
-		return false;
-	}
+        /* Wait for the ready notice from the modem and ping test. */
+        esp8266_wait_for_ready(serial);
+        if (!at_basic_ping(serial, AT_PROBE_TRIES, AT_PROBE_DELAY_MS)) {
+                init_failed("Post reset ping failed\r\n");
+                return false;
+        }
 
 
-	/*
-	 * If here, queue up reset of init tasks.  Use single &
-	 * to prevent short-circuiting of commands should one fail
-	 * to queue.
-	 */
-	const bool queued =
-		init_set_echo() &&
-		init_get_version() &&
+        /*
+         * If here, queue up reset of init tasks.  Use single &
+         * to prevent short-circuiting of commands should one fail
+         * to queue.
+         */
+        const bool queued =
+                init_set_echo() &&
+                init_get_version() &&
                 init_set_mux_mode();
-	if (!queued)
-		init_failed("Failed to queue up all init tasks\r\n");
+        if (!queued)
+                init_failed("Failed to queue up all init tasks\r\n");
 
         return false;
 }
@@ -397,7 +397,7 @@ static bool init_soft_reset_cb(struct at_rsp *rsp, void *up)
  */
 static bool init_soft_reset()
 {
-    /* Initialize the esp8266 hardware */
+        /* Initialize the esp8266 hardware */
 
         wifi_device_init();
         struct Serial* serial = state.ati->sb->serial;
@@ -418,30 +418,30 @@ static bool init_soft_reset()
  */
 bool esp8266_init(esp8266_init_cb_t* cb)
 {
-	const char task_name[] = "esp8266_init";
+        const char task_name[] = "esp8266_init";
         if (!state.ati) {
-		cmd_failure(task_name, "AT subsys not initialized");
+                cmd_failure(task_name, "AT subsys not initialized");
                 return false;
-	}
+        }
 
-	if (state.init.cb) {
-		cmd_failure(task_name, "Init already in progress");
-		return false;
-	}
+        if (state.init.cb) {
+                cmd_failure(task_name, "Init already in progress");
+                return false;
+        }
 
-	state.init.cb = cb;
+        state.init.cb = cb;
 
-	/*
-	 * To ensure our device is initialized properly we do the
-	 * following in this order:
-	 *
-	 * + Soft Reset
-	 * + Print Version Info
-	 * + Disable Cmd Echo
-	 * + Setup Muxing
-	 *
-	 * This gaurantees sane initialized state for the WiFi device.
-	 */
+        /*
+         * To ensure our device is initialized properly we do the
+         * following in this order:
+         *
+         * + Soft Reset
+         * + Print Version Info
+         * + Disable Cmd Echo
+         * + Setup Muxing
+         *
+         * This gaurantees sane initialized state for the WiFi device.
+         */
         return init_soft_reset();
 }
 
@@ -712,7 +712,7 @@ static bool get_ip_info_cb(struct at_rsp *rsp, void *up)
         char *toks[4];
         for(size_t i = 0; i < rsp->msg_count; ++i) {
                 const size_t tok_count = at_parse_rsp_line(rsp->msgs[i], toks,
-                                                           ARRAY_LEN(toks));
+                                         ARRAY_LEN(toks));
                 if (tok_count != 3)
                         continue;
 
@@ -851,8 +851,8 @@ bool esp8266_set_ap_info(const struct esp8266_ap_info* info,
 static bool connect_cb(struct at_rsp *rsp, void *up)
 {
         static const char *cmd_name = "connect_cb";
-	const bool in_use = STR_EQ(rsp->msgs[0], "ALREADY CONNECTED");
-	const bool status = at_ok(rsp);
+        const bool in_use = STR_EQ(rsp->msgs[0], "ALREADY CONNECTED");
+        const bool status = at_ok(rsp);
         esp8266_connect_cb_t *cb = up;
 
         if (!status)
@@ -964,8 +964,8 @@ bool esp8266_close(const int chan_id, esp8266_close_cb_t* cb)
 struct tx_info {
         struct Serial *serial;
         size_t len;
-	size_t sent;
-	unsigned int chan_id;
+        size_t sent;
+        unsigned int chan_id;
         esp8266_send_data_cb_t* cb;
 };
 
@@ -998,30 +998,30 @@ static bool send_data_cb(struct at_rsp *rsp, void *up)
                  * true at the end of this method to indicate to the AT command
                  * state machine that there is still more data to come from this
                  * command.
-		 *
-		 * TODO: Make this non-destructive if the send failed. We should
-		 * be able to peek at all items on the queue and not remove them
-		 * until the send operation was successful. Issue #807
+                 *
+                 * TODO: Make this non-destructive if the send failed. We should
+                 * be able to peek at all items on the queue and not remove them
+                 * until the send operation was successful. Issue #807
                  */
                 struct Serial *s = state.ati->sb->serial;
                 xQueueHandle q = serial_get_tx_queue(ti->serial);
-		bool underrun = false;
+                bool underrun = false;
 
                 for (; ti->sent < ti->len; ++ti->sent) {
-			char c;
+                        char c;
                         if (!xQueueReceive(q, &c, 0)) {
-				underrun = true;
-				c = INVALID_CHAR; /* Invalid UTF-8 Byte */
-			}
+                                underrun = true;
+                                c = INVALID_CHAR; /* Invalid UTF-8 Byte */
+                        }
 
                         serial_write_c(s, c);
                 }
 
-		if (underrun)
-			pr_error(LOG_PFX "BUG: Tx underrun!\r\n");
+                if (underrun)
+                        pr_error(LOG_PFX "BUG: Tx underrun!\r\n");
 
                 return true;
-	}
+        }
         case AT_RSP_STATUS_SEND_OK:
                 /* Then we have successfully sent the message */
                 status = true;
@@ -1075,7 +1075,7 @@ bool esp8266_send_data(const unsigned int chan_id, struct Serial *serial,
         ti->serial = serial;
         ti->len = len;
         ti->cb = cb;
-	ti->chan_id = chan_id;
+        ti->chan_id = chan_id;
 
         char cmd[32];
         snprintf(cmd, ARRAY_LEN(cmd),"AT+CIPSEND=%d,%d", chan_id, (int) len);
@@ -1129,7 +1129,7 @@ bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
 bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
 {
         memcpy(&state.hooks, hooks, sizeof(struct esp8266_event_hooks));
-	return true;
+        return true;
 }
 
 /**
@@ -1144,7 +1144,7 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks)
  * @return True if the operation was successful, false otherwise.
  */
 bool esp8266_set_uart_config_raw(const size_t baud, const size_t bits,
-				 const size_t parity, const size_t stop_bits)
+                                 const size_t parity, const size_t stop_bits)
 {
         const char cmd_name[] = "set_uart_config";
         if (!state.ati) {
@@ -1158,31 +1158,31 @@ bool esp8266_set_uart_config_raw(const size_t baud, const size_t bits,
                 stop_bits_adj = 3;
 
         /*
-	 * AT+UART_CUR=<baudrate>,<databits>,<stopbits>,<parity>,<flowctrl>
-	 */
-	char cmd[48];
+         * AT+UART_CUR=<baudrate>,<databits>,<stopbits>,<parity>,<flowctrl>
+         */
+        char cmd[48];
         snprintf(cmd, ARRAY_LEN(cmd), "AT+UART_CUR=%d,%d,%d,%d,0%s", (int) baud,
-		 (int) bits, stop_bits_adj, (int) parity, ESP8266_CMD_DELIM);
+                 (int) bits, stop_bits_adj, (int) parity, ESP8266_CMD_DELIM);
 
-	/* Do it manually because of the ESP8266 Bug */
-	struct Serial* serial = state.scb->serial;
-	serial_flush(serial);
-	serial_write_s(serial, cmd);
-	const bool done = at_basic_wait_for_msg(serial, "OK",
-						_TIMEOUT_MEDIUM_MS);
-	serial_flush(serial);
+        /* Do it manually because of the ESP8266 Bug */
+        struct Serial* serial = state.scb->serial;
+        serial_flush(serial);
+        serial_write_s(serial, cmd);
+        const bool done = at_basic_wait_for_msg(serial, "OK",
+                                                _TIMEOUT_MEDIUM_MS);
+        serial_flush(serial);
 
-	return done;
+        return done;
 }
 
 bool esp8266_probe_device(struct Serial* serial, const int fast_baud)
 {
-	const int bauds[] = {fast_baud, ESP8266_SERIAL_DEF_BAUD};
-	return at_basic_probe(serial, bauds, ARRAY_LEN(bauds),
-			      AT_PROBE_TRIES, AT_PROBE_DELAY_MS,
-			      ESP8266_SERIAL_DEF_BITS,
-			      ESP8266_SERIAL_DEF_PARITY,
-			      ESP8266_SERIAL_DEF_STOP);
+        const int bauds[] = {fast_baud, ESP8266_SERIAL_DEF_BAUD};
+        return at_basic_probe(serial, bauds, ARRAY_LEN(bauds),
+                              AT_PROBE_TRIES, AT_PROBE_DELAY_MS,
+                              ESP8266_SERIAL_DEF_BITS,
+                              ESP8266_SERIAL_DEF_PARITY,
+                              ESP8266_SERIAL_DEF_STOP);
 }
 
 /**
@@ -1192,6 +1192,6 @@ bool esp8266_probe_device(struct Serial* serial, const int fast_baud)
  */
 bool esp8266_wait_for_ready(struct Serial* serial)
 {
-	return at_basic_wait_for_msg(serial, "ready",
-				     ESP8266_INIT_TIMEOUT_MS);
+        return at_basic_wait_for_msg(serial, "ready",
+                                     ESP8266_INIT_TIMEOUT_MS);
 }

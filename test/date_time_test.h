@@ -26,36 +26,36 @@
 
 class DateTimeTest : public CppUnit::TestFixture
 {
-    CPPUNIT_TEST_SUITE( DateTimeTest );
-    CPPUNIT_TEST( testLeapYear );
-    CPPUNIT_TEST( testDaysInMonth );
-    CPPUNIT_TEST( testIsValidDateTime );
-    CPPUNIT_TEST( testGetMillisSinceEpoch );
-    CPPUNIT_TEST( testMillisToMinutes );
-    CPPUNIT_TEST( testMillisToSeconds );
-    CPPUNIT_TEST( testTinyMillisToMinutes );
-    CPPUNIT_TEST( testTinyMillisToSeconds );
-    CPPUNIT_TEST( testGetDeltaInMillis );
-    CPPUNIT_TEST( testUptime );
-    CPPUNIT_TEST( testMillisSinceEpoch );
-    CPPUNIT_TEST( testDateTimeFromEpochMillis );
-    CPPUNIT_TEST_SUITE_END();
+        CPPUNIT_TEST_SUITE( DateTimeTest );
+        CPPUNIT_TEST( testLeapYear );
+        CPPUNIT_TEST( testDaysInMonth );
+        CPPUNIT_TEST( testIsValidDateTime );
+        CPPUNIT_TEST( testGetMillisSinceEpoch );
+        CPPUNIT_TEST( testMillisToMinutes );
+        CPPUNIT_TEST( testMillisToSeconds );
+        CPPUNIT_TEST( testTinyMillisToMinutes );
+        CPPUNIT_TEST( testTinyMillisToSeconds );
+        CPPUNIT_TEST( testGetDeltaInMillis );
+        CPPUNIT_TEST( testUptime );
+        CPPUNIT_TEST( testMillisSinceEpoch );
+        CPPUNIT_TEST( testDateTimeFromEpochMillis );
+        CPPUNIT_TEST_SUITE_END();
 
 public:
-    void setUp();
-    void tearDown();
-    void testLeapYear();
-    void testDaysInMonth();
-    void testIsValidDateTime();
-    void testGetMillisSinceEpoch();
-    void testGetDeltaInMillis();
-    void testMillisToMinutes();
-    void testMillisToSeconds();
-    void testTinyMillisToMinutes();
-    void testTinyMillisToSeconds();
-    void testUptime();
-    void testMillisSinceEpoch();
-    void testDateTimeFromEpochMillis();
+        void setUp();
+        void tearDown();
+        void testLeapYear();
+        void testDaysInMonth();
+        void testIsValidDateTime();
+        void testGetMillisSinceEpoch();
+        void testGetDeltaInMillis();
+        void testMillisToMinutes();
+        void testMillisToSeconds();
+        void testTinyMillisToMinutes();
+        void testTinyMillisToSeconds();
+        void testUptime();
+        void testMillisSinceEpoch();
+        void testDateTimeFromEpochMillis();
 };
 
 

@@ -31,15 +31,15 @@
 CPP_GUARD_BEGIN
 
 bool at_basic_wait_for_msg(struct Serial* serial, const char* msg,
-			   const tiny_millis_t delay_ms);
+                           const tiny_millis_t delay_ms);
 
 bool at_basic_ping(struct Serial* serial, const size_t tries,
-		   const tiny_millis_t delay_ms);
+                   const tiny_millis_t delay_ms);
 
 int at_basic_probe(struct Serial* serial, const int bauds[],
-		   const size_t size, const size_t tries,
-		   const tiny_millis_t delay, const size_t msg_bits,
-		   const size_t parity, const size_t stop_bits);
+                   const size_t size, const size_t tries,
+                   const tiny_millis_t delay, const size_t msg_bits,
+                   const size_t parity, const size_t stop_bits);
 
 CPP_GUARD_END
 

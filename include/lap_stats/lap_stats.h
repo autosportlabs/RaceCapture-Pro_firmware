@@ -44,8 +44,8 @@ typedef enum {
  * A simple Time and Location sample.
  */
 typedef struct _TimeLoc {
-    GeoPoint point;
-    millis_t time;
+        GeoPoint point;
+        millis_t time;
 } TimeLoc;
 
 void lapstats_config_changed(void);

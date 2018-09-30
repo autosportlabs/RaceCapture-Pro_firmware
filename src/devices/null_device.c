@@ -24,10 +24,10 @@
 
 int null_device_init_connection(DeviceConfig *config, millis_t * connected_at)
 {
-    return DEVICE_INIT_SUCCESS;
+        return DEVICE_INIT_SUCCESS;
 }
 
 int null_device_check_connection_status(DeviceConfig *config)
 {
-    return DEVICE_STATUS_NO_ERROR;
+        return DEVICE_STATUS_NO_ERROR;
 }

@@ -78,7 +78,7 @@ bool auto_logger_set_config(struct auto_logger_config* cfg,
 }
 
 static void auto_logger_sample_cb(const struct sample* sample,
-                           const int tick, void* data)
+                                  const int tick, void* data)
 {
         if (!auto_logger_state.cfg || !auto_logger_state.cfg->enabled)
                 return;
@@ -89,20 +89,20 @@ static void auto_logger_sample_cb(const struct sample* sample,
                 return;
 
         enum auto_control_trigger_result res = auto_control_check_trigger(value,
-                                                                          &auto_logger_state.cfg->start,
-                                                                          &auto_logger_state.cfg->stop,
-                                                                          &auto_logger_state.control_state);
-        switch(res){
-                case AUTO_CONTROL_TRIGGERED:
-                        startLogging();
-                        pr_info(LOG_PFX "Auto-starting logging\r\n");
-                        break;
-                case AUTO_CONTROL_UNTRIGGERED:
-                        stopLogging();
-                        pr_info(LOG_PFX "Auto-stopping logging\r\n");
-                        break;
-                default:
-                        break;
+                                               &auto_logger_state.cfg->start,
+                                               &auto_logger_state.cfg->stop,
+                                               &auto_logger_state.control_state);
+        switch(res) {
+        case AUTO_CONTROL_TRIGGERED:
+                startLogging();
+                pr_info(LOG_PFX "Auto-starting logging\r\n");
+                break;
+        case AUTO_CONTROL_UNTRIGGERED:
+                stopLogging();
+                pr_info(LOG_PFX "Auto-stopping logging\r\n");
+                break;
+        default:
+                break;
         }
 }
 

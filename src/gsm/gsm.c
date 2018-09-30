@@ -111,7 +111,7 @@ bool gsm_get_signal_strength(struct serial_buffer *sb,
         serial_buffer_reset(sb);
         serial_buffer_append(sb, cmd);
         const size_t count = cellular_exec_cmd(
-                sb, READ_TIMEOUT, const_msgs, msgs_len);
+                                     sb, READ_TIMEOUT, const_msgs, msgs_len);
         const bool status = is_rsp_ok(const_msgs, count);
 
         if (!status) {
@@ -148,8 +148,8 @@ bool gsm_get_imei(struct serial_buffer *sb,
                 return false;
         }
 
-	strntcpy(cell_info->imei, msgs[0], sizeof(cell_info->imei));
-	rstrip_inline(cell_info->imei);
+        strntcpy(cell_info->imei, msgs[0], sizeof(cell_info->imei));
+        rstrip_inline(cell_info->imei);
 
         return 1;
 }
@@ -165,7 +165,8 @@ enum cellular_net_status gsm_get_network_reg_status(
                                 "+CGREG: 0,2",
                                 "+CGREG: 0,3",
                                 "+CGREG: 0,4",
-                                "+CGREG: 0,5"};
+                                "+CGREG: 0,5"
+                               };
         const size_t answrs_len = ARRAY_LEN(answrs);
 
         serial_buffer_reset(sb);
@@ -201,7 +202,8 @@ bool gsm_is_gprs_attached(struct serial_buffer *sb)
         const char *msgs[2];
         const size_t msgs_len = ARRAY_LEN(msgs);
         const char *answrs[] = {"+CGATT: 0",
-                                "+CGATT: 1",};
+                                "+CGATT: 1",
+                               };
         const size_t answrs_len = ARRAY_LEN(answrs);
 
         serial_buffer_reset(sb);
@@ -230,7 +232,7 @@ bool gsm_get_network_reg_info(struct serial_buffer *sb,
          * Network provider may be there.  May not be.
          * +COPS: <mode>[,<format>,<oper>[,<AcT>]]
          */
-       const char *str_beg = strchr(msgs[0], '"');
+        const char *str_beg = strchr(msgs[0], '"');
         if (NULL != str_beg) {
                 ++str_beg;
                 char *str_end = strchr(str_beg, '"');
