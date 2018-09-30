@@ -715,13 +715,13 @@ static void debug_print_gps_snapshot(const GpsSnapshot *gps_snapshot)
 void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
 {
         if (!g_configured)
-          lapstats_setup(gps_snapshot);
+                lapstats_setup(gps_snapshot);
 
         if (isGpsDataCold())
-          return; /* No valid GPS data to work with */
+                return; /* No valid GPS data to work with */
 
         if (! g_configured)
-         return;
+                return;
 
 
         /**
@@ -787,8 +787,7 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
         /* Evenly split up time between current and last sample */
         tiny_millis_t time_interval = delta_since_last / interval_count;
 
-        if (DEBUG_LEVEL)
-        {
+        if (DEBUG_LEVEL) {
                 pr_debug("---------------\r\n");
                 pr_debug_float_msg("Interval count: ", interval_count);
                 pr_debug_float_msg("Speed interval: ", speed_interval);
@@ -796,8 +795,7 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
                 pr_debug_int_msg  ("Time interval:  ", time_interval);
         }
 
-        for (size_t i = 0; i < interval_count; i++)
-        {
+        for (size_t i = 0; i < interval_count; i++) {
                 /* Linearly interpolate longitude from latitude */
                 float interp_lon = lon1 + (interp_lat - lat1) * ((lon2 - lon1) / (lat2 - lat1));
 
