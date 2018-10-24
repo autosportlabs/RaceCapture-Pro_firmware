@@ -1,3 +1,7 @@
+= 2.13.9=
+* lapStats: Prevent edge cases where incorrect timestamp prevents proper lap timing
+* lapStats: Require a minimum lap distance of 0.1Km to prevent false lap completion
+
 = 2.13.8=
 * GPS: Prevent coarse updating of distance for channel data
 * GPS: Limit interpolation to reasonable value

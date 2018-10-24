@@ -49,6 +49,7 @@
 #define MEASUREMENT_SPEED_MIN_KPH	1
 /* In Millis */
 #define START_FINISH_TIME_THRESHOLD 	10000
+#define FINISH_TRIGGER_MINIMUM_DISTANCE_KM 0.1
 #define TIME_NULL -1
 
 /* Threshold where we start interpolating between GPS samples. 10Hz */
@@ -541,8 +542,10 @@ static void process_finish_logic(const GpsSnapshot *gpsSnapshot)
         if (!gc_isPointInGeoCircle(&point, g_geo_circles.finish))
                 return;
 
-        // If we get here, then we have completed a lap.
-        lap_finished_event(gpsSnapshot);
+        if (g_distance > FINISH_TRIGGER_MINIMUM_DISTANCE_KM) {
+                // If we get here, then we have completed a lap.
+                lap_finished_event(gpsSnapshot);
+        }
 }
 
 static void process_start_logic_no_lc(const GpsSnapshot *gpsSnapshot)
