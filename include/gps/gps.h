@@ -62,6 +62,8 @@ typedef enum {
         GPS_STATUS_ERROR
 } gps_status_t;
 
+void gps_flash_status_led(enum GpsSignalQuality gpsQuality);
+
 gps_status_t GPS_getStatus();
 
 gps_status_t GPS_init(uint8_t targetSampleRate, struct Serial *serial);
@@ -146,8 +148,6 @@ tiny_millis_t getMillisSinceFirstFix();
 tiny_millis_t getUptimeAtSample();
 
 float getGpsSpeedInMph();
-
-int GPS_processUpdate(struct Serial *serial);
 
 CPP_GUARD_END
 

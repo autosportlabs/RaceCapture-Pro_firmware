@@ -53,7 +53,7 @@ gps_status_t GPS_getStatus()
         return gps_status;
 }
 
-static void flashGpsStatusLed(enum GpsSignalQuality gpsQuality)
+void gps_flash_status_led(enum GpsSignalQuality gpsQuality)
 {
         if (g_flashCount == 0)
                 led_disable(LED_GPS);
@@ -217,16 +217,3 @@ void GPS_sample_update(GpsSample *newSample)
                 g_gpsSnapshot.deltaFirstFix - prev_deltaff;
 }
 
-int GPS_processUpdate(struct Serial *serial)
-{
-        GpsSample s;
-        const gps_msg_result_t result = GPS_device_get_update(&s, serial);
-
-        flashGpsStatusLed(s.quality);
-
-        if (result == GPS_MSG_SUCCESS) {
-                GPS_sample_update(&s);
-        }
-
-        return result;
-}

@@ -26,6 +26,7 @@
 #include "geoTrigger.h"
 #include "geopoint.h"
 #include "gps.h"
+#include "gps_device.h"
 #include "macros.h"
 #include "math.h"
 #include "lap_stats.h"
@@ -38,6 +39,8 @@
 #include "tracks.h"
 #include <stdint.h>
 #include <string.h>
+#include "taskUtil.h"
+
 #define _LOG_PFX            "[lapstats] "
 
 /* Make the radius 2x the size of start/finish radius.*/
@@ -86,6 +89,10 @@ static float g_distance;
 static struct GeoTrigger g_start_geo_trigger = {0};
 static struct GeoTrigger g_finish_geo_trigger = {0};
 
+static float last_speed = 0;
+static float current_speed = 0;
+static size_t last_distance_sample_at = 0;
+
 static void reset_elapsed_time()
 {
         g_elapsed_lap_time = 0;
@@ -103,6 +110,9 @@ void resetLapCount()
  */
 void lapstats_reset()
 {
+        last_speed = 0;
+        current_speed = 0;
+        last_distance_sample_at = 0;
         g_at_sector = 0;
         g_at_sf = 0;
         g_lapStartTimestamp = -1;
@@ -324,10 +334,10 @@ static void end_lap_timing(const GpsSnapshot *gpsSnapshot)
         g_lapStartTimestamp = -1;
 }
 
-static void update_distance(const GpsSnapshot *gps_ss)
+void lapstats_update_distance(void)
 {
         const float speed_avg =
-                (gps_ss->sample.speed + gps_ss->previous_speed) / 2;
+                (current_speed + last_speed) / 2;
 
         /*
          * Filter out low speed measurements to prevent updates when
@@ -341,7 +351,13 @@ static void update_distance(const GpsSnapshot *gps_ss)
          * Delta ms: ms
          * KM/H * delta ms / 3600 = delta distance.
          */
-        g_distance += speed_avg * gps_ss->delta_last_sample / 3600000.0;
+        size_t current_time = getCurrentTicks();
+
+        if (last_distance_sample_at > 0) {
+                g_distance += speed_avg * (ticksToMs(current_time - last_distance_sample_at)) / 3600000.0;
+        }
+        last_distance_sample_at = current_time;
+        last_speed = current_speed;
 }
 
 static void set_distance(const float distance)
@@ -609,8 +625,6 @@ void lapstats_config_changed(void)
 
 static void lapstats_location_updated(const GpsSnapshot *gps_snapshot)
 {
-        update_distance(gps_snapshot);
-
         /* Reset at_* flags on every sample. */
         g_at_sf = false;
         g_at_sector = false;
@@ -712,6 +726,11 @@ static void debug_print_gps_snapshot(const GpsSnapshot *gps_snapshot)
         pr_debug("\r\n\r\n");
 }
 
+void lapstats_process_incremental(const GpsSample *sample)
+{
+        current_speed = sample->speed;
+}
+
 void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
 {
         if (!g_configured)
@@ -723,12 +742,16 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
         if (! g_configured)
                 return;
 
-
         /**
          * Split samples into even intervals, with a minimum of 1 sample as a bozo filter
          * This allows us to up-sample slow GPS sources to 10Hz as neccessary
          */
         int32_t delta_since_last = gps_snapshot->delta_last_sample;
+
+        /* dont run samples if way over the threshold either */
+        if (delta_since_last > INTERPOLATION_THRESHOLD_MS * 100)
+                return;
+
         uint32_t interval_count = MAX(1, delta_since_last / INTERPOLATION_THRESHOLD_MS);
 
         if (interval_count == 1) {
