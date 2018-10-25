@@ -46,6 +46,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "api_event.h"
 
 /* Time between beacon messages */
 #define BEACON_PERIOD_MS	1000
@@ -76,6 +77,7 @@
 struct connection {
         struct Serial* serial;
         int ls_handle;
+        int ae_handle;
 };
 
 static struct {
@@ -115,6 +117,7 @@ static void reset_connection(struct connection* c)
 {
         c->serial = NULL;
         c->ls_handle = -1;
+        c->ae_handle = -1;
 }
 
 /* *** All methods that are used to generate events *** */
@@ -134,6 +137,11 @@ struct wifi_camera_control {
         uint8_t camera_make_model;
 };
 
+struct wifi_api_event {
+        struct Serial *serial;
+        struct api_event api_event;
+};
+
 /**
  * Event struct used for all events that come into our wifi task
  */
@@ -143,12 +151,14 @@ struct wifi_event {
                 TASK_NEW_CONNECTION,
                 TASK_CHECK_CONNECTIONS,
                 TASK_SAMPLE,
-                TASK_CAMERA_CONTROL
+                TASK_CAMERA_CONTROL,
+                TASK_API_EVENT
         } task;
         union {
                 struct wifi_camera_control camera_control;
                 struct wifi_sample_data sample;
                 struct Serial* serial;
+                struct wifi_api_event api_event;
         } data;
 };
 
@@ -240,10 +250,26 @@ void wifi_trigger_camera(bool enabled, uint8_t make_model)
         send_event(&event, "Cam Ctrl", false);
 }
 
+static void wifi_api_event_cb(const struct api_event *api_event, void* data)
+{
+        struct Serial* const serial = data;
+        struct wifi_api_event api_event_data = {
+                .serial = serial,
+                .api_event= *api_event
+        };
+
+        struct wifi_event event = {
+                .task = TASK_API_EVENT,
+                .data.api_event = api_event_data
+        };
+
+        /* Send the message here to wake the timer */
+        send_event(&event, "ApiEvent", false);
+
+}
 /* *** Wifi Serial IOCTL Handlers *** */
 
-static enum serial_ioctl_status set_telemetry(struct connection* conn,
-                int rate)
+static enum serial_ioctl_status set_telemetry(struct connection* conn, int rate)
 {
         const char* serial_name = serial_get_name(conn->serial);
 
@@ -257,9 +283,17 @@ static enum serial_ioctl_status set_telemetry(struct connection* conn,
                 conn->ls_handle = -1;
         }
 
+        if (conn->ae_handle >= 0) {
+                pr_info_str_msg(LOG_PFX "Stopping alertmessage callback on ", serial_name);
+
+                if (!api_event_destroy_callback(conn->ae_handle))
+                        return SERIAL_IOCTL_STATUS_ERR;
+
+                conn->ae_handle = -1;
+        }
+
         if (rate > 0) {
-                pr_info_str_msg(LOG_PFX "Starting telem stream on ",
-                                serial_name);
+                pr_info_str_msg(LOG_PFX "Starting telem stream on ", serial_name);
 
                 if (rate > WIFI_MAX_SAMPLE_RATE) {
                         pr_info_int_msg(LOG_PFX "Telemetry stream rate too "
@@ -268,11 +302,11 @@ static enum serial_ioctl_status set_telemetry(struct connection* conn,
                         rate = WIFI_MAX_SAMPLE_RATE;
                 }
 
-                conn->ls_handle =
-                        logger_sample_create_callback(wifi_sample_cb,
-                                                      rate, conn->serial);
+                conn->ls_handle =	logger_sample_create_callback(wifi_sample_cb, rate, conn->serial);
 
-                if (conn->ls_handle < 0)
+                conn->ae_handle = api_event_create_callback(wifi_api_event_cb, conn->serial);
+
+                if (conn->ls_handle < 0 || conn->ae_handle < 0)
                         return SERIAL_IOCTL_STATUS_ERR;
         }
 
@@ -652,6 +686,13 @@ static void process_sample(struct wifi_sample_data* data)
         }
 }
 
+static void process_wifi_api_event(struct wifi_api_event * data)
+{
+        /* Only try to send if our Serial device is connected */
+        struct Serial* serial = data->serial;
+        process_api_event(&data->api_event, serial);
+}
+
 /* *** Task loop and all public methods *** */
 
 static void _task(void *params)
@@ -683,6 +724,9 @@ static void _task(void *params)
                         break;
                 case TASK_CAMERA_CONTROL:
                         do_camera_control(&event.data.camera_control);
+                        break;
+                case TASK_API_EVENT:
+                        process_wifi_api_event(&event.data.api_event);
                         break;
                 default:
                         panic(PANIC_CAUSE_UNREACHABLE);

@@ -28,6 +28,7 @@
 #include "dateTime.h"
 #include "loggerConfig.h"
 #include "queue.h"
+#include "serial.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -37,7 +38,7 @@ CPP_GUARD_BEGIN
 enum LoggerMessageType {
         LoggerMessageType_Sample,
         LoggerMessageType_Start,
-        LoggerMessageType_Stop,
+        LoggerMessageType_Stop
 };
 
 /*

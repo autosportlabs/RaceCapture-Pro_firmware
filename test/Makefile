@@ -212,6 +212,7 @@ $(RCP_SRC)/launch_control.c \
 $(RCP_SRC)/logger/fileWriter.c \
 $(RCP_SRC)/logger/connectivityTask.c \
 $(RCP_SRC)/logger/logger.c \
+$(RCP_SRC)/logger/api_event.c \
 $(RCP_SRC)/logger/loggerApi.c \
 $(RCP_SRC)/logger/loggerConfig.c \
 $(RCP_SRC)/logger/loggerData.c \

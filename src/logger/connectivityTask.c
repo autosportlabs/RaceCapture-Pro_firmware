@@ -44,6 +44,7 @@
 #include "taskUtil.h"
 #include "usart.h"
 #include "gps_device.h"
+#include "api_event.h"
 
 
 #if (CONNECTIVITY_CHANNELS == 1)
@@ -54,21 +55,22 @@
 #error "invalid connectivity task count"
 #endif
 
-/*wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all */
-#define TELEMETRY_QUEUE_WAIT_TIME					0
+#define _LOG_PFX "[Conn task] "
 
-#define IDLE_TIMEOUT							configTICK_RATE_HZ / 10
-#define INIT_DELAY	 							600
-#define BUFFER_SIZE 							1025
+/*wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all */
+#define TELEMETRY_QUEUE_WAIT_TIME     0
+
+#define IDLE_TIMEOUT       configTICK_RATE_HZ / 10
+#define INIT_DELAY         600
+#define BUFFER_SIZE        1025
 #define TELEMETRY_DISCONNECT_TIMEOUT            60000
 
-#define TELEMETRY_STACK_SIZE	300
-#define BAD_MESSAGE_THRESHOLD					10
-
-#define METADATA_SAMPLE_INTERVAL				100
+#define TELEMETRY_STACK_SIZE 300
+#define BAD_MESSAGE_THRESHOLD     10
+#define API_EVENT_QUEUE_DEPTH 2
+#define METADATA_SAMPLE_INTERVAL    100
 
 static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
-
 
 static size_t trimBuffer(char *buffer, size_t count)
 {
@@ -88,7 +90,7 @@ static int processRxBuffer(struct Serial *serial, char *buffer, size_t *rxCount)
                                                 BUFFER_SIZE - *rxCount, 0);
 
         if (count < 0) {
-                pr_error("[connectivityTask] Serial device closed\r\n");
+                pr_error(_LOG_PFX "Serial device closed\r\n");
                 return 0;
         }
 
@@ -99,7 +101,7 @@ static int processRxBuffer(struct Serial *serial, char *buffer, size_t *rxCount)
                 buffer[BUFFER_SIZE - 1] = '\0';
                 *rxCount = BUFFER_SIZE - 1;
                 processMsg = 1;
-                pr_error_str_msg("Rx Buffer overflow:", buffer);
+                pr_error_str_msg(_LOG_PFX "Rx Buffer overflow:", buffer);
         }
         if (*rxCount > 0) {
                 char lastChar = buffer[*rxCount - 1];
@@ -115,54 +117,6 @@ void queueTelemetryRecord(const LoggerMessage *msg)
 {
         for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++)
                 send_logger_message(g_sampleQueue[i], msg);
-}
-
-/*combined telemetry - for when there's only one telemetry / wireless port available on system
-//e.g. "Y-adapter" scenario */
-static void createCombinedTelemetryTask(int16_t priority,
-                                        xQueueHandle sampleQueue)
-{
-        ConnectivityConfig *connConfig =
-                &getWorkingLoggerConfig()->ConnectivityConfigs;
-        size_t btEnabled = connConfig->bluetoothConfig.btEnabled;
-        size_t cellEnabled = connConfig->cellularConfig.cellEnabled;
-
-        if (btEnabled || cellEnabled) {
-                ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
-
-                params->periodicMeta = btEnabled && cellEnabled;
-
-                /*defaults*/
-                params->check_connection_status = &null_device_check_connection_status;
-                params->init_connection = &null_device_init_connection;
-                params->serial = SERIAL_TELEMETRY;
-                params->sampleQueue = sampleQueue;
-                params->connection_timeout = 0;
-                params->always_streaming = false;
-
-                if (btEnabled) {
-                        params->check_connection_status = &bt_check_connection_status;
-                        params->init_connection = &bt_init_connection;
-                        params->disconnect = &bt_disconnect;
-                        params->always_streaming = true;
-                        params->max_sample_rate = SAMPLE_50Hz;
-                }
-
-#if CELLULAR_SUPPORT
-                /*cell overrides wireless*/
-                if (cellEnabled) {
-                        params->check_connection_status = &cellular_check_connection_status;
-                        params->init_connection = &cellular_init_connection;
-                        params->disconnect = &cellular_disconnect;
-                        params->always_streaming = false;
-                        params->max_sample_rate = SAMPLE_10Hz;
-                }
-#endif
-                /* Make all task names 16 chars including NULL char */
-                static const signed portCHAR task_name[] = "Multi Conn Task";
-                xTaskCreate(connectivityTask, task_name, TELEMETRY_STACK_SIZE,
-                            params, priority, NULL );
-        }
 }
 
 static void createWirelessConnectionTask(int16_t priority,
@@ -222,15 +176,12 @@ void startConnectivityTask(int16_t priority)
                 g_sampleQueue[i] = create_logger_message_queue();
 
                 if (NULL == g_sampleQueue[i]) {
-                        pr_error("conn: err sample queue\r\n");
+                        pr_error(_LOG_PFX "err sample queue\r\n");
                         return;
                 }
         }
 
         switch (CONNECTIVITY_CHANNELS) {
-        case 1:
-                createCombinedTelemetryTask(priority, g_sampleQueue[0]);
-                break;
         case 2: {
                 ConnectivityConfig *connConfig =
                         &getWorkingLoggerConfig()->ConnectivityConfigs;
@@ -259,7 +210,7 @@ void startConnectivityTask(int16_t priority)
         }
         break;
         default:
-                pr_error("conn: err init\r\n");
+                pr_error_int_msg(_LOG_PFX "Error creating connectivity task incorrect number of channels ", CONNECTIVITY_CHANNELS);
                 break;
         }
 }
@@ -272,6 +223,16 @@ static void toggle_connectivity_indicator(const enum led indicator)
 static void clear_connectivity_indicator(const enum led indicator)
 {
         led_disable(indicator);
+}
+
+static void queue_api_event(const struct api_event * api_event, void * data)
+{
+        xQueueHandle queue = data;
+        if (xQueueSendToBack(queue, api_event, 0)) {
+                pr_trace(_LOG_PFX "queued api event\r\n");
+        } else {
+                pr_warning(_LOG_PFX "api event queue overflow\r\n");
+        }
 }
 
 void connectivityTask(void *params)
@@ -298,6 +259,9 @@ void connectivityTask(void *params)
 
         bool logging_enabled = false;
 
+        xQueueHandle api_event_queue = xQueueCreate(API_EVENT_QUEUE_DEPTH, sizeof(struct api_event));
+        api_event_create_callback(queue_api_event, api_event_queue);
+
         while (1) {
                 millis_t connected_at = 0;
                 bool should_stream = logging_enabled ||
@@ -305,7 +269,7 @@ void connectivityTask(void *params)
                                      connParams->always_streaming;
 
                 while (should_stream && connParams->init_connection(&deviceConfig, &connected_at) != DEVICE_INIT_SUCCESS) {
-                        pr_info("conn: not connected. retrying\r\n");
+                        pr_info(_LOG_PFX "not connected. retrying\r\n");
                         vTaskDelay(INIT_DELAY);
                 }
                 if (connected_at > 0)
@@ -371,8 +335,17 @@ void connectivityTask(void *params)
                                         break;
                                 }
                                 default:
+                                        pr_info_int_msg(_LOG_PFX "Unknown logger message type ", msg.type);
                                         break;
                                 }
+                        }
+
+                        /*//////////////////////////////////////////////////////////
+                        // Process any pending API events
+                        ////////////////////////////////////////////////////////////*/
+                        struct api_event api_event;
+                        if (xQueueReceive(api_event_queue, &api_event, 0)) {
+                                process_api_event(&api_event, serial);
                         }
 
                         /*//////////////////////////////////////////////////////////
@@ -382,7 +355,7 @@ void connectivityTask(void *params)
                         int msgReceived = processRxBuffer(serial, buffer, &rxCount);
                         /*check the latest contents of the buffer for something that might indicate an error condition*/
                         if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
-                                pr_info("conn: disconnected\r\n");
+                                pr_info(_LOG_PFX "Disconnected\r\n");
                                 break;
                         }
 
@@ -393,7 +366,7 @@ void connectivityTask(void *params)
                                 const int msgRes = process_api(serial, buffer, BUFFER_SIZE);
                                 const int msgError = (msgRes == API_ERROR_MALFORMED);
                                 if (msgError) {
-                                        pr_debug("(failed)\r\n");
+                                        pr_debug(_LOG_PFX " (failed)\r\n");
                                 }
                                 if (msgError) {
                                         badMsgCount++;
@@ -401,7 +374,7 @@ void connectivityTask(void *params)
                                         badMsgCount = 0;
                                 }
                                 if (badMsgCount >= BAD_MESSAGE_THRESHOLD) {
-                                        pr_warning_int_msg("re-connecting- empty/bad msgs :", badMsgCount );
+                                        pr_warning_int_msg(_LOG_PFX "re-connecting- empty/bad msgs :", badMsgCount );
                                         break;
                                 }
                                 rxCount = 0;
@@ -411,7 +384,7 @@ void connectivityTask(void *params)
                         // we haven't heard from the other side for a while */
                         const size_t timeout = getUptimeAsInt() - last_message_time;
                         if (connection_timeout && timeout > connection_timeout ) {
-                                pr_info_str_msg(connParams->connectionName, ": timeout");
+                                pr_info_str_msg(_LOG_PFX " Timeout ", connParams->connectionName);
                                 should_reconnect = true;
                         }
                 }
