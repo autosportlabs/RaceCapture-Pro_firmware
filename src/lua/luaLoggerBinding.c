@@ -968,6 +968,7 @@ static int lua_update_gps(lua_State *L)
                 gp.latitude = lua_tonumber(L, 1);
                 s.point = gp;
         }
+        lapstats_process_incremental(&s);
         GPS_sample_update(&s);
         if (isGpsSignalUsable(s.quality)) {
                 GpsSnapshot snap = getGpsSnapshot();

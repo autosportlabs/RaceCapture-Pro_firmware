@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <streambuf>
 #include <string.h>
+#include "task_testing.h"
 
 using std::ifstream;
 using std::ios;
@@ -60,7 +61,7 @@ static int atoiOffsetLenSafe(const char *str, size_t offset, size_t len) {
 
 void SectorTest::setUp()
 {
-        setupMockSerial();
+ setupMockSerial();
 	GPS_init(10, getMockSerial());
 	lapstats_config_changed();
 }
@@ -110,19 +111,20 @@ string SectorTest::readFile(string filename){
 	return str;
 }
 
+//first line is start/finish
 #define Test_Track { \
     5555,               \
-	TRACK_TYPE_CIRCUIT, \
-	{ \
-		{ \
-			{47.806934,-122.341150}, \
-			{47.806875,-122.335818}, \
-			{47.799740,-122.335704}, \
-			{47.799719,-122.346416}, \
-			{47.806886,-122.346494}, \
-		}\
-	} \
-	}
+ TRACK_TYPE_CIRCUIT, \
+ { \
+  { \
+   {38.161531,-122.454724}, \
+   {38.161825,-122.457959}, \
+   {38.161382,-122.459771}, \
+   {38.162606,-122.46197}, \
+   {38.164462,-122.462384}, \
+  }\
+ } \
+ }
 
 void SectorTest::outputSectorTimes(vector<float> & sectorTimes, int lap){
 	const bool debug = this->is_debug();
@@ -140,9 +142,10 @@ float SectorTest::sumSectorTimes(vector<float> & sectorTimes){
 }
 
 void SectorTest::testSectorTimes(){
+
 	const bool debug = this->is_debug();
 	if (debug) printf("\rSector Times:\r");
-	string log = readFile("predictive_time_test_lap.log");
+	string log = readFile("sonoma.log");
 
 	std::istringstream iss(log);
 
@@ -160,51 +163,53 @@ void SectorTest::testSectorTimes(){
 	int lineNo = 0;
 	string line;
 
-        if (debug) printf("\r\n");
+ if (debug) printf("\r\n");
+ millis_t last_sample_time = 0;
 
 	while (std::getline(iss, line)) {
            lineNo++;
            vector<string> values = split(line, ',');
 
-           string latitudeRaw = values[5];
-           string longitudeRaw = values[6];
-           string speedRaw = values[7];
-           string timeRaw = values[8];
+           string latitudeRaw = values[14];
+           string longitudeRaw = values[15];
+           string speedRaw = values[16];
+           string timeRaw = values[1];
            timeRaw = "0" + timeRaw;
 
            if (values[0][0] == '#' || latitudeRaw.size() == 0
                || longitudeRaw.size() == 0 || speedRaw.size() == 0
                || timeRaw.size() == 0) continue;
 
-           if (debug) {
-               printf("%d,%d,%d,%f\n",lapstats_current_lap(), getLapCount(), getSector(), getLapDistanceInMiles());
-           }
-
            float lat = atof(latitudeRaw.c_str());
            float lon = atof(longitudeRaw.c_str());
            float speed = atof(speedRaw.c_str());
-
            const char *utcTimeStr = timeRaw.c_str();
-           DateTime dt;
-           dt.year = 2014;
-           dt.month = 5;
-           dt.day = 3;
-           dt.hour = (int8_t) atoiOffsetLenSafe(utcTimeStr, 0, 2);
-           dt.minute = (int8_t) atoiOffsetLenSafe(utcTimeStr, 2, 2);
-           dt.second = (int8_t) atoiOffsetLenSafe(utcTimeStr, 4, 2);
-           dt.millisecond = (int16_t) atoiOffsetLenSafe(utcTimeStr, 7, 3);
 
            GpsSample sample;
            sample.quality = GPS_QUALITY_3D;
            sample.point.latitude = lat;
            sample.point.longitude = lon;
-           sample.time = getMillisecondsSinceUnixEpoch(dt);
+           sample.time = strtoull(utcTimeStr, NULL, 10);
            sample.speed = speed;
            sample.satellites = 8; //Totally fake.  Shouldn't matter.
 
+           if (debug) {
+                   printf("%d -- %d,%d,%d,%f,%llu,%f,%f\n",lineNo, lapstats_current_lap(), getLapCount(), getSector(), getLapDistanceInMiles(), sample.time, lat, lon);
+           }
+
+           if (last_sample_time) {
+                   for (millis_t tick=0; tick < (sample.time - last_sample_time); tick++) {
+                           increment_tick();
+                   }
+           }
+           last_sample_time = sample.time;
+
+           lapstats_process_incremental(&sample);
            GPS_sample_update(&sample);
+           lapstats_update_distance();
            GpsSnapshot snap = getGpsSnapshot();
            lapstats_processUpdate(&snap);
+
 
            // Start Work!
            const int sector = getSector();
@@ -231,7 +236,8 @@ void SectorTest::testSectorTimes(){
                    const float lastLapTime = getLastLapTime();
                    const float sum = sumSectorTimes(sectorTimes);
 
-                   if (debug) printf("Lap boundary crossed ( %d -> %d ) | "
+                   if (debug)
+                           printf("Lap boundary crossed ( %d -> %d ) | "
                                      "Lap time: %f | Sum of sector times: %f"
                                      "\r\n", last_lapcount, lap, lastLapTime, sum);
                    outputSectorTimes(sectorTimes, lap);
@@ -254,7 +260,7 @@ void SectorTest::testSectorTimes(){
 
 	}
 
-   CPPUNIT_ASSERT_EQUAL(4, last_lapcount);
+   CPPUNIT_ASSERT_EQUAL(7, last_lapcount);
 }
 
 void SectorTest::testStageSectorTimes() {
@@ -326,6 +332,7 @@ void SectorTest::testStageSectorTimes() {
     sample.speed = 15.7;
     sample.satellites = 8; //Totally fake.  Shouldn't matter.
 
+    lapstats_process_incremental(&sample);
     GPS_sample_update(&sample);
     GpsSnapshot snap = getGpsSnapshot();
     lapstats_processUpdate(&snap);

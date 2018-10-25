@@ -152,6 +152,7 @@ void PredictiveTimeTest2::testPredictedTimeGpsFeed() {
           sample.speed = speed;
           sample.satellites = 8; //Totally fake.  Shouldn't matter.
 
+          lapstats_process_incremental(&sample);
           GPS_sample_update(&sample);
           GpsSnapshot snap = getGpsSnapshot();
           lapstats_processUpdate(&snap);
