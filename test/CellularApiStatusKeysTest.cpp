@@ -55,7 +55,7 @@ void CellularApiStatusKeysTest::net_status_api_key_test()
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("unknown", val);
 
         val = cellular_net_status_api_key(
-                (const enum cellular_net_status) INT_MIN);
+                      (const enum cellular_net_status) INT_MIN);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("unknown", val);
 }
 
@@ -64,42 +64,42 @@ void CellularApiStatusKeysTest::telemetry_status_api_key_test()
         const char* val;
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_IDLE);
+                      TELEMETRY_STATUS_IDLE);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("idle", val);
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_CONNECTED);
+                      TELEMETRY_STATUS_CONNECTED);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("connected", val);
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_CURRENT_CONNECTION_TERMINATED);
+                      TELEMETRY_STATUS_CURRENT_CONNECTION_TERMINATED);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("terminated", val);
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_REJECTED_DEVICE_ID);
+                      TELEMETRY_STATUS_REJECTED_DEVICE_ID);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("rejected", val);
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_SERVER_CONNECTION_FAILED);
+                      TELEMETRY_STATUS_SERVER_CONNECTION_FAILED);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("connect_failed", val);
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_INTERNET_CONFIG_FAILED);
+                      TELEMETRY_STATUS_INTERNET_CONFIG_FAILED);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("data_failed", val);
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_CELL_REGISTRATION_FAILED);
+                      TELEMETRY_STATUS_CELL_REGISTRATION_FAILED);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("registration_failed", val);
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_MODEM_INIT_FAILED);
+                      TELEMETRY_STATUS_MODEM_INIT_FAILED);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("init_failed", val);
 
         val = cellular_telemetry_status_api_key(
-                TELEMETRY_STATUS_DATA_PLAN_NOT_AVAILABLE);
+                      TELEMETRY_STATUS_DATA_PLAN_NOT_AVAILABLE);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("unknown", val);
 
         val = cellular_telemetry_status_api_key(
-                (const telemetry_status_t) INT_MIN);
+                      (const telemetry_status_t) INT_MIN);
         CPPUNIT_ASSERT_EQUAL_CONST_CHAR("unknown", val);
 }

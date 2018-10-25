@@ -30,7 +30,8 @@ void GeoTriggerTest::setUp() {}
 
 void GeoTriggerTest::tearDown() {}
 
-void GeoTriggerTest::testShouldTrigger() {
+void GeoTriggerTest::testShouldTrigger()
+{
         const GeoPoint gp = { 43.074859, -89.386336 }; // 100 State
         const struct GeoCircle gc = gc_createGeoCircle(gp, 10);
         struct GeoTrigger gt = createGeoTrigger(&gc);
@@ -43,7 +44,8 @@ void GeoTriggerTest::testShouldTrigger() {
         CPPUNIT_ASSERT(isGeoTriggerTripped(&gt));
 }
 
-void GeoTriggerTest::testNoTrigger() {
+void GeoTriggerTest::testNoTrigger()
+{
         const GeoPoint gp = { 43.074897, -89.386077 }; // 100 State
         const struct GeoCircle gc = gc_createGeoCircle(gp, 15);
         struct GeoTrigger gt = createGeoTrigger(&gc);
@@ -56,7 +58,8 @@ void GeoTriggerTest::testNoTrigger() {
         CPPUNIT_ASSERT(!isGeoTriggerTripped(&gt));
 }
 
-void GeoTriggerTest::testReset() {
+void GeoTriggerTest::testReset()
+{
         const GeoPoint gp = { 43.074859, -89.386336 }; // 100 State
         const struct GeoCircle gc = gc_createGeoCircle(gp, 10);
         struct GeoTrigger gt = createGeoTrigger(&gc);

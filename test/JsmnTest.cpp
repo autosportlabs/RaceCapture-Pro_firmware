@@ -35,24 +35,24 @@ using std::string;
 
 void JsmnTest::decodeStringTest()
 {
-	const char encoded_json[] = "foo\\\"bar\\\\\\/baz\\t\\u1234\\r\\n";
-	const char expected_str[] = "foo\"bar\\/baz\t?\r\n";
-	char actual_str[ARRAY_LEN(expected_str)];
+        const char encoded_json[] = "foo\\\"bar\\\\\\/baz\\t\\u1234\\r\\n";
+        const char expected_str[] = "foo\"bar\\/baz\t?\r\n";
+        char actual_str[ARRAY_LEN(expected_str)];
 
-	jsmn_decode_string(actual_str, encoded_json, ARRAY_LEN(actual_str));
-	CPPUNIT_ASSERT_EQUAL(string(expected_str), string(actual_str));
+        jsmn_decode_string(actual_str, encoded_json, ARRAY_LEN(actual_str));
+        CPPUNIT_ASSERT_EQUAL(string(expected_str), string(actual_str));
 }
 
 void JsmnTest::encodeWriteStringTest()
 {
-	const char str[] = "foo\"bar\\/baz\t?\r\n";
-	const char expected_json[] = "foo\\\"bar\\\\/baz\\t?\\r\\n";
+        const char str[] = "foo\"bar\\/baz\t?\r\n";
+        const char expected_json[] = "foo\\\"bar\\\\/baz\\t?\\r\\n";
 
-	setupMockSerial();
-	Serial* serial = getMockSerial();
+        setupMockSerial();
+        Serial* serial = getMockSerial();
 
-	jsmn_encode_write_string(serial, str);
-	CPPUNIT_ASSERT_EQUAL(string(expected_json),
-			     string(mock_getTxBuffer()));
+        jsmn_encode_write_string(serial, str);
+        CPPUNIT_ASSERT_EQUAL(string(expected_json),
+                             string(mock_getTxBuffer()));
 
 }
