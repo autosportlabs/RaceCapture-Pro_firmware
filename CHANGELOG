@@ -1,3 +1,6 @@
+= 2.14.0=
+* Core: Add support for pit-to-car alerting
+
 = 2.13.9=
 * lapStats: Prevent edge cases where incorrect timestamp prevents proper lap timing
 * lapStats: Require a minimum lap distance of 0.1Km to prevent false lap completion

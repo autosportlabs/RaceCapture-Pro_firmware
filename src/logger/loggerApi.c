@@ -64,6 +64,7 @@
 #include "tracks.h"
 #include "units.h"
 #include "wifi.h"
+#include "connectivityTask.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -352,6 +353,95 @@ int api_sampleData(struct Serial *serial, const jsmntok_t *json)
         api_send_sample_record(serial, &s, 0, sendMeta);
 
         free_sample_buffer(&s);
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_alertmessage(struct Serial *serial, const jsmntok_t *json)
+{
+        /* Called when Podium broadcasts an alertmessage destined for the device (client app) */
+        struct api_event event;
+        event.source=serial;
+        event.type = ApiEventType_Alertmessage;
+        jsmn_exists_set_val_string(json, "message", event.data.alertmsg.message, MAX_ALERTMESSAGE_LENGTH, true);
+        jsmn_exists_set_val_int(json, "id", &event.data.alertmsg.id);
+        jsmn_exists_set_val_int(json, "priority", &event.data.alertmsg.priority);
+
+        /* Broadcast to other connections */
+        api_event_process_callbacks(&event);
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_alertmsg_reply(struct Serial *serial, const jsmntok_t *json)
+{
+        /* Called when the device (client app) replies with an alert message. Queue a reply back to Podium */
+        struct api_event event;
+        event.source=serial;
+        event.type = ApiEventType_AlertmsgReply;
+        jsmn_exists_set_val_string(json, "message", event.data.alertmsg.message, MAX_ALERTMESSAGE_LENGTH, true);
+        jsmn_exists_set_val_int(json, "priority", &event.data.alertmsg.priority);
+        event.data.alertmsg.id = 0;
+
+        /* Broadcast to other connections */
+        api_event_process_callbacks(&event);
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_alertmsg_ack(struct Serial *serial, const jsmntok_t *json)
+{
+        /* *
+         * Called when the device (client app) ack's an alert message.
+         * Queues it to be broadcasted back to Podium
+         */
+        int alertmsg_id = 0;
+        if (!jsmn_exists_set_val_int(json, "id", &alertmsg_id)) {
+                return API_ERROR_PARAMETER;
+        }
+
+        struct api_event event;
+        event.source=serial;
+        event.type = ApiEventType_AlertmsgAck;
+        event.data.alertmsg_ack.id = alertmsg_id;
+
+        /* Broadcast to other connections */
+        api_event_process_callbacks(&event);
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_send_alertmessage(struct Serial *serial, const struct alertmessage *alertmsg)
+{
+        /* Write an alertmessage json message to the specified serial connection */
+        json_objStart(serial);
+        json_objStartString(serial, "alertmessage");
+        json_string(serial, "message", alertmsg->message, 1);
+        json_int(serial, "id", alertmsg->id, 1);
+        json_int(serial, "priority", alertmsg->priority, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_send_alertmsg_ack(struct Serial *serial, const struct alertmessage_ack *alertmsg_ack)
+{
+        /* Write an alertmsgAck json message to the specified serial connection */
+        json_objStart(serial);
+        json_objStartString(serial, "alertmsgAck");
+        json_int(serial, "id", alertmsg_ack->id, 0);
+
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
+}
+
+int api_send_alertmsg_reply(struct Serial *serial, const struct alertmessage *alertmsg)
+{
+        /* Write an alertmsgReply json message to the specified serial connection */
+        json_objStart(serial);
+        json_objStartString(serial, "alertmsgReply");
+        json_string(serial, "message", alertmsg->message, 1);
+
+        json_int(serial, "priority", alertmsg->priority, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
         return API_SUCCESS_NO_RETURN;
 }
 

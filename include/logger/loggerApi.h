@@ -23,12 +23,12 @@
 #define LOGGERAPI_H_
 
 #include "api.h"
+#include "api_event.h"
 #include "capabilities.h"
 #include "cpp_guard.h"
 #include "jsmn.h"
 #include "sampleRecord.h"
 #include "serial.h"
-
 CPP_GUARD_BEGIN
 
 #define API_METHOD(_NAME, _FUNC) {(_NAME), (_FUNC)},
@@ -54,6 +54,9 @@ CPP_GUARD_BEGIN
 	API_METHOD("hb", api_heart_beat)				\
 	API_METHOD("log", api_log)					\
 	API_METHOD("s", api_sampleData)					\
+	API_METHOD("alertmessage", api_alertmessage)     \
+	API_METHOD("alertmsgReply", api_alertmsg_reply)     \
+	API_METHOD("alertmsgAck", api_alertmsg_ack)     \
 	API_METHOD("setActiveTrack", api_set_active_track)		\
 	API_METHOD("setCanCfg", api_setCanConfig)			\
 	API_METHOD("setConnCfg", api_setConnectivityConfig)		\
@@ -161,6 +164,12 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json);
 int api_systemReset(struct Serial *serial, const jsmntok_t *json);
 int api_factoryReset(struct Serial *serial, const jsmntok_t *json);
 int api_sampleData(struct Serial *serial, const jsmntok_t *json);
+int api_alertmessage(struct Serial *serial, const jsmntok_t *json);
+int api_alertmsg_reply(struct Serial *serial, const jsmntok_t *json);
+int api_alertmsg_ack(struct Serial *serial, const jsmntok_t *json);
+int api_send_alertmessage(struct Serial *serial, const struct alertmessage *alertmsg);
+int api_send_alertmsg_ack(struct Serial *serial, const struct alertmessage_ack *alertmsg_ack);
+int api_send_alertmsg_reply(struct Serial *serial, const struct alertmessage *alertmsg);
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json);
 int api_log(struct Serial *serial, const jsmntok_t *json);
 int api_getMeta(struct Serial *serial, const jsmntok_t *json);
