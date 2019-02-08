@@ -445,6 +445,19 @@ int api_send_alertmsg_reply(struct Serial *serial, const struct alertmessage *al
         return API_SUCCESS_NO_RETURN;
 }
 
+int api_send_button_state(struct Serial *serial, const struct button_state *butt_state)
+{
+        /* Write the button state event to the serial connection */
+        json_objStart(serial);
+        json_objStartString(serial, "button");
+        json_int(serial, "id", butt_state->button_id, 1);
+
+        json_int(serial, "state", butt_state->state, 0);
+        json_objEnd(serial, 0);
+        json_objEnd(serial, 0);
+        return API_SUCCESS_NO_RETURN;
+}
+
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json)
 {
         json_objStart(serial);

@@ -79,6 +79,7 @@ $(HAL_SRC)/wifi_esp8266/wifi_esp8266_device.c \
 $(RCP_SRC)/ADC/ADC.c \
 $(RCP_SRC)/CAN/CAN.c \
 $(RCP_SRC)/CAN/CAN_task.c \
+$(RCP_SRC)/CAN/CAN_dispatcher.c \
 $(RCP_SRC)/CAN/CAN_aux_queue.c \
 $(RCP_SRC)/CAN/can_mapping.c \
 $(RCP_SRC)/CAN/can_channels.c \

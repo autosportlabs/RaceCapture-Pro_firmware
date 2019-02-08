@@ -34,6 +34,8 @@ struct shiftx_configuration {
         uint8_t auto_brightness_scaling;
 };
 
+void shiftx_handle_can_rx_msg(CAN_msg *msg);
+
 struct shiftx_configuration * shiftx_get_config(void);
 bool shiftx_update_config(void);
 
@@ -47,6 +49,8 @@ bool shiftx_update_linear_graph(uint16_t value);
 bool shiftx_set_alert_threshold(uint8_t alert_id, uint8_t threshold_id, uint16_t threshold, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash);
 bool shiftx_set_alert(uint8_t alert_id, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash);
 bool shiftx_update_alert(uint8_t alert_id, uint16_t value);
+
+bool shiftx_rx_button_press(uint8_t * button_id, uint8_t * state);
 
 CPP_GUARD_END
 

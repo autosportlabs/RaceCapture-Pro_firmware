@@ -21,9 +21,15 @@
 
 #include "shiftx_drv.h"
 #include "CAN.h"
+#include "printk.h"
+#include "api_event.h"
+
+#define _LOG_PFX "[ShiftX] "
 
 #define DEFAULT_CAN_TIMEOUT   100
 #define CONFIG_MESSAGE_OFFSET 3
+
+#define ANNOUNCEMENT_OFFSET 0
 
 #define CONFIG_MESSAGE_SET_DISCRETE_LED_OFFSET 10
 
@@ -37,11 +43,49 @@
 
 #define CONFIG_MESSAGE_SET_DISPLAY_OFFSET 50
 
+#define NOTIFICATION_BUTTON_STATE_OFFSET 60
+
 static struct shiftx_configuration shiftx_config = {0, 0, 1, 0xE3600, 51};
+
+static struct {
+        bool received;
+        uint8_t id;
+        uint8_t state;
+} button_state = {0};
 
 struct shiftx_configuration * shiftx_get_config(void)
 {
         return &shiftx_config;
+}
+
+void shiftx_handle_can_rx_msg(CAN_msg *msg)
+{
+        if (msg == NULL) return;
+
+        if (msg->addressValue == shiftx_config.base_address + ANNOUNCEMENT_OFFSET) {
+                pr_info_int_msg(_LOG_PFX "Received configuration message for base address: ", msg->addressValue);
+                shiftx_update_config();
+        }
+
+        if (msg->addressValue == shiftx_config.base_address + NOTIFICATION_BUTTON_STATE_OFFSET) {
+                pr_info_int_msg(_LOG_PFX "Received button event for base address: ", msg->addressValue);
+
+                uint8_t id = msg->data[1];
+                uint8_t state = msg->data[0];
+                button_state.id = id;
+                button_state.state = state;
+                button_state.received = true;
+
+                /* Broadcast button state to connected clients */
+                struct api_event event;
+                event.source = NULL; /* not coming from any serial source */
+                event.type = ApiEventType_ButtonState;
+                event.data.butt_state.button_id = id;
+                event.data.butt_state.state = state;
+
+                /* Broadcast to active connections */
+                api_event_process_callbacks(&event);
+        }
 }
 
 bool shiftx_update_config(void)
@@ -168,3 +212,12 @@ bool shiftx_update_alert(uint8_t alert_id, uint16_t value)
         return CAN_tx_msg(shiftx_config.can_bus, &msg, DEFAULT_CAN_TIMEOUT);
 }
 
+bool shiftx_rx_button_press(uint8_t * button_id, uint8_t * state)
+{
+        if (!button_state.received) return false;
+
+        *button_id = button_state.id;
+        *state = button_state.state;
+        button_state.received = false;
+        return true;
+}

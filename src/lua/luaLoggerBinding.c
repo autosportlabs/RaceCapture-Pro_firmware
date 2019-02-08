@@ -53,6 +53,7 @@
 #include "virtual_channel.h"
 #include "predictive_timer_2.h"
 #include "shiftx_drv.h"
+#include "api_event.h"
 
 #define TEMP_BUFFER_LEN 		256
 #define DEFAULT_CAN_TIMEOUT 		100
@@ -1192,6 +1193,43 @@ static int lua_sx_set_config(lua_State *L)
         return 1;
 }
 
+static int lua_rx_button_press(lua_State *L)
+{
+        uint8_t button_id;
+        uint8_t state;
+
+        if (shiftx_rx_button_press(&button_id, &state)) {
+                lua_pushinteger(L, button_id);
+                lua_pushinteger(L, state);
+                return 2;
+        }
+        else {
+                return 0;
+        }
+}
+
+static int lua_tx_button(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t button_id = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t state = lua_tointeger(L, 2);
+
+        /* Send a button press to connected clients */
+        struct api_event event;
+        event.source = NULL; /* not coming from any serial source */
+        event.type = ApiEventType_ButtonState;
+        event.data.butt_state.button_id = button_id;
+        event.data.butt_state.state = state;
+
+        /* Broadcast to active connections */
+        api_event_process_callbacks(&event);
+        return 0;
+}
+
 void registerLuaLoggerBindings(lua_State *L)
 {
 #if GPIO_CHANNELS > 0
@@ -1275,6 +1313,8 @@ void registerLuaLoggerBindings(lua_State *L)
 
         lua_registerlight(L, "updateGps", lua_update_gps);
 
+        lua_registerlight(L, "txButton", lua_tx_button);
+
         /* ShiftX2/3 support functions */
         lua_registerlight(L, "sxUpdateLinearGraph", lua_sx_update_linear_graph);
         lua_registerlight(L, "sxSetAlert", lua_sx_set_alert);
@@ -1285,4 +1325,5 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "sxSetLinearThresh", lua_sx_set_linear_threshold);
         lua_registerlight(L, "sxSetAlertThresh", lua_sx_set_alert_threshold);
         lua_registerlight(L, "sxSetConfig", lua_sx_set_config);
+        lua_registerlight(L, "sxRxButton", lua_rx_button_press);
 }
