@@ -98,6 +98,7 @@ $(RCP_SRC)/devices/sara_u280.c \
 $(RCP_SRC)/devices/sim900.c \
 $(RCP_SRC)/devices/gps_skytraq_s1216_sup500f8.c \
 $(RCP_SRC)/drivers/esp8266_drv.c \
+$(RCP_SRC)/drivers/shiftx_drv.c \
 $(RCP_SRC)/filter/filter.c \
 $(RCP_SRC)/gps/dateTime.c \
 $(RCP_SRC)/gps/geoCircle.c \

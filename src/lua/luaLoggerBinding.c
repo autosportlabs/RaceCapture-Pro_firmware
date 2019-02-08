@@ -52,6 +52,7 @@
 #include "timer.h"
 #include "virtual_channel.h"
 #include "predictive_timer_2.h"
+#include "shiftx_drv.h"
 
 #define TEMP_BUFFER_LEN 		256
 #define DEFAULT_CAN_TIMEOUT 		100
@@ -977,6 +978,220 @@ static int lua_update_gps(lua_State *L)
         return 0;
 }
 
+static int lua_sx_update_linear_graph(lua_State *L)
+{
+        lua_validate_args_count(L, 0, 1);
+        if (lua_gettop(L) > 0) {
+                lua_validate_arg_number(L, 1);
+                uint16_t value = lua_tointeger(L, 1);
+                lua_pushinteger(L, shiftx_update_linear_graph(value));
+        }
+        else {
+                lua_pushinteger(L, 0);
+        }
+        return 1;
+}
+
+static int lua_sx_set_alert(lua_State *L)
+{
+        lua_validate_args_count(L, 5, 5);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t alert_id = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t red = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint8_t green = lua_tointeger(L, 3);
+
+        lua_validate_arg_number(L, 4);
+        uint8_t blue = lua_tointeger(L, 4);
+
+        lua_validate_arg_number(L, 5);
+        uint8_t flash = lua_tointeger(L, 5);
+
+        lua_pushinteger(L, shiftx_set_alert(alert_id, red, green, blue, flash));
+        return 1;
+}
+
+static int lua_sx_update_alert(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 2);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t alert_id = lua_tointeger(L, 1);
+
+        if (lua_gettop(L) > 1) {
+                lua_validate_arg_number(L, 2);
+                uint16_t value = lua_tointeger(L, 2);
+                lua_pushinteger(L, shiftx_update_alert(alert_id, value));
+        }
+        else {
+                lua_pushinteger(L, 0);
+        }
+        return 1;
+}
+
+static int lua_sx_set_display(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t digit_index = lua_tointeger(L, 1);
+
+        if (lua_gettop(L) > 1) {
+                lua_validate_arg_number(L, 2);
+                uint8_t ascii = lua_tointeger(L, 2);
+                lua_pushinteger(L, shiftx_set_display(digit_index, ascii));
+        }
+        else {
+                lua_pushinteger(L, 0);
+        }
+        return 1;
+}
+
+static int lua_sx_set_led(lua_State *L)
+{
+        lua_validate_args_count(L, 6, 6);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t led_index = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t leds_to_set = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint8_t red = lua_tointeger(L, 3);
+
+        lua_validate_arg_number(L, 4);
+        uint8_t green = lua_tointeger(L, 4);
+
+        lua_validate_arg_number(L, 5);
+        uint8_t blue = lua_tointeger(L, 5);
+
+        lua_validate_arg_number(L, 6);
+        uint8_t flash = lua_tointeger(L, 6);
+
+        lua_pushinteger(L, shiftx_set_discrete_led(led_index, leds_to_set, red, green, blue, flash));
+        return 1;
+}
+
+static int lua_sx_config_linear_graph(lua_State *L)
+{
+        lua_validate_args_count(L, 3, 4);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t rendering_style = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t linear_style = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint16_t low_range = lua_tointeger(L, 3);
+
+        uint16_t high_range = 0;
+        if (lua_gettop(L) > 3) {
+                high_range = lua_tointeger(L, 4);
+        }
+
+        lua_pushinteger(L, shiftx_config_linear_graph(rendering_style, linear_style, low_range, high_range));
+        return 1;
+}
+
+static int lua_sx_set_linear_threshold(lua_State *L)
+{
+        lua_validate_args_count(L, 7, 7);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t threshold_id = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t segment_length = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint16_t threshold = lua_tointeger(L, 3);
+
+        lua_validate_arg_number(L, 4);
+        uint8_t red = lua_tointeger(L, 4);
+
+        lua_validate_arg_number(L, 5);
+        uint8_t green = lua_tointeger(L, 5);
+
+        lua_validate_arg_number(L, 6);
+        uint8_t blue = lua_tointeger(L, 6);
+
+        lua_validate_arg_number(L, 7);
+        uint8_t flash = lua_tointeger(L, 7);
+
+        lua_pushinteger(L, shiftx_set_linear_threshold(threshold_id, segment_length, threshold, red, green, blue, flash));
+        return 1;
+}
+
+static int lua_sx_set_alert_threshold(lua_State *L)
+{
+        lua_validate_args_count(L, 7, 7);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t alert_id = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t threshold_id = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint16_t threshold = lua_tointeger(L, 3);
+
+        lua_validate_arg_number(L, 4);
+        uint8_t red = lua_tointeger(L, 4);
+
+        lua_validate_arg_number(L, 5);
+        uint8_t green = lua_tointeger(L, 5);
+
+        lua_validate_arg_number(L, 6);
+        uint8_t blue = lua_tointeger(L, 6);
+
+        lua_validate_arg_number(L, 7);
+        uint8_t flash = lua_tointeger(L, 7);
+
+        lua_pushinteger(L, shiftx_set_alert_threshold(alert_id, threshold_id, threshold, red, green, blue, flash));
+        return 1;
+}
+
+static int lua_sx_set_config(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 5);
+
+        struct shiftx_configuration * shiftx_config = shiftx_get_config();
+
+        switch(lua_gettop(L)) {
+        default:
+                return lua_panic(L);
+        case 5:
+                /* auto brightness scaling */
+                lua_validate_arg_number(L, 8);
+                shiftx_config->auto_brightness_scaling = lua_tointeger(L, 8);
+        case 4:
+                /* CAN Base Address */
+                lua_validate_arg_number(L, 4);
+                shiftx_config->base_address = lua_tointeger(L, 4);
+        case 3:
+                /* CAN bus */
+                lua_validate_arg_number(L, 3);
+                shiftx_config->can_bus = lua_tointeger(L, 3);
+        case 2:
+                /* ShiftX brightness (0 to 100; 0=automatic brightness)*/
+                lua_validate_arg_number(L, 2);
+                shiftx_config->brightness = lua_tointeger(L, 2);
+        case 1:
+                /* ShiftX orientation (0=normal, 1= inverted) */
+                lua_validate_arg_number(L, 1);
+                shiftx_config->orientation_inverted = lua_tointeger(L, 1);
+        }
+
+        lua_pushinteger(L, shiftx_update_config());
+        return 1;
+}
+
 void registerLuaLoggerBindings(lua_State *L)
 {
 #if GPIO_CHANNELS > 0
@@ -1059,4 +1274,15 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getDateTime", lua_get_date_time);
 
         lua_registerlight(L, "updateGps", lua_update_gps);
+
+        /* ShiftX2/3 support functions */
+        lua_registerlight(L, "sxUpdateLinearGraph", lua_sx_update_linear_graph);
+        lua_registerlight(L, "sxSetAlert", lua_sx_set_alert);
+        lua_registerlight(L, "sxUpdateAlert", lua_sx_update_alert);
+        lua_registerlight(L, "sxSetDisplay", lua_sx_set_display);
+        lua_registerlight(L, "sxSetLed", lua_sx_set_led);
+        lua_registerlight(L, "sxCfgLinearGraph", lua_sx_config_linear_graph);
+        lua_registerlight(L, "sxSetLinearThresh", lua_sx_set_linear_threshold);
+        lua_registerlight(L, "sxSetAlertThresh", lua_sx_set_alert_threshold);
+        lua_registerlight(L, "sxSetConfig", lua_sx_set_config);
 }
