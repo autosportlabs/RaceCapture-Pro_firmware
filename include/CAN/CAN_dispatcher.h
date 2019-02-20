@@ -26,7 +26,7 @@
 
 CPP_GUARD_BEGIN
 
-void can_dispatch_message(CAN_msg *msg);
+void can_dispatch_message(const CAN_msg *msg);
 
 CPP_GUARD_END
 

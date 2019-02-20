@@ -45,7 +45,7 @@
 
 #define NOTIFICATION_BUTTON_STATE_OFFSET 60
 
-static struct shiftx_configuration shiftx_config = {0, 0, 1, 0xE3600, 51};
+static struct shiftx_configuration shiftx_config = {1, 0xE3600, 0, 0, 51};
 
 static struct {
         bool received;
@@ -58,7 +58,7 @@ struct shiftx_configuration * shiftx_get_config(void)
         return &shiftx_config;
 }
 
-void shiftx_handle_can_rx_msg(CAN_msg *msg)
+void shiftx_handle_can_rx_msg(const CAN_msg *msg)
 {
         if (msg == NULL) return;
 
@@ -126,7 +126,7 @@ bool shiftx_set_display(uint8_t digit_index, uint8_t ascii)
         return CAN_tx_msg(1, &msg, DEFAULT_CAN_TIMEOUT);
 }
 
-bool shiftx_config_linear_graph(uint8_t rendering_style, uint8_t linear_style, uint16_t low_range, uint16_t high_range)
+bool shiftx_config_linear_graph(rendering_style_t rendering_style, linear_style_t linear_style, uint16_t low_range, uint16_t high_range)
 {
         CAN_msg msg;
         msg.data[0] = rendering_style;

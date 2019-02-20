@@ -27,18 +27,29 @@
 CPP_GUARD_BEGIN
 
 struct shiftx_configuration {
-        uint8_t orientation_inverted;
-        uint8_t brightness;
         uint32_t can_bus;
         uint32_t base_address;
+        uint8_t orientation_inverted;
+        uint8_t brightness;
         uint8_t auto_brightness_scaling;
 };
+
+typedef enum {
+        RENDERING_STYLE_LEFT_RIGHT = 0,
+        RENDERING_STYLE_CENTER,
+        RENDERING_STYLE_RIGHT_LEFT
+} rendering_style_t;
+
+typedef enum {
+        LINEAR_STYLE_SMOOTH = 0,
+        LINEAR_STYLE_STEPPED,
+} linear_style_t;
 
 /**
  * Process an incoming CAN message
  * @param msg the CAN message to process
  */
-void shiftx_handle_can_rx_msg(CAN_msg *msg);
+void shiftx_handle_can_rx_msg(const CAN_msg *msg);
 
 /**
  * Retreive a pointer to the current runtime configuration
@@ -48,7 +59,8 @@ struct shiftx_configuration * shiftx_get_config(void);
 
 
 /**
- * Send the configuration update message to the connected ShiftX device, using the current runtime configurationi
+ * Send the configuration update message to the connected
+ * ShiftX device, using the current runtime configuration
  */
 bool shiftx_update_config(void);
 
@@ -80,7 +92,7 @@ bool shiftx_set_display(uint8_t digit_index, uint8_t ascii);
  * @param high_range high value range of linear display (ignored if rendering_style = stepped)
  * @return true if CAN message was successfully broadcasted
  */
-bool shiftx_config_linear_graph(uint8_t rendering_style, uint8_t linear_style, uint16_t low_range, uint16_t high_range);
+bool shiftx_config_linear_graph(rendering_style_t rendering_style, linear_style_t linear_style, uint16_t low_range, uint16_t high_range);
 
 /**
  * Configures a threshold for the linear graph on the ShiftX device

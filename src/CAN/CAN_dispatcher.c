@@ -23,7 +23,7 @@
 #include "CAN.h"
 #include "shiftx_drv.h"
 
-void can_dispatch_message(CAN_msg *msg)
+void can_dispatch_message(const CAN_msg *msg)
 {
         /* dispatch to shiftx CAN handler */
         shiftx_handle_can_rx_msg(msg);
