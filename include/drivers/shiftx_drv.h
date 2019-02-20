@@ -34,6 +34,13 @@ struct shiftx_configuration {
         uint8_t auto_brightness_scaling;
 };
 
+struct shiftx_led_params {
+        uint8_t red;
+        uint8_t green;
+        uint8_t blue;
+        uint8_t flash;
+};
+
 typedef enum {
         RENDERING_STYLE_LEFT_RIGHT = 0,
         RENDERING_STYLE_CENTER,
@@ -68,13 +75,10 @@ bool shiftx_update_config(void);
  * Set a discrete LED on the ShiftX device
  * @param led_index the index of the led to set
  * @param leds_to_set number of LEDs to set. 0 = set all remaining LEDs
- * @param red red color value
- * @param green green color value
- * @param blue blue color value
- * @param flash flash rate, in Hz
+ * @param LED parameters
  * @return true if CAN message was successfully broadcasted
  */
-bool shiftx_set_discrete_led(uint8_t led_index, uint8_t leds_to_set, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash);
+bool shiftx_set_discrete_led(uint8_t led_index, uint8_t leds_to_set, struct shiftx_led_params led_params);
 
 /**
  * Set the display value
@@ -99,13 +103,10 @@ bool shiftx_config_linear_graph(rendering_style_t rendering_style, linear_style_
  * @param threshold_id id of threshold (0-4)
  * @param segment_length number of segments to display for this threshold (ignored if linear style = smooth)
  * @param threshold value for this threshold
- * @param red red color value
- * @param green green color value
- * @param blue blue color value
- * @param flash flash rate, in Hz
+ * @param led_params LED parameters
  * @return true if CAN message was successfully broadcasted
  */
-bool shiftx_set_linear_threshold(uint8_t threshold_id, uint8_t segment_length, uint16_t threshold, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash);
+bool shiftx_set_linear_threshold(uint8_t threshold_id, uint8_t segment_length, uint16_t threshold, struct shiftx_led_params led_params);
 
 /**
  * Updates the current value for the linear graph
@@ -119,24 +120,18 @@ bool shiftx_update_linear_graph(uint16_t value);
  * @param alert_id id of alert (0-> number of alert indicators on device)
  * @param threshold_id id of threshold (0-4)
  * @param threshold value for this threshold
- * @param red red color value
- * @param green green color value
- * @param blue blue color value
- * @param flash flash rate, in Hz
+ * @param led_params LED parameters
  * @return true if CAN message was successfully broadcasted
  */
-bool shiftx_set_alert_threshold(uint8_t alert_id, uint8_t threshold_id, uint16_t threshold, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash);
+bool shiftx_set_alert_threshold(uint8_t alert_id, uint8_t threshold_id, uint16_t threshold, struct shiftx_led_params led_params);
 
 /**
  * Directly set an alert indicator
  * @param alert_id id of alert (0-> number of alert indicators on device)
- * @param red red color value
- * @param green green color value
- * @param blue blue color value
- * @param flash flash rate, in Hz
+ * @param led_params LED parameters
  * @return true if CAN message was successfully broadcasted
  */
-bool shiftx_set_alert(uint8_t alert_id, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash);
+bool shiftx_set_alert(uint8_t alert_id, struct shiftx_led_params led_params);
 
 /**
  * Updates the current value for the specified alert

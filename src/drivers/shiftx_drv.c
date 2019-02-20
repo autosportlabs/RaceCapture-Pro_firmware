@@ -51,7 +51,7 @@ static struct {
         bool received;
         uint8_t id;
         uint8_t state;
-} button_state = {0};
+} button_state;
 
 struct shiftx_configuration * shiftx_get_config(void)
 {
@@ -100,15 +100,15 @@ bool shiftx_update_config(void)
         return CAN_tx_msg(shiftx_config.can_bus, &msg, DEFAULT_CAN_TIMEOUT);
 }
 
-bool shiftx_set_discrete_led(uint8_t led_index, uint8_t leds_to_set, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash)
+bool shiftx_set_discrete_led(uint8_t led_index, uint8_t leds_to_set, struct shiftx_led_params led_params)
 {
         CAN_msg msg;
         msg.data[0] = led_index;
         msg.data[1] = leds_to_set;
-        msg.data[2] = red;
-        msg.data[3] = green;
-        msg.data[4] = blue;
-        msg.data[5] = flash;
+        msg.data[2] = led_params.red;
+        msg.data[3] = led_params.green;
+        msg.data[4] = led_params.blue;
+        msg.data[5] = led_params.flash;
         msg.addressValue = shiftx_config.base_address + CONFIG_MESSAGE_SET_DISCRETE_LED_OFFSET;
         msg.isExtendedAddress = true;
         msg.dataLength = 6;
@@ -141,17 +141,17 @@ bool shiftx_config_linear_graph(rendering_style_t rendering_style, linear_style_
         return CAN_tx_msg(shiftx_config.can_bus, &msg, DEFAULT_CAN_TIMEOUT);
 }
 
-bool shiftx_set_linear_threshold(uint8_t threshold_id, uint8_t segment_length, uint16_t threshold, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash)
+bool shiftx_set_linear_threshold(uint8_t threshold_id, uint8_t segment_length, uint16_t threshold, struct shiftx_led_params led_params)
 {
         CAN_msg msg;
         msg.data[0] = threshold_id;
         msg.data[1] = segment_length;
         msg.data[2] = threshold & 0xFF;
         msg.data[3] = threshold >> 8;
-        msg.data[4] = red;
-        msg.data[5] = green;
-        msg.data[6] = blue;
-        msg.data[7] = flash;
+        msg.data[4] = led_params.red;
+        msg.data[5] = led_params.green;
+        msg.data[6] = led_params.blue;
+        msg.data[7] = led_params.flash;
         msg.addressValue = shiftx_config.base_address + CONFIG_MESSAGE_SET_LINEAR_THRESHOLD_OFFSET;
         msg.isExtendedAddress = true;
         msg.dataLength = 8;
@@ -169,31 +169,31 @@ bool shiftx_update_linear_graph(uint16_t value)
         return CAN_tx_msg(shiftx_config.can_bus, &msg, DEFAULT_CAN_TIMEOUT);
 }
 
-bool shiftx_set_alert_threshold(uint8_t alert_id, uint8_t threshold_id, uint16_t threshold, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash)
+bool shiftx_set_alert_threshold(uint8_t alert_id, uint8_t threshold_id, uint16_t threshold, struct shiftx_led_params led_params)
 {
         CAN_msg msg;
         msg.data[0] = alert_id;
         msg.data[1] = threshold_id;
         msg.data[2] = threshold & 0xFF;
         msg.data[3] = threshold >> 8;
-        msg.data[4] = red;
-        msg.data[5] = green;
-        msg.data[6] = blue;
-        msg.data[7] = flash;
+        msg.data[4] = led_params.red;
+        msg.data[5] = led_params.green;
+        msg.data[6] = led_params.blue;
+        msg.data[7] = led_params.flash;
         msg.addressValue = shiftx_config.base_address + CONFIG_MESSAGE_SET_ALERT_THRESHOLD_OFFSET;
         msg.isExtendedAddress = true;
         msg.dataLength = 8;
         return CAN_tx_msg(shiftx_config.can_bus, &msg, DEFAULT_CAN_TIMEOUT);
 }
 
-bool shiftx_set_alert(uint8_t alert_id, uint8_t red, uint8_t green, uint8_t blue, uint8_t flash)
+bool shiftx_set_alert(uint8_t alert_id, struct shiftx_led_params led_params)
 {
         CAN_msg msg;
         msg.data[0] = alert_id;
-        msg.data[1] = red;
-        msg.data[2] = green;
-        msg.data[3] = blue;
-        msg.data[4] = flash;
+        msg.data[1] = led_params.red;
+        msg.data[2] = led_params.green;
+        msg.data[3] = led_params.blue;
+        msg.data[4] = led_params.flash;
         msg.addressValue = shiftx_config.base_address + CONFIG_MESSAGE_SET_ALERT_OFFSET;
         msg.isExtendedAddress = true;
         msg.dataLength = 5;

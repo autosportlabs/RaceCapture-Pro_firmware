@@ -1012,7 +1012,8 @@ static int lua_sx_set_alert(lua_State *L)
         lua_validate_arg_number(L, 5);
         uint8_t flash = lua_tointeger(L, 5);
 
-        lua_pushinteger(L, shiftx_set_alert(alert_id, red, green, blue, flash));
+        struct shiftx_led_params led_params = {red, green, blue, flash};
+        lua_pushinteger(L, shiftx_set_alert(alert_id, led_params));
         return 1;
 }
 
@@ -1074,7 +1075,8 @@ static int lua_sx_set_led(lua_State *L)
         lua_validate_arg_number(L, 6);
         uint8_t flash = lua_tointeger(L, 6);
 
-        lua_pushinteger(L, shiftx_set_discrete_led(led_index, leds_to_set, red, green, blue, flash));
+        struct shiftx_led_params led_params = {red, green, blue, flash};
+        lua_pushinteger(L, shiftx_set_discrete_led(led_index, leds_to_set, led_params));
         return 1;
 }
 
@@ -1125,7 +1127,8 @@ static int lua_sx_set_linear_threshold(lua_State *L)
         lua_validate_arg_number(L, 7);
         uint8_t flash = lua_tointeger(L, 7);
 
-        lua_pushinteger(L, shiftx_set_linear_threshold(threshold_id, segment_length, threshold, red, green, blue, flash));
+        struct shiftx_led_params led_params = {red, green, blue, flash};
+        lua_pushinteger(L, shiftx_set_linear_threshold(threshold_id, segment_length, threshold, led_params));
         return 1;
 }
 
@@ -1154,7 +1157,8 @@ static int lua_sx_set_alert_threshold(lua_State *L)
         lua_validate_arg_number(L, 7);
         uint8_t flash = lua_tointeger(L, 7);
 
-        lua_pushinteger(L, shiftx_set_alert_threshold(alert_id, threshold_id, threshold, red, green, blue, flash));
+        struct shiftx_led_params led_params = {red, green, blue, flash};
+        lua_pushinteger(L, shiftx_set_alert_threshold(alert_id, threshold_id, threshold, led_params));
         return 1;
 }
 
