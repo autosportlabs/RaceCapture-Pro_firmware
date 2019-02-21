@@ -113,6 +113,10 @@ void process_api_event(const struct api_event * api_event, struct Serial * seria
                 api_send_alertmsg_ack(serial, &api_event->data.alertmsg_ack);
                 put_crlf(serial);
                 break;
+        case ApiEventType_ButtonState:
+                api_send_button_state(serial, &api_event->data.butt_state);
+                put_crlf(serial);
+                break;
         default:
                 pr_warning_int_msg(LOG_PFX "Unknown ApiEvent type ", api_event->type);
                 break;

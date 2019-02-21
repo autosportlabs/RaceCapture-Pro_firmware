@@ -170,6 +170,7 @@ int api_alertmsg_ack(struct Serial *serial, const jsmntok_t *json);
 int api_send_alertmessage(struct Serial *serial, const struct alertmessage *alertmsg);
 int api_send_alertmsg_ack(struct Serial *serial, const struct alertmessage_ack *alertmsg_ack);
 int api_send_alertmsg_reply(struct Serial *serial, const struct alertmessage *alertmsg);
+int api_send_button_state(struct Serial *serial, const struct button_state *butt_state);
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json);
 int api_log(struct Serial *serial, const jsmntok_t *json);
 int api_getMeta(struct Serial *serial, const jsmntok_t *json);

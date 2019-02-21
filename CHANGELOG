@@ -1,3 +1,7 @@
+= 2.15.0=
+* Core: add support for ShiftX2/3 lua functions
+* Core: broadcast button events from ShiftX2/3 to connected clients
+
 = 2.14.0=
 * Core: Add support for pit-to-car alerting
 

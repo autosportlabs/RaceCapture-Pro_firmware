@@ -33,7 +33,8 @@ CPP_GUARD_BEGIN
 enum ApiEventType {
         ApiEventType_Alertmessage,
         ApiEventType_AlertmsgAck,
-        ApiEventType_AlertmsgReply
+        ApiEventType_AlertmsgReply,
+        ApiEventType_ButtonState
 };
 
 struct alertmessage {
@@ -47,12 +48,18 @@ struct alertmessage_ack {
         uint32_t id;
 };
 
+struct button_state {
+        uint8_t button_id;
+        uint8_t state;
+};
+
 struct api_event {
         enum ApiEventType type;
         struct Serial *source;
         union {
                 struct alertmessage alertmsg;
                 struct alertmessage_ack alertmsg_ack;
+                struct button_state butt_state;
         } data;
 };
 
