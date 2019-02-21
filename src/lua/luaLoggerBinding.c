@@ -1164,7 +1164,7 @@ static int lua_sx_set_alert_threshold(lua_State *L)
 
 static int lua_sx_set_config(lua_State *L)
 {
-        lua_validate_args_count(L, 1, 5);
+        lua_validate_args_count(L, 0, 5);
 
         struct shiftx_configuration * shiftx_config = shiftx_get_config();
 
