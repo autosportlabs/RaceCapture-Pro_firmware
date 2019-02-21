@@ -979,6 +979,85 @@ static int lua_update_gps(lua_State *L)
         return 0;
 }
 
+static int lua_calc_gear(lua_State *L)
+{
+        /* Calculate gear helper function
+         *
+         * Function signatures:
+         * calcGear(tireDiamCm, finalGearRatio, gear1Ratio, gear2Ratio, gear3Ratio, gear4Ratio, gear5Ratio, gear6Ratio)
+         *
+         * Default using the built-in GPS speed channel and "RPM" channel.
+         *
+         * calcGear(speedChannelName, rpmChannelName, tireDiamCm, finalGearRatio, gear1Ratio, gear2Ratio, gear3Ratio, gear4Ratio, gear5Ratio, gear6Ratio)
+         *
+         * Use specified Speed and RPM channel name. Speed channel must be in kph.
+         *
+         */
+        lua_validate_args_count(L, 3, 10);
+
+        float speed = 0;
+        float rpm = 0;
+
+        struct sample * s = get_current_sample();
+        double value;
+        char * units;
+        size_t params_start = 1;
+        /* check if first 2 parameters are strings; if so, assume those are "Speed" and "RPM" channels */
+        if (lua_isstring(L, 1) && lua_isstring(L, 2)) {
+                /* For Speed and RPM, check if sample is currently available and if
+                 * channel exists in current sample. If not, bail out
+                 */
+                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 1), &value, &units))) return 0;
+                speed = value;
+                if (!strcasecmp("kph", units)) {
+                        /* if units are not kph, assume mph and convert */
+                        speed *= 1.60934;
+                }
+
+                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 2), &value, &units))) return 0;
+                rpm = value;
+                params_start += 2;
+        }
+        else {
+                lua_validate_args_count(L, 3, 8);\
+
+                /* internal speed is in kph */
+                speed = getGPSSpeed();
+
+                /* Ensure RPM is available in the current sample. If not, bail out*/
+                if (!(s && get_sample_value_by_name(s, "RPM", &value, &units))) return 0;
+                rpm = value;
+        }
+
+        lua_validate_arg_number(L, params_start);
+        float tire_diameter_cm = (float)lua_tonumber(L, params_start);
+        params_start++;
+
+        lua_validate_arg_number(L, params_start);
+        float final_drive_ratio = (float)lua_tonumber(L, params_start);
+        params_start++;
+
+        float tire_circ = tire_diameter_cm * 3.14159;
+        /* Calculate ratio based on cm per minute */
+        float gear_ratio = (tire_circ * rpm) / (final_drive_ratio * speed * 1666.67);
+
+        float gear_error = 0.1;
+        uint8_t gear_pos = 0;
+
+        /* Cycle through the remaining parameters to see what ratio matches the specified gear */
+        for (size_t i = params_start; i <= lua_gettop(L); i++)
+        {
+                lua_validate_arg_number(L, i);
+                if (abs((float)lua_tonumber(L, i) - gear_ratio) < gear_error) {
+                        gear_pos = i - (params_start - 1);
+                        break;
+                }
+        }
+
+        lua_pushinteger(L, gear_pos);
+        return 1;
+}
+
 static int lua_sx_update_linear_graph(lua_State *L)
 {
         lua_validate_args_count(L, 0, 1);
@@ -1318,6 +1397,9 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "updateGps", lua_update_gps);
 
         lua_registerlight(L, "txButton", lua_tx_button);
+
+        /* helper functions */
+        lua_registerlight(L, "calcGear", lua_calc_gear);
 
         /* ShiftX2/3 support functions */
         lua_registerlight(L, "sxUpdateLinearGraph", lua_sx_update_linear_graph);
