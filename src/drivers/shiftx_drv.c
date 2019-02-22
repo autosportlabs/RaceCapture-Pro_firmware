@@ -70,8 +70,13 @@ void shiftx_handle_can_rx_msg(const CAN_msg *msg)
         if (msg->addressValue == shiftx_config.base_address + NOTIFICATION_BUTTON_STATE_OFFSET) {
                 pr_info_int_msg(_LOG_PFX "Received button event for base address: ", msg->addressValue);
 
-                uint8_t id = msg->data[1];
                 uint8_t state = msg->data[0];
+
+                uint8_t id = 0;
+                /* Use button ID if preset in message */
+                if (msg->dataLength > 1)
+                        id = msg->data[1];
+
                 button_state.id = id;
                 button_state.state = state;
                 button_state.received = true;
