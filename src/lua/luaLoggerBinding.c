@@ -1164,17 +1164,21 @@ static int lua_sx_set_alert_threshold(lua_State *L)
 
 static int lua_sx_set_config(lua_State *L)
 {
-        lua_validate_args_count(L, 0, 5);
+        lua_validate_args_count(L, 0, 6);
 
         struct shiftx_configuration * shiftx_config = shiftx_get_config();
 
         switch(lua_gettop(L)) {
         default:
                 return lua_panic(L);
+        case 6:
+                /* enable / disable button events */
+                lua_validate_arg_boolean(L, 6);
+                shiftx_config->button_events_enabled = lua_toboolean(L, 6);
         case 5:
                 /* auto brightness scaling */
-                lua_validate_arg_number(L, 8);
-                shiftx_config->auto_brightness_scaling = lua_tointeger(L, 8);
+                lua_validate_arg_number(L, 5);
+                shiftx_config->auto_brightness_scaling = lua_tointeger(L, 5);
         case 4:
                 /* CAN Base Address */
                 lua_validate_arg_number(L, 4);

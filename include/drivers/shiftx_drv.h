@@ -32,6 +32,7 @@ struct shiftx_configuration {
         uint8_t orientation_inverted;
         uint8_t brightness;
         uint8_t auto_brightness_scaling;
+        bool button_events_enabled;
 };
 
 struct shiftx_led_params {
