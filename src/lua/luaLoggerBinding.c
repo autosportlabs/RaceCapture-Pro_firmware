@@ -1048,8 +1048,8 @@ static int lua_calc_gear(lua_State *L)
         if (final_drive_ratio == 0)
                 return luaL_error(L, "Final Drive ratio must be > 0");
 
-        /* cant calculate gear if speed is 0 */
-        if (speed == 0)
+        /* cant calculate gear if speed below threshold */
+        if (speed < 10)
                 return 0;
 
         /* Calculate ratio based on cm per minute */
