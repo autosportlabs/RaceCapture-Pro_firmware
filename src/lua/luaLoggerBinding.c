@@ -1012,21 +1012,24 @@ static int lua_calc_gear(lua_State *L)
                 speed = getGPSSpeed();
 
                 /* Ensure RPM is available in the current sample. If not, bail out*/
-                if (!(s && get_sample_value_by_name(s, "RPM", &value, &units))) return 0;
+                if (!(s && get_sample_value_by_name(s, "RPM", &value, &units)))
+                        return 0;
                 rpm = value;
         }
         else {
                 /* For Speed and RPM, check if sample is currently available and if
                  * channel exists in current sample. If not, bail out
                  */
-                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 1), &value, &units))) return 0;
+                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 1), &value, &units)))
+                        return 0;
                 speed = value;
                 if (strcasecmp("kph", units) != 0) {
                         /* if units are not kph, assume mph and convert */
                         speed *= 1.60934;
                 }
 
-                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 2), &value, &units))) return 0;
+                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 2), &value, &units)))
+                        return 0;
                 rpm = value;
                 params_start += 2;
         }
@@ -1035,9 +1038,19 @@ static int lua_calc_gear(lua_State *L)
         float tire_diameter_cm = (float)lua_tonumber(L, params_start);
         params_start++;
 
+        if (tire_diameter_cm == 0)
+                return luaL_error(L, "Tire Diameter must be > 0");
+
         lua_validate_arg_number(L, params_start);
         float final_drive_ratio = (float)lua_tonumber(L, params_start);
         params_start++;
+
+        if (final_drive_ratio == 0)
+                return luaL_error(L, "Final Drive ratio must be > 0");
+
+        /* cant calculate gear if speed is 0 */
+        if (speed == 0)
+                return 0;
 
         /* Calculate ratio based on cm per minute */
         float rpm_speed_ratio = (rpm / speed)/(final_drive_ratio * 1666.67 / (tire_diameter_cm * 3.14159));
