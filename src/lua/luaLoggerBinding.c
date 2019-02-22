@@ -1130,6 +1130,7 @@ static int lua_sx_set_display(lua_State *L)
         if (lua_gettop(L) > 1 && lua_isnumber(L, 2)) {
                 lua_validate_arg_number(L, 2);
                 uint8_t value = lua_tointeger(L, 2);
+                /* digit index offset by ascii 0 (48) */
                 lua_pushinteger(L, shiftx_set_display(digit_index, 48 + value));
         }
         else {
