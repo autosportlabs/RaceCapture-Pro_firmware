@@ -991,7 +991,7 @@ static int lua_calc_gear(lua_State *L)
          *
          * calcGear(speedChannelName, rpmChannelName, tireDiamCm, finalGearRatio, gear1Ratio, gear2Ratio, gear3Ratio, gear4Ratio, gear5Ratio, gear6Ratio)
          *
-         * Use specified Speed and RPM channel name. Speed channel must be in kph.
+         * Use specified Speed and RPM channel name.
          *
          */
         lua_validate_args_count(L, 3, 10);
@@ -1004,7 +1004,7 @@ static int lua_calc_gear(lua_State *L)
         char * units;
         size_t params_start = 1;
 
-        /* check if first 2 parameters are strings; if so, assume those are "Speed" and "RPM" channels */
+        /* check if first 2 parameters are numbers; if so, use built in channels */
         if (lua_isnumber(L, 1) && lua_isnumber(L, 2)) {
                 lua_validate_args_count(L, 3, 8);
 
