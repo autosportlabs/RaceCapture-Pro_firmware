@@ -79,6 +79,7 @@ static struct {
         lua_State *lua_runtime;
         size_t callback_interval;
         size_t lua_mem_size;
+        size_t max_mem;
         struct {
                 const char* cmd; /* Command to execute */
                 enum run_status status;
@@ -86,6 +87,11 @@ static struct {
                 xSemaphoreHandle cmd_mutex;
         } interactive;
 } state;
+
+void lua_task_set_max_mem(size_t max_mem)
+{
+        state.max_mem = max_mem;
+}
 
 static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
 {
@@ -99,10 +105,10 @@ static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
                 return NULL;
         }
 
-        if (LUA_MEM_MAX && LUA_MEM_MAX < new_lua_mem_size) {
+        if (state.max_mem && state.max_mem < new_lua_mem_size) {
                 pr_warning(_LOG_PFX "Memory ceiling hit: ");
                 pr_warning_int(new_lua_mem_size);
-                pr_warning_int_msg(" > ", LUA_MEM_MAX);
+                pr_warning_int_msg(" > ", state.max_mem);
                 return NULL;
         }
 
@@ -526,6 +532,8 @@ bool lua_task_start()
         bool ok = false;
 
         /* Initialize the Lua runtime here */
+        state.max_mem = LUA_MEM_MAX;
+
         state.lua_runtime = setup_lua_state();
         if (!is_runtime_active()) {
                 pr_warning(_LOG_PFX "Failed to create lua runtime\r\n");
