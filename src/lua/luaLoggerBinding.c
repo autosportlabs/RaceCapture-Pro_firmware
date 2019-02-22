@@ -54,6 +54,7 @@
 #include "predictive_timer_2.h"
 #include "shiftx_drv.h"
 #include "api_event.h"
+#include "math.h"
 
 #define TEMP_BUFFER_LEN 		256
 #define DEFAULT_CAN_TIMEOUT 		100
@@ -1002,24 +1003,10 @@ static int lua_calc_gear(lua_State *L)
         double value;
         char * units;
         size_t params_start = 1;
-        /* check if first 2 parameters are strings; if so, assume those are "Speed" and "RPM" channels */
-        if (lua_isstring(L, 1) && lua_isstring(L, 2)) {
-                /* For Speed and RPM, check if sample is currently available and if
-                 * channel exists in current sample. If not, bail out
-                 */
-                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 1), &value, &units))) return 0;
-                speed = value;
-                if (!strcasecmp("kph", units)) {
-                        /* if units are not kph, assume mph and convert */
-                        speed *= 1.60934;
-                }
 
-                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 2), &value, &units))) return 0;
-                rpm = value;
-                params_start += 2;
-        }
-        else {
-                lua_validate_args_count(L, 3, 8);\
+        /* check if first 2 parameters are strings; if so, assume those are "Speed" and "RPM" channels */
+        if (lua_isnumber(L, 1) && lua_isnumber(L, 2)) {
+                lua_validate_args_count(L, 3, 8);
 
                 /* internal speed is in kph */
                 speed = getGPSSpeed();
@@ -1027,6 +1014,21 @@ static int lua_calc_gear(lua_State *L)
                 /* Ensure RPM is available in the current sample. If not, bail out*/
                 if (!(s && get_sample_value_by_name(s, "RPM", &value, &units))) return 0;
                 rpm = value;
+        }
+        else {
+                /* For Speed and RPM, check if sample is currently available and if
+                 * channel exists in current sample. If not, bail out
+                 */
+                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 1), &value, &units))) return 0;
+                speed = value;
+                if (strcasecmp("kph", units) != 0) {
+                        /* if units are not kph, assume mph and convert */
+                        speed *= 1.60934;
+                }
+
+                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 2), &value, &units))) return 0;
+                rpm = value;
+                params_start += 2;
         }
 
         lua_validate_arg_number(L, params_start);
@@ -1037,9 +1039,8 @@ static int lua_calc_gear(lua_State *L)
         float final_drive_ratio = (float)lua_tonumber(L, params_start);
         params_start++;
 
-        float tire_circ = tire_diameter_cm * 3.14159;
         /* Calculate ratio based on cm per minute */
-        float gear_ratio = (tire_circ * rpm) / (final_drive_ratio * speed * 1666.67);
+        float rpm_speed_ratio = (rpm / speed)/(final_drive_ratio * 1666.67 / (tire_diameter_cm * 3.14159));
 
         float gear_error = 0.1;
         uint8_t gear_pos = 0;
@@ -1048,14 +1049,19 @@ static int lua_calc_gear(lua_State *L)
         for (size_t i = params_start; i <= lua_gettop(L); i++)
         {
                 lua_validate_arg_number(L, i);
-                if (abs((float)lua_tonumber(L, i) - gear_ratio) < gear_error) {
+                float gear_ratio = lua_tonumber(L, i);
+                if (fabs(gear_ratio - rpm_speed_ratio) < gear_error) {
                         gear_pos = i - (params_start - 1);
                         break;
                 }
         }
-
-        lua_pushinteger(L, gear_pos);
-        return 1;
+        if (gear_pos > 0) {
+                lua_pushinteger(L, gear_pos);
+                return 1;
+        }
+        else {
+                return 0;
+        }
 }
 
 static int lua_sx_update_linear_graph(lua_State *L)
@@ -1116,17 +1122,19 @@ static int lua_sx_update_alert(lua_State *L)
 
 static int lua_sx_set_display(lua_State *L)
 {
-        lua_validate_args_count(L, 2, 2);
+        lua_validate_args_count(L, 1, 2);
 
         lua_validate_arg_number(L, 1);
         uint8_t digit_index = lua_tointeger(L, 1);
 
-        if (lua_gettop(L) > 1) {
+        if (lua_gettop(L) > 1 && lua_isnumber(L, 2)) {
                 lua_validate_arg_number(L, 2);
-                uint8_t ascii = lua_tointeger(L, 2);
-                lua_pushinteger(L, shiftx_set_display(digit_index, ascii));
+                uint8_t value = lua_tointeger(L, 2);
+                lua_pushinteger(L, shiftx_set_display(digit_index, 48 + value));
         }
         else {
+                /* blank display if nil value supplied as arg #2, or if arg 2 is missing */
+                shiftx_set_display(digit_index, 32); /* ascii 32 (space character) */
                 lua_pushinteger(L, 0);
         }
         return 1;
