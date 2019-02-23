@@ -1,6 +1,9 @@
 = 2.15.0=
 * Core: add support for ShiftX2/3 lua functions
-* Core: broadcast button events from ShiftX2/3 to connected clients
+* Core: broadcast button events from ShiftX2/3 to connected clients for dashboard navigation
+* Lua: Reduce default memory limit back to safe level, add lua function to override limit
+* Lua: Add Gear calculation helper function
+* Lua: Add functions to support ShiftX3
 
 = 2.14.0=
 * Core: Add support for pit-to-car alerting
