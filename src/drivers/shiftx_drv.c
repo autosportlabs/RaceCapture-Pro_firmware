@@ -45,7 +45,7 @@
 
 #define NOTIFICATION_BUTTON_STATE_OFFSET 60
 
-static struct shiftx_configuration shiftx_config = {1, 0xE3600, 0, 0, 51};
+static struct shiftx_configuration shiftx_config = {1, 0xE3600, 0, 0, 51, true};
 
 static struct {
         bool received;
@@ -68,7 +68,7 @@ void shiftx_handle_can_rx_msg(const CAN_msg *msg)
         }
 
         if (msg->addressValue == shiftx_config.base_address + NOTIFICATION_BUTTON_STATE_OFFSET) {
-                pr_info_int_msg(_LOG_PFX "Received button event for base address: ", msg->addressValue);
+                pr_info_int_msg(_LOG_PFX "Broadcasting button event for base address: ", msg->addressValue);
 
                 uint8_t state = msg->data[0];
 
@@ -80,6 +80,9 @@ void shiftx_handle_can_rx_msg(const CAN_msg *msg)
                 button_state.id = id;
                 button_state.state = state;
                 button_state.received = true;
+
+                if (!shiftx_config.button_events_enabled)
+                        return;
 
                 /* Broadcast button state to connected clients */
                 struct api_event event;
