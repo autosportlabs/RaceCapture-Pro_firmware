@@ -1468,7 +1468,7 @@ int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json)
         size_t enabled_mappings = can_channel_cfg->enabled_mappings;
 
         json_arrayStart(serial, "chans");
-        for (size_t i = 0; i < can_channel_cfg->enabled_mappings; i++) {
+        for (size_t i = 0; i < MIN(can_channel_cfg->enabled_mappings, CONFIG_CAN_MAPPINGS); i++) {
                 const CANChannel *can_channel = &can_channel_cfg->can_channels[i];
 
                 json_objStart(serial);
@@ -1519,7 +1519,7 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
         jsmn_exists_set_val_bool(json, "last", &last);
 
         /* optional starting index. start at beginning by default */
-        unsigned index = 0;
+        uint32_t index = 0;
         jsmn_exists_set_val_int(json, "index", &index);
 
         /* we can only start updating up to the item right after the last */
@@ -1548,8 +1548,10 @@ int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json)
                         set_can_mapping(chans_tok, &(chan->mapping));
                         chans_tok = setChannelConfig(serial, chans_tok, chCfg, NULL, NULL);
                 }
-                if (index > can_channel_cfg->enabled_mappings || last)
+
+                if (index > can_channel_cfg->enabled_mappings || last || index == CONFIG_CAN_MAPPINGS) {
                         can_channel_cfg->enabled_mappings = index;
+                }
         }
 
         /* set the global enabled flag, if present */

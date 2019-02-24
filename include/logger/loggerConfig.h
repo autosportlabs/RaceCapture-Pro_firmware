@@ -358,9 +358,9 @@ typedef struct _CANChannelConfig {
         /* all available CAN mappings */
         CANChannel can_channels[CONFIG_CAN_MAPPINGS];
         /* globally enables/disables CAN mappings */
-        uint8_t enabled;
         /* number of mappings set within configuration */
         uint16_t enabled_mappings;
+        uint8_t enabled;
 } CANChannelConfig;
 
 

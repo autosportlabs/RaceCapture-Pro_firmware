@@ -4,6 +4,7 @@
 * Lua: Reduce default memory limit back to safe level, add lua function to override limit
 * Lua: Add Gear calculation helper function
 * Lua: Add functions to support ShiftX3
+* Config: Ensure we can configure maximum number of CAN channels without crashing firmware
 
 = 2.14.0=
 * Core: Add support for pit-to-car alerting
