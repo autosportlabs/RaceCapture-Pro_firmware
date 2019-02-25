@@ -81,6 +81,9 @@ struct OBD2State {
         /* holds the last query timestamp, for determining OBD2 query timeouts */
         size_t last_obd2_query_timestamp;
 
+        /* holds the timestamp of the last OBDII response */
+        size_t last_obd2_response_timestamp;
+
         /* the index of the current OBD2 PID we're querying */
         uint16_t current_obd2_pid_index;
 
@@ -119,6 +122,12 @@ struct OBD2State {
          * indicates if we're using 29 bit PID requests
          */
         bool is_29bit_obd2;
+
+        /**
+         * Define a static delay between OBDII queries, to throttle PID querying
+         */
+        uint32_t pid_query_delay;
+
 };
 
 static struct OBD2State obd2_state = {0};
@@ -192,6 +201,8 @@ bool OBD2_init_current_values(OBD2Config *obd2_config)
         obd2_state.query_latency = 0;
         obd2_state.is_active = false;
         obd2_state.is_29bit_obd2 = false;
+        obd2_state.pid_query_delay = 0;
+
         /* determine the fastest sample rate, which will set our PID querying timebase */
         size_t max_sample_rate = 0;
         for (size_t i = 0; i < obd2_channel_count; i++) {
@@ -290,6 +301,10 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
         if (obd2_state.last_obd2_query_timestamp != 0 && !is_obd2_timeout)
                 return;
 
+        /* Check for a configured delay */
+        if (obd2_state.last_obd2_response_timestamp && !isTimeoutMs(obd2_state.last_obd2_response_timestamp, obd2_state.pid_query_delay)) {
+                return;
+        }
         /**
          * Scheduler algorithm.  This updates a sequencer counter
          * based on the channel's sample rate.
@@ -404,6 +419,7 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
                 obd2_state.is_active = true;
                 /* PID request is complete */
                 obd2_state.last_obd2_query_timestamp = 0;
+                obd2_state.last_obd2_response_timestamp = getCurrentTicks();
         }
 }
 
@@ -421,4 +437,8 @@ bool OBD2_get_value_for_pid(uint16_t pid, float *value)
                 }
         }
         return false;
+}
+
+void OBD2_set_pid_delay(uint32_t delay){
+        obd2_state.pid_query_delay = delay;
 }

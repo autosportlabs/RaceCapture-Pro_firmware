@@ -786,6 +786,14 @@ static int lua_obd2_read(lua_State *L)
                 return 0;
 }
 
+static int lua_obd2_set_delay(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 1);
+        lua_validate_arg_number(L, 1);
+        OBD2_set_pid_delay(lua_tonumber(L, 1));
+        return 0;
+}
+
 static int lua_logging_start(lua_State *L)
 {
         startLogging();
@@ -1395,6 +1403,7 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "rxCAN", lua_rx_can_msg);
         lua_registerlight(L, "setCANfilter", lua_set_can_filter);
         lua_registerlight(L, "readOBD2", lua_obd2_read);
+        lua_registerlight(L, "setOBD2Delay", lua_obd2_set_delay);
 
         lua_registerlight(L, "startLogging", lua_logging_start);
         lua_registerlight(L, "stopLogging", lua_logging_stop);

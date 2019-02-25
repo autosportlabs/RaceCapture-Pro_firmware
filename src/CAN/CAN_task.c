@@ -42,7 +42,7 @@
 
 #define CAN_TASK_STACK                  128
 #define CAN_TASK_FEATURED_DISABLED_MS   2000
-#define CAN_RX_DELAY                    300
+#define CAN_RX_DELAY                    50
 
 static void CAN_task(void *parameters)
 {
