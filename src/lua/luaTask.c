@@ -487,8 +487,10 @@ size_t lua_task_get_callback_freq()
 
 bool lua_task_stop()
 {
-        if (!is_init(false) || !is_runtime_active())
+        if (!is_init(false) || !is_runtime_active()) {
+                pr_warning("_LOG_PFX Can not stop Lua task, not active\r\n");
                 return false;
+        }
 
         const size_t ticks = msToTicks(LUA_LOCK_WAIT_MS);
         const bool got_lock = get_lock_wait(ticks);
