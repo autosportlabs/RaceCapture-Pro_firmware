@@ -95,7 +95,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
                 lua_task_stop();
 #endif /* LUA_SUPPORT */
 
-                pr_info_int_msg(_LOG_PFX "Allocating new tracks buffer: ", sizeof(Tracks));
+                pr_info(_LOG_PFX "Allocating new tracks buffer\r\n");
                 g_tracksBuffer = (Tracks *) portMalloc(sizeof(Tracks));
                 if (NULL == g_tracksBuffer) {
                         pr_error(_LOG_PFX "Failed to allocate memory for track buffer.\r\n");
