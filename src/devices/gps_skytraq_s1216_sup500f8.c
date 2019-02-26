@@ -224,6 +224,8 @@ typedef enum {
 } gps_cmd_result_t;
 
 
+#define SPEED_SPIKE_THRESHOLD_M_SEC 140
+
 static uint8_t calculateChecksum(const GpsMessage* msg)
 {
         const uint16_t len = msg->payloadLength;
@@ -761,6 +763,17 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
 
         if (result != GPS_MSG_SUCCESS) return result;
 
+        float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
+        float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
+        float ecef_z_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vz)) * 0.01;
+
+        float velocity = sqrt((ecef_x_velocity * ecef_x_velocity)
+                              + (ecef_y_velocity * ecef_y_velocity)
+                              + (ecef_z_velocity * ecef_z_velocity));
+
+        if (velocity > SPEED_SPIKE_THRESHOLD_M_SEC)
+                return GPS_MSG_READERR;
+
         gpsSample->quality = gpsMsg.navigationDataMessage.fixMode;
         gpsSample->satellites = gpsMsg.navigationDataMessage.satellitesInFix;
         gpsSample->DOP = ((float)swap_uint16(gpsMsg.navigationDataMessage.PDOP)) * 0.01;
@@ -769,13 +782,6 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
         gpsSample->point.latitude = ((float)latitude_raw) * 0.0000001f;
         gpsSample->point.longitude = ((float)longitude_raw) * 0.0000001f;
 
-        float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
-        float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
-        float ecef_z_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vz)) * 0.01;
-
-        float velocity = sqrt((ecef_x_velocity * ecef_x_velocity)
-                              + (ecef_y_velocity * ecef_y_velocity)
-                              + (ecef_z_velocity * ecef_z_velocity));
         //convert m/sec to km/hour
         gpsSample->speed = velocity * 3.6;
         gpsSample->altitude = (((float) swap_int32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01) * 3.28084;

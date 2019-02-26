@@ -6,6 +6,7 @@
 * Lua: Add functions to support ShiftX3
 * Config: Ensure we can configure maximum number of CAN channels without crashing firmware
 * Config: Fix error updating Track database under certain high memory usage conditions. (Reduce track DB to 50 tracks)
+* GPS: Filter out GPS speed spikes
 
 = 2.14.0=
 * Core: Add support for pit-to-car alerting
