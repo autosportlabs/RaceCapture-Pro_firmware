@@ -27,6 +27,8 @@
 #include "printk.h"
 #include "tracks.h"
 
+#define _LOG_PFX   "[Tracks] "
+
 #ifndef RCP_TESTING
 #include "memory.h"
 static const volatile Tracks g_tracks __attribute__((section(".tracks\n\t#")));
@@ -47,7 +49,7 @@ int flash_default_tracks(void)
         const VersionInfo* cv = get_current_version_info();
         memcpy(&def_tracks->versionInfo, cv, sizeof(VersionInfo));
 
-        pr_info("flashing default tracks...");
+        pr_info(_LOG_PFX "flashing default tracks...");
         const int status = flash_tracks(def_tracks, sizeof(Tracks));
 
         free(def_tracks);
@@ -72,7 +74,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
                                 const enum track_add_mode mode)
 {
         if (index >= MAX_TRACK_COUNT) {
-                pr_error("tracks: Invalid track index\r\n");
+                pr_error(_LOG_PFX "Invalid track index\r\n");
                 return TRACK_ADD_RESULT_FAIL;
         }
 
@@ -82,7 +84,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
                 /* Valid cases.  Carry on */
                 break;
         default:
-                pr_error_int_msg("tracks: Unknown track_add_mode: ", mode);
+                pr_error_int_msg(_LOG_PFX "Unknown track_add_mode: ", mode);
                 return TRACK_ADD_RESULT_FAIL;
         }
 
@@ -93,13 +95,17 @@ enum track_add_result add_track(const Track *track, const size_t index,
                 lua_task_stop();
 #endif /* LUA_SUPPORT */
 
-                pr_debug("tracks: Allocating new tracks buffer\r\n");
+                pr_info_int_msg(_LOG_PFX "Allocating new tracks buffer", sizeof(Tracks));
                 g_tracksBuffer = (Tracks *) portMalloc(sizeof(Tracks));
+                if (NULL == g_tracksBuffer) {
+                        pr_error(_LOG_PFX "Failed to allocate memory for track buffer.\r\n");
+                        return TRACK_ADD_RESULT_FAIL;
+                }
                 memcpy(g_tracksBuffer, (void*) &g_tracks, sizeof(Tracks));
         }
 
         if (NULL == g_tracksBuffer) {
-                pr_error("tracks: Failed to allocate memory for track buffer.\r\n");
+                pr_error(_LOG_PFX "Invalid tracks buffer memory\r\n");
                 return TRACK_ADD_RESULT_FAIL;
         }
 
@@ -112,7 +118,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
                 return TRACK_ADD_RESULT_OK;
 
         /* If here, time to flash and tidy up */
-        pr_info("tracks: Completed updating tracks. Flashing... ");
+        pr_info(_LOG_PFX "Completed updating tracks. Flashing... ");
         const int rc = flash_tracks(g_tracksBuffer, sizeof(Tracks));
         portFree(g_tracksBuffer);
         g_tracksBuffer = NULL;
