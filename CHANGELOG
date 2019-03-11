@@ -1,3 +1,6 @@
+= 2.15.1=
+* Core: Ensure ShiftX configuration happens after ShiftX is booted and ready
+
 = 2.15.0=
 * Core: add support for ShiftX2/3 lua functions
 * Core: broadcast button events from ShiftX2/3 to connected clients for dashboard navigation
