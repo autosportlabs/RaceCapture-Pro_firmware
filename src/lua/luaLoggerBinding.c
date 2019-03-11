@@ -55,6 +55,7 @@
 #include "shiftx_drv.h"
 #include "api_event.h"
 #include "math.h"
+#include "taskUtil.h"
 
 #define TEMP_BUFFER_LEN 		256
 #define DEFAULT_CAN_TIMEOUT 		100
@@ -1305,7 +1306,7 @@ static int lua_sx_set_config(lua_State *L)
                 lua_validate_arg_number(L, 1);
                 shiftx_config->orientation_inverted = lua_tointeger(L, 1);
         }
-
+        delayMs(500);
         lua_pushinteger(L, shiftx_update_config());
         return 1;
 }
