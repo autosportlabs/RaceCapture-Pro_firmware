@@ -1643,6 +1643,7 @@ void set_consistent_sample_rates(LapConfig *lc)
                 &lc->sectorTimeCfg,
                 &lc->elapsed_time_cfg,
                 &lc->current_lap_cfg,
+                &lc->distance,
                 NULL,
         };
 
@@ -1690,6 +1691,12 @@ int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
         if (current_lap != NULL)
                 setChannelConfig(serial, current_lap + 1,
                                  &lapCfg->current_lap_cfg,
+                                 NULL, NULL);
+
+        const jsmntok_t *distance = jsmn_find_node(json, "dist");
+        if (distance != NULL)
+                setChannelConfig(serial, distance + 1,
+                                 &lapCfg->distance,
                                  NULL, NULL);
 
         set_consistent_sample_rates(lapCfg);

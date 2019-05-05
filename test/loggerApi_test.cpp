@@ -849,7 +849,6 @@ void LoggerApiTest::testGetGpsConfigFile(string filename)
 
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["pos"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["speed"]);
-        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dist"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["alt"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["qual"]);
@@ -859,8 +858,6 @@ void LoggerApiTest::testGetGpsConfigFile(string filename)
         /* Special values here per pupulateChannelConfig above */
         CPPUNIT_ASSERT_EQUAL(string("unit_3"),
                              (string) (String) unitsJson["alt"]);
-        CPPUNIT_ASSERT_EQUAL(string("unit_2"),
-                             (string) (String) unitsJson["dist"]);
         CPPUNIT_ASSERT_EQUAL(string("unit_1"),
                              (string) (String) unitsJson["speed"]);
 }
@@ -885,7 +882,7 @@ void LoggerApiTest::testSetLapConfigFile(string filename)
 
         assertGenericResponse(txBuffer, "setLapCfg", API_SUCCESS);
 
-        bool metric = true;
+        bool metric = false;
         enum unit distance_unit = metric ?
                                   UNIT_LENGTH_KILOMETERS : UNIT_LENGTH_MILES;
 
