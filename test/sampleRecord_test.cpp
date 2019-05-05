@@ -321,15 +321,6 @@ void SampleRecordTest::testInitSampleRecord()
                 ts++;
         }
 
-        if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED) {
-                CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance,
-                                     (void *) ts->cfg);
-                CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles,
-                                     (void *) ts->get_float_sample);
-                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
-                ts++;
-        }
-
         LapConfig *lapConfig = &(lc->LapConfigs);
         if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) {
                 CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->lapCountCfg,
@@ -393,6 +384,16 @@ void SampleRecordTest::testInitSampleRecord()
                                      (void *) ts->get_int_sample);
                 ts++;
         }
+
+        if (lapConfig->distance.sampleRate != SAMPLE_DISABLED) {
+                CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->distance,
+                                     (void *) ts->cfg);
+                CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles,
+                                     (void *) ts->get_float_sample);
+                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+                ts++;
+        }
+
 
         //amount shoud match
         const size_t size = ts - s.channel_samples;

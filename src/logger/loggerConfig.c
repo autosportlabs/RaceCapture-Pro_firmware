@@ -253,7 +253,6 @@ void logger_config_reset_gps_config(GPSConfig *cfg)
         strcpy(cfg->altitude.units, units_get_label(UNIT_LENGTH_FEET));
         strcpy(cfg->speed.units, units_get_label(UNIT_SPEED_MILES_HOUR));
 #endif
-        strcpy(cfg->distance.units, units_get_label(UNIT_LENGTH_MILES));
 }
 
 uint16_t logger_config_get_gps_sample_rate(void)
@@ -568,9 +567,6 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
         sr = gpsConfig->DOP.sampleRate;
         s = getHigherSampleRate(sr, s);
 #endif
-        sr = gpsConfig->distance.sampleRate;
-        s = getHigherSampleRate(sr, s);
-
         LapConfig *trackCfg = &(config->LapConfigs);
         sr = trackCfg->lapCountCfg.sampleRate;
         s = getHigherSampleRate(sr, s);
@@ -591,6 +587,9 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
         s = getHigherSampleRate(sr, s);
 
         sr = trackCfg->current_lap_cfg.sampleRate;
+        s = getHigherSampleRate(sr, s);
+
+        sr = trackCfg->distance.sampleRate;
         s = getHigherSampleRate(sr, s);
 
         /* Now check our Virtual Channels */
@@ -666,7 +665,6 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (gpsConfigs->quality.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->DOP.sampleRate != SAMPLE_DISABLED) channels++;
 #endif
-        if (gpsConfigs->distance.sampleRate != SAMPLE_DISABLED) channels++;
 
         LapConfig *lapConfig = &loggerConfig->LapConfigs;
         if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
@@ -676,6 +674,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
         if (lapConfig->elapsed_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
         if (lapConfig->current_lap_cfg.sampleRate != SAMPLE_DISABLED) channels++;
+        if (lapConfig->distance.sampleRate != SAMPLE_DISABLED) channels++;
 
 #if VIRTUAL_CHANNEL_SUPPORT
         channels += get_virtual_channel_count();
