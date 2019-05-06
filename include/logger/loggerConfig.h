@@ -94,7 +94,7 @@ struct TimeConfig {
 
 #define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
 
-/*gsyn
+/*
  * Default to lowest active sample rate.  This will change in code later.
  * NOTE: This should never be below SAMPLE_1Hz, else you could potentially
  *       starve the telemtry task if a user somehow disables all channels.
