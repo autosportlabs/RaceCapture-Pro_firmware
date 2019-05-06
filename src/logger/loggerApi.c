@@ -1731,7 +1731,7 @@ int api_getLapConfig(struct Serial *serial, const jsmntok_t *json)
         json_channelConfig(serial, &lapCfg->sectorTimeCfg, 0);
         json_objEnd(serial, 1);
 
-        json_objStartString(serial, "elapsed");
+        json_objStartString(serial, "elapsedTime");
         json_channelConfig(serial, &lapCfg->elapsed_time_cfg, 0);
         json_objEnd(serial, 1);
 
