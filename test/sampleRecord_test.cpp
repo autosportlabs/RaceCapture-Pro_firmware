@@ -77,6 +77,7 @@ void SampleRecordTest::testPopulateSampleRecord()
         ADC_mock_set_value(7, 123);
         ADC_sample_all();
 
+        lapstats_reset();
         // Set it so we have 1 tick.
         increment_tick();
         CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
@@ -123,6 +124,10 @@ void SampleRecordTest::testPopulateSampleRecord()
         CPPUNIT_ASSERT_EQUAL(imu_read_value(IMU_CHANNEL_ROLL, &lc->ImuConfigs[5]),
                              samples->valueFloat);
 
+        samples++;
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum channel
+        printf("sample %s\r\n", samples->cfg->label);
+
         //GPS / Track channels
         /*
          * !!! BE WARNED!!!  It seems some of these samples should be valueInts instead of
@@ -132,40 +137,64 @@ void SampleRecordTest::testPopulateSampleRecord()
          * get NaN or something else weird that you didn't expect.
          */
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Latitude
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Longtiude
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Speed
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Altitude
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSSats
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSQual
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSDOP
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //lapCount
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //lapTime
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((int) -1, samples->valueInt); //sectorCfg
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //SectorTime
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL(-1, samples->valueInt);
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //PredTime
+
+        samples++;
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //ElapsedTime
+
+        samples++;
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((int) 0, samples->valueInt); //CurrentLap
+
+        samples++;
+        printf("sample %s\r\n", samples->cfg->label);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Distance
 }
 
 void SampleRecordTest::testInitSampleRecord()

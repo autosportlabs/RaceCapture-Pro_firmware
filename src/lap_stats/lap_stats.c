@@ -111,6 +111,7 @@ void resetLapCount()
  */
 void lapstats_reset()
 {
+        g_distance = 0;
         last_speed = 0;
         current_speed = 0;
         last_distance_sample_at = 0;
