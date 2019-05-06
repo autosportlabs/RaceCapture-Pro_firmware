@@ -237,6 +237,20 @@ static bool sara_u280_activate_pdp(struct serial_buffer *sb,
         return sara_u280_gprs_psd_action(sb, pdp_id, 3);
 }
 
+static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
+                                         int socket_id)
+{
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_printf_append(sb, "AT+USOSO=%d,6,1,1", socket_id);
+        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
+                                               msgs_len);
+        return is_rsp_ok(msgs, count);
+
+}
+
 static int sara_u280_create_tcp_socket(struct serial_buffer *sb)
 {
         const char *cmd = "AT+USOCR=6";
@@ -394,6 +408,7 @@ static bool sara_u280_setup_pdp(struct serial_buffer *sb,
         if (!gprs_attached)
                 return false;
 
+        goto blah;
         bool gprs_active = sara_u280_is_gprs_connected(sb);
 
         /* Setup APN */
@@ -455,7 +470,7 @@ static bool sara_u280_setup_pdp(struct serial_buffer *sb,
                 return false;
 
         pr_debug("[sara_u280] IP acquired\r\n");
-
+blah:
         return true;
 }
 
@@ -478,6 +493,11 @@ static bool sara_u280_connect_rcl_telem(struct serial_buffer *sb,
                 pr_warning_int_msg(":", tc->telemetry_port);
 
                 return false;
+        }
+
+        if (!sara_r1_configure_tcp_socket(sb, ti->socket)) {
+                        pr_warning("[SARA-R1] Failed to configure socket");
+                        return false;
         }
 
         return sara_u280_start_direct_mode(sb, ti->socket);

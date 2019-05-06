@@ -54,6 +54,7 @@ bool gsm_set_echo(struct serial_buffer *sb, bool on)
 
         serial_buffer_reset(sb);
         serial_buffer_append(sb, cmd);
+        cellular_exec_cmd(sb, READ_TIMEOUT, msgs, msgs_len);
         const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs, msgs_len);
         const bool status = is_rsp_ok(msgs, count);
 
@@ -157,15 +158,15 @@ bool gsm_get_imei(struct serial_buffer *sb,
 enum cellular_net_status gsm_get_network_reg_status(
         struct serial_buffer *sb, struct cellular_info *ci)
 {
-        const char *cmd = "AT+CGREG?";
+        const char *cmd = "AT+CEREG?";
         const char *msgs[2];
         const size_t msgs_len = ARRAY_LEN(msgs);
-        const char *answrs[] = {"+CGREG: 0,0",
-                                "+CGREG: 0,1",
-                                "+CGREG: 0,2",
-                                "+CGREG: 0,3",
-                                "+CGREG: 0,4",
-                                "+CGREG: 0,5"
+        const char *answrs[] = {"+CEREG: 0,0",
+                                "+CEREG: 0,1",
+                                "+CEREG: 0,2",
+                                "+CEREG: 0,3",
+                                "+CEREG: 0,4",
+                                "+CEREG: 0,5"
                                };
         const size_t answrs_len = ARRAY_LEN(answrs);
 
@@ -196,6 +197,7 @@ enum cellular_net_status gsm_get_network_reg_status(
         return ci->net_status;
 }
 
+/* this works */
 bool gsm_is_gprs_attached(struct serial_buffer *sb)
 {
         const char *cmd = "AT+CGATT?";
