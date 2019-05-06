@@ -94,7 +94,7 @@ struct TimeConfig {
 
 #define EMPTY_CHANNEL_CONFIG {"","", 0.0f, 0.0f, SAMPLE_DISABLED, 0}
 
-/*
+/*gsyn
  * Default to lowest active sample rate.  This will change in code later.
  * NOTE: This should never be below SAMPLE_1Hz, else you could potentially
  *       starve the telemtry task if a user somehow disables all channels.
@@ -239,7 +239,7 @@ typedef struct _ImuConfig {
                 IMU_GYRO_CONFIG("Pitch", IMU_MODE_NORMAL, IMU_CHANNEL_PITCH), \
                 IMU_GYRO_CONFIG("Roll", IMU_MODE_NORMAL, IMU_CHANNEL_ROLL),   \
                 }
-#define IMU_GSUM_CONFIG_DEFAULT {"Gsum", "G", -3, 3, SAMPLE_25Hz, 2, 0}
+#define IMU_GSUM_CONFIG_DEFAULT {"Gsum", "G", 0, 3, SAMPLE_25Hz, 2, 0}
 
 typedef struct _PWMConfig {
         ChannelConfig cfg;
