@@ -239,6 +239,7 @@ typedef struct _ImuConfig {
                 IMU_GYRO_CONFIG("Pitch", IMU_MODE_NORMAL, IMU_CHANNEL_PITCH), \
                 IMU_GYRO_CONFIG("Roll", IMU_MODE_NORMAL, IMU_CHANNEL_ROLL),   \
                 }
+#define IMU_GSUM_CONFIG_DEFAULT {"Gsum", "G", 0, 3, SAMPLE_25Hz, 2, 0}
 
 typedef struct _PWMConfig {
         ChannelConfig cfg;
@@ -556,6 +557,7 @@ typedef struct _LoggerConfig {
 #if IMU_CHANNELS > 0
         //IMU Configurations
         ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+        ChannelConfig imu_gsum;
 #endif
 
         //CAN Configuration

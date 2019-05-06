@@ -182,10 +182,12 @@ static void resetGpioConfig(GPIOConfig cfg[])
 #endif
 
 #if IMU_CHANNELS > 0
-static void resetImuConfig(ImuConfig cfg[])
+static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config)
 {
         static const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
         memcpy(cfg, defaults, sizeof(defaults));
+        static const ChannelConfig default_imu_gsum = IMU_GSUM_CONFIG_DEFAULT;
+        memcpy(imu_gsum_config, &default_imu_gsum, sizeof(ChannelConfig));
 }
 #endif
 
@@ -611,6 +613,8 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         for (size_t i=0; i < CONFIG_IMU_CHANNELS; i++)
                 if (loggerConfig->ImuConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
                         ++channels;
+
+        if (loggerConfig->imu_gsum.sampleRate != SAMPLE_DISABLED) channels++;
 #endif
 
 #if ANALOG_CHANNELS > 0
@@ -713,7 +717,7 @@ void reset_logger_config(void)
 #endif
 
 #if IMU_CHANNELS > 0
-        resetImuConfig(lc->ImuConfigs);
+        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum);
 #endif
 
         resetCanConfig(&lc->CanConfig);

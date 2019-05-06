@@ -45,6 +45,7 @@
 #include "timer.h"
 #include "units.h"
 #include "virtual_channel.h"
+#include <math.h>
 #include <stdbool.h>
 
 #define SAMPLE_CB_REGISTRY_SIZE	8
@@ -220,6 +221,14 @@ float get_imu_sample(int channelId)
         float value = imu_read_value(channelId, c);
         return value;
 }
+
+float get_imu_gsum_getter(void)
+{
+        LoggerConfig *config = getWorkingLoggerConfig();
+        float x_value = imu_read_value(IMU_CHANNEL_X, &config->ImuConfigs[IMU_CHANNEL_X]);
+        float y_value = imu_read_value(IMU_CHANNEL_Y, &config->ImuConfigs[IMU_CHANNEL_Y]);
+        return sqrt((powf(y_value,2))+(powf(x_value,2)));
+}
 #endif
 
 #if GPS_HARDWARE_SUPPORT
@@ -283,6 +292,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
                 chanCfg = &(config->cfg);
                 sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_imu_sample);
         }
+        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsum, get_imu_gsum_getter);
 #endif
 
 #if TIMER_CHANNELS > 0
