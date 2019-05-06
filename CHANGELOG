@@ -1,3 +1,6 @@
+= 2.16.0=
+* Add real-time Gsum channel 
+
 = 2.15.1=
 * Core: Ensure ShiftX configuration happens after ShiftX is booted and ready
 
