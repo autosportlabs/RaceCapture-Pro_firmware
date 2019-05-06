@@ -126,7 +126,6 @@ void SampleRecordTest::testPopulateSampleRecord()
 
         samples++;
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum channel
-        printf("sample %s\r\n", samples->cfg->label);
 
         //GPS / Track channels
         /*
@@ -137,63 +136,48 @@ void SampleRecordTest::testPopulateSampleRecord()
          * get NaN or something else weird that you didn't expect.
          */
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Latitude
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Longtiude
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Speed
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Altitude
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSSats
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSQual
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSDOP
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //lapCount
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //lapTime
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((int) -1, samples->valueInt); //sectorCfg
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //SectorTime
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //PredTime
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //ElapsedTime
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((int) 0, samples->valueInt); //CurrentLap
 
         samples++;
-        printf("sample %s\r\n", samples->cfg->label);
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Distance
 }
 
