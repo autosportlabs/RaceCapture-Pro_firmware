@@ -803,15 +803,11 @@ void LoggerApiTest::testSetGpsConfigFile(string filename,
 
         enum unit speed_unit = metric ?
                                UNIT_SPEED_KILOMETERS_HOUR : UNIT_SPEED_MILES_HOUR;
-        enum unit distance_unit = metric ?
-                                  UNIT_LENGTH_KILOMETERS : UNIT_LENGTH_MILES;
         enum unit altitude_unit = metric ?
                                   UNIT_LENGTH_METERS : UNIT_LENGTH_FEET;
 
         testChannelConfig(&gpsCfg->speed, string("Speed"),
                           string(units_get_label(speed_unit)), sampleRate);
-        testChannelConfig(&gpsCfg->distance, string("Distance"),
-                          string(units_get_label(distance_unit)), sampleRate);
         testChannelConfig(&gpsCfg->altitude, string("Altitude"),
                           string(units_get_label(altitude_unit)), sampleRate);
         testChannelConfig(&gpsCfg->latitude, string("Latitude"), string("Degrees"), sampleRate);
@@ -838,7 +834,6 @@ void LoggerApiTest::testGetGpsConfigFile(string filename)
         populateChannelConfig(&gpsCfg->latitude, 0, 100);
         populateChannelConfig(&gpsCfg->longitude, 0, 100);
         populateChannelConfig(&gpsCfg->speed, 1, 100);
-        populateChannelConfig(&gpsCfg->distance, 2, 100);
         populateChannelConfig(&gpsCfg->altitude, 3, 100);
         populateChannelConfig(&gpsCfg->satellites, 0, 100);
         populateChannelConfig(&gpsCfg->quality, 0, 100);
@@ -854,7 +849,6 @@ void LoggerApiTest::testGetGpsConfigFile(string filename)
 
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["pos"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["speed"]);
-        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dist"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["alt"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["qual"]);
@@ -864,8 +858,6 @@ void LoggerApiTest::testGetGpsConfigFile(string filename)
         /* Special values here per pupulateChannelConfig above */
         CPPUNIT_ASSERT_EQUAL(string("unit_3"),
                              (string) (String) unitsJson["alt"]);
-        CPPUNIT_ASSERT_EQUAL(string("unit_2"),
-                             (string) (String) unitsJson["dist"]);
         CPPUNIT_ASSERT_EQUAL(string("unit_1"),
                              (string) (String) unitsJson["speed"]);
 }
@@ -890,11 +882,17 @@ void LoggerApiTest::testSetLapConfigFile(string filename)
 
         assertGenericResponse(txBuffer, "setLapCfg", API_SUCCESS);
 
+        bool metric = false;
+        enum unit distance_unit = metric ?
+                                  UNIT_LENGTH_KILOMETERS : UNIT_LENGTH_MILES;
+
         testChannelConfig(&cfg->lapCountCfg, string("LapCount"), string(""), 50);
         testChannelConfig(&cfg->lapTimeCfg, string("LapTime"), string("Min"), 50);
         testChannelConfig(&cfg->sectorCfg, string("Sector"), string(""), 50);
         testChannelConfig(&cfg->sectorTimeCfg, string("SectorTime"), string("Min"), 50);
         testChannelConfig(&cfg->predTimeCfg, string("PredTime"), string("Min"), 50);
+        testChannelConfig(&cfg->distance, string("Distance"), string(units_get_label(distance_unit)), 50);
+
 }
 
 void LoggerApiTest::testGetLapConfigFile(string filename)
@@ -908,6 +906,7 @@ void LoggerApiTest::testGetLapConfigFile(string filename)
         populateChannelConfig(&cfg->sectorCfg, 3, 50);
         populateChannelConfig(&cfg->sectorTimeCfg, 4, 50);
         populateChannelConfig(&cfg->predTimeCfg, 5, 50);
+        populateChannelConfig(&cfg->distance, 6, 50);
 
         const char *response = processApiGeneric(filename);
         Object json;
@@ -918,18 +917,21 @@ void LoggerApiTest::testGetLapConfigFile(string filename)
         Object &lapSector = json["lapCfg"]["sector"];
         Object &lapSectorTime = json["lapCfg"]["sectorTime"];
         Object &lapPredTime = json["lapCfg"]["predTime"];
+        Object &lapDist = json["lapCfg"]["dist"];
 
         string str1 = string("1");
         string str2 = string("2");
         string str3 = string("3");
         string str4 = string("4");
         string str5 = string("5");
+        string str6 = string("6");
 
         check_channel_config(lapCount, &cfg->lapCountCfg);
         check_channel_config(lapTime, &cfg->lapTimeCfg);
         check_channel_config(lapSector, &cfg->sectorCfg);
         check_channel_config(lapSectorTime, &cfg->sectorTimeCfg);
         check_channel_config(lapPredTime, &cfg->predTimeCfg);
+        check_channel_config(lapDist, &cfg->distance);
 }
 
 void LoggerApiTest::testGetLapCfg()

@@ -12,7 +12,7 @@
 	"units": {
 	    "alt": "m",
 	    "dist": "Km",
-	    "speed": "Kph"
+	    "speed": "kph"
 	}
     }
 }

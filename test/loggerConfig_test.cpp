@@ -183,12 +183,6 @@ void LoggerConfigTest::testLoggerInitGpsConfig()
                              string(cc->units));
         CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
 
-        cc = &lc->GPSConfigs.distance;
-        CPPUNIT_ASSERT_EQUAL(string("Distance"), string(cc->label));
-        CPPUNIT_ASSERT_EQUAL(string(units_get_label(UNIT_LENGTH_MILES)),
-                             string(cc->units));
-        CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
-
         cc = &lc->GPSConfigs.altitude;
         CPPUNIT_ASSERT_EQUAL(string("Altitude"), string(cc->label));
         CPPUNIT_ASSERT_EQUAL(string(units_get_label(UNIT_LENGTH_FEET)),
@@ -249,6 +243,12 @@ void LoggerConfigTest::testLoggerInitLapConfig()
         cc = &lc->LapConfigs.elapsed_time_cfg;
         CPPUNIT_ASSERT_EQUAL(string("ElapsedTime"), string(cc->label));
         CPPUNIT_ASSERT_EQUAL(string("Min"), string(cc->units));
+        CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
+
+        cc = &lc->LapConfigs.distance;
+        CPPUNIT_ASSERT_EQUAL(string("Distance"), string(cc->label));
+        CPPUNIT_ASSERT_EQUAL(string(units_get_label(UNIT_LENGTH_MILES)),
+                             string(cc->units));
         CPPUNIT_ASSERT(cc->sampleRate == SAMPLE_10Hz);
 
 }
