@@ -1895,6 +1895,12 @@ int api_setTrackConfig(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS;
 }
 
+int api_reset_lap_stats(struct Serial *serial, const jsmntok_t *json)
+{
+        lapstats_reset(true);
+        return API_SUCCESS;
+}
+
 int api_calibrateImu(struct Serial *serial, const jsmntok_t *json)
 {
         imu_calibrate_zero();
