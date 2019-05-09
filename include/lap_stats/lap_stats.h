@@ -50,7 +50,7 @@ typedef struct _TimeLoc {
 
 void lapstats_config_changed(void);
 
-void lapstats_reset(void);
+void lapstats_reset(bool reset_session_time);
 
 void lapstats_process_incremental(const GpsSample *sample);
 
@@ -86,6 +86,11 @@ tiny_millis_t lapstats_elapsed_time();
  * @return The elapsed lap time in minutes.
  */
 float lapstats_elapsed_time_minutes();
+
+/**
+ * @return the session time in minutes
+ */
+float lapstats_session_time_minutes(void);
 
 tiny_millis_t getLastSectorTime();
 

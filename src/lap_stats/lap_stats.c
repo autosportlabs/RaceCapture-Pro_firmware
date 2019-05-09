@@ -72,6 +72,7 @@ static int g_configured;
 static int g_at_sf;
 static tiny_millis_t g_lapStartTimestamp = -1;
 static tiny_millis_t g_elapsed_lap_time;
+static tiny_millis_t g_session_time = 0;
 
 static int g_at_sector;
 static tiny_millis_t g_lastSectorTimestamp;
@@ -109,8 +110,10 @@ void resetLapCount()
  * This less invasive reset will cause all the stats to reset to their
  * default values. This DOES_NOT alter the track settings in any way.
  */
-void lapstats_reset()
+void lapstats_reset(bool reset_session)
 {
+        if (reset_session)
+                g_session_time = getUptime();
         g_distance = 0;
         last_speed = 0;
         current_speed = 0;
@@ -249,7 +252,7 @@ static bool set_active_track(const Track *track, const float radius,
                              const track_status_t track_status)
 {
         /* We are changing our track, so we need to reset stats */
-        lapstats_reset();
+        lapstats_reset(false);
         reset_track();
         g_track_status = track_status;
         g_configured = 1;
@@ -441,6 +444,11 @@ float lapstats_elapsed_time_minutes()
         return tinyMillisToMinutes(lapstats_elapsed_time());
 }
 
+float lapstats_session_time_minutes()
+{
+        return tinyMillisToMinutes(getUptime() - g_session_time);
+}
+
 tiny_millis_t getLastSectorTime()
 {
         return g_lastSectorTime;
@@ -623,7 +631,7 @@ static void process_sector_logic(const GpsSnapshot *gpsSnapshot)
 
 void lapstats_config_changed(void)
 {
-        lapstats_reset();
+        lapstats_reset(false);
         reset_track();
 }
 

@@ -609,6 +609,9 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
         sr = trackCfg->distance.sampleRate;
         s = getHigherSampleRate(sr, s);
 
+        sr = trackCfg->session_time_cfg.sampleRate;
+        s = getHigherSampleRate(sr, s);
+
         /* Now check our Virtual Channels */
 #if VIRTUAL_CHANNEL_SUPPORT
         sr = get_virtual_channel_high_sample_rate();
@@ -694,6 +697,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (lapConfig->elapsed_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
         if (lapConfig->current_lap_cfg.sampleRate != SAMPLE_DISABLED) channels++;
         if (lapConfig->distance.sampleRate != SAMPLE_DISABLED) channels++;
+        if (lapConfig->session_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
 
 #if VIRTUAL_CHANNEL_SUPPORT
         channels += get_virtual_channel_count();
