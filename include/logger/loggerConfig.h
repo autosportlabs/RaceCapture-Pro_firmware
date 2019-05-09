@@ -623,6 +623,7 @@ char filterGpioMode(int config);
 ImuConfig * getImuConfigChannel(int channel);
 int filterImuMode(int mode);
 int filterImuChannel(int channel);
+void update_calculated_imu_channel_configs(void);
 
 uint8_t filter_can_bus_channel(uint8_t value);
 

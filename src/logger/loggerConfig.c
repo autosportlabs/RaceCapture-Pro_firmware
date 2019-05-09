@@ -441,6 +441,21 @@ int filterImuMode(int mode)
                 return IMU_MODE_NORMAL;
         }
 }
+
+void update_calculated_imu_channel_configs(void){
+        /* synchronize any calculated IMU channels to the
+         * max sample rate of the IMU sensor channels
+         */
+        uint16_t max_sample_rate = SAMPLE_DISABLED;
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++) {
+                ImuConfig *cfg = &(lc->ImuConfigs[i]);
+                max_sample_rate = MAX(decodeSampleRate(cfg->cfg.sampleRate), max_sample_rate);
+        }
+        /* align the sample rate for the calculated Gsum channel, possibly disabling it */
+        lc->imu_gsum.sampleRate = encodeSampleRate(max_sample_rate);
+}
+
 #endif
 
 
