@@ -1,7 +1,7 @@
 /*
  * Race Capture Pro Firmware
  *
- * Copyright (C) 2015 Autosport Labs
+ * Copyright (C) 2019 Autosport Labs
  *
  * This file is part of the Race Capture Pro fimrware suite
  *
