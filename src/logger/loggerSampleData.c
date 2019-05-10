@@ -362,9 +362,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         chanCfg = &(gpsConfig->DOP);
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
 #endif
-        chanCfg = &(gpsConfig->distance);
-        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
-                        get_distance_getter(chanCfg));
 
         LapConfig *trackConfig = &(loggerConfig->LapConfigs);
         chanCfg = &(trackConfig->lapCountCfg);
@@ -384,6 +381,10 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         chanCfg = &(trackConfig->current_lap_cfg);
         sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg,
                         lapstats_current_lap);
+        chanCfg = &(trackConfig->distance);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+                        get_distance_getter(chanCfg));
+
 }
 
 static void populate_channel_sample(ChannelSample *sample)
