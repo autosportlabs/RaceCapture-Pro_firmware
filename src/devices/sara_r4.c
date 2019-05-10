@@ -73,7 +73,7 @@ static bool sara_r4_get_imei(struct serial_buffer *sb,
         return gsm_get_imei(sb, ci);
 }
 
-static enum cellular_net_status gsm_get_network_reg_status(
+static enum cellular_net_status sara_r4_get_network_reg_status(
         struct serial_buffer *sb, struct cellular_info *ci)
 {
         const char *cmd = "AT+CEREG?";
@@ -119,7 +119,7 @@ static enum cellular_net_status gsm_get_network_reg_status(
 static enum cellular_net_status sara_r4_get_net_reg_status(
         struct serial_buffer *sb,struct cellular_info *ci)
 {
-        return gsm_get_network_reg_status(sb, ci);
+        return sara_r4_get_network_reg_status(sb, ci);
 }
 
 static bool sara_r4_get_network_reg_info(struct serial_buffer *sb,

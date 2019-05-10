@@ -117,18 +117,18 @@ static bool sim900_get_imei(struct serial_buffer *sb,
         return gsm_get_imei(sb, ci);
 }
 
-static enum cellular_net_status gsm_get_network_reg_status(
+enum cellular_net_status sim900_get_network_reg_status(
         struct serial_buffer *sb, struct cellular_info *ci)
 {
-        const char *cmd = "AT+CEREG?";
+        const char *cmd = "AT+CGREG?";
         const char *msgs[2];
         const size_t msgs_len = ARRAY_LEN(msgs);
-        const char *answrs[] = {"+CEREG: 0,0",
-                                "+CEREG: 0,1",
-                                "+CEREG: 0,2",
-                                "+CEREG: 0,3",
-                                "+CEREG: 0,4",
-                                "+CEREG: 0,5"
+        const char *answrs[] = {"+CGREG: 0,0",
+                                "+CGREG: 0,1",
+                                "+CGREG: 0,2",
+                                "+CGREG: 0,3",
+                                "+CGREG: 0,4",
+                                "+CGREG: 0,5"
                                };
         const size_t answrs_len = ARRAY_LEN(answrs);
 
@@ -160,11 +160,12 @@ static enum cellular_net_status gsm_get_network_reg_status(
         return ci->net_status;
 }
 
+
 static enum cellular_net_status sim900_get_net_reg_status(
         struct serial_buffer *sb,
         struct cellular_info *ci)
 {
-        return gsm_get_network_reg_status(sb, ci);
+        return sim900_get_network_reg_status(sb, ci);
 }
 
 static bool sim900_is_gprs_attached(struct serial_buffer *sb)
