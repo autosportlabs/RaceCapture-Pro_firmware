@@ -430,6 +430,7 @@ typedef struct _LapConfig {
         ChannelConfig elapsed_time_cfg;
         ChannelConfig current_lap_cfg;
         ChannelConfig distance;
+        ChannelConfig session_time_cfg;
 } LapConfig;
 
 #define DEFAULT_LAPSTATS_SAMPLE_RATE SAMPLE_10Hz
@@ -442,6 +443,7 @@ typedef struct _LapConfig {
 #define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"ElapsedTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
 #define DEFAULT_CURRENT_LAP_CONFIG {"CurrentLap", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_DISTANCE_CONFIG {"Distance", "mi", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 3, 0}
+#define DEFAULT_SESSION_TIME_CONFIG {"SessionTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
 
 #define DEFAULT_LAP_CONFIG {                                    \
                 DEFAULT_LAP_COUNT_CONFIG,                       \
@@ -451,7 +453,8 @@ typedef struct _LapConfig {
                         DEFAULT_PRED_TIME_CONFIG,               \
                         DEFAULT_ELAPSED_LAP_TIME_CONFIG,        \
                         DEFAULT_CURRENT_LAP_CONFIG,             \
-                        DEFAULT_DISTANCE_CONFIG                 \
+                        DEFAULT_DISTANCE_CONFIG,                \
+                        DEFAULT_SESSION_TIME_CONFIG             \
                         }
 
 typedef struct _TrackConfig {

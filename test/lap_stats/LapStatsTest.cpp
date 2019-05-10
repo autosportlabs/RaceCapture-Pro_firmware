@@ -38,7 +38,7 @@ GpsSnapshot gps_ss;
 
 void LapStatsTest::setUp()
 {
-        lapstats_reset();
+        lapstats_reset(false);
         reset_track();
 
         /* Give us valid values. */
@@ -75,7 +75,7 @@ void LapStatsTest::reset_test()
         g_lap = 3;
         g_lapCount = 2;
 
-        lapstats_reset();
+        lapstats_reset(false);
 
         /* Track setting don't change here */
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
@@ -327,7 +327,7 @@ void LapStatsTest::sector_boundary_event_test()
 
 void LapStatsTest::update_distance_test()
 {
-        lapstats_reset();
+        lapstats_reset(false);
         GpsSample gps_sam;
         gps_sam.time = 100;
         GPS_sample_update(&gps_sam);
@@ -373,7 +373,7 @@ void LapStatsTest::update_distance_test()
 
 void LapStatsTest::update_distance_low_speed_test()
 {
-        lapstats_reset();
+        lapstats_reset(false);
         GpsSample gps_sam;
         gps_sam.time = 100;
         GPS_sample_update(&gps_sam);

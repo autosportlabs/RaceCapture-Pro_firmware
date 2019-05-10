@@ -57,7 +57,7 @@ void SampleRecordTest::setUp()
         reset_ticks();
 
         lc = getWorkingLoggerConfig();
-        lapstats_reset();
+        lapstats_reset(false);
         size_t channelCount = get_enabled_channel_count(lc);
         init_sample_buffer(&s, channelCount);
 
@@ -77,7 +77,7 @@ void SampleRecordTest::testPopulateSampleRecord()
         ADC_mock_set_value(7, 123);
         ADC_sample_all();
 
-        lapstats_reset();
+        lapstats_reset(false);
         // Set it so we have 1 tick.
         increment_tick();
         CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
@@ -185,7 +185,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
         LoggerConfig *lc = getWorkingLoggerConfig();
 
-        const size_t expectedEnabledChannels = 25;
+        const size_t expectedEnabledChannels = 26;
         size_t channelCount = get_enabled_channel_count(lc);
         CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
 
@@ -416,6 +416,14 @@ void SampleRecordTest::testInitSampleRecord()
                 ts++;
         }
 
+        if (lapConfig->session_time_cfg.sampleRate != SAMPLE_DISABLED) {
+                CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->session_time_cfg,
+                                     (void *) ts->cfg);
+                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+                CPPUNIT_ASSERT_EQUAL((void *) lapstats_session_time_minutes,
+                                     (void *) ts->get_float_sample);
+                ts++;
+        }
 
         //amount shoud match
         const size_t size = ts - s.channel_samples;

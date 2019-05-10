@@ -1487,7 +1487,7 @@ void LoggerApiTest::testGetVersion()
 void LoggerApiTest::testGetStatus()
 {
         set_ticks(3);
-        lapstats_reset();
+        lapstats_reset(false);
 
         const char *response = processApiGeneric("getStatus1.json");
         Object json;

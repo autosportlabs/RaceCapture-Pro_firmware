@@ -384,7 +384,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         chanCfg = &(trackConfig->distance);
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
                         get_distance_getter(chanCfg));
-
+        chanCfg = &(trackConfig->session_time_cfg);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, lapstats_session_time_minutes);
 }
 
 static void populate_channel_sample(ChannelSample *sample)

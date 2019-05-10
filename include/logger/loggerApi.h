@@ -61,6 +61,7 @@ CPP_GUARD_BEGIN
 	API_METHOD("setCanCfg", api_setCanConfig)			\
 	API_METHOD("setConnCfg", api_setConnectivityConfig)		\
 	API_METHOD("setLapCfg", api_setLapConfig)			\
+ API_METHOD("resetLapStats", api_reset_lap_stats) \
 	API_METHOD("setLogfileLevel", api_setLogfileLevel)		\
 	API_METHOD("setObd2Cfg", api_setObd2Config)			\
 	API_METHOD("setTelemetry", api_set_telemetry)			\
@@ -192,6 +193,7 @@ int api_getCanConfig(struct Serial *serial, const jsmntok_t *json);
 int api_setCanConfig(struct Serial *serial, const jsmntok_t *json);
 int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json);
 int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json);
+int api_reset_lap_stats(struct Serial *serial, const jsmntok_t *json);
 
 /* Sensor channels */
 int api_getAnalogConfig(struct Serial *serial, const jsmntok_t *json);

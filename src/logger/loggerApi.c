@@ -1646,6 +1646,7 @@ void set_consistent_sample_rates(LapConfig *lc)
                 &lc->elapsed_time_cfg,
                 &lc->current_lap_cfg,
                 &lc->distance,
+                &lc->session_time_cfg,
                 NULL,
         };
 
@@ -1701,6 +1702,12 @@ int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
                                  &lapCfg->distance,
                                  NULL, NULL);
 
+        const jsmntok_t *session_time = jsmn_find_node(json, "sessionTime");
+        if (session_time != NULL)
+                setChannelConfig(serial, session_time + 1,
+                                 &lapCfg->session_time_cfg,
+                                 NULL, NULL);
+
         set_consistent_sample_rates(lapCfg);
         configChanged();
         return API_SUCCESS;
@@ -1743,6 +1750,10 @@ int api_getLapConfig(struct Serial *serial, const jsmntok_t *json)
 
         json_objStartString(serial, "dist");
         json_channelConfig(serial, &lapCfg->distance, 0);
+        json_objEnd(serial, 1);
+
+        json_objStartString(serial, "sessionTime");
+        json_channelConfig(serial, &lapCfg->session_time_cfg, 0);
         json_objEnd(serial, 0);
 
         json_objEnd(serial, 0);
@@ -1881,6 +1892,12 @@ int api_setTrackConfig(struct Serial *serial, const jsmntok_t *json)
         configChanged();
         lapstats_config_changed();
 
+        return API_SUCCESS;
+}
+
+int api_reset_lap_stats(struct Serial *serial, const jsmntok_t *json)
+{
+        lapstats_reset(true);
         return API_SUCCESS;
 }
 
