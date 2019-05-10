@@ -57,7 +57,7 @@ void SampleRecordTest::setUp()
         reset_ticks();
 
         lc = getWorkingLoggerConfig();
-        lapstats_reset();
+        lapstats_reset(false);
         size_t channelCount = get_enabled_channel_count(lc);
         init_sample_buffer(&s, channelCount);
 
@@ -77,6 +77,7 @@ void SampleRecordTest::testPopulateSampleRecord()
         ADC_mock_set_value(7, 123);
         ADC_sample_all();
 
+        lapstats_reset(false);
         // Set it so we have 1 tick.
         increment_tick();
         CPPUNIT_ASSERT_EQUAL(1, (int) (xTaskGetTickCount()));
@@ -123,6 +124,9 @@ void SampleRecordTest::testPopulateSampleRecord()
         CPPUNIT_ASSERT_EQUAL(imu_read_value(IMU_CHANNEL_ROLL, &lc->ImuConfigs[5]),
                              samples->valueFloat);
 
+        samples++;
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum channel
+
         //GPS / Track channels
         /*
          * !!! BE WARNED!!!  It seems some of these samples should be valueInts instead of
@@ -132,44 +136,56 @@ void SampleRecordTest::testPopulateSampleRecord()
          * get NaN or something else weird that you didn't expect.
          */
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Latitude
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Longtiude
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Speed
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Altitude
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSSats
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSQual
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //GPSDOP
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //lapCount
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //lapTime
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat);
+        CPPUNIT_ASSERT_EQUAL((int) -1, samples->valueInt); //sectorCfg
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL(-1, samples->valueInt);
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //SectorTime
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //PredTime
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //ElapsedTime
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL((int) 0, samples->valueInt); //CurrentLap
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //Distance
 }
 
 void SampleRecordTest::testInitSampleRecord()
 {
         LoggerConfig *lc = getWorkingLoggerConfig();
 
-        const size_t expectedEnabledChannels = 24;
+        const size_t expectedEnabledChannels = 26;
         size_t channelCount = get_enabled_channel_count(lc);
         CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
 
@@ -216,6 +232,12 @@ void SampleRecordTest::testInitSampleRecord()
                 CPPUNIT_ASSERT_EQUAL(SampleData_Float, ts->sampleData);
                 ts++;
         }
+
+        /* Check what should be IMU Gsum channel */
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsum, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+        ++ts;
+
 
         for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &lc->TimerConfigs[i];
@@ -321,15 +343,6 @@ void SampleRecordTest::testInitSampleRecord()
                 ts++;
         }
 
-        if (gpsConfig->distance.sampleRate != SAMPLE_DISABLED) {
-                CPPUNIT_ASSERT_EQUAL((void *) &gpsConfig->distance,
-                                     (void *) ts->cfg);
-                CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles,
-                                     (void *) ts->get_float_sample);
-                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
-                ts++;
-        }
-
         LapConfig *lapConfig = &(lc->LapConfigs);
         if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) {
                 CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->lapCountCfg,
@@ -391,6 +404,24 @@ void SampleRecordTest::testInitSampleRecord()
                 CPPUNIT_ASSERT_EQUAL(SampleData_Int_Noarg, ts->sampleData);
                 CPPUNIT_ASSERT_EQUAL((void *) lapstats_current_lap,
                                      (void *) ts->get_int_sample);
+                ts++;
+        }
+
+        if (lapConfig->distance.sampleRate != SAMPLE_DISABLED) {
+                CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->distance,
+                                     (void *) ts->cfg);
+                CPPUNIT_ASSERT_EQUAL((void *) getLapDistanceInMiles,
+                                     (void *) ts->get_float_sample);
+                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+                ts++;
+        }
+
+        if (lapConfig->session_time_cfg.sampleRate != SAMPLE_DISABLED) {
+                CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->session_time_cfg,
+                                     (void *) ts->cfg);
+                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+                CPPUNIT_ASSERT_EQUAL((void *) lapstats_session_time_minutes,
+                                     (void *) ts->get_float_sample);
                 ts++;
         }
 
@@ -462,7 +493,7 @@ void SampleRecordTest::test_get_sample_value_by_name()
         bool result = get_sample_value_by_name(&s, "Speed", &value, &units);
         CPPUNIT_ASSERT_EQUAL(true, result);
         CPPUNIT_ASSERT_EQUAL((double)0, value);
-        CPPUNIT_ASSERT_EQUAL(string("MPH"), string(units));
+        CPPUNIT_ASSERT_EQUAL(string("mph"), string(units));
 
         result = get_sample_value_by_name(&s, "Battery", &value, &units);
         CPPUNIT_ASSERT_EQUAL(true, result);

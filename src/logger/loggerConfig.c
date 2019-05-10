@@ -182,10 +182,12 @@ static void resetGpioConfig(GPIOConfig cfg[])
 #endif
 
 #if IMU_CHANNELS > 0
-static void resetImuConfig(ImuConfig cfg[])
+static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config)
 {
         static const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
         memcpy(cfg, defaults, sizeof(defaults));
+        static const ChannelConfig default_imu_gsum = IMU_GSUM_CONFIG_DEFAULT;
+        memcpy(imu_gsum_config, &default_imu_gsum, sizeof(ChannelConfig));
 }
 #endif
 
@@ -253,7 +255,6 @@ void logger_config_reset_gps_config(GPSConfig *cfg)
         strcpy(cfg->altitude.units, units_get_label(UNIT_LENGTH_FEET));
         strcpy(cfg->speed.units, units_get_label(UNIT_SPEED_MILES_HOUR));
 #endif
-        strcpy(cfg->distance.units, units_get_label(UNIT_LENGTH_MILES));
 }
 
 uint16_t logger_config_get_gps_sample_rate(void)
@@ -440,6 +441,21 @@ int filterImuMode(int mode)
                 return IMU_MODE_NORMAL;
         }
 }
+
+void update_calculated_imu_channel_configs(void){
+        /* synchronize any calculated IMU channels to the
+         * max sample rate of the IMU sensor channels
+         */
+        uint16_t max_sample_rate = SAMPLE_DISABLED;
+        LoggerConfig *lc = getWorkingLoggerConfig();
+        for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++) {
+                ImuConfig *cfg = &(lc->ImuConfigs[i]);
+                max_sample_rate = MAX(decodeSampleRate(cfg->cfg.sampleRate), max_sample_rate);
+        }
+        /* align the sample rate for the calculated Gsum channel, possibly disabling it */
+        lc->imu_gsum.sampleRate = encodeSampleRate(max_sample_rate);
+}
+
 #endif
 
 
@@ -568,9 +584,6 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
         sr = gpsConfig->DOP.sampleRate;
         s = getHigherSampleRate(sr, s);
 #endif
-        sr = gpsConfig->distance.sampleRate;
-        s = getHigherSampleRate(sr, s);
-
         LapConfig *trackCfg = &(config->LapConfigs);
         sr = trackCfg->lapCountCfg.sampleRate;
         s = getHigherSampleRate(sr, s);
@@ -593,6 +606,12 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
         sr = trackCfg->current_lap_cfg.sampleRate;
         s = getHigherSampleRate(sr, s);
 
+        sr = trackCfg->distance.sampleRate;
+        s = getHigherSampleRate(sr, s);
+
+        sr = trackCfg->session_time_cfg.sampleRate;
+        s = getHigherSampleRate(sr, s);
+
         /* Now check our Virtual Channels */
 #if VIRTUAL_CHANNEL_SUPPORT
         sr = get_virtual_channel_high_sample_rate();
@@ -612,6 +631,8 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         for (size_t i=0; i < CONFIG_IMU_CHANNELS; i++)
                 if (loggerConfig->ImuConfigs[i].cfg.sampleRate != SAMPLE_DISABLED)
                         ++channels;
+
+        if (loggerConfig->imu_gsum.sampleRate != SAMPLE_DISABLED) channels++;
 #endif
 
 #if ANALOG_CHANNELS > 0
@@ -666,7 +687,6 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (gpsConfigs->quality.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->DOP.sampleRate != SAMPLE_DISABLED) channels++;
 #endif
-        if (gpsConfigs->distance.sampleRate != SAMPLE_DISABLED) channels++;
 
         LapConfig *lapConfig = &loggerConfig->LapConfigs;
         if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) channels++;
@@ -676,6 +696,8 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (lapConfig->predTimeCfg.sampleRate != SAMPLE_DISABLED) channels++;
         if (lapConfig->elapsed_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
         if (lapConfig->current_lap_cfg.sampleRate != SAMPLE_DISABLED) channels++;
+        if (lapConfig->distance.sampleRate != SAMPLE_DISABLED) channels++;
+        if (lapConfig->session_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
 
 #if VIRTUAL_CHANNEL_SUPPORT
         channels += get_virtual_channel_count();
@@ -714,7 +736,7 @@ void reset_logger_config(void)
 #endif
 
 #if IMU_CHANNELS > 0
-        resetImuConfig(lc->ImuConfigs);
+        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum);
 #endif
 
         resetCanConfig(&lc->CanConfig);

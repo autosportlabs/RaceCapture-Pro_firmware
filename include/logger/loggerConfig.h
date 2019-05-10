@@ -239,6 +239,7 @@ typedef struct _ImuConfig {
                 IMU_GYRO_CONFIG("Pitch", IMU_MODE_NORMAL, IMU_CHANNEL_PITCH), \
                 IMU_GYRO_CONFIG("Roll", IMU_MODE_NORMAL, IMU_CHANNEL_ROLL),   \
                 }
+#define IMU_GSUM_CONFIG_DEFAULT {"Gsum", "G", 0, 3, SAMPLE_25Hz, 2, 0}
 
 typedef struct _PWMConfig {
         ChannelConfig cfg;
@@ -393,7 +394,6 @@ typedef struct _GPSConfig {
         ChannelConfig quality;
         ChannelConfig DOP;
 #endif
-        ChannelConfig distance;
 } GPSConfig;
 
 #define DEFAULT_GPS_SAMPLE_RATE SAMPLE_10Hz
@@ -401,7 +401,6 @@ typedef struct _GPSConfig {
 #define DEFAULT_GPS_LATITUDE_CONFIG {"Latitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
 #define DEFAULT_GPS_LONGITUDE_CONFIG {"Longitude", "Degrees", -180, 180, DEFAULT_GPS_SAMPLE_RATE, 6, 0}
 #define DEFAULT_GPS_SPEED_CONFIG {"Speed", "", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
-#define DEFAULT_GPS_DISTANCE_CONFIG {"Distance", "", 0, 0, DEFAULT_GPS_SAMPLE_RATE, 3, 0}
 #define DEFAULT_GPS_ALTITUDE_CONFIG {"Altitude", "", 0, 4000, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
 #define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
@@ -416,11 +415,9 @@ typedef struct _GPSConfig {
 		DEFAULT_GPS_SATELLITE_CONFIG,          \
 		DEFAULT_GPS_QUALITY_CONFIG,            \
 		DEFAULT_GPS_DOP_CONFIG,                \
-  DEFAULT_GPS_DISTANCE_CONFIG            \
 }
 #else
 #define DEFAULT_GPS_CONFIG {             \
-  DEFAULT_GPS_DISTANCE_CONFIG            \
 }
 #endif
 
@@ -432,6 +429,8 @@ typedef struct _LapConfig {
         ChannelConfig predTimeCfg;
         ChannelConfig elapsed_time_cfg;
         ChannelConfig current_lap_cfg;
+        ChannelConfig distance;
+        ChannelConfig session_time_cfg;
 } LapConfig;
 
 #define DEFAULT_LAPSTATS_SAMPLE_RATE SAMPLE_10Hz
@@ -443,6 +442,8 @@ typedef struct _LapConfig {
 #define DEFAULT_PRED_TIME_CONFIG {"PredTime", "Min", 0, 0, SAMPLE_5Hz, 4, 0}
 #define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"ElapsedTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
 #define DEFAULT_CURRENT_LAP_CONFIG {"CurrentLap", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
+#define DEFAULT_DISTANCE_CONFIG {"Distance", "mi", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 3, 0}
+#define DEFAULT_SESSION_TIME_CONFIG {"SessionTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
 
 #define DEFAULT_LAP_CONFIG {                                    \
                 DEFAULT_LAP_COUNT_CONFIG,                       \
@@ -451,7 +452,9 @@ typedef struct _LapConfig {
                         DEFAULT_SECTOR_TIME_CONFIG,             \
                         DEFAULT_PRED_TIME_CONFIG,               \
                         DEFAULT_ELAPSED_LAP_TIME_CONFIG,        \
-                        DEFAULT_CURRENT_LAP_CONFIG              \
+                        DEFAULT_CURRENT_LAP_CONFIG,             \
+                        DEFAULT_DISTANCE_CONFIG,                \
+                        DEFAULT_SESSION_TIME_CONFIG             \
                         }
 
 typedef struct _TrackConfig {
@@ -557,6 +560,7 @@ typedef struct _LoggerConfig {
 #if IMU_CHANNELS > 0
         //IMU Configurations
         ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
+        ChannelConfig imu_gsum;
 #endif
 
         //CAN Configuration
@@ -622,6 +626,7 @@ char filterGpioMode(int config);
 ImuConfig * getImuConfigChannel(int channel);
 int filterImuMode(int mode);
 int filterImuChannel(int channel);
+void update_calculated_imu_channel_configs(void);
 
 uint8_t filter_can_bus_channel(uint8_t value);
 

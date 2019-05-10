@@ -131,6 +131,12 @@ static int lua_get_gps_at_start_finish(lua_State *L)
         return 1;
 }
 
+static int lua_reset_lap_stats(lua_State *L)
+{
+        lapstats_reset(true);
+        return 0;
+}
+
 #if PWM_CHANNELS > 0
 
 static int lua_set_pwm_clk_freq(lua_State *L)
@@ -1395,6 +1401,7 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getLapTime", lua_get_lap_time);
         lua_registerlight(L, "getGpsSec", lua_get_seconds_since_first_fix);
         lua_registerlight(L, "getAtStartFinish", lua_get_gps_at_start_finish);
+        lua_registerlight(L, "resetLapStats", lua_reset_lap_stats);
 
         lua_registerlight(L, "getTickCount", lua_get_tick_count);
         lua_registerlight(L, "getTicksPerSecond", lua_get_ticks_per_second);

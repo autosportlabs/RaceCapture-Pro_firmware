@@ -8,12 +8,16 @@
         },
         "predTime": {
             "sr": 50
-        }
+        },
         "sector": {
             "sr": 50
-        }
+        },
         "sectorTime": {
             "sr": 50
+        },
+        "dist": {
+            "sr": 50
         }
+
     }
 }

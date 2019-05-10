@@ -73,7 +73,7 @@
 
 //Sensor Channels
 #define ANALOG_CHANNELS 		9
-#define IMU_CHANNELS			7
+#define IMU_CHANNELS			6
 #define	GPIO_CHANNELS			3
 #define TIMER_CHANNELS			4
 #define PWM_CHANNELS			0
