@@ -1,6 +1,7 @@
 = 2.16.0=
 * Add real-time Gsum channel 
 * Add metric/imperial switches for calculated Distance, GPS Speed, GPS Altitude
+* Add ability to reset lap session via Lua or API (RaceCaptureApp)
 
 = 2.15.1=
 * Core: Ensure ShiftX configuration happens after ShiftX is booted and ready
