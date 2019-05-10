@@ -25,7 +25,7 @@
 #include "macros.h"
 #include "printk.h"
 #include "serial_buffer.h"
-#include "sara_u280.h"
+#include "sara_r4.h"
 #include "taskUtil.h"
 
 #include <string.h>
@@ -40,20 +40,20 @@
 #define GPRS_ATTACH_ATTEMPTS	5
 #define GPRS_ATTACH_BACKOFF_MS	1000
 #define NET_REG_ATTEMPTS	50
-#define SARA_U280_ERROR_THRESHOLD 6
+#define SARA_R4_ERROR_THRESHOLD 6
 #define NET_REG_BACKOFF_MS	1000
 #define STOP_DM_RX_EVENTS	10
 #define STOP_DM_RX_TIMEOUT_MS	1000
-#define SARA_U280_SUBSCRIBER_NUMBER_RETRIES 3
+#define SARA_R4_SUBSCRIBER_NUMBER_RETRIES 3
 
-static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
+static bool sara_r4_get_subscriber_number(struct serial_buffer *sb,
                 struct cellular_info *ci)
 {
-        /* sara u280 often does not respond immediately to SIM number
+        /* sara R4 often does not respond immediately to SIM number
          * requests; do some retrying
          */
         bool status = false;
-        for (size_t i = 0; i < SARA_U280_SUBSCRIBER_NUMBER_RETRIES && !status; ++i)
+        for (size_t i = 0; i < SARA_R4_SUBSCRIBER_NUMBER_RETRIES && !status; ++i)
                 status = gsm_get_subscriber_number(sb, ci);
 
         if (!status)
@@ -61,13 +61,13 @@ static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
         return status;
 }
 
-static bool sara_u280_get_signal_strength(struct serial_buffer *sb,
+static bool sara_r4_get_signal_strength(struct serial_buffer *sb,
                 struct cellular_info *ci)
 {
         return gsm_get_signal_strength(sb, ci);
 }
 
-static bool sara_u280_get_imei(struct serial_buffer *sb,
+static bool sara_r4_get_imei(struct serial_buffer *sb,
                                struct cellular_info *ci)
 {
         return gsm_get_imei(sb, ci);
@@ -116,83 +116,24 @@ static enum cellular_net_status gsm_get_network_reg_status(
         return ci->net_status;
 }
 
-static enum cellular_net_status sara_u280_get_net_reg_status(
+static enum cellular_net_status sara_r4_get_net_reg_status(
         struct serial_buffer *sb,struct cellular_info *ci)
 {
         return gsm_get_network_reg_status(sb, ci);
 }
 
-static bool sara_u280_get_network_reg_info(struct serial_buffer *sb,
+static bool sara_r4_get_network_reg_info(struct serial_buffer *sb,
                 struct cellular_info *ci)
 {
         return gsm_get_network_reg_info(sb, ci);
 }
 
-static bool sara_u280_is_gprs_attached(struct serial_buffer *sb)
+static bool sara_r4_is_gprs_attached(struct serial_buffer *sb)
 {
         return gsm_is_gprs_attached(sb);
 }
 
-static bool sara_u280_get_ip_address(struct serial_buffer *sb)
-{
-        const char *cmd = "AT+UPSND=0,0";
-        const char *msgs[2];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_append(sb, cmd);
-        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
-                                               msgs_len);
-        const bool status = is_rsp_ok(msgs, count);
-        if (!status) {
-                pr_warning("[cell] Failed to read IP\r\n");
-                return false;
-        }
-
-        /* +UPSND: 0,0,"93.68.225.175" */
-        const char* ipaddr = msgs[0];
-        for (size_t i = 2; i && ipaddr; --i)
-                ipaddr = strchr(ipaddr, ',') + 1;
-
-        if (ipaddr) {
-                pr_info_str_msg("[cell] IP address: ", ipaddr);
-        } else {
-                pr_warning_str_msg("[cell] Unable to parse IP address: ",
-                                   msgs[0]);
-        }
-
-        return ipaddr != NULL;
-}
-
-static bool sara_u280_is_gprs_connected(struct serial_buffer *sb)
-{
-        const char *cmd = "AT+UPSND=0,8";
-        const char *msgs[2];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_append(sb, cmd);
-        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
-                                               msgs_len);
-        const bool status = is_rsp_ok(msgs, count);
-        if (!status) {
-                pr_warning("[cell] Failed to get GPRS connection status\r\n");
-                return false;
-        }
-
-        /* +UPSND: 0,8,<0|1> */
-        const char* str = msgs[0];
-        for (size_t i = 2; i && str; --i)
-                str = strchr(str, ',') + 1;
-
-        const bool connected = *str == '1';
-        pr_info_str_msg("[sara_u280] Connected to GPRS: ",
-                        connected ? "True" : "False");
-        return connected;
-}
-
-
-static bool sara_u280_put_pdp_config(struct serial_buffer *sb,
+static bool sara_r4_put_pdp_config(struct serial_buffer *sb,
                                      const int pdp_id,
                                      const char *host,
                                      const char* user,
@@ -208,16 +149,12 @@ static bool sara_u280_put_pdp_config(struct serial_buffer *sb,
         serial_buffer_printf_append(sb, ";+UPSD=0,2,\"%s\"", user);
         serial_buffer_printf_append(sb, ";+UPSD=0,3,\"%s\"", password);
 
-        /* Dynamic IP */
-        /* serial_buffer_append(sb, ";+UPSD=0,7,\"0.0.0.0\""); */
-
-
         const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
                                                msgs_len);
         return is_rsp_ok(msgs, count);
 }
 
-static bool sara_u280_put_dns_config(struct serial_buffer *sb,
+static bool sara_r4_put_dns_config(struct serial_buffer *sb,
                                      const char* dns1,
                                      const char *dns2)
 {
@@ -242,45 +179,21 @@ enum sara_apn_auth {
         SARA_APN_AUTH_CHAP = 2,
 };
 
-static bool sara_u280_set_apn_auth(struct serial_buffer *sb,
-                                   const enum sara_apn_auth auth)
+static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
+                                         int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
 
         serial_buffer_reset(sb);
-
-        /* Enables Automatic CHAP authentication for APN */
-        serial_buffer_printf_append(sb, "AT+UPSD=0,6,%d", auth);
-
-        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
+        serial_buffer_printf_append(sb, "AT+USOSO=%d,6,1,1", socket_id);
+        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
                                                msgs_len);
         return is_rsp_ok(msgs, count);
+
 }
 
-static bool sara_u280_gprs_psd_action(struct serial_buffer *sb,
-                                      const int pid,
-                                      const int aid)
-{
-        const char *msgs[1];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_printf_append(sb, "AT+UPSDA=%d,%d", pid, aid);
-        const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs,
-                                               msgs_len);
-        const bool status = is_rsp_ok(msgs, count);
-
-        return status;
-}
-
-static bool sara_u280_activate_pdp(struct serial_buffer *sb,
-                                   const int pdp_id)
-{
-        return sara_u280_gprs_psd_action(sb, pdp_id, 3);
-}
-
-static int sara_u280_create_tcp_socket(struct serial_buffer *sb)
+static int sara_r4_create_tcp_socket(struct serial_buffer *sb)
 {
         const char *cmd = "AT+USOCR=6";
         const char *msgs[2];
@@ -292,7 +205,7 @@ static int sara_u280_create_tcp_socket(struct serial_buffer *sb)
                                                msgs_len);
         const bool status = is_rsp_ok(msgs, count);
         if (!status) {
-                pr_warning("[sara_u280] Failed to create a socket\r\n");
+                pr_warning("[sara_r4] Failed to create a socket\r\n");
                 return -1;
         }
 
@@ -302,15 +215,15 @@ static int sara_u280_create_tcp_socket(struct serial_buffer *sb)
          */
         const int socket = msgs[0][8] - '0';
         if (socket < 0 || socket > 6) {
-                pr_warning("[sara_u280] Failed to parse socket ID.\r\n");
+                pr_warning("[sara_r4] Failed to parse socket ID.\r\n");
                 return -2;
         }
 
-        pr_debug_int_msg("[sara_u280] Socket ID: ", socket);
+        pr_debug_int_msg("[sara_r4] Socket ID: ", socket);
         return socket;
 }
 
-static bool sara_u280_connect_tcp_socket(struct serial_buffer *sb,
+static bool sara_r4_connect_tcp_socket(struct serial_buffer *sb,
                 const int socket_id,
                 const char* host,
                 const int port)
@@ -326,7 +239,7 @@ static bool sara_u280_connect_tcp_socket(struct serial_buffer *sb,
         return is_rsp_ok(msgs, count);
 }
 
-static bool sara_u280_close_tcp_socket(struct serial_buffer *sb,
+static bool sara_r4_close_tcp_socket(struct serial_buffer *sb,
                                        const int socket_id)
 {
         const char *msgs[1];
@@ -339,7 +252,7 @@ static bool sara_u280_close_tcp_socket(struct serial_buffer *sb,
         return is_rsp_ok(msgs, count);
 }
 
-static bool sara_u280_start_direct_mode(struct serial_buffer *sb,
+static bool sara_r4_start_direct_mode(struct serial_buffer *sb,
                                         const int socket_id)
 {
         const char *msgs[1];
@@ -352,7 +265,7 @@ static bool sara_u280_start_direct_mode(struct serial_buffer *sb,
         return is_rsp(msgs, count, "CONNECT");
 }
 
-static bool sara_u280_stop_direct_mode(struct serial_buffer *sb)
+static bool sara_r4_stop_direct_mode(struct serial_buffer *sb)
 {
         /* Must delay min 2000ms before stopping direct mode */
         delayMs(2100);
@@ -376,30 +289,30 @@ static bool sara_u280_stop_direct_mode(struct serial_buffer *sb)
         return false;
 }
 
-static bool sara_u280_init(struct serial_buffer *sb,
+static bool sara_r4_init(struct serial_buffer *sb,
                            struct cellular_info *ci)
 {
         /* NO-OP.  This hardware is better than sim900. */
         return true;
 }
 
-static bool sara_u280_get_sim_info(struct serial_buffer *sb,
+static bool sara_r4_get_sim_info(struct serial_buffer *sb,
                                    struct cellular_info *ci)
 {
         bool status = false;
-        status = sara_u280_get_subscriber_number(sb, ci);
-        status = sara_u280_get_imei(sb, ci) && status;
+        status = sara_r4_get_subscriber_number(sb, ci);
+        status = sara_r4_get_imei(sb, ci) && status;
         return status;
 }
 
-static bool sara_u280_register_on_network(struct serial_buffer *sb,
+static bool sara_r4_register_on_network(struct serial_buffer *sb,
                 struct cellular_info *ci)
 {
         size_t errors = 0;
         /* Check our status on the network */
-        for (size_t tries = NET_REG_ATTEMPTS; tries && errors < SARA_U280_ERROR_THRESHOLD; --tries) {
-                errors += (sara_u280_get_net_reg_status(sb, ci) == CELLULAR_NETWORK_STATUS_UNKNOWN);
-                errors += (sara_u280_get_signal_strength(sb, ci) == false);
+        for (size_t tries = NET_REG_ATTEMPTS; tries && errors < SARA_R4_ERROR_THRESHOLD; --tries) {
+                errors += (sara_r4_get_net_reg_status(sb, ci) == CELLULAR_NETWORK_STATUS_UNKNOWN);
+                errors += (sara_r4_get_signal_strength(sb, ci) == false);
                 switch(ci->net_status) {
                 case CELLULAR_NETWORK_DENIED:
                 case CELLULAR_NETWORK_REGISTERED:
@@ -416,14 +329,14 @@ out:
         return CELLULAR_NETWORK_REGISTERED == ci->net_status;
 }
 
-static bool sara_u280_setup_pdp(struct serial_buffer *sb,
+static bool sara_r4_setup_pdp(struct serial_buffer *sb,
                                 struct cellular_info *ci,
                                 const CellularConfig *cc)
 {
         /* Check GPRS attached */
         bool gprs_attached;
         for (size_t tries = GPRS_ATTACH_ATTEMPTS; tries; --tries) {
-                gprs_attached = sara_u280_is_gprs_attached(sb);
+                gprs_attached = sara_r4_is_gprs_attached(sb);
 
                 if (gprs_attached)
                         break;
@@ -432,112 +345,63 @@ static bool sara_u280_setup_pdp(struct serial_buffer *sb,
                 delayMs(GPRS_ATTACH_BACKOFF_MS);
         }
 
-        pr_info_str_msg("[sara_u280] GPRS Attached: ",
+        pr_info_str_msg("[sara_r4] GPRS Attached: ",
                         gprs_attached ? "yes" : "no");
         if (!gprs_attached)
                 return false;
 
-        bool gprs_active = sara_u280_is_gprs_connected(sb);
-
-        /* Setup APN */
-        const bool status = gprs_active ||
-                            (sara_u280_put_pdp_config(sb, 0, cc->apnHost,
-                                            cc->apnUser, cc->apnPass) &&
-                             sara_u280_put_dns_config(sb, cc->dns1, cc->dns2));
-
-        /*
-         * Control our APN authentication settings based on whether
-         * or not the user has given a password.  For now if they have
-         * assume that they are using PPP and thus need some form of auth.
-         * We will use CHAP since it is the stronger of the two methods
-         * (the other being PAP).  If we need to control this in finer
-         * detail, then we need more configuration support for it.
-         */
-        if (strlen(cc->apnPass)) {
-                pr_info("[sara_u280] Enabling CHAP auth b/c APN "
-                        "password is not empty\r\n");
-                sara_u280_set_apn_auth(sb, SARA_APN_AUTH_CHAP);
-        } else {
-                pr_info("[sara_u280] Disabling APN/PPP auth b/c APN "
-                        "password is empty\r\n");
-                sara_u280_set_apn_auth(sb, SARA_APN_AUTH_NONE);
+        /* Setup APN and DNS*/
+        if (!sara_r4_put_pdp_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass)) {
+                pr_info("[sara_r4] Setting APN not supported; using carrier default APN\r\n");
         }
-
-        if (!status) {
-                pr_warning("[sara_u280] APN/DNS config failed\r\n");
-                return false;
+        if (!sara_r4_put_dns_config(sb, cc->dns1, cc->dns2)){
+                pr_info("[sara_r4] Using default DNS\r\n");
         }
-
-        for (size_t tries = GPRS_ACTIVATE_PDP_ATTEMPTS;
-             tries && !gprs_active; --tries) {
-                gprs_active = sara_u280_activate_pdp(sb, 0);
-
-                if (gprs_active)
-                        break;
-
-                /* Wait before trying again.  Arbitrary backoff */
-                delayMs(GPRS_ACTIVATE_PDP_BACKOFF_MS);
-        }
-
-        if (!gprs_active) {
-                pr_warning("[sara_u280] Failed connect GPRS. "
-                           "Check APN settings.\r\n");
-                return false;
-        }
-
-        pr_debug("[sara_u280] GPRS connected\r\n");
-
-        /* Wait to get the IP */
-        bool has_ip = false;
-        for (size_t tries = 5; tries && !has_ip; --tries) {
-                has_ip = sara_u280_get_ip_address(sb);
-                delayMs(1000);
-        }
-
-        if (!has_ip)
-                return false;
-
-        pr_debug("[sara_u280] IP acquired\r\n");
 
         return true;
 }
 
-static bool sara_u280_connect_rcl_telem(struct serial_buffer *sb,
+static bool sara_r4_connect_rcl_telem(struct serial_buffer *sb,
                                         struct cellular_info *ci,
                                         struct telemetry_info *ti,
                                         const TelemetryConfig *tc)
 {
-        ti->socket = sara_u280_create_tcp_socket(sb);
+        ti->socket = sara_r4_create_tcp_socket(sb);
         if (ti->socket < 0) {
-                pr_warning("[sara_u280] Failed to create a socket\r\n");
+                pr_warning("[sara_r4] Failed to create a socket\r\n");
                 return false;
         }
 
-        if (!sara_u280_connect_tcp_socket(sb, ti->socket,
+        if (!sara_r4_connect_tcp_socket(sb, ti->socket,
                                           tc->telemetryServerHost,
                                           tc->telemetry_port)) {
-                pr_warning("[sara_u280] Failed to connect to ");
+                pr_warning("[sara_r4] Failed to connect to ");
                 pr_warning(tc->telemetryServerHost);
                 pr_warning_int_msg(":", tc->telemetry_port);
 
                 return false;
         }
 
-        return sara_u280_start_direct_mode(sb, ti->socket);
+        if (!sara_r1_configure_tcp_socket(sb, ti->socket)) {
+                        pr_warning("[SARA-R1] Failed to configure socket");
+                        return false;
+        }
+
+        return sara_r4_start_direct_mode(sb, ti->socket);
 }
 
-static bool sara_u280_disconnect(struct serial_buffer *sb,
+static bool sara_r4_disconnect(struct serial_buffer *sb,
                                  struct cellular_info *ci,
                                  struct telemetry_info *ti)
 {
-        if (!sara_u280_stop_direct_mode(sb)) {
+        if (!sara_r4_stop_direct_mode(sb)) {
                 /* Then we don't know if can issue commands */
-                pr_warning("[sara_u280] Failed to escape Direct Mode\r\n");
+                pr_warning("[sara_r4] Failed to escape Direct Mode\r\n");
                 return false;
         }
 
-        if (!sara_u280_close_tcp_socket(sb, ti->socket)) {
-                pr_warning_int_msg("[sara_u280] Failed to close socket ",
+        if (!sara_r4_close_tcp_socket(sb, ti->socket)) {
+                pr_warning_int_msg("[sara_r4] Failed to close socket ",
                                    ti->socket);
                 return false;
         }
@@ -546,29 +410,29 @@ static bool sara_u280_disconnect(struct serial_buffer *sb,
         return true;
 }
 
-static const struct at_config* sara_u280_get_at_config()
+static const struct at_config* sara_r4_get_at_config()
 {
-        /* Optimized AT config values for U-blox sara u280 */
+        /* Optimized AT config values for U-blox sara r4 */
         static const struct at_config cfg = {
-                .urc_delay_ms = 50,
+                .urc_delay_ms = 100,
         };
 
         return &cfg;
 }
 
 
-static const struct cell_modem_methods sara_u280_methods = {
-        .get_at_config = sara_u280_get_at_config,
-        .init_modem = sara_u280_init,
-        .get_sim_info = sara_u280_get_sim_info,
-        .register_on_network = sara_u280_register_on_network,
-        .get_network_info = sara_u280_get_network_reg_info,
-        .setup_pdp = sara_u280_setup_pdp,
-        .open_telem_connection = sara_u280_connect_rcl_telem,
-        .close_telem_connection = sara_u280_disconnect,
+static const struct cell_modem_methods sara_r4_methods = {
+        .get_at_config = sara_r4_get_at_config,
+        .init_modem = sara_r4_init,
+        .get_sim_info = sara_r4_get_sim_info,
+        .register_on_network = sara_r4_register_on_network,
+        .get_network_info = sara_r4_get_network_reg_info,
+        .setup_pdp = sara_r4_setup_pdp,
+        .open_telem_connection = sara_r4_connect_rcl_telem,
+        .close_telem_connection = sara_r4_disconnect,
 };
 
-const struct cell_modem_methods* get_sara_u280_methods()
+const struct cell_modem_methods* get_sara_r4_methods()
 {
-        return &sara_u280_methods;
+        return &sara_r4_methods;
 }

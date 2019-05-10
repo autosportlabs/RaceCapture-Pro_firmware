@@ -1,9 +1,9 @@
 /*
- * Race Capture Firmware
+ * Race Capture Pro Firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2015 Autosport Labs
  *
- * This file is part of the Race Capture firmware suite
+ * This file is part of the Race Capture Pro fimrware suite
  *
  * This is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -19,27 +19,19 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BLUETOOTH_H_
-#define BLUETOOTH_H_
+#ifndef _SARA_R4_H_
+#define _SARA_R4_H_
 
+#include "cellular.h"
 #include "cpp_guard.h"
-#include "devices_common.h"
-#include "stddef.h"
-#include "dateTime.h"
+#include "serial_buffer.h"
+
+#include <stdbool.h>
 
 CPP_GUARD_BEGIN
 
-typedef enum {
-        BT_STATUS_NOT_INIT = 0,
-        BT_STATUS_PROVISIONED,
-        BT_STATUS_ERROR
-} bluetooth_status_t;
-
-bluetooth_status_t bt_get_status();
-int bt_init_connection(DeviceConfig *config, millis_t * connected_at, bool hard_init);
-int bt_disconnect(DeviceConfig *config);
-int bt_check_connection_status(DeviceConfig *config);
+const struct cell_modem_methods* get_sara_r4_methods();
 
 CPP_GUARD_END
 
-#endif /* BLUETOOTH_H_ */
+#endif /* _SARA_R4_H_ */
