@@ -1,7 +1,10 @@
 = 2.16.0=
-* Add real-time Gsum channel 
-* Add metric/imperial switches for calculated Distance, GPS Speed, GPS Altitude
-* Add ability to reset lap session via Lua or API (RaceCaptureApp)
+* IMU: Add real-time Gsum channel 
+* Core: Add metric/imperial switches for calculated Distance, GPS Speed, GPS Altitude
+* Core: Add ability to reset lap session via Lua or API (RaceCaptureApp)
+* Core: API to reset lap stats (via RaceCapture app)
+* Lua: Add resetLapStats() function to resetLapStats via scripting
+* LapStats: Add SessionTime channel
 
 = 2.15.1=
 * Core: Ensure ShiftX configuration happens after ShiftX is booted and ready
