@@ -5,6 +5,7 @@
 * Core: API to reset lap stats (via RaceCapture app)
 * Lua: Add resetLapStats() function to resetLapStats via scripting
 * LapStats: Add SessionTime channel
+* Telemetry: Add support for SARA R4 Cat M1 LTE
 
 = 2.15.1=
 * Core: Ensure ShiftX configuration happens after ShiftX is booted and ready
