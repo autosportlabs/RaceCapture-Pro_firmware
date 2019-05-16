@@ -498,7 +498,7 @@ typedef struct _CellularConfig {
 #define TELEMETRY_SERVER_HOST_LENGTH 95
 
 #define DEFAULT_DEVICE_ID ""
-#define DEFAULT_TELEMETRY_SERVER_HOST "telemetry.race-capture.com"
+#define DEFAULT_TELEMETRY_SERVER_HOST "telemetry.podium.live"
 #define DEFAULT_TELEMETRY_SERVER_PORT 8080
 
 #define BACKGROUND_STREAMING_ENABLED				1

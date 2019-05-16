@@ -144,10 +144,10 @@ static bool sara_r4_put_pdp_config(struct serial_buffer *sb,
 
         serial_buffer_reset(sb);
 
-        /* APN settings */
-        serial_buffer_printf_append(sb, "AT+UPSD=0,1,\"%s\"", host);
-        serial_buffer_printf_append(sb, ";+UPSD=0,2,\"%s\"", user);
-        serial_buffer_printf_append(sb, ";+UPSD=0,3,\"%s\"", password);
+        /* APN settings
+         * user / password not supported for the R4
+         */
+        serial_buffer_printf_append(sb, "AT+CGDCONT=1,\"IP\",\"%s\"", host);
 
         const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
                                                msgs_len);
@@ -158,19 +158,10 @@ static bool sara_r4_put_dns_config(struct serial_buffer *sb,
                                      const char* dns1,
                                      const char *dns2)
 {
-        const char *msgs[1];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_printf_append(sb, "AT+UPSD=0,4,\"%s\"", dns1);
-        if (dns2) {
-                serial_buffer_append(sb, ";");
-                serial_buffer_printf_append(sb, "+UPSD=0,5,\"%s\"", dns2);
-        }
-
-        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
-                                               msgs_len);
-        return is_rsp_ok(msgs, count);
+        /* DNS configuration not currently supported
+         * Placeholder for future DNS configuration
+         */
+        return true;
 }
 
 enum sara_apn_auth {
@@ -292,8 +283,21 @@ static bool sara_r4_stop_direct_mode(struct serial_buffer *sb)
 static bool sara_r4_init(struct serial_buffer *sb,
                            struct cellular_info *ci)
 {
-        /* NO-OP.  This hardware is better than sim900. */
-        return true;
+
+        pr_info("sara r4 init\r\n");
+
+
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        /* Set the default profile, 0 - which is a generic setting
+         * that should work with all carriers
+         * */
+        serial_buffer_printf_append(sb, "AT+UMNOPROF=%d", 0);
+        const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs,
+                                               msgs_len);
+        return is_rsp_ok(msgs, count);
 }
 
 static bool sara_r4_get_sim_info(struct serial_buffer *sb,

@@ -276,7 +276,7 @@ void connectivityTask(void *params)
                         vTaskDelay(INIT_DELAY);
                         connect_retries++;
                         if (connect_retries > HARD_INIT_RETRY_THRESHOLD) {
-                                pr_info(_LOG_PFX " Too many connection attempts, triggering hard initialization\r\n");
+                                pr_info(_LOG_PFX " Too many connection attempts\r\n");
                                 hard_init = true;
                                 connect_retries = 0;
                         }
