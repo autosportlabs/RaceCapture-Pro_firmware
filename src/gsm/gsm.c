@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define READ_TIMEOUT 	500
+#define READ_TIMEOUT 	1000
 
 bool gsm_ping_modem(struct serial_buffer *sb)
 {
@@ -38,7 +38,7 @@ bool gsm_ping_modem(struct serial_buffer *sb)
 
         serial_buffer_reset(sb);
         serial_buffer_append(sb, "AT");
-        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT * 2, msgs,
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
                                                msgs_len);
         return is_rsp_ok(msgs, count);
 }
