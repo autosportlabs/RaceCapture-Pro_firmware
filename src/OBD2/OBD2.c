@@ -145,11 +145,12 @@ bool OBD2_is_state_stale(void)
 
 /**
  * Sends an OBD2 PID request on the CAN bus.
+ * @param the CAN bus to use
  * @param pid the OBD2 PID to request
  * @param mode the OBD2 mode to request
  * @param timeout the timeout in ms for sending the OBD2 request
  */
-static int OBD2_request_PID(uint32_t pid, uint8_t mode, bool is_29_bit, size_t timeout)
+static int OBD2_request_PID(uint8_t bus, uint32_t pid, uint8_t mode, bool is_29_bit, size_t timeout)
 {
         CAN_msg msg;
         msg.addressValue = is_29_bit ? OBD2_29BIT_PID_REQUEST : OBD2_11BIT_PID_REQUEST;
@@ -363,7 +364,7 @@ void sequence_next_obd2_query(OBD2Config * obd2_config, uint16_t enabled_obd2_pi
         obd2_state.current_channel_states[current_pid_index].sequencer_count = 0;
 
         PidConfig * pid_cfg = &obd2_config->pids[current_pid_index];
-        int pid_request_result = pid_cfg->passive || OBD2_request_PID(pid_cfg->pid, pid_cfg->mode, obd2_state.is_29bit_obd2, OBD2_PID_REQUEST_TIMEOUT_MS);
+        int pid_request_result = pid_cfg->passive || OBD2_request_PID(pid_cfg->mapping.can_channel, pid_cfg->pid, pid_cfg->mode, obd2_state.is_29bit_obd2, OBD2_PID_REQUEST_TIMEOUT_MS);
         if (pid_request_result) {
                 obd2_state.last_obd2_query_timestamp = getCurrentTicks();
         } else {
