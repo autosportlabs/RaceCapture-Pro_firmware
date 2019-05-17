@@ -248,9 +248,9 @@ static void resetOBD2Config(OBD2Config *cfg)
 
 void logger_config_reset_gps_config(GPSConfig *cfg)
 {
-        *cfg = (GPSConfig) DEFAULT_GPS_CONFIG;
 
 #if GPS_HARDWARE_SUPPORT
+        *cfg = (GPSConfig) DEFAULT_GPS_CONFIG;
         /* Setting here b/c this now uses units.h labels */
         strcpy(cfg->altitude.units, units_get_label(UNIT_LENGTH_FEET));
         strcpy(cfg->speed.units, units_get_label(UNIT_SPEED_MILES_HOUR));
@@ -561,8 +561,8 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
                 }
         }
 
-        GPSConfig *gpsConfig = &(config->GPSConfigs);
 #if GPS_HARDWARE_SUPPORT
+        GPSConfig *gpsConfig = &(config->GPSConfigs);
         sr = gpsConfig->latitude.sampleRate;
         s = getHigherSampleRate(sr, s);
 
@@ -677,8 +677,8 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
                 }
         }
 
-        GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
 #if GPS_HARDWARE_SUPPORT
+        GPSConfig *gpsConfigs = &loggerConfig->GPSConfigs;
         if (gpsConfigs->latitude.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->speed.sampleRate != SAMPLE_DISABLED) channels++;
