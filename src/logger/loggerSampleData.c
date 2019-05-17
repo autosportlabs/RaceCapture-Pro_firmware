@@ -343,8 +343,8 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         }
 #endif /* VIRTUAL_CHANNEL_SUPPORT */
 
-        GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
 #if GPS_HARDWARE_SUPPORT
+        GPSConfig *gpsConfig = &(loggerConfig->GPSConfigs);
         chanCfg = &(gpsConfig->latitude);
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getLatitude);
         chanCfg = &(gpsConfig->longitude);
