@@ -183,7 +183,7 @@ static int OBD2_request_PID(uint8_t bus, uint32_t pid, uint8_t mode, bool is_29_
         msg.data[7] = 0x55;
         msg.dataLength = 8;
         msg.isExtendedAddress = is_29_bit;
-        return CAN_tx_msg(0, &msg, timeout);
+        return CAN_tx_msg(bus, &msg, timeout);
 }
 
 bool OBD2_init_current_values(OBD2Config *obd2_config)
