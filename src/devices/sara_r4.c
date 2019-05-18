@@ -283,10 +283,13 @@ static bool sara_r4_set_profile(struct serial_buffer *sb)
         const size_t msgs_len = ARRAY_LEN(msgs);
 
         serial_buffer_reset(sb);
-        /* Set the default profile, 1 - get it from the SIM card
-         * that should work with all carriers
+        /* Set the default profile, 0 - universal profile that should work with all carriers.
+         *
+         * NOTE: setting 1 (get from sim card) sometimes causes instability
+         * where power button can have no effect, especially when attempting
+         * to re-connect
          * */
-        serial_buffer_printf_append(sb, "AT+UMNOPROF=%d", 1);
+        serial_buffer_printf_append(sb, "AT+UMNOPROF=%d", 0);
         const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs, msgs_len);
         bool is_ok = is_rsp_ok(msgs, count);
         pr_info_bool_msg("[sara_r4] Set Profile: ", is_ok);
