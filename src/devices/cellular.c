@@ -46,6 +46,7 @@
 #define PROBE_READ_TIMEOUT_MS	500
 /* Good balance between SIM900 and Ublox sara module */
 #define RESET_MODEM_DELAY_MS	1100
+#define RESET_MODEM_WAIT_MS 1100
 #define TELEM_AUTH_JSMN_TOKENS	5
 #define TELEM_AUTH_RX_TRIES	3
 #define TELEM_AUTH_RX_WAIT_MS	5000
@@ -208,6 +209,7 @@ static bool get_methods(const enum cellular_modem modem,
 bool autobaud_modem(struct serial_buffer *sb, size_t tries,
                     const size_t backoff_ms)
 {
+        pr_info("[cell] Auto-baud configuration\r\n");
         for(; tries > 0; --tries) {
                 if (gsm_ping_modem(sb)) {
                         pr_info("[cell] auto-baud successful\r\n");
@@ -320,7 +322,7 @@ static void reset_modem()
         cell_pwr_btn(true);
         delayMs(RESET_MODEM_DELAY_MS);
         cell_pwr_btn(false);
-        delayMs(RESET_MODEM_DELAY_MS);
+        delayMs(RESET_MODEM_WAIT_MS);
 
         at_cfg = get_safe_at_config();
 }
@@ -406,7 +408,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                         const char *status = status_val->data;
                         if (0 == strcmp(status, "ok")) {
                                 jsmn_exists_set_val_uint64(toks, "utc", (uint64_t *)connected_at);
-                                pr_info("[cell] Server authenticated\r\n");
+                                pr_info("[cell] Connected to Podium\r\n");
                                 return true;
                         }
 
@@ -425,7 +427,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                                  sb->buffer);
         }
 
-        pr_info("[cell] Unable to authenticate telemetry server.\r\n");
+        pr_info("[cell] Unable to authenticate telemetry\r\n");
         return false;
 }
 
@@ -442,6 +444,7 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at, bool
         struct serial_buffer *sb = (struct serial_buffer*) config;
 
         if (hard_init) {
+                gsm_power_off(sb);
                 pr_info("[cell] Power cycling modem\r\n");
                 const int init_status = cellular_init_modem(sb);
                 if (DEVICE_INIT_SUCCESS != init_status)
@@ -456,7 +459,7 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at, bool
                 return DEVICE_INIT_FAIL;
         }
 
-        if (!methods->init_modem(sb, &cell_info)) {
+        if (!methods->init_modem(sb, &cell_info, cellCfg)) {
                 telemetry_info.status = TELEMETRY_STATUS_MODEM_INIT_FAILED;
                 return DEVICE_INIT_FAIL;
         }

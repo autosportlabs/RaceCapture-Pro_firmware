@@ -39,7 +39,7 @@
 #define GPRS_ACTIVATE_PDP_BACKOFF_MS	3000
 #define GPRS_ATTACH_ATTEMPTS	5
 #define GPRS_ATTACH_BACKOFF_MS	1000
-#define NET_REG_ATTEMPTS	50
+#define NET_REG_ATTEMPTS	100
 #define SARA_R4_ERROR_THRESHOLD 6
 #define NET_REG_BACKOFF_MS	1000
 #define STOP_DM_RX_EVENTS	10
@@ -133,7 +133,7 @@ static bool sara_r4_is_gprs_attached(struct serial_buffer *sb)
         return gsm_is_gprs_attached(sb);
 }
 
-static bool sara_r4_put_pdp_config(struct serial_buffer *sb,
+static bool sara_r4_set_apn_config(struct serial_buffer *sb,
                                      const int pdp_id,
                                      const char *host,
                                      const char* user,
@@ -151,7 +151,9 @@ static bool sara_r4_put_pdp_config(struct serial_buffer *sb,
 
         const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
                                                msgs_len);
-        return is_rsp_ok(msgs, count);
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Set APN: ", is_ok);
+        return is_ok;
 }
 
 static bool sara_r4_put_dns_config(struct serial_buffer *sb,
@@ -164,12 +166,6 @@ static bool sara_r4_put_dns_config(struct serial_buffer *sb,
         return true;
 }
 
-enum sara_apn_auth {
-        SARA_APN_AUTH_NONE = 0,
-        SARA_APN_AUTH_PAP  = 1,
-        SARA_APN_AUTH_CHAP = 2,
-};
-
 static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
                                          int socket_id)
 {
@@ -180,8 +176,9 @@ static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
         serial_buffer_printf_append(sb, "AT+USOSO=%d,6,1,1", socket_id);
         const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
                                                msgs_len);
-        return is_rsp_ok(msgs, count);
-
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Configure TCP socket: ", is_ok);
+        return is_ok;
 }
 
 static int sara_r4_create_tcp_socket(struct serial_buffer *sb)
@@ -280,24 +277,27 @@ static bool sara_r4_stop_direct_mode(struct serial_buffer *sb)
         return false;
 }
 
-static bool sara_r4_init(struct serial_buffer *sb,
-                           struct cellular_info *ci)
+static bool sara_r4_set_profile(struct serial_buffer *sb)
 {
-
-        pr_info("sara r4 init\r\n");
-
-
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
 
         serial_buffer_reset(sb);
-        /* Set the default profile, 0 - which is a generic setting
+        /* Set the default profile, 1 - get it from the SIM card
          * that should work with all carriers
          * */
-        serial_buffer_printf_append(sb, "AT+UMNOPROF=%d", 0);
-        const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs,
-                                               msgs_len);
-        return is_rsp_ok(msgs, count);
+        serial_buffer_printf_append(sb, "AT+UMNOPROF=%d", 1);
+        const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs, msgs_len);
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Set Profile: ", is_ok);
+        return is_ok;
+}
+static bool sara_r4_init(struct serial_buffer *sb,
+                           struct cellular_info *ci,
+                           CellularConfig *cc)
+{
+        pr_info("[sara_r4] Initializing\r\n");
+        return (sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) && sara_r4_set_profile(sb));
 }
 
 static bool sara_r4_get_sim_info(struct serial_buffer *sb,
@@ -354,14 +354,9 @@ static bool sara_r4_setup_pdp(struct serial_buffer *sb,
         if (!gprs_attached)
                 return false;
 
-        /* Setup APN and DNS*/
-        if (!sara_r4_put_pdp_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass)) {
-                pr_info("[sara_r4] Setting APN not supported; using carrier default APN\r\n");
-        }
         if (!sara_r4_put_dns_config(sb, cc->dns1, cc->dns2)){
                 pr_info("[sara_r4] Using default DNS\r\n");
         }
-
         return true;
 }
 

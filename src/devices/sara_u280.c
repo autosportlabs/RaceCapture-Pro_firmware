@@ -377,7 +377,8 @@ static bool sara_u280_stop_direct_mode(struct serial_buffer *sb)
 }
 
 static bool sara_u280_init(struct serial_buffer *sb,
-                           struct cellular_info *ci)
+                           struct cellular_info *ci,
+                           CellularConfig *cellCfg)
 {
         /* NO-OP.  This hardware is better than sim900. */
         return true;

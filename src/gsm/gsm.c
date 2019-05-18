@@ -28,8 +28,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "taskUtil.h"
 
 #define READ_TIMEOUT 	1000
+#define POWER_OFF_TIMEOUT 100
 
 bool gsm_ping_modem(struct serial_buffer *sb)
 {
@@ -199,7 +201,24 @@ bool gsm_get_network_reg_info(struct serial_buffer *sb,
         } else {
                 str_beg = "UNKNOWN";
         }
-
         strntcpy(ci->op, str_beg, sizeof(ci->op));
+
+        pr_info_str_msg("[gsm] Network Operator: ", ci->op);
         return status;
+}
+
+bool gsm_power_off(struct serial_buffer *sb)
+{
+        pr_info("[gsm] powering off cellular module\r\n");
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_append(sb, "AT+CPWROFF");
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
+                                               msgs_len);
+        bool response = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[gsm] power off response: ", response);
+        delayMs(POWER_OFF_TIMEOUT);
+        return response;
 }

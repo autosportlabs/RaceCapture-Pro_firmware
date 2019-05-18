@@ -90,7 +90,8 @@ struct telemetry_info {
 struct cell_modem_methods {
         const struct at_config* (*get_at_config)();
         bool (*init_modem)(struct serial_buffer *sb,
-                           struct cellular_info *ci);
+                           struct cellular_info *ci,
+                           CellularConfig *cellCfg);
         bool (*get_sim_info)(struct serial_buffer *sb,
                              struct cellular_info *ci);
         bool (*register_on_network)(struct serial_buffer *sb,

@@ -86,7 +86,8 @@ static bool sim900_set_flow_control(struct serial_buffer *sb,
 
 
 static bool sim900_init_settings(struct serial_buffer *sb,
-                                 struct cellular_info *ci)
+                                 struct cellular_info *ci,
+                                 CellularConfig *cellCfg)
 {
         sim900_set_flow_control(sb, 0, 0);
 

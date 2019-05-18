@@ -46,4 +46,6 @@ bool gsm_get_network_reg_info(struct serial_buffer *sb,
                               struct cellular_info *ci);
 
 
+bool gsm_power_off(struct serial_buffer *sb);
+
 #endif /* _GSM_H_ */
