@@ -69,6 +69,7 @@
 #define BAD_MESSAGE_THRESHOLD     10
 #define API_EVENT_QUEUE_DEPTH 2
 #define METADATA_SAMPLE_INTERVAL    100
+#define HARD_INIT_RETRY_THRESHOLD 5
 
 static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
 
@@ -262,15 +263,23 @@ void connectivityTask(void *params)
         xQueueHandle api_event_queue = xQueueCreate(API_EVENT_QUEUE_DEPTH, sizeof(struct api_event));
         api_event_create_callback(queue_api_event, api_event_queue);
 
+        bool hard_init = true;
         while (1) {
+                size_t connect_retries = 0;
                 millis_t connected_at = 0;
                 bool should_stream = logging_enabled ||
                                      logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
                                      connParams->always_streaming;
 
-                while (should_stream && connParams->init_connection(&deviceConfig, &connected_at) != DEVICE_INIT_SUCCESS) {
+                while (should_stream && connParams->init_connection(&deviceConfig, &connected_at, hard_init) != DEVICE_INIT_SUCCESS) {
                         pr_info(_LOG_PFX "not connected. retrying\r\n");
                         vTaskDelay(INIT_DELAY);
+                        connect_retries++;
+                        if (connect_retries > HARD_INIT_RETRY_THRESHOLD) {
+                                pr_info(_LOG_PFX " Too many connection attempts\r\n");
+                                hard_init = true;
+                                connect_retries = 0;
+                        }
                 }
                 if (connected_at > 0)
                         GPS_set_UTC_time(connected_at);
@@ -281,7 +290,7 @@ void connectivityTask(void *params)
                 size_t tick = 0;
                 size_t last_message_time = getUptimeAsInt();
                 bool should_reconnect = false;
-
+                hard_init = false;
                 while (1) {
                         if ( should_reconnect )
                                 break; /*break out and trigger the re-connection if needed */

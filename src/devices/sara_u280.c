@@ -73,10 +73,53 @@ static bool sara_u280_get_imei(struct serial_buffer *sb,
         return gsm_get_imei(sb, ci);
 }
 
+enum cellular_net_status sara_u2_get_network_reg_status(
+        struct serial_buffer *sb, struct cellular_info *ci)
+{
+        const char *cmd = "AT+CGREG?";
+        const char *msgs[2];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+        const char *answrs[] = {"+CGREG: 0,0",
+                                "+CGREG: 0,1",
+                                "+CGREG: 0,2",
+                                "+CGREG: 0,3",
+                                "+CGREG: 0,4",
+                                "+CGREG: 0,5"
+                               };
+        const size_t answrs_len = ARRAY_LEN(answrs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_append(sb, cmd);
+        const int idx = cellular_exec_match(sb, READ_TIMEOUT, msgs, msgs_len,
+                                            answrs, answrs_len, 0);
+
+        switch(idx) {
+        case 0:
+                ci->net_status = CELLULAR_NETWORK_NOT_SEARCHING;
+                break;
+        case 1:
+        case 5:
+                ci->net_status = CELLULAR_NETWORK_REGISTERED;
+                break;
+        case 2:
+        case 4:
+                ci->net_status = CELLULAR_NETWORK_SEARCHING;
+                break;
+        case 3:
+                ci->net_status = CELLULAR_NETWORK_DENIED;
+                break;
+        default:
+                ci->net_status = CELLULAR_NETWORK_STATUS_UNKNOWN;
+                break;
+        }
+
+        return ci->net_status;
+}
+
 static enum cellular_net_status sara_u280_get_net_reg_status(
         struct serial_buffer *sb,struct cellular_info *ci)
 {
-        return gsm_get_network_reg_status(sb, ci);
+        return sara_u2_get_network_reg_status(sb, ci);
 }
 
 static bool sara_u280_get_network_reg_info(struct serial_buffer *sb,
@@ -334,7 +377,8 @@ static bool sara_u280_stop_direct_mode(struct serial_buffer *sb)
 }
 
 static bool sara_u280_init(struct serial_buffer *sb,
-                           struct cellular_info *ci)
+                           struct cellular_info *ci,
+                           CellularConfig *cellCfg)
 {
         /* NO-OP.  This hardware is better than sim900. */
         return true;
