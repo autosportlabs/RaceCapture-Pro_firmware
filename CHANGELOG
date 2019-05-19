@@ -6,6 +6,7 @@
 * Lua: Add resetLapStats() function to resetLapStats via scripting
 * LapStats: Add SessionTime channel
 * Telemetry: Add support for SARA R4 Cat M1 LTE
+* Telemetry: Speed up telemetry re-connect by not immediately power-cycling modem after a disconnect.
 * OBDII: Honor the CAN bus channel selected for OBDII broadcast and receive
 
 = 2.15.1=
