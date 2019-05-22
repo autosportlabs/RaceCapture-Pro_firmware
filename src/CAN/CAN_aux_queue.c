@@ -49,6 +49,7 @@ bool CAN_aux_queue_put_msg(CAN_msg * can_msg, size_t timeout_ms)
         if (pdTRUE == xQueueSend(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)))
                 return true;
 
+        pr_debug("Failed to add CAN message to Auxiliary Queue\r\n");
         return false;
 }
 
