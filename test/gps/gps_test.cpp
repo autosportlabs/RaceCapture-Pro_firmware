@@ -26,7 +26,8 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( GpsTest );
 
 
-void GpsTest::setUp() {
+void GpsTest::setUp()
+{
 }
 
 void GpsTest::tearDown() {}

@@ -37,7 +37,9 @@ struct logging_status *ls;
 
 void LoggerFileWriterTest::setUp()
 {
-        _ls = (struct logging_status) { 0 };
+        _ls = (struct logging_status) {
+                0
+        };
         ls = &_ls;
 }
 

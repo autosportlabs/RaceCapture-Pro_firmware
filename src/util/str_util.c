@@ -36,13 +36,13 @@ size_t serial_msg_strlen(const char *data)
 {
         size_t len = 0;
 
-	/* The for loop check handles the "\0" case */
+        /* The for loop check handles the "\0" case */
         for (; *data; ++data, ++len) {
                 switch (*data) {
                 case '\r':
-			/* Check for the "\r\n" case */
-			if ('\n' != data[1])
-				continue;
+                        /* Check for the "\r\n" case */
+                        if ('\n' != data[1])
+                                continue;
 
                         return len;
                 }
@@ -101,14 +101,14 @@ char* strip_inline(char *str)
  */
 char* str_util_lstrip_zeros_inline(char *str)
 {
-	char* const begin = str;
+        char* const begin = str;
 
-	char lead_sym = 0;
-	switch(*str) {
-	case '-':
-	case '+':
-		lead_sym = *str++;
-	}
+        char lead_sym = 0;
+        switch(*str) {
+        case '-':
+        case '+':
+                lead_sym = *str++;
+        }
 
         for(; '0' == *str; ++str);
 
@@ -116,13 +116,13 @@ char* str_util_lstrip_zeros_inline(char *str)
         case '\0':
         case '.':
                 if (str != begin)
-			--str;
+                        --str;
         }
 
-	if (lead_sym)
-		*--str = lead_sym;
+        if (lead_sym)
+                *--str = lead_sym;
 
-	return str;
+        return str;
 }
 
 /**
@@ -170,12 +170,12 @@ char* str_util_strip_zeros_inline(char *str)
  */
 char* strntcpy(char* dest, const char* src, size_t n)
 {
-	if (!n)
-		return dest;
+        if (!n)
+                return dest;
 
-	/* Copy and NULL terminate the string always to avoid overflow */
-	strncpy(dest, src, --n);
-	dest[n] = 0;
+        /* Copy and NULL terminate the string always to avoid overflow */
+        strncpy(dest, src, --n);
+        dest[n] = 0;
 
-	return dest;
+        return dest;
 }

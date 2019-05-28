@@ -46,8 +46,8 @@
 
 // A smaller TimeLoc value for space savings
 struct PtTimeLoc {
-    GeoPoint point;
-    tiny_millis_t time;
+        GeoPoint point;
+        tiny_millis_t time;
 };
 
 /*
@@ -85,7 +85,7 @@ static tiny_millis_t pollInterval = INITIAL_POLL_INTERVAL;
 
 // Indicates the current status of the recording code.  DISABLED until we start the first lap.
 static enum Status {
-    DISABLED, RECORDING, FULL,
+        DISABLED, RECORDING, FULL,
 } status = DISABLED;
 
 /**
@@ -95,7 +95,7 @@ static enum Status {
  */
 static tiny_millis_t getCurrentLapTime(tiny_millis_t time)
 {
-    return time - currLapStartTime;
+        return time - currLapStartTime;
 }
 
 /**
@@ -108,8 +108,8 @@ static tiny_millis_t getCurrentLapTime(tiny_millis_t time)
  */
 static bool verify_gps_quality(const GpsSample *sample)
 {
-	return sample->quality >= GPS_FIX_QUALITY_REQUIRED
-		&& sample->DOP <= GPS_MAXIMUM_DOP_ALLOWED;
+        return sample->quality >= GPS_FIX_QUALITY_REQUIRED
+               && sample->DOP <= GPS_MAXIMUM_DOP_ALLOWED;
 }
 
 /**
@@ -118,18 +118,18 @@ static bool verify_gps_quality(const GpsSample *sample)
  */
 static bool insertTimeLocSample(const GeoPoint * point, tiny_millis_t time)
 {
-    if (buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES)
-        return false;
+        if (buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES)
+                return false;
 
-    struct PtTimeLoc *timeLoc = currLap + buffIndex;
-    timeLoc->point = *point;
-    timeLoc->time = getCurrentLapTime(time);
+        struct PtTimeLoc *timeLoc = currLap + buffIndex;
+        timeLoc->point = *point;
+        timeLoc->time = getCurrentLapTime(time);
 
-    if (++buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES) {
-        DEBUG("Buffer now Full!\n");
-    }
+        if (++buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES) {
+                DEBUG("Buffer now Full!\n");
+        }
 
-    return true;
+        return true;
 }
 
 /**
@@ -138,18 +138,18 @@ static bool insertTimeLocSample(const GeoPoint * point, tiny_millis_t time)
  */
 static void setNewFastLap(tiny_millis_t lapTime)
 {
-    DEBUG("Setting new fast lap time to %f\n", lapTime);
-    fastLapTime = lapTime;
+        DEBUG("Setting new fast lap time to %f\n", lapTime);
+        fastLapTime = lapTime;
 
-    // Swap out our buffers.
-    fastLapIndex = buffIndex;
-    fastLap = currLap;
-    currLap = currLap == buff1 ? buff2 : buff1;
+        // Swap out our buffers.
+        fastLapIndex = buffIndex;
+        fastLap = currLap;
+        currLap = currLap == buff1 ? buff2 : buff1;
 }
 
 bool isPredictiveTimeAvailable()
 {
-    return fastLapIndex != 0;
+        return fastLapIndex != 0;
 }
 
 /**
@@ -158,25 +158,25 @@ bool isPredictiveTimeAvailable()
  */
 static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime)
 {
-    // If no hotLap is set there no data to work with.
-    if (!isPredictiveTimeAvailable())
+        // If no hotLap is set there no data to work with.
+        if (!isPredictiveTimeAvailable())
+                return pollInterval;
+
+        // Target 90% buffer use +- 10%.
+        const float slots = (float) PREDICTIVE_TIME_MAX_SAMPLES;
+        const float percentUsed = ((float) buffIndex) / slots;
+        DEBUG("Recorded %d samples.  Targeting ~ %f samples.\n", buffIndex, slots * 0.9);
+
+        if (percentUsed > 0.8 && status != FULL) {
+                DEBUG("Within target range.  Not adjusting sample rate.\n");
+                return pollInterval;
+        }
+
+        // Careful here of gotchas with tiny_millis_t and floats.
+        pollInterval = lapTime / (slots / 0.9);
+        DEBUG("Setting poll interval to %ull\n", pollInterval);
+
         return pollInterval;
-
-    // Target 90% buffer use +- 10%.
-    const float slots = (float) PREDICTIVE_TIME_MAX_SAMPLES;
-    const float percentUsed = ((float) buffIndex) / slots;
-    DEBUG("Recorded %d samples.  Targeting ~ %f samples.\n", buffIndex, slots * 0.9);
-
-    if (percentUsed > 0.8 && status != FULL) {
-        DEBUG("Within target range.  Not adjusting sample rate.\n");
-        return pollInterval;
-    }
-
-    // Careful here of gotchas with tiny_millis_t and floats.
-    pollInterval = lapTime / (slots / 0.9);
-    DEBUG("Setting poll interval to %ull\n", pollInterval);
-
-    return pollInterval;
 }
 
 /**
@@ -185,7 +185,7 @@ static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime)
  */
 static tiny_millis_t getTimeSinceLastSample(tiny_millis_t time)
 {
-    return time - currLapStartTime - currLap[buffIndex - 1].time;
+        return time - currLapStartTime - currLap[buffIndex - 1].time;
 }
 
 /**
@@ -194,26 +194,26 @@ static tiny_millis_t getTimeSinceLastSample(tiny_millis_t time)
  */
 void finishLap(const GpsSnapshot *gpsSnapshot)
 {
-    if (status == DISABLED) return;
+        if (status == DISABLED) return;
 
-    const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
-    const GeoPoint *point = &gpsSnapshot->sample.point;
+        const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
+        const GeoPoint *point = &gpsSnapshot->sample.point;
 
-    // Drop last entry if necessary to record end of lap.
-    if (buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES)
-        buffIndex = PREDICTIVE_TIME_MAX_SAMPLES - 1;
+        // Drop last entry if necessary to record end of lap.
+        if (buffIndex >= PREDICTIVE_TIME_MAX_SAMPLES)
+                buffIndex = PREDICTIVE_TIME_MAX_SAMPLES - 1;
 
-    insertTimeLocSample(point, time);
+        insertTimeLocSample(point, time);
 
-    tiny_millis_t lapTime = getCurrentLapTime(time);
-    INFO("Last lap time was %f seconds\n", lapTime);
+        tiny_millis_t lapTime = getCurrentLapTime(time);
+        INFO("Last lap time was %f seconds\n", lapTime);
 
-    if (fastLapTime <= 0.0 || lapTime <= fastLapTime) {
-        setNewFastLap(lapTime);
-    }
+        if (fastLapTime <= 0.0 || lapTime <= fastLapTime) {
+                setNewFastLap(lapTime);
+        }
 
-    adjustPollInterval(lapTime);
-    status = DISABLED;
+        adjustPollInterval(lapTime);
+        status = DISABLED;
 }
 
 /**
@@ -221,18 +221,18 @@ void finishLap(const GpsSnapshot *gpsSnapshot)
  */
 void startLap(const GeoPoint *point, const tiny_millis_t time)
 {
-    if (status != DISABLED) return;
+        if (status != DISABLED) return;
 
-    status = RECORDING;
-    currLapStartTime = time;
-    lastPredictedDelta = 0;
-    lastPredictedTime = 0;
-    buffIndex = 0;
+        status = RECORDING;
+        currLapStartTime = time;
+        lastPredictedDelta = 0;
+        lastPredictedTime = 0;
+        buffIndex = 0;
 
-    DEBUG("Starting new lap.  Status %d, buffIndex = %d, startTime = %ull\n",
-          status, buffIndex, time);
+        DEBUG("Starting new lap.  Status %d, buffIndex = %d, startTime = %ull\n",
+              status, buffIndex, time);
 
-    insertTimeLocSample(point, time);
+        insertTimeLocSample(point, time);
 }
 
 /**
@@ -242,56 +242,56 @@ void startLap(const GeoPoint *point, const tiny_millis_t time)
  */
 bool addGpsSample(const GpsSnapshot *gpsSnapshot)
 {
-    const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
-    const GeoPoint *point = &gpsSnapshot->sample.point;
+        const tiny_millis_t time = gpsSnapshot->deltaFirstFix;
+        const GeoPoint *point = &gpsSnapshot->sample.point;
 
-    DEVEL("Add GPS Sample called\n");
+        DEVEL("Add GPS Sample called\n");
 
-    if (status != RECORDING) {
-        DEVEL("DROPPING - State is %d\n", status);
-        return false;
-    }
+        if (status != RECORDING) {
+                DEVEL("DROPPING - State is %d\n", status);
+                return false;
+        }
 
-    // Check if enough time has elapsed between sample periods.
-    if (getTimeSinceLastSample(time) < pollInterval) {
-        DEVEL("DROPPING - elapsed < pollInterval\n");
-        return false;
-    }
+        // Check if enough time has elapsed between sample periods.
+        if (getTimeSinceLastSample(time) < pollInterval) {
+                DEVEL("DROPPING - elapsed < pollInterval\n");
+                return false;
+        }
 
-    if (!verify_gps_quality(&gpsSnapshot->sample)) {
-	    DEVEL("DROPPING - GPS quality poor\n");
-	    return false;
-    }
+        if (!verify_gps_quality(&gpsSnapshot->sample)) {
+                DEVEL("DROPPING - GPS quality poor\n");
+                return false;
+        }
 
-    if (!insertTimeLocSample(point, time)) {
-        status = FULL;
-        DEVEL("DROPPING - Buffer full\n");
-        return false;
-    }
+        if (!insertTimeLocSample(point, time)) {
+                status = FULL;
+                DEVEL("DROPPING - Buffer full\n");
+                return false;
+        }
 
-    DEBUG("Added sample  %f/%f @ %f\n", point.latitude, point.longitude, time);
-    return true;
+        DEBUG("Added sample  %f/%f @ %f\n", point.latitude, point.longitude, time);
+        return true;
 }
 
 float distPctBtwnTwoPoints(const GeoPoint *s, const GeoPoint *e, const GeoPoint *m)
 {
-    const float distSM = distPythag(s, m); // A
-    const float distME = distPythag(m, e); // B
-    const float distSE = distPythag(s, e); // C
+        const float distSM = distPythag(s, m); // A
+        const float distME = distPythag(m, e); // B
+        const float distSE = distPythag(s, e); // C
 
-    // projDist = (A^2 + C^2 - B^2) / 2 * C
-    const float projDistFromS = ((distSM * distSM) + (distSE * distSE)
-                                 - (distME * distME)) / (2 * distSE);
+        // projDist = (A^2 + C^2 - B^2) / 2 * C
+        const float projDistFromS = ((distSM * distSM) + (distSE * distSE)
+                                     - (distME * distME)) / (2 * distSE);
 
-    DEVEL("distSE = %f, distSM = %f, distME = %f, projDist = %f\n", distSE,
-          distSM, distME, projDistFromS);
+        DEVEL("distSE = %f, distSM = %f, distME = %f, projDist = %f\n", distSE,
+              distSM, distME, projDistFromS);
 
-    return projDistFromS / distSE;
+        return projDistFromS / distSE;
 }
 
 static bool inBounds(float v)
 {
-    return v >= 0 && v <= 1;
+        return v >= 0 && v <= 1;
 }
 
 /**
@@ -303,26 +303,26 @@ static bool inBounds(float v)
  */
 static int findClosestPt(const GeoPoint *currPoint)
 {
-    if (!isPredictiveTimeAvailable())
-        return -1;
+        if (!isPredictiveTimeAvailable())
+                return -1;
 
-    // First find the closest point.  Start with index 0 as your best.
-    int bestIndex = 0;
-    GeoPoint *fastLapPoint = &(fastLap[bestIndex].point);
-    float lowestDistance = distPythag(currPoint, fastLapPoint);
+        // First find the closest point.  Start with index 0 as your best.
+        int bestIndex = 0;
+        GeoPoint *fastLapPoint = &(fastLap[bestIndex].point);
+        float lowestDistance = distPythag(currPoint, fastLapPoint);
 
-    for (int i = 1; i < fastLapIndex; ++i) {
-        fastLapPoint = &(fastLap[i].point);
-        float distance = distPythag(currPoint, fastLapPoint);
+        for (int i = 1; i < fastLapIndex; ++i) {
+                fastLapPoint = &(fastLap[i].point);
+                float distance = distPythag(currPoint, fastLapPoint);
 
-        if (distance < lowestDistance) {
-            lowestDistance = distance;
-            bestIndex = i;
+                if (distance < lowestDistance) {
+                        lowestDistance = distance;
+                        bestIndex = i;
+                }
         }
-    }
 
-    DEVEL("Smallest distance is %f from point %d\n", lowestDistance, bestIndex);
-    return bestIndex;
+        DEVEL("Smallest distance is %f from point %d\n", lowestDistance, bestIndex);
+        return bestIndex;
 }
 
 /**
@@ -336,50 +336,50 @@ static int findClosestPt(const GeoPoint *currPoint)
  */
 static bool findTwoClosestPts(const GeoPoint *currPoint, struct PtTimeLoc *tlPts[])
 {
-    if (!isPredictiveTimeAvailable())
-        return false;
+        if (!isPredictiveTimeAvailable())
+                return false;
 
-    int bestIndex = findClosestPt(currPoint);
-    if (bestIndex < 0)
-        return false;
+        int bestIndex = findClosestPt(currPoint);
+        if (bestIndex < 0)
+                return false;
 
-    /*
-     * Next we have two neighboring points.  We want to choose the point such that point s is before
-     * our current point which is before point e.  The current point we have may be s or e, we don't
-     * know.  So how do we find this point?  Use our distPctBtwnTwoPoints method.  Values between
-     * 0 - 1 indicate a point between the two points.
-     */
-    GeoPoint *gpBest = &(fastLap[bestIndex].point);
+        /*
+         * Next we have two neighboring points.  We want to choose the point such that point s is before
+         * our current point which is before point e.  The current point we have may be s or e, we don't
+         * know.  So how do we find this point?  Use our distPctBtwnTwoPoints method.  Values between
+         * 0 - 1 indicate a point between the two points.
+         */
+        GeoPoint *gpBest = &(fastLap[bestIndex].point);
 
-    int upIdx = bestIndex + 1;
-    int dnIdx = bestIndex - 1;
+        int upIdx = bestIndex + 1;
+        int dnIdx = bestIndex - 1;
 
-    GeoPoint *gpUp = upIdx >= fastLapIndex ? NULL : &(fastLap[upIdx].point);
-    GeoPoint *gpDn = dnIdx < 0 ? NULL : &(fastLap[dnIdx].point);
+        GeoPoint *gpUp = upIdx >= fastLapIndex ? NULL : &(fastLap[upIdx].point);
+        GeoPoint *gpDn = dnIdx < 0 ? NULL : &(fastLap[dnIdx].point);
 
-    float distUp = gpUp == NULL ? -1 : distPctBtwnTwoPoints(gpBest, gpUp, currPoint);
-    float distDn = gpDn == NULL ? -1 : distPctBtwnTwoPoints(gpBest, gpDn, currPoint);
+        float distUp = gpUp == NULL ? -1 : distPctBtwnTwoPoints(gpBest, gpUp, currPoint);
+        float distDn = gpDn == NULL ? -1 : distPctBtwnTwoPoints(gpBest, gpDn, currPoint);
 
-    if (!inBounds(distUp) && !inBounds(distDn)) {
-        DEBUG("Both points not in bounds (up: %f, dn: %f).  Close to Start/Finish?\n",
-              distUp, distDn);
-        return false;
-    }
+        if (!inBounds(distUp) && !inBounds(distDn)) {
+                DEBUG("Both points not in bounds (up: %f, dn: %f).  Close to Start/Finish?\n",
+                      distUp, distDn);
+                return false;
+        }
 
-    int secondaryIndex = inBounds(distUp) ? upIdx : dnIdx;
+        int secondaryIndex = inBounds(distUp) ? upIdx : dnIdx;
 
-    tlPts[0] = &(fastLap[bestIndex]);
-    tlPts[1] = &(fastLap[secondaryIndex]);
+        tlPts[0] = &(fastLap[bestIndex]);
+        tlPts[1] = &(fastLap[secondaryIndex]);
 
-    // Swap the buffers so the lower time is always first.  Just use
-    if (tlPts[1]->time < tlPts[0]->time) {
-        DEVEL("Swapping buffers: %f < %f\n", tlPts[1]->time, tlPts[0]->time);
-        struct PtTimeLoc *tmp = tlPts[0];
-        tlPts[0] = tlPts[1];
-        tlPts[1] = tmp;
-    }
+        // Swap the buffers so the lower time is always first.  Just use
+        if (tlPts[1]->time < tlPts[0]->time) {
+                DEVEL("Swapping buffers: %f < %f\n", tlPts[1]->time, tlPts[0]->time);
+                struct PtTimeLoc *tmp = tlPts[0];
+                tlPts[0] = tlPts[1];
+                tlPts[1] = tmp;
+        }
 
-    return true;
+        return true;
 }
 
 /**
@@ -391,37 +391,37 @@ static bool findTwoClosestPts(const GeoPoint *currPoint, struct PtTimeLoc *tlPts
  */
 tiny_millis_t getSplitAgainstFastLap(const GeoPoint * point, tiny_millis_t currentTime)
 {
-    if (!isPredictiveTimeAvailable()) {
-        DEBUG("No predicted time - No fast lap Set\n");
+        if (!isPredictiveTimeAvailable()) {
+                DEBUG("No predicted time - No fast lap Set\n");
+                return lastPredictedDelta;
+        }
+
+        /*
+         * Figure out the two closest points.  Order of closestPts is with lower time first.  If this
+         * fails then we can't continue.
+         */
+        struct PtTimeLoc *closestPts[2];
+        if (!findTwoClosestPts(point, closestPts))
+                // TODO: Perhaps return false here?  Make this better for the caller.
+                return lastPredictedDelta;
+
+        const GeoPoint *pointA = &(closestPts[0]->point);
+        const GeoPoint *pointB = &(closestPts[1]->point);
+        float percentage = distPctBtwnTwoPoints(pointA, pointB, point);
+        DEVEL("Percentage value is 0 < %f < 1\n", percentage);
+
+        if (!inBounds(percentage)) {
+                DEVEL("Current Point is not between the two closest points.\n");
+                return lastPredictedDelta;
+        }
+
+        const tiny_millis_t timeDeltaBtwnPoints = closestPts[1]->time - closestPts[0]->time;
+        const tiny_millis_t estFastTime = closestPts[0]->time + timeDeltaBtwnPoints  * percentage;
+        DEBUG("Estimated fast lap time at this point is %f\n", estFastTime);
+
+        lastPredictedDelta = estFastTime - getCurrentLapTime(currentTime);
+        DEBUG("Time Delta is %ull\n", lastPredictedDelta);
         return lastPredictedDelta;
-    }
-
-    /*
-     * Figure out the two closest points.  Order of closestPts is with lower time first.  If this
-     * fails then we can't continue.
-     */
-    struct PtTimeLoc *closestPts[2];
-    if (!findTwoClosestPts(point, closestPts))
-        // TODO: Perhaps return false here?  Make this better for the caller.
-        return lastPredictedDelta;
-
-    const GeoPoint *pointA = &(closestPts[0]->point);
-    const GeoPoint *pointB = &(closestPts[1]->point);
-    float percentage = distPctBtwnTwoPoints(pointA, pointB, point);
-    DEVEL("Percentage value is 0 < %f < 1\n", percentage);
-
-    if (!inBounds(percentage)) {
-        DEVEL("Current Point is not between the two closest points.\n");
-        return lastPredictedDelta;
-    }
-
-    const tiny_millis_t timeDeltaBtwnPoints = closestPts[1]->time - closestPts[0]->time;
-    const tiny_millis_t estFastTime = closestPts[0]->time + timeDeltaBtwnPoints  * percentage;
-    DEBUG("Estimated fast lap time at this point is %f\n", estFastTime);
-
-    lastPredictedDelta = estFastTime - getCurrentLapTime(currentTime);
-    DEBUG("Time Delta is %ull\n", lastPredictedDelta);
-    return lastPredictedDelta;
 }
 
 /**
@@ -433,26 +433,26 @@ tiny_millis_t getSplitAgainstFastLap(const GeoPoint * point, tiny_millis_t curre
  */
 tiny_millis_t getPredictedTime(const GpsSnapshot *snapshot)
 {
-	if (DISABLED == status)
-		return 0;
+        if (DISABLED == status)
+                return 0;
 
-	/*
-	 * If the quality of the gps sample is low, don't try to predict
-	 * time since the chances of it being wrong are higher
-	 */
-	if (!verify_gps_quality(&snapshot->sample))
-		return lastPredictedTime;
+        /*
+         * If the quality of the gps sample is low, don't try to predict
+         * time since the chances of it being wrong are higher
+         */
+        if (!verify_gps_quality(&snapshot->sample))
+                return lastPredictedTime;
 
-	const GeoPoint point = snapshot->sample.point;
-	const tiny_millis_t time = snapshot->deltaFirstFix;
-	const tiny_millis_t timeDelta = getSplitAgainstFastLap(&point, time);
-	const tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
+        const GeoPoint point = snapshot->sample.point;
+        const tiny_millis_t time = snapshot->deltaFirstFix;
+        const tiny_millis_t timeDelta = getSplitAgainstFastLap(&point, time);
+        const tiny_millis_t newPredictedTime = fastLapTime - timeDelta;
 
-	// Check for a minimum predicted time to deal with start/finish errors.
-	if (newPredictedTime < MIN_PREDICTED_TIME)
-		return lastPredictedTime;
+        // Check for a minimum predicted time to deal with start/finish errors.
+        if (newPredictedTime < MIN_PREDICTED_TIME)
+                return lastPredictedTime;
 
-	return lastPredictedTime = newPredictedTime;
+        return lastPredictedTime = newPredictedTime;
 }
 
 /**
@@ -460,19 +460,19 @@ tiny_millis_t getPredictedTime(const GpsSnapshot *snapshot)
  */
 void resetPredictiveTimer()
 {
-    DEBUG("Resetting predictive timer\n");
-    status = DISABLED;
-    buffIndex = 0;
-    fastLapIndex = 0;
-    fastLapTime = 0;
-    lastPredictedTime = 0;
-    lastPredictedDelta = 0;
-    currLapStartTime = 0;
-    pollInterval = INITIAL_POLL_INTERVAL;
+        DEBUG("Resetting predictive timer\n");
+        status = DISABLED;
+        buffIndex = 0;
+        fastLapIndex = 0;
+        fastLapTime = 0;
+        lastPredictedTime = 0;
+        lastPredictedDelta = 0;
+        currLapStartTime = 0;
+        pollInterval = INITIAL_POLL_INTERVAL;
 }
 
 float getPredictedTimeInMinutes()
 {
-	const GpsSnapshot snapshot = getGpsSnapshot();
-	return tinyMillisToMinutes(getPredictedTime(&snapshot));
+        const GpsSnapshot snapshot = getGpsSnapshot();
+        return tinyMillisToMinutes(getPredictedTime(&snapshot));
 }

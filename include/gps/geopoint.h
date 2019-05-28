@@ -29,8 +29,8 @@
 CPP_GUARD_BEGIN
 
 typedef struct _GeoPoint {
-    float latitude;
-    float longitude;
+        float latitude;
+        float longitude;
 } GeoPoint;
 
 // Make into Enum?

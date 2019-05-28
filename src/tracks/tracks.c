@@ -27,6 +27,8 @@
 #include "printk.h"
 #include "tracks.h"
 
+#define _LOG_PFX   "[Tracks] "
+
 #ifndef RCP_TESTING
 #include "memory.h"
 static const volatile Tracks g_tracks __attribute__((section(".tracks\n\t#")));
@@ -47,7 +49,7 @@ int flash_default_tracks(void)
         const VersionInfo* cv = get_current_version_info();
         memcpy(&def_tracks->versionInfo, cv, sizeof(VersionInfo));
 
-        pr_info("flashing default tracks...");
+        pr_info(_LOG_PFX "flashing default tracks...");
         const int status = flash_tracks(def_tracks, sizeof(Tracks));
 
         free(def_tracks);
@@ -56,15 +58,15 @@ int flash_default_tracks(void)
 
 int flash_tracks(const Tracks *source, size_t rawSize)
 {
-    int result = memory_flash_region((void *)&g_tracks, (void *)source, rawSize);
-    if (result == 0) pr_info("win\r\n");
-    else pr_info("fail\r\n");
-    return result;
+        int result = memory_flash_region((void *)&g_tracks, (void *)source, rawSize);
+        if (result == 0) pr_info("win\r\n");
+        else pr_info("fail\r\n");
+        return result;
 }
 
 const Tracks * get_tracks()
 {
-    return (Tracks *)&g_tracks;
+        return (Tracks *)&g_tracks;
 }
 
 
@@ -72,7 +74,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
                                 const enum track_add_mode mode)
 {
         if (index >= MAX_TRACK_COUNT) {
-                pr_error("tracks: Invalid track index\r\n");
+                pr_error(_LOG_PFX "Invalid track index\r\n");
                 return TRACK_ADD_RESULT_FAIL;
         }
 
@@ -82,7 +84,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
                 /* Valid cases.  Carry on */
                 break;
         default:
-                pr_error_int_msg("tracks: Unknown track_add_mode: ", mode);
+                pr_error_int_msg(_LOG_PFX "Unknown track_add_mode: ", mode);
                 return TRACK_ADD_RESULT_FAIL;
         }
 
@@ -93,13 +95,17 @@ enum track_add_result add_track(const Track *track, const size_t index,
                 lua_task_stop();
 #endif /* LUA_SUPPORT */
 
-                pr_debug("tracks: Allocating new tracks buffer\r\n");
+                pr_info(_LOG_PFX "Allocating new tracks buffer\r\n");
                 g_tracksBuffer = (Tracks *) portMalloc(sizeof(Tracks));
+                if (NULL == g_tracksBuffer) {
+                        pr_error(_LOG_PFX "Failed to allocate memory for track buffer.\r\n");
+                        return TRACK_ADD_RESULT_FAIL;
+                }
                 memcpy(g_tracksBuffer, (void*) &g_tracks, sizeof(Tracks));
         }
 
         if (NULL == g_tracksBuffer) {
-                pr_error("tracks: Failed to allocate memory for track buffer.\r\n");
+                pr_error(_LOG_PFX "Invalid tracks buffer memory\r\n");
                 return TRACK_ADD_RESULT_FAIL;
         }
 
@@ -112,7 +118,7 @@ enum track_add_result add_track(const Track *track, const size_t index,
                 return TRACK_ADD_RESULT_OK;
 
         /* If here, time to flash and tidy up */
-        pr_info("tracks: Completed updating tracks. Flashing... ");
+        pr_info(_LOG_PFX "Completed updating tracks. Flashing... ");
         const int rc = flash_tracks(g_tracksBuffer, sizeof(Tracks));
         portFree(g_tracksBuffer);
         g_tracksBuffer = NULL;
@@ -133,51 +139,51 @@ enum track_add_result add_track(const Track *track, const size_t index,
 
 static int isStage(const Track *t)
 {
-    return t->track_type == TRACK_TYPE_STAGE;
+        return t->track_type == TRACK_TYPE_STAGE;
 }
 
 GeoPoint getFinishPoint(const Track *t)
 {
-    return isStage(t) ? t->stage.finish : t->circuit.startFinish;
+        return isStage(t) ? t->stage.finish : t->circuit.startFinish;
 }
 
 int isFinishPointValid(const Track *t)
 {
-    if (NULL == t)
-        return 0;
+        if (NULL == t)
+                return 0;
 
-    const GeoPoint p = getFinishPoint(t);
-    return isValidPoint(&p);
+        const GeoPoint p = getFinishPoint(t);
+        return isValidPoint(&p);
 }
 
 GeoPoint getStartPoint(const Track *t)
 {
-    return isStage(t) ? t->stage.start : t->circuit.startFinish;
+        return isStage(t) ? t->stage.start : t->circuit.startFinish;
 }
 
 int isStartPointValid(const Track *t)
 {
-    if (NULL == t)
-        return 0;
+        if (NULL == t)
+                return 0;
 
-    const GeoPoint p = getStartPoint(t);
-    return isValidPoint(&p);
+        const GeoPoint p = getStartPoint(t);
+        return isValidPoint(&p);
 }
 
 GeoPoint getSectorGeoPointAtIndex(const Track *t, int index)
 {
-    if (index < 0) index = 0;
-    const int max = isStage(t) ? STAGE_SECTOR_COUNT : CIRCUIT_SECTOR_COUNT;
-    const GeoPoint *sectors = isStage(t) ? t->stage.sectors : t->circuit.sectors;
+        if (index < 0) index = 0;
+        const int max = isStage(t) ? STAGE_SECTOR_COUNT : CIRCUIT_SECTOR_COUNT;
+        const GeoPoint *sectors = isStage(t) ? t->stage.sectors : t->circuit.sectors;
 
-    if (index < max && isValidPoint(sectors + index))
-        return sectors[index];
+        if (index < max && isValidPoint(sectors + index))
+                return sectors[index];
 
-    // If here, return the finish since that is logically the next sector point.
-    return getFinishPoint(t);
+        // If here, return the finish since that is logically the next sector point.
+        return getFinishPoint(t);
 }
 
 int areGeoPointsEqual(const GeoPoint a, const GeoPoint b)
 {
-    return a.latitude == b.latitude && a.longitude == b.longitude;
+        return a.latitude == b.latitude && a.longitude == b.longitude;
 }

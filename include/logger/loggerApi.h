@@ -23,12 +23,12 @@
 #define LOGGERAPI_H_
 
 #include "api.h"
+#include "api_event.h"
 #include "capabilities.h"
 #include "cpp_guard.h"
 #include "jsmn.h"
 #include "sampleRecord.h"
 #include "serial.h"
-
 CPP_GUARD_BEGIN
 
 #define API_METHOD(_NAME, _FUNC) {(_NAME), (_FUNC)},
@@ -54,10 +54,14 @@ CPP_GUARD_BEGIN
 	API_METHOD("hb", api_heart_beat)				\
 	API_METHOD("log", api_log)					\
 	API_METHOD("s", api_sampleData)					\
+	API_METHOD("alertmessage", api_alertmessage)     \
+	API_METHOD("alertmsgReply", api_alertmsg_reply)     \
+	API_METHOD("alertmsgAck", api_alertmsg_ack)     \
 	API_METHOD("setActiveTrack", api_set_active_track)		\
 	API_METHOD("setCanCfg", api_setCanConfig)			\
 	API_METHOD("setConnCfg", api_setConnectivityConfig)		\
 	API_METHOD("setLapCfg", api_setLapConfig)			\
+ API_METHOD("resetLapStats", api_reset_lap_stats) \
 	API_METHOD("setLogfileLevel", api_setLogfileLevel)		\
 	API_METHOD("setObd2Cfg", api_setObd2Config)			\
 	API_METHOD("setTelemetry", api_set_telemetry)			\
@@ -161,6 +165,13 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json);
 int api_systemReset(struct Serial *serial, const jsmntok_t *json);
 int api_factoryReset(struct Serial *serial, const jsmntok_t *json);
 int api_sampleData(struct Serial *serial, const jsmntok_t *json);
+int api_alertmessage(struct Serial *serial, const jsmntok_t *json);
+int api_alertmsg_reply(struct Serial *serial, const jsmntok_t *json);
+int api_alertmsg_ack(struct Serial *serial, const jsmntok_t *json);
+int api_send_alertmessage(struct Serial *serial, const struct alertmessage *alertmsg);
+int api_send_alertmsg_ack(struct Serial *serial, const struct alertmessage_ack *alertmsg_ack);
+int api_send_alertmsg_reply(struct Serial *serial, const struct alertmessage *alertmsg);
+int api_send_button_state(struct Serial *serial, const struct button_state *butt_state);
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json);
 int api_log(struct Serial *serial, const jsmntok_t *json);
 int api_getMeta(struct Serial *serial, const jsmntok_t *json);
@@ -182,6 +193,7 @@ int api_getCanConfig(struct Serial *serial, const jsmntok_t *json);
 int api_setCanConfig(struct Serial *serial, const jsmntok_t *json);
 int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json);
 int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json);
+int api_reset_lap_stats(struct Serial *serial, const jsmntok_t *json);
 
 /* Sensor channels */
 int api_getAnalogConfig(struct Serial *serial, const jsmntok_t *json);

@@ -28,8 +28,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "taskUtil.h"
 
-#define READ_TIMEOUT 	500
+#define READ_TIMEOUT 	1000
+#define POWER_OFF_TIMEOUT 100
 
 bool gsm_ping_modem(struct serial_buffer *sb)
 {
@@ -111,7 +113,7 @@ bool gsm_get_signal_strength(struct serial_buffer *sb,
         serial_buffer_reset(sb);
         serial_buffer_append(sb, cmd);
         const size_t count = cellular_exec_cmd(
-                sb, READ_TIMEOUT, const_msgs, msgs_len);
+                                     sb, READ_TIMEOUT, const_msgs, msgs_len);
         const bool status = is_rsp_ok(const_msgs, count);
 
         if (!status) {
@@ -148,60 +150,21 @@ bool gsm_get_imei(struct serial_buffer *sb,
                 return false;
         }
 
-	strntcpy(cell_info->imei, msgs[0], sizeof(cell_info->imei));
-	rstrip_inline(cell_info->imei);
+        strntcpy(cell_info->imei, msgs[0], sizeof(cell_info->imei));
+        rstrip_inline(cell_info->imei);
 
         return 1;
 }
 
-enum cellular_net_status gsm_get_network_reg_status(
-        struct serial_buffer *sb, struct cellular_info *ci)
-{
-        const char *cmd = "AT+CGREG?";
-        const char *msgs[2];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-        const char *answrs[] = {"+CGREG: 0,0",
-                                "+CGREG: 0,1",
-                                "+CGREG: 0,2",
-                                "+CGREG: 0,3",
-                                "+CGREG: 0,4",
-                                "+CGREG: 0,5"};
-        const size_t answrs_len = ARRAY_LEN(answrs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_append(sb, cmd);
-        const int idx = cellular_exec_match(sb, READ_TIMEOUT, msgs, msgs_len,
-                                            answrs, answrs_len, 0);
-
-        switch(idx) {
-        case 0:
-                ci->net_status = CELLULAR_NETWORK_NOT_SEARCHING;
-                break;
-        case 1:
-        case 5:
-                ci->net_status = CELLULAR_NETWORK_REGISTERED;
-                break;
-        case 2:
-        case 4:
-                ci->net_status = CELLULAR_NETWORK_SEARCHING;
-                break;
-        case 3:
-                ci->net_status = CELLULAR_NETWORK_DENIED;
-                break;
-        default:
-                ci->net_status = CELLULAR_NETWORK_STATUS_UNKNOWN;
-        }
-
-        return ci->net_status;
-}
-
+/* this works */
 bool gsm_is_gprs_attached(struct serial_buffer *sb)
 {
         const char *cmd = "AT+CGATT?";
         const char *msgs[2];
         const size_t msgs_len = ARRAY_LEN(msgs);
         const char *answrs[] = {"+CGATT: 0",
-                                "+CGATT: 1",};
+                                "+CGATT: 1",
+                               };
         const size_t answrs_len = ARRAY_LEN(answrs);
 
         serial_buffer_reset(sb);
@@ -230,7 +193,7 @@ bool gsm_get_network_reg_info(struct serial_buffer *sb,
          * Network provider may be there.  May not be.
          * +COPS: <mode>[,<format>,<oper>[,<AcT>]]
          */
-       const char *str_beg = strchr(msgs[0], '"');
+        const char *str_beg = strchr(msgs[0], '"');
         if (NULL != str_beg) {
                 ++str_beg;
                 char *str_end = strchr(str_beg, '"');
@@ -238,7 +201,24 @@ bool gsm_get_network_reg_info(struct serial_buffer *sb,
         } else {
                 str_beg = "UNKNOWN";
         }
-
         strntcpy(ci->op, str_beg, sizeof(ci->op));
+
+        pr_info_str_msg("[gsm] Network Operator: ", ci->op);
         return status;
+}
+
+bool gsm_power_off(struct serial_buffer *sb)
+{
+        pr_info("[gsm] powering off cellular module\r\n");
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_append(sb, "AT+CPWROFF");
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs,
+                                               msgs_len);
+        bool response = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[gsm] power off response: ", response);
+        delayMs(POWER_OFF_TIMEOUT);
+        return response;
 }

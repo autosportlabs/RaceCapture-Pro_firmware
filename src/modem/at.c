@@ -185,31 +185,31 @@ static bool _process_msg_generic(struct at_info *ati,
 
 static void process_urc_msg(struct at_info *ati, char *msg)
 {
-	const bool no_strip = ati->urc_ip->flags & AT_URC_FLAGS_NO_RSTRIP;
-	if (!no_strip) {
-		const size_t msg_len = serial_msg_strlen(msg);
-		msg[msg_len] = '\0';
-	}
+        const bool no_strip = ati->urc_ip->flags & AT_URC_FLAGS_NO_RSTRIP;
+        if (!no_strip) {
+                const size_t msg_len = serial_msg_strlen(msg);
+                msg[msg_len] = '\0';
+        }
 
-	_process_msg_generic(ati, AT_RX_STATE_URC, msg);
+        _process_msg_generic(ati, AT_RX_STATE_URC, msg);
 
-	const bool no_status = !!(ati->urc_ip->flags & AT_URC_FLAGS_NO_RSP_STATUS);
-	enum at_rsp_status status = AT_RSP_STATUS_NONE;
-	if (no_status || is_rsp_status(&status, msg))
-		complete_urc(ati, status);
+        const bool no_status = !!(ati->urc_ip->flags & AT_URC_FLAGS_NO_RSP_STATUS);
+        enum at_rsp_status status = AT_RSP_STATUS_NONE;
+        if (no_status || is_rsp_status(&status, msg))
+                complete_urc(ati, status);
 }
 
 static void process_cmd_msg(struct at_info *ati, char *msg)
 {
-	/* We always strip trialing message characters on cmd messages */
-	const size_t msg_len = serial_msg_strlen(msg);
-	msg[msg_len] = '\0';
+        /* We always strip trialing message characters on cmd messages */
+        const size_t msg_len = serial_msg_strlen(msg);
+        msg[msg_len] = '\0';
 
-	_process_msg_generic(ati, AT_RX_STATE_CMD, msg);
+        _process_msg_generic(ati, AT_RX_STATE_CMD, msg);
 
-	enum at_rsp_status status;
-	if (is_rsp_status(&status, msg))
-		complete_cmd(ati, status);
+        enum at_rsp_status status;
+        if (is_rsp_status(&status, msg))
+                complete_cmd(ati, status);
 }
 
 static void begin_urc_msg(struct at_info *ati, struct at_urc *urc)
@@ -220,42 +220,42 @@ static void begin_urc_msg(struct at_info *ati, struct at_urc *urc)
 
 static void process_cmd_or_urc_msg(struct at_info *ati, char *msg)
 {
-	/*
-	 * We are starting a new message series or handling a device
-	 * where URCs come in at any time (including mid message).
-	 * Gotta figure out what type of message this is before we
-	 * process it.
-	 */
-	if (ati->sparse_urc_cb && ati->sparse_urc_cb(ati, msg)) {
-		/* It was a sparse URC that was handled. */
-		return;
-	}
+        /*
+         * We are starting a new message series or handling a device
+         * where URCs come in at any time (including mid message).
+         * Gotta figure out what type of message this is before we
+         * process it.
+         */
+        if (ati->sparse_urc_cb && ati->sparse_urc_cb(ati, msg)) {
+                /* It was a sparse URC that was handled. */
+                return;
+        }
 
-	/* Not a sparse URC. Let's see if it is a registered URC */
-	struct at_urc* const urc = is_urc_msg(ati, msg);
-	if (urc) {
-		begin_urc_msg(ati, urc);
-		return process_urc_msg(ati, msg);
-	}
+        /* Not a sparse URC. Let's see if it is a registered URC */
+        struct at_urc* const urc = is_urc_msg(ati, msg);
+        if (urc) {
+                begin_urc_msg(ati, urc);
+                return process_urc_msg(ati, msg);
+        }
 
-	/*
-	 * Check if there is a command in progress.
-	 * If so, then cmd_ip will be set and we will treat this
-	 * message as a command response.
-	 */
-	if (ati->cmd_ip)
-		return process_cmd_msg(ati, msg);
+        /*
+         * Check if there is a command in progress.
+         * If so, then cmd_ip will be set and we will treat this
+         * message as a command response.
+         */
+        if (ati->cmd_ip)
+                return process_cmd_msg(ati, msg);
 
-	/*
-	 * If we end up here we have data but have no URC that handles
-	 * it nor is there any command in progress. This means that we
-	 * have an unhandled message (and these should not happen).
-	 * Log it and move on with life.
-	 */
-	pr_debug_str_msg(LOG_PFX "Unhandled msg received: ", msg);
+        /*
+         * If we end up here we have data but have no URC that handles
+         * it nor is there any command in progress. This means that we
+         * have an unhandled message (and these should not happen).
+         * Log it and move on with life.
+         */
+        pr_debug_str_msg(LOG_PFX "Unhandled msg received: ", msg);
 
-	/* Need clean the buffer for new msgs */
-	serial_buffer_clear(ati->sb);
+        /* Need clean the buffer for new msgs */
+        serial_buffer_clear(ati->sb);
 }
 
 static void at_task_run_bytes_read(struct at_info *ati, char *msg)
@@ -392,8 +392,8 @@ bool at_info_init(struct at_info *ati, struct serial_buffer *sb)
         memset(ati, 0, sizeof(*ati));
         ati->sb = sb;
 
-	at_configure_device(ati, AT_DEFAULT_QP_MS, AT_DEFAULT_DELIMETER,
-			    AT_DEV_CFG_FLAG_NONE);
+        at_configure_device(ati, AT_DEFAULT_QP_MS, AT_DEFAULT_DELIMETER,
+                            AT_DEV_CFG_FLAG_NONE);
 
         /* Reset the state machine, and now we are ready to run */
         at_reset(ati);
@@ -427,7 +427,7 @@ struct at_cmd* at_put_cmd(struct at_info *ati, const char *cmd,
                           void *rsp_up)
 {
         if (ati->cmd_queue.count >= AT_CMD_MAX_CMDS) {
-                 /* Full up */
+                /* Full up */
                 pr_warning(LOG_PFX "Command queue full");
                 return NULL;
         }
@@ -477,7 +477,7 @@ struct at_urc* at_register_urc(struct at_info *ati, const char *pfx,
                                void *rsp_up)
 {
         if (ati->urc_list.count >= AT_URC_MAX_URCS) {
-                 /* Full up */
+                /* Full up */
                 pr_warning(LOG_PFX "URC list full\r\n");
                 return NULL;
         }
@@ -520,7 +520,7 @@ bool at_configure_device(struct at_info *ati, const tiny_millis_t qp_ms,
 
         ati->dev_cfg.quiet_period_ms = qp_ms;
         strcpy(ati->dev_cfg.delim, delim); /* Sane b/c strlen check above */
-	ati->dev_cfg.flags = flags;
+        ati->dev_cfg.flags = flags;
         return true;
 }
 

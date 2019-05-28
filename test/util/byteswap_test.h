@@ -26,22 +26,22 @@
 
 class ByteswapTest : public CppUnit::TestFixture
 {
-    CPPUNIT_TEST_SUITE( ByteswapTest );
-    CPPUNIT_TEST( test_uint16_swap );
-    CPPUNIT_TEST( test_int16_swap );
-    CPPUNIT_TEST( test_uint24_swap );
-    CPPUNIT_TEST( test_uint32_swap );
-    CPPUNIT_TEST( test_int32_swap );
-    CPPUNIT_TEST_SUITE_END();
+        CPPUNIT_TEST_SUITE( ByteswapTest );
+        CPPUNIT_TEST( test_uint16_swap );
+        CPPUNIT_TEST( test_int16_swap );
+        CPPUNIT_TEST( test_uint24_swap );
+        CPPUNIT_TEST( test_uint32_swap );
+        CPPUNIT_TEST( test_int32_swap );
+        CPPUNIT_TEST_SUITE_END();
 
 public:
-    void setUp();
-    void tearDown();
-    void test_uint16_swap(void);
-    void test_int16_swap(void);
-    void test_uint24_swap(void);
-    void test_uint32_swap(void);
-    void test_int32_swap(void);
+        void setUp();
+        void tearDown();
+        void test_uint16_swap(void);
+        void test_int16_swap(void);
+        void test_uint24_swap(void);
+        void test_uint32_swap(void);
+        void test_int32_swap(void);
 };
 
 #endif  // BYTESWAPTEST_H

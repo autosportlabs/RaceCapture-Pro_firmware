@@ -87,7 +87,7 @@ void RingBufferTest::testPutGet()
 
         /* Get the data.  Ensure we only read `size` bytes */
         CPPUNIT_ASSERT_EQUAL(size, ring_buffer_get(rb, buff,
-                                                   ARRAY_LEN(buff)));
+                             ARRAY_LEN(buff)));
 
         /* Check sizes again */
         CPPUNIT_ASSERT_EQUAL((size_t) 0, ring_buffer_bytes_used(rb));
@@ -123,7 +123,7 @@ void RingBufferTest::testPeek()
         CPPUNIT_ASSERT_EQUAL(size, ring_buffer_put(rb, data, size));
         /* Peek at the data.  Ensure we only read `size` bytes */
         CPPUNIT_ASSERT_EQUAL(size, ring_buffer_peek(rb, buff,
-                                                    ARRAY_LEN(buff)));
+                             ARRAY_LEN(buff)));
 
         /* Check the sizes now.  They should be unchanged. */
         const size_t free_exp = RING_BUFF_CAP - size;
@@ -143,7 +143,7 @@ void RingBufferTest::testDrop()
         CPPUNIT_ASSERT_EQUAL(size, ring_buffer_put(rb, data, size));
         /* Drop the data.  Ensure we only read `size` bytes */
         CPPUNIT_ASSERT_EQUAL(size, ring_buffer_get(rb, NULL,
-                                                   ARRAY_LEN(data)));
+                             ARRAY_LEN(data)));
 
         CPPUNIT_ASSERT_EQUAL((size_t) 0, ring_buffer_bytes_used(rb));
         CPPUNIT_ASSERT_EQUAL((size_t) RING_BUFF_CAP,

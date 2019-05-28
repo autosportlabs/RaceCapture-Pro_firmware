@@ -34,20 +34,20 @@ void InitFSHardware(void)
 
 int InitFS()
 {
-    return 0;
+        return 0;
 }
 
 int UnmountFS()
 {
-    return 0;
+        return 0;
 }
 
 int OpenNextLogFile(FIL *f)
 {
-    return 0;
+        return 0;
 }
 
 bool sdcard_present()
 {
-    return true;
+        return true;
 }

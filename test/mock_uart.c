@@ -31,12 +31,12 @@ struct Serial* usart_device_get_serial(const uart_id_t p)
 
 int usart_device_init()
 {
-    return 1;
+        return 1;
 }
 
 int usart_device_init_serial(struct Serial *serial, uart_id_t id)
 {
-    return 1;
+        return 1;
 }
 
 void usart_device_config(uint8_t port, uint8_t bits, uint8_t parity, uint8_t stopbits, uint32_t baud)
@@ -65,22 +65,22 @@ void usart1_flush(void)
 
 char usart0_getcharWait(size_t delay)
 {
-    return 0;
+        return 0;
 }
 
 char usart0_getchar()
 {
-    return 0;
+        return 0;
 }
 
 char usart1_getcharWait(size_t delay)
 {
-    return 0;
+        return 0;
 }
 
 char usart1_getchar()
 {
-    return 0;
+        return 0;
 }
 
 void usart0_putchar(char c)
@@ -106,21 +106,21 @@ void usart1_puts (const char* s )
 
 int usart0_readLineWait(char *s, int len, size_t delay)
 {
-    return 0;
+        return 0;
 }
 
 
 int usart0_readLine(char *s, int len)
 {
-    return usart0_readLineWait(s,len,0);
+        return usart0_readLineWait(s,len,0);
 }
 
 int usart1_readLineWait(char *s, int len, size_t delay)
 {
-    return 0;
+        return 0;
 }
 
 int usart1_readLine(char *s, int len)
 {
-    return usart1_readLineWait(s,len,0);
+        return usart1_readLineWait(s,len,0);
 }

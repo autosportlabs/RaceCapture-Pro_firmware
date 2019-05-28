@@ -86,30 +86,30 @@ typedef void * xTaskHandle;
  * Used internally only.
  */
 typedef struct xTIME_OUT {
-    portBASE_TYPE xOverflowCount;
-    portTickType  xTimeOnEntering;
+        portBASE_TYPE xOverflowCount;
+        portTickType  xTimeOnEntering;
 } xTimeOutType;
 
 /*
  * Defines the memory ranges allocated to the task when an MPU is used.
  */
 typedef struct xMEMORY_REGION {
-    void *pvBaseAddress;
-    unsigned long ulLengthInBytes;
-    unsigned long ulParameters;
+        void *pvBaseAddress;
+        unsigned long ulLengthInBytes;
+        unsigned long ulParameters;
 } xMemoryRegion;
 
 /*
  * Parameters required to create an MPU protected task.
  */
 typedef struct xTASK_PARAMTERS {
-    pdTASK_CODE pvTaskCode;
-    const signed char * const pcName;
-    unsigned short usStackDepth;
-    void *pvParameters;
-    unsigned portBASE_TYPE uxPriority;
-    portSTACK_TYPE *puxStackBuffer;
-    xMemoryRegion xRegions[ portNUM_CONFIGURABLE_REGIONS ];
+        pdTASK_CODE pvTaskCode;
+        const signed char * const pcName;
+        unsigned short usStackDepth;
+        void *pvParameters;
+        unsigned portBASE_TYPE uxPriority;
+        portSTACK_TYPE *puxStackBuffer;
+        xMemoryRegion xRegions[ portNUM_CONFIGURABLE_REGIONS ];
 } xTaskParameters;
 
 /*

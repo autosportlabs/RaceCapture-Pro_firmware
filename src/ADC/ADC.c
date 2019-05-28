@@ -57,6 +57,6 @@ void ADC_sample_all(void)
 float ADC_read(const size_t channel)
 {
         return g_adc_filter[channel].current_value *
-                ADC_device_get_channel_scaling(channel) *
-                g_adc_calibrations[channel];
+               ADC_device_get_channel_scaling(channel) *
+               g_adc_calibrations[channel];
 }

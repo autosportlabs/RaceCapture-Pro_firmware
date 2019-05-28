@@ -29,29 +29,29 @@
 
 struct GeoTrigger createGeoTrigger(const struct GeoCircle *gc)
 {
-    struct GeoTrigger gt;
+        struct GeoTrigger gt;
 
-    memcpy(&gt.gc, gc, sizeof(struct GeoCircle));
-    resetGeoTrigger(&gt);
+        memcpy(&gt.gc, gc, sizeof(struct GeoCircle));
+        resetGeoTrigger(&gt);
 
-    return gt;
+        return gt;
 }
 
 bool updateGeoTrigger(struct GeoTrigger *gt, const GeoPoint *gp)
 {
-    if (gt->tripped) return true;
-    if (gc_isPointInGeoCircle(gp, gt->gc)) return false;
-    return gt->tripped = true;
+        if (gt->tripped) return true;
+        if (gc_isPointInGeoCircle(gp, gt->gc)) return false;
+        return gt->tripped = true;
 }
 
 void resetGeoTrigger(struct GeoTrigger *gt)
 {
-    gt->tripped = false;
+        gt->tripped = false;
 }
 
 bool isGeoTriggerTripped(const struct GeoTrigger *gt)
 {
-    return gt->tripped;
+        return gt->tripped;
 }
 
 void geo_trigger_trip(struct GeoTrigger *gt)

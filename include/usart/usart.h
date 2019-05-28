@@ -34,12 +34,12 @@ CPP_GUARD_BEGIN
  * retrieve data from an internal array.
  */
 typedef enum {
-    UART_GPS = 0,
-    UART_TELEMETRY,
-    UART_WIRELESS,
-    UART_AUX,
-    UART_AUX2,
-    __UART_COUNT, /* Maximum number of UART devices */
+        UART_GPS = 0,
+        UART_TELEMETRY,
+        UART_WIRELESS,
+        UART_AUX,
+        UART_AUX2,
+        __UART_COUNT, /* Maximum number of UART devices */
 } uart_id_t;
 
 int usart_init();

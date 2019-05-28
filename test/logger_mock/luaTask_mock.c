@@ -27,7 +27,9 @@ void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd) {}
 
 struct lua_runtime_info lua_task_get_runtime_info()
 {
-        return (struct lua_runtime_info) { 0 };
+        return (struct lua_runtime_info) {
+                0
+        };
 }
 
 size_t lua_task_get_mem_size()

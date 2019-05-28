@@ -29,7 +29,7 @@ static int g_pwmDuty[PWM_CHANNELS] = {0,0,0,0};
 
 int PWM_device_init(void)
 {
-    return 1;
+        return 1;
 }
 
 void PWM_device_channel_init(unsigned int channel, unsigned short period, unsigned short dutyCycle)
@@ -44,22 +44,22 @@ void PWM_device_set_clock_frequency(uint16_t clockFrequency)
 
 void PWM_device_set_duty_cycle(unsigned int channel, unsigned short duty)
 {
-    g_pwmDuty[channel] = duty;
+        g_pwmDuty[channel] = duty;
 }
 
 unsigned short PWM_device_get_duty_cycle(unsigned int channel)
 {
-    return g_pwmDuty[channel];
+        return g_pwmDuty[channel];
 }
 
 void PWM_device_channel_set_period(unsigned int channel, unsigned short period)
 {
-    g_pwmPeriod[channel] = period;
+        g_pwmPeriod[channel] = period;
 }
 
 unsigned short PWM_device_channel_get_period(unsigned int channel)
 {
-    return g_pwmPeriod[channel];
+        return g_pwmPeriod[channel];
 }
 
 void PWM_device_channel_start(unsigned int channel)

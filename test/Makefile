@@ -198,6 +198,7 @@ $(RCP_SRC)/devices/cellular.c \
 $(RCP_SRC)/devices/esp8266.c \
 $(RCP_SRC)/devices/null_device.c \
 $(RCP_SRC)/devices/sara_u280.c \
+$(RCP_SRC)/devices/sara_r4.c \
 $(RCP_SRC)/devices/sim900.c \
 $(RCP_SRC)/drivers/esp8266_drv.c \
 $(RCP_SRC)/filter/filter.c \
@@ -212,6 +213,7 @@ $(RCP_SRC)/launch_control.c \
 $(RCP_SRC)/logger/fileWriter.c \
 $(RCP_SRC)/logger/connectivityTask.c \
 $(RCP_SRC)/logger/logger.c \
+$(RCP_SRC)/logger/api_event.c \
 $(RCP_SRC)/logger/loggerApi.c \
 $(RCP_SRC)/logger/loggerConfig.c \
 $(RCP_SRC)/logger/loggerData.c \

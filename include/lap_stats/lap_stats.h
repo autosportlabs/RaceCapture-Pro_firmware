@@ -44,15 +44,19 @@ typedef enum {
  * A simple Time and Location sample.
  */
 typedef struct _TimeLoc {
-    GeoPoint point;
-    millis_t time;
+        GeoPoint point;
+        millis_t time;
 } TimeLoc;
 
 void lapstats_config_changed(void);
 
-void lapstats_reset(void);
+void lapstats_reset(bool reset_session_time);
 
-void lapstats_processUpdate(const GpsSnapshot *gpsSnapshot);
+void lapstats_process_incremental(const GpsSample *sample);
+
+void lapstats_processUpdate(GpsSnapshot *gpsSnapshot);
+
+void lapstats_update_distance(void);
 
 track_status_t lapstats_get_track_status( void );
 
@@ -82,6 +86,11 @@ tiny_millis_t lapstats_elapsed_time();
  * @return The elapsed lap time in minutes.
  */
 float lapstats_elapsed_time_minutes();
+
+/**
+ * @return the session time in minutes
+ */
+float lapstats_session_time_minutes(void);
 
 tiny_millis_t getLastSectorTime();
 

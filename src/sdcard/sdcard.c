@@ -57,7 +57,7 @@ static bool is_initialized()
 
 bool sdcard_present(void)
 {
-    return sdcard_device_card_present();
+        return sdcard_device_card_present();
 }
 
 int InitFS()
@@ -92,7 +92,7 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
         fatFile = pvPortMalloc(sizeof(FIL));
         if (NULL == fatFile) {
                 if (!quiet) serial_write_s(serial,
-					   "could not allocate file object\r\n");
+                                                   "could not allocate file object\r\n");
                 goto exit;
         }
 

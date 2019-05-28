@@ -46,7 +46,7 @@ void ByteswapTest::test_uint24_swap(void)
 
 void ByteswapTest::test_int32_swap(void)
 {
-    CPPUNIT_ASSERT_EQUAL((int32_t)0x44332211, swap_int32(0x11223344));
+        CPPUNIT_ASSERT_EQUAL((int32_t)0x44332211, swap_int32(0x11223344));
 }
 
 void ByteswapTest::test_uint32_swap(void)

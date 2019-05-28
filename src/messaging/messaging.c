@@ -29,8 +29,8 @@ static int lockedApiMode = 0;
 
 void initMessaging()
 {
-    init_command();
-    initApi();
+        init_command();
+        initApi();
 }
 
 int process_read_msg(struct Serial *serial, char *buff, size_t len)
@@ -53,7 +53,7 @@ int process_read_msg(struct Serial *serial, char *buff, size_t len)
                 const int res = process_command(serial, buff, len);
                 if (res != COMMAND_OK) {
                         serial_write_s(serial, "Unknown Command- Press "
-                                     "Enter for Help.");
+                                       "Enter for Help.");
                         put_crlf(serial);
                 }
                 show_command_prompt(serial);
@@ -63,31 +63,31 @@ int process_read_msg(struct Serial *serial, char *buff, size_t len)
 
 void process_msg(struct Serial *serial, char * buffer, size_t bufferSize)
 {
-    if (lockedApiMode) {
-        read_line(serial, buffer, bufferSize);
-        if (buffer[0] =='\0') {
-            lockedApiMode = 0;
-            show_command_prompt(serial);
-        } else {
-            process_api(serial, buffer, bufferSize);
-        }
-    } else {
-        interactive_read_line(serial, buffer, bufferSize);
-        if (buffer[0] == '{') {
-            lockedApiMode = 1;
-            process_api(serial, buffer, bufferSize);
-        } else {
-            if (strlen(buffer) == 0) {
-                show_welcome(serial);
-            } else {
-                int res = process_command(serial, buffer, bufferSize);
-                if (res != COMMAND_OK) {
-                        serial_write_s(serial, "Unknown Command- Press Enter "
-				       "for Help.");
-                        put_crlf(serial);
+        if (lockedApiMode) {
+                read_line(serial, buffer, bufferSize);
+                if (buffer[0] =='\0') {
+                        lockedApiMode = 0;
+                        show_command_prompt(serial);
+                } else {
+                        process_api(serial, buffer, bufferSize);
                 }
-            }
-            show_command_prompt(serial);
+        } else {
+                interactive_read_line(serial, buffer, bufferSize);
+                if (buffer[0] == '{') {
+                        lockedApiMode = 1;
+                        process_api(serial, buffer, bufferSize);
+                } else {
+                        if (strlen(buffer) == 0) {
+                                show_welcome(serial);
+                        } else {
+                                int res = process_command(serial, buffer, bufferSize);
+                                if (res != COMMAND_OK) {
+                                        serial_write_s(serial, "Unknown Command- Press Enter "
+                                                       "for Help.");
+                                        put_crlf(serial);
+                                }
+                        }
+                        show_command_prompt(serial);
+                }
         }
-    }
 }

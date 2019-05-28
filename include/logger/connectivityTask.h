@@ -39,7 +39,7 @@ typedef struct _ConnParams {
         bool always_streaming;
         char * connectionName;
         int (*disconnect)(DeviceConfig *config);
-        int (*init_connection)(DeviceConfig *config, millis_t * connected_at);
+        int (*init_connection)(DeviceConfig *config, millis_t * connected_at, bool hard_init);
         int (*check_connection_status)(DeviceConfig *config);
         serial_id_t serial;
         size_t periodicMeta;

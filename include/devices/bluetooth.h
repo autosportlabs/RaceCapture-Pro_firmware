@@ -30,13 +30,13 @@
 CPP_GUARD_BEGIN
 
 typedef enum {
-    BT_STATUS_NOT_INIT = 0,
-    BT_STATUS_PROVISIONED,
-    BT_STATUS_ERROR
+        BT_STATUS_NOT_INIT = 0,
+        BT_STATUS_PROVISIONED,
+        BT_STATUS_ERROR
 } bluetooth_status_t;
 
 bluetooth_status_t bt_get_status();
-int bt_init_connection(DeviceConfig *config, millis_t * connected_at);
+int bt_init_connection(DeviceConfig *config, millis_t * connected_at, bool hard_init);
 int bt_disconnect(DeviceConfig *config);
 int bt_check_connection_status(DeviceConfig *config);
 

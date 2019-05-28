@@ -40,13 +40,12 @@ bool gsm_get_signal_strength(struct serial_buffer *sb,
 bool gsm_get_imei(struct serial_buffer *sb,
                   struct cellular_info *cell_info);
 
-enum cellular_net_status gsm_get_network_reg_status(
-        struct serial_buffer *sb, struct cellular_info *ci);
-
 bool gsm_is_gprs_attached(struct serial_buffer *sb);
 
 bool gsm_get_network_reg_info(struct serial_buffer *sb,
                               struct cellular_info *ci);
 
+
+bool gsm_power_off(struct serial_buffer *sb);
 
 #endif /* _GSM_H_ */

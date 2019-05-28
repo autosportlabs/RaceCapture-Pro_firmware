@@ -77,9 +77,9 @@ void auto_control_init_state(struct auto_control_state *state);
  * @param more there are more JSON segments
  */
 void get_auto_control_trigger(struct Serial* serial,
-                           struct auto_control_trigger *alst,
-                           const char* name,
-                           const bool more);
+                              struct auto_control_trigger *alst,
+                              const char* name,
+                              const bool more);
 
 /**
  * De-serialize the auto control trigger value from JSON
@@ -88,8 +88,8 @@ void get_auto_control_trigger(struct Serial* serial,
  * @param root the parent of the JSON object graph
  */
 void set_auto_control_trigger(struct auto_control_trigger *alst,
-                           const char* name,
-                           const jsmntok_t* root);
+                              const char* name,
+                              const jsmntok_t* root);
 
 /**
  * Tests if the trigger should start
@@ -100,9 +100,9 @@ void set_auto_control_trigger(struct auto_control_trigger *alst,
  * @return true if the control should trigger
  */
 bool auto_control_should_start(const float current_value,
-                                 const tiny_millis_t uptime,
-                                 const struct auto_control_trigger * auto_trigger,
-                                 struct auto_control_state * auto_state);
+                               const tiny_millis_t uptime,
+                               const struct auto_control_trigger * auto_trigger,
+                               struct auto_control_state * auto_state);
 
 /**
  * Tests if the trigger should stop
@@ -113,9 +113,9 @@ bool auto_control_should_start(const float current_value,
  * @return true if the control should de-trigger
  */
 bool auto_control_should_stop(const float current_value,
-                                const tiny_millis_t uptime,
-                                const struct auto_control_trigger * auto_trigger,
-                                struct auto_control_state * auto_state);
+                              const tiny_millis_t uptime,
+                              const struct auto_control_trigger * auto_trigger,
+                              struct auto_control_state * auto_state);
 
 
 /**
@@ -126,9 +126,9 @@ bool auto_control_should_stop(const float current_value,
  * @param an enum indicating what action should be taken
  */
 enum auto_control_trigger_result auto_control_check_trigger(float value,
-                                                            struct auto_control_trigger *start,
-                                                            struct auto_control_trigger *stop,
-                                                            struct auto_control_state *state);
+                struct auto_control_trigger *start,
+                struct auto_control_trigger *stop,
+                struct auto_control_state *state);
 
 CPP_GUARD_END
 

@@ -78,6 +78,7 @@ $(HAL_SRC)/wifi_esp8266/wifi_esp8266_device.c \
 $(RCP_SRC)/ADC/ADC.c \
 $(RCP_SRC)/CAN/CAN.c \
 $(RCP_SRC)/CAN/CAN_task.c \
+$(RCP_SRC)/CAN/CAN_dispatcher.c \
 $(RCP_SRC)/CAN/CAN_aux_queue.c \
 $(RCP_SRC)/CAN/can_mapping.c \
 $(RCP_SRC)/CAN/can_channels.c \
@@ -96,9 +97,11 @@ $(RCP_SRC)/devices/cellular_api_status_keys.c \
 $(RCP_SRC)/devices/esp8266.c \
 $(RCP_SRC)/devices/null_device.c \
 $(RCP_SRC)/devices/sara_u280.c \
+$(RCP_SRC)/devices/sara_r4.c \
 $(RCP_SRC)/devices/sim900.c \
 $(RCP_SRC)/devices/gps_skytraq_s1216_sup500f8.c \
 $(RCP_SRC)/drivers/esp8266_drv.c \
+$(RCP_SRC)/drivers/shiftx_drv.c \
 $(RCP_SRC)/filter/filter.c \
 $(RCP_SRC)/gps/dateTime.c \
 $(RCP_SRC)/gps/geoCircle.c \
@@ -118,6 +121,7 @@ $(RCP_SRC)/logger/channel_config.c \
 $(RCP_SRC)/logger/connectivityTask.c \
 $(RCP_SRC)/logger/fileWriter.c \
 $(RCP_SRC)/logger/logger.c \
+$(RCP_SRC)/logger/api_event.c \
 $(RCP_SRC)/logger/loggerApi.c \
 $(RCP_SRC)/logger/loggerCommands.c \
 $(RCP_SRC)/logger/loggerConfig.c \

@@ -21,6 +21,7 @@
 .settings
 .vagrant
 Race*.zip
+PodiumConnect*.zip
 TAGS
 core.*
 firmware_release
@@ -35,3 +36,4 @@ openocd.log
 test/rcpsim
 test/rcptest
 .autotools
+*.orig

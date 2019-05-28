@@ -28,13 +28,14 @@
 #include "linear_interpolate.h"
 #include "predictive_timer_2.h"
 #include "filter.h"
-
+#include "lap_stats.h"
 void init_logger_data()
 {
 }
 
 void doBackgroundSampling()
 {
-    imu_sample_all();
-    ADC_sample_all();
+        imu_sample_all();
+        ADC_sample_all();
+        lapstats_update_distance();
 }

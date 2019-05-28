@@ -47,7 +47,7 @@
 #define SARA_U280_SUBSCRIBER_NUMBER_RETRIES 3
 
 static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
-                                            struct cellular_info *ci)
+                struct cellular_info *ci)
 {
         /* sara u280 often does not respond immediately to SIM number
          * requests; do some retrying
@@ -62,7 +62,7 @@ static bool sara_u280_get_subscriber_number(struct serial_buffer *sb,
 }
 
 static bool sara_u280_get_signal_strength(struct serial_buffer *sb,
-                                          struct cellular_info *ci)
+                struct cellular_info *ci)
 {
         return gsm_get_signal_strength(sb, ci);
 }
@@ -73,14 +73,57 @@ static bool sara_u280_get_imei(struct serial_buffer *sb,
         return gsm_get_imei(sb, ci);
 }
 
+enum cellular_net_status sara_u2_get_network_reg_status(
+        struct serial_buffer *sb, struct cellular_info *ci)
+{
+        const char *cmd = "AT+CGREG?";
+        const char *msgs[2];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+        const char *answrs[] = {"+CGREG: 0,0",
+                                "+CGREG: 0,1",
+                                "+CGREG: 0,2",
+                                "+CGREG: 0,3",
+                                "+CGREG: 0,4",
+                                "+CGREG: 0,5"
+                               };
+        const size_t answrs_len = ARRAY_LEN(answrs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_append(sb, cmd);
+        const int idx = cellular_exec_match(sb, READ_TIMEOUT, msgs, msgs_len,
+                                            answrs, answrs_len, 0);
+
+        switch(idx) {
+        case 0:
+                ci->net_status = CELLULAR_NETWORK_NOT_SEARCHING;
+                break;
+        case 1:
+        case 5:
+                ci->net_status = CELLULAR_NETWORK_REGISTERED;
+                break;
+        case 2:
+        case 4:
+                ci->net_status = CELLULAR_NETWORK_SEARCHING;
+                break;
+        case 3:
+                ci->net_status = CELLULAR_NETWORK_DENIED;
+                break;
+        default:
+                ci->net_status = CELLULAR_NETWORK_STATUS_UNKNOWN;
+                break;
+        }
+
+        return ci->net_status;
+}
+
 static enum cellular_net_status sara_u280_get_net_reg_status(
         struct serial_buffer *sb,struct cellular_info *ci)
 {
-        return gsm_get_network_reg_status(sb, ci);
+        return sara_u2_get_network_reg_status(sb, ci);
 }
 
 static bool sara_u280_get_network_reg_info(struct serial_buffer *sb,
-                                           struct cellular_info *ci)
+                struct cellular_info *ci)
 {
         return gsm_get_network_reg_info(sb, ci);
 }
@@ -268,9 +311,9 @@ static int sara_u280_create_tcp_socket(struct serial_buffer *sb)
 }
 
 static bool sara_u280_connect_tcp_socket(struct serial_buffer *sb,
-                                         const int socket_id,
-                                         const char* host,
-                                         const int port)
+                const int socket_id,
+                const char* host,
+                const int port)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -312,7 +355,7 @@ static bool sara_u280_start_direct_mode(struct serial_buffer *sb,
 static bool sara_u280_stop_direct_mode(struct serial_buffer *sb)
 {
         /* Must delay min 2000ms before stopping direct mode */
-	delayMs(2100);
+        delayMs(2100);
 
         /*
          * Using straight serial buffer logic here instead of
@@ -334,7 +377,8 @@ static bool sara_u280_stop_direct_mode(struct serial_buffer *sb)
 }
 
 static bool sara_u280_init(struct serial_buffer *sb,
-                           struct cellular_info *ci)
+                           struct cellular_info *ci,
+                           CellularConfig *cellCfg)
 {
         /* NO-OP.  This hardware is better than sim900. */
         return true;
@@ -350,7 +394,7 @@ static bool sara_u280_get_sim_info(struct serial_buffer *sb,
 }
 
 static bool sara_u280_register_on_network(struct serial_buffer *sb,
-                                          struct cellular_info *ci)
+                struct cellular_info *ci)
 {
         size_t errors = 0;
         /* Check our status on the network */
@@ -398,9 +442,9 @@ static bool sara_u280_setup_pdp(struct serial_buffer *sb,
 
         /* Setup APN */
         const bool status = gprs_active ||
-                (sara_u280_put_pdp_config(sb, 0, cc->apnHost,
-                                          cc->apnUser, cc->apnPass) &&
-                 sara_u280_put_dns_config(sb, cc->dns1, cc->dns2));
+                            (sara_u280_put_pdp_config(sb, 0, cc->apnHost,
+                                            cc->apnUser, cc->apnPass) &&
+                             sara_u280_put_dns_config(sb, cc->dns1, cc->dns2));
 
         /*
          * Control our APN authentication settings based on whether

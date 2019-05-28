@@ -56,14 +56,16 @@ static struct at_urc g_urc;
 
 static bool g_cb_called;
 static void *g_up;
-bool cb(struct at_rsp *rsp, void *up) {
+bool cb(struct at_rsp *rsp, void *up)
+{
         g_cb_called = true;
         g_up = up;
         return false;
 }
 
 static bool g_sparse_urc_cb_called;
-bool sparse_urc_cb(struct at_info *at, char* msg) {
+bool sparse_urc_cb(struct at_info *at, char* msg)
+{
         g_sparse_urc_cb_called = true;
         return false;
 }
@@ -78,9 +80,9 @@ void AtTest::setUp()
 
         /* Always init our structs */
         at_info_init(&g_ati, &g_sb);
-	at_configure_device(&g_ati, QUIET_PERIOD_MS, DELIMETER,
-			    AT_DEV_CFG_FLAG_NONE);
-	at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
+        at_configure_device(&g_ati, QUIET_PERIOD_MS, DELIMETER,
+                            AT_DEV_CFG_FLAG_NONE);
+        at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
 
         g_cb_called = false;
         g_up = NULL;
@@ -102,10 +104,10 @@ void AtTest::test_at_info_init()
         CPPUNIT_ASSERT_EQUAL(&g_sb, g_ati.sb);
         CPPUNIT_ASSERT_EQUAL((void*) NULL, (void*) g_ati.sparse_urc_cb);
 
-	CPPUNIT_ASSERT_EQUAL(AT_DEFAULT_QP_MS, g_ati.dev_cfg.quiet_period_ms);
-	CPPUNIT_ASSERT_EQUAL(string(AT_DEFAULT_DELIMETER),
-			     string(g_ati.dev_cfg.delim));
-	CPPUNIT_ASSERT_EQUAL(AT_DEV_CFG_FLAG_NONE, g_ati.dev_cfg.flags);
+        CPPUNIT_ASSERT_EQUAL(AT_DEFAULT_QP_MS, g_ati.dev_cfg.quiet_period_ms);
+        CPPUNIT_ASSERT_EQUAL(string(AT_DEFAULT_DELIMETER),
+                             string(g_ati.dev_cfg.delim));
+        CPPUNIT_ASSERT_EQUAL(AT_DEV_CFG_FLAG_NONE, g_ati.dev_cfg.flags);
 }
 
 void AtTest::test_at_info_init_failures()
@@ -119,12 +121,12 @@ void AtTest::test_at_info_init_failures()
 
 void AtTest::test_set_sparse_urc_cb()
 {
-	at_info_init(&g_ati, &g_sb);
-	CPPUNIT_ASSERT_EQUAL((void*) NULL, (void*) g_ati.sparse_urc_cb);
+        at_info_init(&g_ati, &g_sb);
+        CPPUNIT_ASSERT_EQUAL((void*) NULL, (void*) g_ati.sparse_urc_cb);
 
-	at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
-	CPPUNIT_ASSERT_EQUAL((void*) sparse_urc_cb,
-			     (void*) g_ati.sparse_urc_cb);
+        at_set_sparse_urc_cb(&g_ati, sparse_urc_cb);
+        CPPUNIT_ASSERT_EQUAL((void*) sparse_urc_cb,
+                             (void*) g_ati.sparse_urc_cb);
 }
 
 void AtTest::test_at_put_cmd_full()
@@ -308,7 +310,7 @@ void AtTest::test_at_process_urc_msg_with_status()
         begin_urc_msg(&g_ati, urc);
         process_urc_msg(&g_ati, pfx);
 
-         /* No callback yet b/c no status msg yet */
+        /* No callback yet b/c no status msg yet */
         CPPUNIT_ASSERT(!g_cb_called);
         CPPUNIT_ASSERT_EQUAL(AT_RX_STATE_URC, g_ati.rx_state);
 
@@ -527,15 +529,15 @@ void AtTest::test_at_configure_device()
 
 void AtTest::test_at_configure_device_returns()
 {
-	/* A NULL delimeter should yield a false result */
-	CPPUNIT_ASSERT_EQUAL(false, at_configure_device(
-				     &g_ati, 1, NULL, AT_DEV_CFG_FLAG_NONE));
+        /* A NULL delimeter should yield a false result */
+        CPPUNIT_ASSERT_EQUAL(false, at_configure_device(
+                                     &g_ati, 1, NULL, AT_DEV_CFG_FLAG_NONE));
 
-	/* A delimeter that is too large should cause a failure */
-	char delim[AT_DEV_CVG_DELIM_MAX_LEN + 1];
-	memset(delim, '\n', sizeof(delim));
-	CPPUNIT_ASSERT_EQUAL(false, at_configure_device(
-				     &g_ati, 2, delim, AT_DEV_CFG_FLAG_NONE));
+        /* A delimeter that is too large should cause a failure */
+        char delim[AT_DEV_CVG_DELIM_MAX_LEN + 1];
+        memset(delim, '\n', sizeof(delim));
+        CPPUNIT_ASSERT_EQUAL(false, at_configure_device(
+                                     &g_ati, 2, delim, AT_DEV_CFG_FLAG_NONE));
 }
 
 void AtTest::test_at_ok()

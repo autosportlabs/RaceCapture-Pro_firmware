@@ -52,6 +52,10 @@
 #include "timer.h"
 #include "virtual_channel.h"
 #include "predictive_timer_2.h"
+#include "shiftx_drv.h"
+#include "api_event.h"
+#include "math.h"
+#include "taskUtil.h"
 
 #define TEMP_BUFFER_LEN 		256
 #define DEFAULT_CAN_TIMEOUT 		100
@@ -109,7 +113,7 @@ static int lua_set_bg_streaming(lua_State *L)
 
         const bool val = lua_toboolean(L, 1);
         getWorkingLoggerConfig()->ConnectivityConfigs.
-                telemetryConfig.backgroundStreaming = (char) val;
+        telemetryConfig.backgroundStreaming = (char) val;
 
         return 0;
 }
@@ -125,6 +129,12 @@ static int lua_get_gps_at_start_finish(lua_State *L)
 {
         lua_pushboolean(L, getAtStartFinish());
         return 1;
+}
+
+static int lua_reset_lap_stats(lua_State *L)
+{
+        lapstats_reset(true);
+        return 0;
 }
 
 #if PWM_CHANNELS > 0
@@ -193,7 +203,7 @@ static int lua_set_analog_out(lua_State *L)
         validate_pwm_channel(L, channel);
 
         const float dutyCycle = (float) lua_tonumber(L, 2) /
-                PWM_VOLTAGE_SCALING;
+                                PWM_VOLTAGE_SCALING;
         PWM_set_duty_cycle(channel, (unsigned short) dutyCycle);
         return 0;
 }
@@ -402,7 +412,7 @@ static int lua_serial_read_char(lua_State *L)
         char c;
         struct Serial *serial = lua_get_serial(L, port);
         if (0 < serial_read_c_wait(serial, &c, timeout)) {
-		lua_pushinteger(L, (int) c);
+                lua_pushinteger(L, (int) c);
         } else {
                 lua_pushnil(L);
         }
@@ -436,15 +446,15 @@ static int lua_serial_read_line(lua_State *L)
         }
 
         /* STIEG: Would be nice to be rid of this tempBuffer */
-	static char g_tempBuffer[TEMP_BUFFER_LEN];
-	struct Serial *serial = lua_get_serial(L, port);
+        static char g_tempBuffer[TEMP_BUFFER_LEN];
+        struct Serial *serial = lua_get_serial(L, port);
         int len = serial_read_line_wait(serial, g_tempBuffer,
-					TEMP_BUFFER_LEN - 1, timeout);
-	if (len < 0)
-		len = 0;
+                                        TEMP_BUFFER_LEN - 1, timeout);
+        if (len < 0)
+                len = 0;
 
-	g_tempBuffer[len] = 0;
-	lua_pushstring(L, g_tempBuffer);
+        g_tempBuffer[len] = 0;
+        lua_pushstring(L, g_tempBuffer);
 
         return 1;
 }
@@ -559,8 +569,8 @@ static int lua_get_gps_distance(lua_State *L)
 
 static int lua_get_predicted_lap_time(lua_State *L)
 {
-    lua_pushnumber(L, getPredictedTimeInMinutes());
-    return 1;
+        lua_pushnumber(L, getPredictedTimeInMinutes());
+        return 1;
 }
 
 static int lua_get_lap_time(lua_State *L)
@@ -639,13 +649,13 @@ static int lua_init_can(lua_State *L)
         bool termination_enabled = true;
         switch(lua_gettop(L)) {
         default:
-            return lua_panic(L);
+                return lua_panic(L);
         case 3:
-            lua_validate_arg_number(L, 3);
-            termination_enabled = (bool)lua_tonumber(L, 3);
+                lua_validate_arg_number(L, 3);
+                termination_enabled = (bool)lua_tonumber(L, 3);
         case 2:
-            lua_validate_arg_number(L, 2);
-            lua_validate_arg_number(L, 1);
+                lua_validate_arg_number(L, 2);
+                lua_validate_arg_number(L, 1);
         }
 
         const size_t port = lua_tointeger(L, 1);
@@ -656,33 +666,33 @@ static int lua_init_can(lua_State *L)
 
 static int lua_set_can_filter(lua_State *L)
 {
-	lua_validate_args_count(L, 5, 6);
+        lua_validate_args_count(L, 5, 6);
 
-	bool enable = true;
-	switch(lua_gettop(L)) {
-	default:
-		return lua_panic(L);
-	case 6:
-		lua_validate_arg_boolean(L, 6);
-		enable = lua_toboolean(L, 6);
-	case 5:
-		break;
-	}
+        bool enable = true;
+        switch(lua_gettop(L)) {
+        default:
+                return lua_panic(L);
+        case 6:
+                lua_validate_arg_boolean(L, 6);
+                enable = lua_toboolean(L, 6);
+        case 5:
+                break;
+        }
 
-	for (int i = 1; i <= 5; ++i)
-		lua_validate_arg_number(L, i);
+        for (int i = 1; i <= 5; ++i)
+                lua_validate_arg_number(L, i);
 
-	const uint8_t channel = lua_tointeger(L, 1);
-	const uint8_t id = lua_tointeger(L, 2);
-	const uint8_t extended = lua_tointeger(L, 3);
-	const uint32_t filter = lua_tointeger(L, 4);
-	const uint32_t mask = lua_tointeger(L, 5);
+        const uint8_t channel = lua_tointeger(L, 1);
+        const uint8_t id = lua_tointeger(L, 2);
+        const uint8_t extended = lua_tointeger(L, 3);
+        const uint32_t filter = lua_tointeger(L, 4);
+        const uint32_t mask = lua_tointeger(L, 5);
 
-	const int result = CAN_set_filter(channel, id, extended, filter,
-					  mask, enable);
-	lua_pushinteger(L, result);
+        const int result = CAN_set_filter(channel, id, extended, filter,
+                                          mask, enable);
+        lua_pushinteger(L, result);
 
-	return 1;
+        return 1;
 }
 
 static int lua_send_can_msg(lua_State *L)
@@ -777,11 +787,18 @@ static int lua_obd2_read(lua_State *L)
 
         float value;
         if (OBD2_get_value_for_pid(pid, &value)) {
-        		lua_pushnumber(L, value);
-        		return 1;
-        }
-        else
-        		return 0;
+                lua_pushnumber(L, value);
+                return 1;
+        } else
+                return 0;
+}
+
+static int lua_obd2_set_delay(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 1);
+        lua_validate_arg_number(L, 1);
+        OBD2_set_pid_delay(lua_tonumber(L, 1));
+        return 0;
 }
 
 static int lua_logging_start(lua_State *L)
@@ -806,7 +823,7 @@ static int lua_set_led(lua_State *ls)
 {
         lua_validate_args_count(ls, 2, 2);
         lua_validate_arg_number_or_string(ls, 1);
-	lua_validate_arg_boolean_flex(ls, 2);
+        lua_validate_arg_boolean_flex(ls, 2);
 
         /*
          * Numbers can be passed in as 123 or "123" in lua.  So handle
@@ -907,20 +924,20 @@ static int lua_get_virtual_channel(lua_State *ls)
                 VirtualChannel *vc;
                 vc = get_virtual_channel(lua_tointeger(ls, 1));
                 if (vc) {
-						                  lua_pushnumber(ls, vc->currentValue);
-						                  return 1;
+                        lua_pushnumber(ls, vc->currentValue);
+                        return 1;
                 }
         } else {
                 struct sample * s = get_current_sample();
-				            double value;
-				            char * units;
-				            if (s && get_sample_value_by_name(s, lua_tostring(ls, 1), &value, &units)){
-						                  lua_pushnumber(ls, value);
-						                  return 1;
-        		      }
-		      }
+                double value;
+                char * units;
+                if (s && get_sample_value_by_name(s, lua_tostring(ls, 1), &value, &units)) {
+                        lua_pushnumber(ls, value);
+                        return 1;
+                }
+        }
         /* Return nil, channel not found */
-		      return 0;
+        return 0;
 }
 
 static int lua_set_virt_channel_value(lua_State *L)
@@ -948,32 +965,392 @@ static int lua_update_gps(lua_State *L)
         s.satellites = 0;
 
         switch(lua_gettop(L)) {
-                case 8:
-                        s.satellites = lua_tointeger(L, 8);
-                case 7:
-                        s.DOP = lua_tonumber(L, 7);
-                case 6:
-                        s.quality = lua_tointeger(L, 6);
-                case 5:
-                        s.altitude = lua_tonumber(L, 5);
-                case 4:
-                        s.time = lua_tointeger(L, 4);
-                default:
-                        /**
-                         * Minimum data needed to drive lap timer is
-                         * Latitude, Longitude and Speed
-                         */
-                        s.speed = lua_tonumber(L, 3);
-                        GeoPoint gp;
-                        gp.longitude = lua_tonumber(L, 2);
-                        gp.latitude = lua_tonumber(L, 1);
-                        s.point = gp;
+        case 8:
+                s.satellites = lua_tointeger(L, 8);
+        case 7:
+                s.DOP = lua_tonumber(L, 7);
+        case 6:
+                s.quality = lua_tointeger(L, 6);
+        case 5:
+                s.altitude = lua_tonumber(L, 5);
+        case 4:
+                s.time = lua_tointeger(L, 4);
+        default:
+                /**
+                 * Minimum data needed to drive lap timer is
+                 * Latitude, Longitude and Speed
+                 */
+                s.speed = lua_tonumber(L, 3);
+                GeoPoint gp;
+                gp.longitude = lua_tonumber(L, 2);
+                gp.latitude = lua_tonumber(L, 1);
+                s.point = gp;
         }
+        lapstats_process_incremental(&s);
         GPS_sample_update(&s);
-        if (isGpsSignalUsable(s.quality)){
+        if (isGpsSignalUsable(s.quality)) {
                 GpsSnapshot snap = getGpsSnapshot();
                 lapstats_processUpdate(&snap);
         }
+        return 0;
+}
+
+static int lua_calc_gear(lua_State *L)
+{
+        /* Calculate gear helper function
+         *
+         * Function signatures:
+         * calcGear(tireDiamCm, finalGearRatio, gear1Ratio, gear2Ratio, gear3Ratio, gear4Ratio, gear5Ratio, gear6Ratio)
+         *
+         * Default using the built-in GPS speed channel and "RPM" channel.
+         *
+         * calcGear(speedChannelName, rpmChannelName, tireDiamCm, finalGearRatio, gear1Ratio, gear2Ratio, gear3Ratio, gear4Ratio, gear5Ratio, gear6Ratio)
+         *
+         * Use specified Speed and RPM channel name.
+         *
+         */
+        lua_validate_args_count(L, 3, 10);
+
+        float speed = 0;
+        float rpm = 0;
+
+        struct sample * s = get_current_sample();
+        double value;
+        char * units;
+        size_t params_start = 1;
+
+        /* check if first 2 parameters are numbers; if so, use built in channels */
+        if (lua_isnumber(L, 1) && lua_isnumber(L, 2)) {
+                lua_validate_args_count(L, 3, 8);
+
+                /* internal speed is in kph */
+                speed = getGPSSpeed();
+
+                /* Ensure RPM is available in the current sample. If not, bail out*/
+                if (!(s && get_sample_value_by_name(s, "RPM", &value, &units)))
+                        return 0;
+                rpm = value;
+        }
+        else {
+                /* For Speed and RPM, check if sample is currently available and if
+                 * channel exists in current sample. If not, bail out
+                 */
+                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 1), &value, &units)))
+                        return 0;
+                speed = value;
+                if (strcasecmp("kph", units) != 0) {
+                        /* if units are not kph, assume mph and convert */
+                        speed *= 1.60934;
+                }
+
+                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 2), &value, &units)))
+                        return 0;
+                rpm = value;
+                params_start += 2;
+        }
+
+        lua_validate_arg_number(L, params_start);
+        float tire_diameter_cm = (float)lua_tonumber(L, params_start);
+        params_start++;
+
+        if (tire_diameter_cm == 0)
+                return luaL_error(L, "Tire Diameter must be > 0");
+
+        lua_validate_arg_number(L, params_start);
+        float final_drive_ratio = (float)lua_tonumber(L, params_start);
+        params_start++;
+
+        if (final_drive_ratio == 0)
+                return luaL_error(L, "Final Drive ratio must be > 0");
+
+        /* cant calculate gear if speed below threshold */
+        if (speed < 10)
+                return 0;
+
+        /* Calculate ratio based on cm per minute */
+        float rpm_speed_ratio = (rpm / speed)/(final_drive_ratio * 1666.67 / (tire_diameter_cm * 3.14159));
+
+        float gear_error = 0.1;
+        uint8_t gear_pos = 0;
+
+        /* Cycle through the remaining parameters to see what ratio matches the specified gear */
+        for (size_t i = params_start; i <= lua_gettop(L); i++)
+        {
+                lua_validate_arg_number(L, i);
+                float gear_ratio = lua_tonumber(L, i);
+                if (fabs(gear_ratio - rpm_speed_ratio) < gear_error) {
+                        gear_pos = i - (params_start - 1);
+                        break;
+                }
+        }
+        if (gear_pos > 0) {
+                lua_pushinteger(L, gear_pos);
+                return 1;
+        }
+        else {
+                return 0;
+        }
+}
+
+static int lua_sx_update_linear_graph(lua_State *L)
+{
+        lua_validate_args_count(L, 0, 1);
+        if (lua_gettop(L) > 0) {
+                lua_validate_arg_number(L, 1);
+                uint16_t value = lua_tointeger(L, 1);
+                lua_pushinteger(L, shiftx_update_linear_graph(value));
+        }
+        else {
+                lua_pushinteger(L, 0);
+        }
+        return 1;
+}
+
+static int lua_sx_set_alert(lua_State *L)
+{
+        lua_validate_args_count(L, 5, 5);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t alert_id = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t red = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint8_t green = lua_tointeger(L, 3);
+
+        lua_validate_arg_number(L, 4);
+        uint8_t blue = lua_tointeger(L, 4);
+
+        lua_validate_arg_number(L, 5);
+        uint8_t flash = lua_tointeger(L, 5);
+
+        struct shiftx_led_params led_params = {red, green, blue, flash};
+        lua_pushinteger(L, shiftx_set_alert(alert_id, led_params));
+        return 1;
+}
+
+static int lua_sx_update_alert(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 2);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t alert_id = lua_tointeger(L, 1);
+
+        if (lua_gettop(L) > 1) {
+                lua_validate_arg_number(L, 2);
+                uint16_t value = lua_tointeger(L, 2);
+                lua_pushinteger(L, shiftx_update_alert(alert_id, value));
+        }
+        else {
+                lua_pushinteger(L, 0);
+        }
+        return 1;
+}
+
+static int lua_sx_set_display(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 2);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t digit_index = lua_tointeger(L, 1);
+
+        if (lua_gettop(L) > 1 && lua_isnumber(L, 2)) {
+                lua_validate_arg_number(L, 2);
+                uint8_t value = lua_tointeger(L, 2);
+                /* digit index offset by ascii 0 (48) */
+                lua_pushinteger(L, shiftx_set_display(digit_index, 48 + value));
+        }
+        else {
+                /* blank display if nil value supplied as arg #2, or if arg 2 is missing */
+                shiftx_set_display(digit_index, 32); /* ascii 32 (space character) */
+                lua_pushinteger(L, 0);
+        }
+        return 1;
+}
+
+static int lua_sx_set_led(lua_State *L)
+{
+        lua_validate_args_count(L, 6, 6);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t led_index = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t leds_to_set = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint8_t red = lua_tointeger(L, 3);
+
+        lua_validate_arg_number(L, 4);
+        uint8_t green = lua_tointeger(L, 4);
+
+        lua_validate_arg_number(L, 5);
+        uint8_t blue = lua_tointeger(L, 5);
+
+        lua_validate_arg_number(L, 6);
+        uint8_t flash = lua_tointeger(L, 6);
+
+        struct shiftx_led_params led_params = {red, green, blue, flash};
+        lua_pushinteger(L, shiftx_set_discrete_led(led_index, leds_to_set, led_params));
+        return 1;
+}
+
+static int lua_sx_config_linear_graph(lua_State *L)
+{
+        lua_validate_args_count(L, 3, 4);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t rendering_style = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t linear_style = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint16_t low_range = lua_tointeger(L, 3);
+
+        uint16_t high_range = 0;
+        if (lua_gettop(L) > 3) {
+                high_range = lua_tointeger(L, 4);
+        }
+
+        lua_pushinteger(L, shiftx_config_linear_graph(rendering_style, linear_style, low_range, high_range));
+        return 1;
+}
+
+static int lua_sx_set_linear_threshold(lua_State *L)
+{
+        lua_validate_args_count(L, 7, 7);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t threshold_id = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t segment_length = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint16_t threshold = lua_tointeger(L, 3);
+
+        lua_validate_arg_number(L, 4);
+        uint8_t red = lua_tointeger(L, 4);
+
+        lua_validate_arg_number(L, 5);
+        uint8_t green = lua_tointeger(L, 5);
+
+        lua_validate_arg_number(L, 6);
+        uint8_t blue = lua_tointeger(L, 6);
+
+        lua_validate_arg_number(L, 7);
+        uint8_t flash = lua_tointeger(L, 7);
+
+        struct shiftx_led_params led_params = {red, green, blue, flash};
+        lua_pushinteger(L, shiftx_set_linear_threshold(threshold_id, segment_length, threshold, led_params));
+        return 1;
+}
+
+static int lua_sx_set_alert_threshold(lua_State *L)
+{
+        lua_validate_args_count(L, 7, 7);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t alert_id = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t threshold_id = lua_tointeger(L, 2);
+
+        lua_validate_arg_number(L, 3);
+        uint16_t threshold = lua_tointeger(L, 3);
+
+        lua_validate_arg_number(L, 4);
+        uint8_t red = lua_tointeger(L, 4);
+
+        lua_validate_arg_number(L, 5);
+        uint8_t green = lua_tointeger(L, 5);
+
+        lua_validate_arg_number(L, 6);
+        uint8_t blue = lua_tointeger(L, 6);
+
+        lua_validate_arg_number(L, 7);
+        uint8_t flash = lua_tointeger(L, 7);
+
+        struct shiftx_led_params led_params = {red, green, blue, flash};
+        lua_pushinteger(L, shiftx_set_alert_threshold(alert_id, threshold_id, threshold, led_params));
+        return 1;
+}
+
+static int lua_sx_set_config(lua_State *L)
+{
+        lua_validate_args_count(L, 0, 6);
+
+        struct shiftx_configuration * shiftx_config = shiftx_get_config();
+
+        switch(lua_gettop(L)) {
+        default:
+                return lua_panic(L);
+        case 6:
+                /* enable / disable button events */
+                lua_validate_arg_boolean(L, 6);
+                shiftx_config->button_events_enabled = lua_toboolean(L, 6);
+        case 5:
+                /* auto brightness scaling */
+                lua_validate_arg_number(L, 5);
+                shiftx_config->auto_brightness_scaling = lua_tointeger(L, 5);
+        case 4:
+                /* CAN Base Address */
+                lua_validate_arg_number(L, 4);
+                shiftx_config->base_address = lua_tointeger(L, 4);
+        case 3:
+                /* CAN bus */
+                lua_validate_arg_number(L, 3);
+                shiftx_config->can_bus = lua_tointeger(L, 3);
+        case 2:
+                /* ShiftX brightness (0 to 100; 0=automatic brightness)*/
+                lua_validate_arg_number(L, 2);
+                shiftx_config->brightness = lua_tointeger(L, 2);
+        case 1:
+                /* ShiftX orientation (0=normal, 1= inverted) */
+                lua_validate_arg_number(L, 1);
+                shiftx_config->orientation_inverted = lua_tointeger(L, 1);
+        }
+        delayMs(500);
+        lua_pushinteger(L, shiftx_update_config());
+        return 1;
+}
+
+static int lua_rx_button_press(lua_State *L)
+{
+        uint8_t button_id;
+        uint8_t state;
+
+        if (shiftx_rx_button_press(&button_id, &state)) {
+                lua_pushinteger(L, button_id);
+                lua_pushinteger(L, state);
+                return 2;
+        }
+        else {
+                return 0;
+        }
+}
+
+static int lua_tx_button(lua_State *L)
+{
+        lua_validate_args_count(L, 2, 2);
+
+        lua_validate_arg_number(L, 1);
+        uint8_t button_id = lua_tointeger(L, 1);
+
+        lua_validate_arg_number(L, 2);
+        uint8_t state = lua_tointeger(L, 2);
+
+        /* Send a button press to connected clients */
+        struct api_event event;
+        event.source = NULL; /* not coming from any serial source */
+        event.type = ApiEventType_ButtonState;
+        event.data.butt_state.button_id = button_id;
+        event.data.butt_state.state = state;
+
+        /* Broadcast to active connections */
+        api_event_process_callbacks(&event);
         return 0;
 }
 
@@ -1024,6 +1401,7 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getLapTime", lua_get_lap_time);
         lua_registerlight(L, "getGpsSec", lua_get_seconds_since_first_fix);
         lua_registerlight(L, "getAtStartFinish", lua_get_gps_at_start_finish);
+        lua_registerlight(L, "resetLapStats", lua_reset_lap_stats);
 
         lua_registerlight(L, "getTickCount", lua_get_tick_count);
         lua_registerlight(L, "getTicksPerSecond", lua_get_ticks_per_second);
@@ -1033,6 +1411,7 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "rxCAN", lua_rx_can_msg);
         lua_registerlight(L, "setCANfilter", lua_set_can_filter);
         lua_registerlight(L, "readOBD2", lua_obd2_read);
+        lua_registerlight(L, "setOBD2Delay", lua_obd2_set_delay);
 
         lua_registerlight(L, "startLogging", lua_logging_start);
         lua_registerlight(L, "stopLogging", lua_logging_stop);
@@ -1059,4 +1438,21 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getDateTime", lua_get_date_time);
 
         lua_registerlight(L, "updateGps", lua_update_gps);
+
+        lua_registerlight(L, "txButton", lua_tx_button);
+
+        /* helper functions */
+        lua_registerlight(L, "calcGear", lua_calc_gear);
+
+        /* ShiftX2/3 support functions */
+        lua_registerlight(L, "sxUpdateLinearGraph", lua_sx_update_linear_graph);
+        lua_registerlight(L, "sxSetAlert", lua_sx_set_alert);
+        lua_registerlight(L, "sxUpdateAlert", lua_sx_update_alert);
+        lua_registerlight(L, "sxSetDisplay", lua_sx_set_display);
+        lua_registerlight(L, "sxSetLed", lua_sx_set_led);
+        lua_registerlight(L, "sxCfgLinearGraph", lua_sx_config_linear_graph);
+        lua_registerlight(L, "sxSetLinearThresh", lua_sx_set_linear_threshold);
+        lua_registerlight(L, "sxSetAlertThresh", lua_sx_set_alert_threshold);
+        lua_registerlight(L, "sxSetConfig", lua_sx_set_config);
+        lua_registerlight(L, "sxRxButton", lua_rx_button_press);
 }

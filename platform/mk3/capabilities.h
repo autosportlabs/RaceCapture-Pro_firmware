@@ -27,7 +27,7 @@
 #define RX_MAX_MSG_LEN	768
 
 /* Configuration */
-#define MAX_TRACKS	160
+#define MAX_TRACKS	50
 #define MAX_SECTORS	20
 #define MAX_VIRTUAL_CHANNELS	100
 #define LOGGER_MESSAGE_BUFFER_SIZE	10
@@ -50,7 +50,7 @@
  * LUA allocate before we say no.  This keeps LUA from crashing the system
  * when a memory hog LUA script is running.  Set to 0 for no limit.
  */
-#define LUA_MEM_MAX (1024 * 60)
+#define LUA_MEM_MAX (1024 * 50)
 
 /*
  * These values dictate how the LUA garbage collector will behave.
@@ -73,7 +73,7 @@
 
 //Sensor Channels
 #define ANALOG_CHANNELS 		9
-#define IMU_CHANNELS			7
+#define IMU_CHANNELS			6
 #define	GPIO_CHANNELS			3
 #define TIMER_CHANNELS			4
 #define PWM_CHANNELS			0

@@ -1,14 +1,62 @@
+= 2.16.0=
+* IMU: Add real-time Gsum channel 
+* Core: Add metric/imperial switches for calculated Distance, GPS Speed, GPS Altitude
+* Core: Add ability to reset lap session via Lua or API (RaceCaptureApp)
+* Core: API to reset lap stats (via RaceCapture app)
+* Lua: Add resetLapStats() function to resetLapStats via scripting
+* LapStats: Add SessionTime channel
+* Telemetry: Add support for SARA R4 Cat M1 LTE
+* Telemetry: Speed up telemetry re-connect by not immediately power-cycling modem after a disconnect.
+* OBDII: Honor the CAN bus channel selected for OBDII broadcast and receive
+
+= 2.15.1=
+* Core: Ensure ShiftX configuration happens after ShiftX is booted and ready
+
+= 2.15.0=
+* Core: add support for ShiftX2/3 lua functions
+* Core: broadcast button events from ShiftX2/3 to connected clients for dashboard navigation
+* Lua: Reduce default memory limit back to safe level, add lua function to override limit
+* Lua: Add Gear calculation helper function
+* Lua: Add functions to support ShiftX3
+* Config: Ensure we can configure maximum number of CAN channels without crashing firmware
+* Config: Fix error updating Track database under certain high memory usage conditions. (Reduce track DB to 50 tracks)
+* Config: Add ability to configure a fixed delay between OBDII queries to slow down OBDII engine, used for diagnostic purposes
+* GPS: Filter out GPS speed spikes
+
+= 2.14.0=
+* Core: Add support for pit-to-car alerting
+
+= 2.13.9=
+* lapStats: Prevent edge cases where incorrect timestamp prevents proper lap timing
+* lapStats: Require a minimum lap distance of 0.1Km to prevent false lap completion
+
+= 2.13.8=
+* GPS: Prevent coarse updating of distance for channel data
+* GPS: Limit interpolation to reasonable value
+
+= 2.13.7=
+* GPS: Upsample GPS if GPS source is slower than 10Hz, to improve lap timing accuracy and reliability
+
+= 2.13.6=
+* Builds for RaceCapture/Apex and PodiumConnect
+
 = 2.13.5 =
 * Core: Restore 2.12.x bit mode little endian behavior to resolve regression with E46 CAN bus
 * Core: Resolve logger crashing randomly when lap is completed
 * Core: Clean up Command Line Interface options, remove obsolete functions
 * Core: Add internal test function for stimulating lap timer
 
+= 2.13.4=
+* Builds for PodiumConnect
+
 = 2.13.3 = 
 * GPS: Get UTC time directly from GPS driver
 * WiFi: Fix wifi initialization problem on WiFi modules running older firmware
 * Lua: prevent a critical Lua error if getchannel fails to find a channel by name; return nil instead.
 * Analog: Increase smoothing range by 2x
+
+= 2.13.1 =
+* Builds for RaceCapture/Apex and PodiumConnect
 
 = 2.13.0 =
 * Core: Ensure Distance channel is always enabled, even if hardware GPS is disabled
