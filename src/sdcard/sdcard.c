@@ -186,3 +186,125 @@ exit:
         if (fatFile != NULL)
                 vPortFree(fatFile);
 }
+
+
+#define MAX_BITMAPS 10
+
+static void fs_write_sample_meta(FIL *buffer_file, const struct sample *sample,
+                              int sampleRateLimit, char * buf, bool more)
+{
+        f_puts("\"meta\":[", buffer_file);
+        ChannelSample *channel_sample = sample->channel_samples;
+
+        for (size_t i = 0; i < sample->channel_count; ++i, ++channel_sample) {
+                ChannelConfig *cfg = channel_sample->cfg;
+                if (0 < i)
+                        f_puts(",", buffer_file);
+
+                f_puts("{", buffer_file);
+
+
+                f_puts("\"nm\":\"", buffer_file);
+                f_puts(cfg->label, buffer_file);
+
+                f_puts("\",\"ut\":\"", buffer_file);
+                f_puts(cfg->units, buffer_file);
+
+                f_puts("\",\"min\":", buffer_file);
+                modp_ftoa(cfg->min, buf, cfg->precision);
+                f_puts(buf, buffer_file);
+
+                f_puts(",\"max\":", buffer_file);
+                modp_ftoa(cfg->max, buf, cfg->precision);
+                f_puts(buf, buffer_file);
+
+                f_puts(",\"prec\":", buffer_file);
+                modp_itoa10((int)cfg->precision, buf);
+                f_puts(buf, buffer_file);
+
+                f_puts(",\"sr\":", buffer_file);
+                modp_itoa10(decodeSampleRate(cfg->sampleRate), buf);
+                f_puts(buf, buffer_file);
+
+                f_puts("}", buffer_file);
+        }
+        f_puts(more ? "]," : "]", buffer_file);
+}
+
+void fs_write_sample_record(FIL *buffer_file,
+                            const struct sample *sample,
+                            const unsigned int tick, const int sendMeta)
+{
+        char buf[30];
+        f_puts("{\"s\":{\"t\":", buffer_file);
+        modp_uitoa10(tick, buf);
+        f_puts(buf, buffer_file);
+        f_puts(",", buffer_file);
+
+        if (sendMeta)
+                fs_write_sample_meta(buffer_file, sample, getConnectivitySampleRateLimit(), buf, true);
+
+        size_t channelBitmaskIndex = 0;
+        unsigned int channelBitmask[MAX_BITMAPS];
+        memset(channelBitmask, 0, sizeof(channelBitmask));
+
+        f_puts("\"d\":[", buffer_file);
+        ChannelSample *cs = sample->channel_samples;
+
+        size_t channelBitPosition = 0;
+        for (size_t i = 0; i < sample->channel_count;
+             i++, channelBitPosition++, cs++) {
+
+                if (channelBitPosition > 31) {
+                        channelBitmaskIndex++;
+                        channelBitPosition=0;
+                        if (channelBitmaskIndex > MAX_BITMAPS)
+                                break;
+                }
+
+                if (cs->populated) {
+                        channelBitmask[channelBitmaskIndex] |=
+                                (1 << channelBitPosition);
+
+                        const int precision = cs->cfg->precision;
+                        switch(cs->sampleData) {
+                        case SampleData_Float:
+                        case SampleData_Float_Noarg:
+                                modp_ftoa(cs->valueFloat, buf, precision);
+                                f_puts(buf, buffer_file);
+                                break;
+                        case SampleData_Int:
+                        case SampleData_Int_Noarg:
+                                modp_itoa10(cs->valueInt, buf);
+                                f_puts(buf, buffer_file);
+                                break;
+                        case SampleData_LongLong:
+                        case SampleData_LongLong_Noarg:
+                                modp_ltoa10(cs->valueLongLong, buf);
+                                f_puts(buf, buffer_file);
+                                break;
+                        case SampleData_Double:
+                        case SampleData_Double_Noarg:
+                                modp_dtoa(cs->valueDouble, buf, precision);
+                                f_puts(buf, buffer_file);
+                                break;
+                        default:
+                                pr_warning_int_msg("[sdcard] Unknown sample"
+                                                   " data type: ",
+                                                   cs->sampleData);
+                                break;
+                        }
+                        f_puts(",", buffer_file);
+                }
+        }
+
+        size_t channelBitmaskCount = channelBitmaskIndex + 1;
+        for (size_t i = 0; i < channelBitmaskCount; i++) {
+                modp_uitoa10(channelBitmask[i], buf);
+                f_puts(buf, buffer_file);
+                if (i < channelBitmaskCount - 1)
+                        f_puts(",", buffer_file);
+        }
+        f_puts("]}}\n", buffer_file);
+}
+

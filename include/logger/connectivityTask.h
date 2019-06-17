@@ -55,6 +55,10 @@ void startConnectivityTask(int16_t priority);
 
 void connectivityTask(void *params);
 
+void cellularConnectivityTask(void *params);
+
+void xCellularConnectivityTask(void *params);
+
 CPP_GUARD_END
 
 #endif /* CONNECTIVITY_TASK_H_ */

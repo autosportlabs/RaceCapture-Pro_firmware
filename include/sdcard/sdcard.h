@@ -25,6 +25,7 @@
 #include "cpp_guard.h"
 #include "serial.h"
 #include "ff.h"
+#include "sampleRecord.h"
 
 CPP_GUARD_BEGIN
 
@@ -34,6 +35,9 @@ int InitFS();
 int UnmountFS();
 bool sdcard_present();
 int OpenNextLogFile(FIL *f);
+void fs_write_sample_record(FIL *buffer_file,
+                            const struct sample *sample,
+                            const unsigned int tick, const int sendMeta);
 
 CPP_GUARD_END
 
