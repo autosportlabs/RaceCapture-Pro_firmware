@@ -295,12 +295,27 @@ static bool sara_r4_set_profile(struct serial_buffer *sb)
         pr_info_bool_msg("[sara_r4] Set Profile: ", is_ok);
         return is_ok;
 }
+
+static bool sara_r4_set_baud_rate(struct serial_buffer *sb)
+{
+        const char *msgs[2];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_append(sb, "AT+IPR=115200");
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs, msgs_len);
+        delayMs(100);
+        serial_config(sb->serial,8,0,1,115200);
+        return is_rsp_ok(msgs, count);
+}
+
 static bool sara_r4_init(struct serial_buffer *sb,
                            struct cellular_info *ci,
                            CellularConfig *cc)
 {
+
         pr_info("[sara_r4] Initializing\r\n");
-        return (sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) && sara_r4_set_profile(sb));
+        return (sara_r4_set_baud_rate(sb) && sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) && sara_r4_set_profile(sb));
 }
 
 static bool sara_r4_get_sim_info(struct serial_buffer *sb,

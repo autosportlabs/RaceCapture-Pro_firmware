@@ -80,7 +80,6 @@ typedef struct _BufferedLoggerMessage {
         enum LoggerMessageType type;
         size_t ticks;
         struct sample *sample;
-        int32_t last_buffer_index;
 } BufferedLoggerMessage;
 
 static size_t trimBuffer(char *buffer, size_t count)
@@ -184,9 +183,8 @@ static void createTelemetryConnectionTask(int16_t priority,
                             params, priority, NULL );
         }
         {
-                ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
+                TelemetryConnParams * params = (TelemetryConnParams *)portMalloc(sizeof(TelemetryConnParams));
                 params->connectionName = "CellTelem";
-                params->periodicMeta = 0;
                 params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
                 params->disconnect = &cellular_disconnect;
                 params->check_connection_status = &cellular_check_connection_status;
@@ -200,7 +198,7 @@ static void createTelemetryConnectionTask(int16_t priority,
                 /* Make all task names 16 chars including NULL char */
                 static const signed portCHAR task_name[] = "Cell Telemetry";
 
-                xTaskCreate(cellularConnectivityTask, task_name, CELLULAR_TELEMETRY_STACK_SIZE,
+                xTaskCreate(cellular_connectivity_task, task_name, CELLULAR_TELEMETRY_STACK_SIZE,
                             params, priority, NULL );
         }
 
@@ -510,19 +508,25 @@ void cellular_buffering_task(void *params)
                                                               (connParams->periodicMeta &&
                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
 
-                                        int32_t current_index = buffer_file->fsize;
-
                                         xSemaphoreTake(fs_mutex, portMAX_DELAY);
+
                                         FRESULT fseek_res = f_lseek(buffer_file, f_size(buffer_file));
-                                        pr_info_int_msg("seek to end of file result ", fseek_res);
+                                        if (FR_OK != fseek_res) {
+                                                pr_error_int_msg(_LOG_PFX "Failed to seek to end of buffer: ", fseek_res);
+                                                goto BUFFER_DONE;
+                                        }
+
                                         fs_write_sample_record(buffer_file, msg.sample, tick, send_meta);
-                                        int res = f_sync(buffer_file);
-                                        pr_info_int_msg("fsync res ", res);
-                                        pr_info_int_msg("file size ", current_index);
+
+                                        FRESULT fsync_res = f_sync(buffer_file);
+                                        if (FR_OK != fsync_res) {
+                                                pr_error_int_msg(_LOG_PFX "Failed to sync buffer file: ", fsync_res);
+                                                goto BUFFER_DONE;
+                                        }
+                                        BUFFER_DONE:
                                         xSemaphoreGive(fs_mutex);
 
                                         BufferedLoggerMessage buffer_msg;
-                                        buffer_msg.last_buffer_index = current_index;
                                         buffer_msg.sample = msg.sample;
                                         buffer_msg.ticks = msg.ticks;
                                         buffer_msg.type = msg.type;
@@ -541,13 +545,15 @@ void cellular_buffering_task(void *params)
         }
 }
 
-void cellularConnectivityTask(void *params)
+static char buffer_buffer[2001];
+
+void cellular_connectivity_task(void *params)
 {
 
         char * buffer = (char *)portMalloc(BUFFER_SIZE);
         size_t rxCount = 0;
 
-        ConnParams *connParams = (ConnParams*)params;
+        TelemetryConnParams *connParams = (TelemetryConnParams*)params;
         BufferedLoggerMessage msg;
 
         struct Serial *serial = serial_device_get(connParams->serial);
@@ -599,7 +605,11 @@ void cellularConnectivityTask(void *params)
 
                 int32_t read_index = 0;
 
-                //int32_t current_buffer_index = 0;
+                int32_t backlog_size = f_size(buffer_file) - read_index;
+                if ( backlog_size > 0) {
+                        pr_info_int_msg(_LOG_PFX "Telemetry backlog: ", backlog_size);
+                }
+
                 while (1) {
                         if ( should_reconnect )
                                 break; /*break out and trigger the re-connection if needed */
@@ -608,7 +618,6 @@ void cellularConnectivityTask(void *params)
                                 logging_enabled ||
                                 connParams->always_streaming ||
                                 logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
-
 
                         const char res = xQueueReceive(sampleQueue, &msg, IDLE_TIMEOUT);
 
@@ -643,30 +652,24 @@ void cellularConnectivityTask(void *params)
 
                                         toggle_connectivity_indicator(connParams->activity_led);
 
-//                                        const int send_meta = tick == 0 ||
-  //                                                            (connParams->periodicMeta &&
-    //                                                           (tick % METADATA_SAMPLE_INTERVAL == 0));
-
-                                        pr_info("send sample record\r\n");
-
-                                        char b[11];
-                                        b[10] = 0;
-                                        xSemaphoreTake(fs_mutex, portMAX_DELAY);
-                                        FRESULT fseek_res = f_lseek(buffer_file, read_index);
-                                        pr_info_int_msg("f seek result ", fseek_res);
                                         char * read_string = NULL;
 
                                         while (1) {
-                                                read_string = f_gets(b, 10, buffer_file);
+                                                xSemaphoreTake(fs_mutex, portMAX_DELAY);
+                                                FRESULT fseek_res = f_lseek(buffer_file, read_index);
+                                                read_string = f_gets(buffer_buffer, 2000, buffer_file);
+                                                xSemaphoreGive(fs_mutex);
+
+                                                if (FR_OK != fseek_res) {
+                                                        pr_error_int_msg("Error reading telemetry buffer, aborting ", fseek_res);
+                                                        break;
+                                                }
                                                 if (read_string == NULL)
                                                         break;
 
                                                 read_index += strlen(read_string);
                                                 serial_write_s(serial, read_string);
-
-                                                pr_info(read_string);
                                         }
-                                        xSemaphoreGive(fs_mutex);
 //                                        api_send_sample_record(serial, msg.sample, tick, send_meta);
                                         put_crlf(serial);
                                         tick++;

@@ -49,6 +49,19 @@ typedef struct _ConnParams {
         enum led activity_led;
 } ConnParams;
 
+typedef struct _TelemetryConnParams {
+        bool always_streaming;
+        char * connectionName;
+        int (*disconnect)(DeviceConfig *config);
+        int (*init_connection)(DeviceConfig *config, millis_t * connected_at, bool hard_init);
+        int (*check_connection_status)(DeviceConfig *config);
+        serial_id_t serial;
+        uint32_t connection_timeout;
+        xQueueHandle sampleQueue;
+        int max_sample_rate;
+        enum led activity_led;
+} TelemetryConnParams;
+
 typedef struct _BufferingTaskParams {
         bool always_streaming;
         char * connectionName;
@@ -64,7 +77,7 @@ void startConnectivityTask(int16_t priority);
 
 void connectivityTask(void *params);
 
-void cellularConnectivityTask(void *params);
+void cellular_connectivity_task(void *params);
 
 void cellular_buffering_task(void *params);
 
