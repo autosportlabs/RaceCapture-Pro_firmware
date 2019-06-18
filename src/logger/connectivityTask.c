@@ -36,6 +36,7 @@
 #include "null_device.h"
 #include "printk.h"
 #include "queue.h"
+#include "semphr.h"
 #include "sampleRecord.h"
 #include "serial.h"
 #include "cellular.h"
@@ -66,12 +67,21 @@
 #define TELEMETRY_DISCONNECT_TIMEOUT            60000
 
 #define TELEMETRY_STACK_SIZE 300
+#define CELLULAR_TELEMETRY_STACK_SIZE 330
 #define BAD_MESSAGE_THRESHOLD     10
 #define API_EVENT_QUEUE_DEPTH 2
+#define CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH 1
 #define METADATA_SAMPLE_INTERVAL    100
 #define HARD_INIT_RETRY_THRESHOLD 5
 
 static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
+
+typedef struct _BufferedLoggerMessage {
+        enum LoggerMessageType type;
+        size_t ticks;
+        struct sample *sample;
+        int32_t last_buffer_index;
+} BufferedLoggerMessage;
 
 static size_t trimBuffer(char *buffer, size_t count)
 {
@@ -145,29 +155,55 @@ static void createWirelessConnectionTask(int16_t priority,
 #endif
 }
 
+static xQueueHandle buffer_queue;
+static FIL *buffer_file = NULL;
+static xSemaphoreHandle fs_mutex = NULL;
+
 static void createTelemetryConnectionTask(int16_t priority,
                 xQueueHandle sampleQueue,
                 enum led activity_led)
 {
 #if CELLULAR_SUPPORT
-        ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
-        params->connectionName = "Telemetry";
-        params->periodicMeta = 0;
-        params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
-        params->disconnect = &cellular_disconnect;
-        params->check_connection_status = &cellular_check_connection_status;
-        params->init_connection = &cellular_init_connection;
-        params->serial = SERIAL_TELEMETRY;
-        params->sampleQueue = sampleQueue;
-        params->always_streaming = false;
-        params->max_sample_rate = SAMPLE_10Hz;
-        params->activity_led = activity_led;
 
-        /* Make all task names 16 chars including NULL char */
-        static const signed portCHAR task_name[] = "Cell Telem Task";
+        {
+                fs_mutex = xSemaphoreCreateMutex();
+                buffer_queue = xQueueCreate(CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH, sizeof(BufferedLoggerMessage));
 
-        xTaskCreate(cellularConnectivityTask, task_name, TELEMETRY_STACK_SIZE,
-                    params, priority, NULL );
+                BufferingTaskParams * params = (BufferingTaskParams *)portMalloc(sizeof(BufferingTaskParams));
+                params->connectionName = "TelemBuffer";
+                params->periodicMeta = 0;
+                params->sampleQueue = sampleQueue;
+                params->buffer_queue = buffer_queue;
+                params->always_streaming = false;
+                params->max_sample_rate = SAMPLE_10Hz;
+
+                /* Make all task names 16 chars including NULL char */
+                static const signed portCHAR task_name[] = "Telem Buffer";
+
+                xTaskCreate(cellular_buffering_task, task_name, CELLULAR_TELEMETRY_STACK_SIZE,
+                            params, priority, NULL );
+        }
+        {
+                ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
+                params->connectionName = "CellTelem";
+                params->periodicMeta = 0;
+                params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
+                params->disconnect = &cellular_disconnect;
+                params->check_connection_status = &cellular_check_connection_status;
+                params->init_connection = &cellular_init_connection;
+                params->serial = SERIAL_TELEMETRY;
+                params->sampleQueue = buffer_queue;
+                params->always_streaming = false;
+                params->max_sample_rate = SAMPLE_10Hz;
+                params->activity_led = activity_led;
+
+                /* Make all task names 16 chars including NULL char */
+                static const signed portCHAR task_name[] = "Cell Telemetry";
+
+                xTaskCreate(cellularConnectivityTask, task_name, CELLULAR_TELEMETRY_STACK_SIZE,
+                            params, priority, NULL );
+        }
+
 #endif
 }
 
@@ -236,13 +272,6 @@ static void queue_api_event(const struct api_event * api_event, void * data)
         }
 }
 
-static void telemetry_buffer_queue_sample(FIL *buffer_file, const struct sample *sample, const unsigned int tick, const int sendMeta)
-{
-        fs_write_sample_record(buffer_file, sample, tick, sendMeta);
-        f_sync(buffer_file);
-        //pr_info_int_msg("file size ", buffer_file->fsize);
-}
-
 void connectivityTask(void *params)
 {
 
@@ -298,7 +327,6 @@ void connectivityTask(void *params)
                 size_t last_message_time = getUptimeAsInt();
                 bool should_reconnect = false;
                 hard_init = false;
-
                 while (1) {
                         if ( should_reconnect )
                                 break; /*break out and trigger the re-connection if needed */
@@ -346,6 +374,7 @@ void connectivityTask(void *params)
                                                               (connParams->periodicMeta &&
                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
                                         api_send_sample_record(serial, msg.sample, tick, send_meta);
+
                                         put_crlf(serial);
                                         tick++;
                                         break;
@@ -410,18 +439,24 @@ void connectivityTask(void *params)
         }
 }
 
+typedef struct _BufferedTelemetryMessage {
+        enum LoggerMessageType type;
+        size_t ticks;
+        struct sample *sample;
+} BufferedTelemetryMessage;
 
 void cellular_buffering_task(void *params)
 {
 
-        ConnParams *connParams = (ConnParams*)params;
+        BufferingTaskParams *connParams = (BufferingTaskParams*)params;
         LoggerMessage msg;
 
         xQueueHandle sampleQueue = connParams->sampleQueue;
+        xQueueHandle buffer_queue = connParams->buffer_queue;
+
         const size_t max_telem_rate = connParams->max_sample_rate;
 
         size_t tick = 0;
-        static FIL *buffer_file = NULL;
         buffer_file = pvPortMalloc(sizeof(FIL));
 
         const LoggerConfig *logger_config = getWorkingLoggerConfig();
@@ -435,8 +470,9 @@ void cellular_buffering_task(void *params)
 
                 pr_info_int_msg("Telemetry buffer initfs response ", InitFS());
 
-                int rc = f_open(buffer_file, "tele.buf", FA_WRITE | FA_CREATE_ALWAYS);
+                int rc = f_open(buffer_file, "tele.buf", FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
                 pr_info_int_msg("Telemetry Buffer open response ", rc);
+
 
                 while (1) {
 
@@ -474,7 +510,24 @@ void cellular_buffering_task(void *params)
                                                               (connParams->periodicMeta &&
                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
 
-                                        telemetry_buffer_queue_sample(buffer_file, msg.sample, tick, send_meta);
+                                        int32_t current_index = buffer_file->fsize;
+
+                                        xSemaphoreTake(fs_mutex, portMAX_DELAY);
+                                        FRESULT fseek_res = f_lseek(buffer_file, f_size(buffer_file));
+                                        pr_info_int_msg("seek to end of file result ", fseek_res);
+                                        fs_write_sample_record(buffer_file, msg.sample, tick, send_meta);
+                                        int res = f_sync(buffer_file);
+                                        pr_info_int_msg("fsync res ", res);
+                                        pr_info_int_msg("file size ", current_index);
+                                        xSemaphoreGive(fs_mutex);
+
+                                        BufferedLoggerMessage buffer_msg;
+                                        buffer_msg.last_buffer_index = current_index;
+                                        buffer_msg.sample = msg.sample;
+                                        buffer_msg.ticks = msg.ticks;
+                                        buffer_msg.type = msg.type;
+                                        xQueueSend(buffer_queue, &buffer_msg, 0);
+
                                         tick++;
                                         break;
                                 }
@@ -495,7 +548,7 @@ void cellularConnectivityTask(void *params)
         size_t rxCount = 0;
 
         ConnParams *connParams = (ConnParams*)params;
-        LoggerMessage msg;
+        BufferedLoggerMessage msg;
 
         struct Serial *serial = serial_device_get(connParams->serial);
 
@@ -507,9 +560,6 @@ void cellularConnectivityTask(void *params)
         deviceConfig.serial = serial;
         deviceConfig.buffer = buffer;
         deviceConfig.length = BUFFER_SIZE;
-
-        static FIL *buffer_file = NULL;
-        buffer_file = pvPortMalloc(sizeof(FIL));
 
         const LoggerConfig *logger_config = getWorkingLoggerConfig();
 
@@ -547,11 +597,9 @@ void cellularConnectivityTask(void *params)
                 bool should_reconnect = false;
                 hard_init = false;
 
-                pr_info_int_msg("Telemetry buffer initfs response ", InitFS());
+                int32_t read_index = 0;
 
-                int rc = f_open(buffer_file, "tele.buf", FA_WRITE | FA_CREATE_ALWAYS);
-                pr_info_int_msg("Telemetry Buffer open response ", rc);
-
+                //int32_t current_buffer_index = 0;
                 while (1) {
                         if ( should_reconnect )
                                 break; /*break out and trigger the re-connection if needed */
@@ -561,8 +609,8 @@ void cellularConnectivityTask(void *params)
                                 connParams->always_streaming ||
                                 logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
-                        const char res = receive_logger_message(sampleQueue, &msg,
-                                                                IDLE_TIMEOUT);
+
+                        const char res = xQueueReceive(sampleQueue, &msg, IDLE_TIMEOUT);
 
                         /*///////////////////////////////////////////////////////////
                         // Process a pending message from logger task, if exists
@@ -595,12 +643,32 @@ void cellularConnectivityTask(void *params)
 
                                         toggle_connectivity_indicator(connParams->activity_led);
 
-                                        const int send_meta = tick == 0 ||
-                                                              (connParams->periodicMeta &&
-                                                               (tick % METADATA_SAMPLE_INTERVAL == 0));
-                                        api_send_sample_record(serial, msg.sample, tick, send_meta);
+//                                        const int send_meta = tick == 0 ||
+  //                                                            (connParams->periodicMeta &&
+    //                                                           (tick % METADATA_SAMPLE_INTERVAL == 0));
+
+                                        pr_info("send sample record\r\n");
+
+                                        char b[11];
+                                        b[10] = 0;
+                                        xSemaphoreTake(fs_mutex, portMAX_DELAY);
+                                        FRESULT fseek_res = f_lseek(buffer_file, read_index);
+                                        pr_info_int_msg("f seek result ", fseek_res);
+                                        char * read_string = NULL;
+
+                                        while (1) {
+                                                read_string = f_gets(b, 10, buffer_file);
+                                                if (read_string == NULL)
+                                                        break;
+
+                                                read_index += strlen(read_string);
+                                                serial_write_s(serial, read_string);
+
+                                                pr_info(read_string);
+                                        }
+                                        xSemaphoreGive(fs_mutex);
+//                                        api_send_sample_record(serial, msg.sample, tick, send_meta);
                                         put_crlf(serial);
-                                        //telemetry_buffer_queue_sample(buffer_file, msg.sample, tick, send_meta);
                                         tick++;
                                         break;
                                 }
@@ -663,3 +731,5 @@ void cellularConnectivityTask(void *params)
                 connParams->disconnect(&deviceConfig);
         }
 }
+
+

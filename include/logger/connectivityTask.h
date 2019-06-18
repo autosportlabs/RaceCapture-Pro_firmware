@@ -49,6 +49,15 @@ typedef struct _ConnParams {
         enum led activity_led;
 } ConnParams;
 
+typedef struct _BufferingTaskParams {
+        bool always_streaming;
+        char * connectionName;
+        size_t periodicMeta;
+        xQueueHandle sampleQueue;
+        xQueueHandle buffer_queue;
+        int max_sample_rate;
+} BufferingTaskParams;
+
 void queueTelemetryRecord(const LoggerMessage *msg);
 
 void startConnectivityTask(int16_t priority);
@@ -57,7 +66,7 @@ void connectivityTask(void *params);
 
 void cellularConnectivityTask(void *params);
 
-void xCellularConnectivityTask(void *params);
+void cellular_buffering_task(void *params);
 
 CPP_GUARD_END
 

@@ -237,10 +237,10 @@ void fs_write_sample_record(FIL *buffer_file,
 {
         char buf[30];
         f_puts("{\"s\":{\"t\":", buffer_file);
+
         modp_uitoa10(tick, buf);
         f_puts(buf, buffer_file);
         f_puts(",", buffer_file);
-
         if (sendMeta)
                 fs_write_sample_meta(buffer_file, sample, getConnectivitySampleRateLimit(), buf, true);
 
@@ -305,6 +305,6 @@ void fs_write_sample_record(FIL *buffer_file,
                 if (i < channelBitmaskCount - 1)
                         f_puts(",", buffer_file);
         }
-        f_puts("]}}\n", buffer_file);
+        f_puts("]}}\r\n", buffer_file);
 }
 
