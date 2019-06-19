@@ -61,6 +61,10 @@ struct Serial {
         size_t log_tx_cntr;
 
         struct serial_cfg cfg;
+
+        char * direct_buffer;
+        size_t direct_buffer_len;
+        size_t direct_buffer_current_len;
 };
 
 void serial_purge_rx_queue(struct Serial* s)
@@ -124,6 +128,42 @@ void serial_destroy(struct Serial *s)
         portFree(s);
 }
 
+
+struct Serial* serial_create_direct_buffer(const char *name, char * buffer, size_t buffer_len)
+{
+        struct Serial *s = portMalloc(sizeof(struct Serial));
+        if (!s)
+                return NULL;
+
+        memset(s, 0, sizeof(struct Serial));
+
+        s->name = name;
+        s->direct_buffer = buffer;
+        s->direct_buffer_len = buffer_len;
+        s->direct_buffer_current_len = 0;
+        memset(s->direct_buffer, 0, sizeof (char) * s->direct_buffer_len);
+
+        s->config_cb = NULL;
+        s->config_cb_arg = NULL;
+        s->post_tx_cb = NULL;
+        s->post_tx_cb_arg = NULL;
+
+        const unsigned portBASE_TYPE c_size =
+                (unsigned portBASE_TYPE) sizeof(signed portCHAR);
+        s->tx_queue = NULL;
+
+        /* Create rx queue, character size of 1 */
+        s->rx_queue = xQueueCreate(1, c_size);
+
+        /* If rx_queue is null */
+        if (!s->rx_queue) {
+                serial_destroy(s);
+                return NULL;
+        }
+
+        /* If here, all good.  Return the new object */
+        return s;
+}
 struct Serial* serial_create(const char *name, const size_t tx_cap,
                              const size_t rx_cap, config_func_t *cfg_cb,
                              void *cfg_cb_arg, post_tx_func_t *post_tx_cb,
@@ -135,6 +175,8 @@ struct Serial* serial_create(const char *name, const size_t tx_cap,
 
         memset(s, 0, sizeof(struct Serial));
 
+        s->direct_buffer = NULL;
+        s->direct_buffer_len = 0;
         s->name = name;
         s->config_cb = cfg_cb;
         s->config_cb_arg = cfg_cb_arg;
@@ -379,6 +421,22 @@ int serial_write_c_wait(struct Serial *s, const char c, const size_t delay)
 {
         if (s->closed)
                 return -1;
+
+        if (s->direct_buffer) {
+                if (s->direct_buffer_current_len >= s->direct_buffer_len) {
+                        pr_error("[Serial] Direct buffer tx overflow\r\n");
+                        return 0;
+                }
+                if (c == '\0') {
+                        s->direct_buffer_current_len = 0;
+                        pr_info("clearing direct serial buffer");
+                        memset(s->direct_buffer, 0, sizeof(char) * s->direct_buffer_len);
+                        return 1;
+                }
+                s->direct_buffer[s->direct_buffer_current_len++] = c;
+                pr_info_str_msg("direct buffer ", s->direct_buffer);
+                return 1;
+        }
 
         if (pdFALSE == xQueueSend(s->tx_queue, &c, delay))
                 return 0;

@@ -515,3 +515,11 @@ int cellular_check_connection_status(DeviceConfig *config)
         pr_info("[cell] socket disconnect\r\n");
         return 1;
 }
+
+bool cellular_tx_socket(DeviceConfig *config, int socket_id, char * buffer)
+{
+        /* Sane because DeviceConfig is typedef from struct serial_buffer* */
+        struct serial_buffer *sb = (struct serial_buffer*) config;
+
+        return methods->tx_socket(sb, socket_id, buffer);
+}

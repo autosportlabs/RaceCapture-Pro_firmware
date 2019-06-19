@@ -458,6 +458,10 @@ static const struct at_config* sim900_get_at_config()
         return &cfg;
 }
 
+static bool sim900_tx_socket(struct serial_buffer *sb, uint8_t socket_id, char * buffer){
+        return true;
+}
+
 static const struct cell_modem_methods sim900_methods = {
         .get_at_config = sim900_get_at_config,
         .init_modem = sim900_init_settings,
@@ -467,6 +471,7 @@ static const struct cell_modem_methods sim900_methods = {
         .setup_pdp = sim900_setup_pdp,
         .open_telem_connection = sim900_connect_rcl_telem,
         .close_telem_connection = sim900_disconnect,
+        .tx_socket = sim900_tx_socket,
 };
 
 const struct cell_modem_methods* get_sim900_methods()
