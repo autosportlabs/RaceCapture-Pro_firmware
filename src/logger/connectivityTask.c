@@ -74,6 +74,10 @@
 #define METADATA_SAMPLE_INTERVAL    100
 #define HARD_INIT_RETRY_THRESHOLD 5
 
+#define TELEMETRY_BUFFER_FILENAME "tele.buf"
+#define TELEMETRY_BUFFER_FILE_RETRY_MS 1000
+#define BUFFER_BUFFER_SIZE 2000
+
 static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
 
 typedef struct _BufferedLoggerMessage {
@@ -157,12 +161,16 @@ static void createWirelessConnectionTask(int16_t priority,
 static xQueueHandle buffer_queue;
 static FIL *buffer_file = NULL;
 static xSemaphoreHandle fs_mutex = NULL;
+static char buffer_buffer[BUFFER_BUFFER_SIZE + 1];
+static int32_t read_index = 0;
+static bool file_open = false;
 
 static void createTelemetryConnectionTask(int16_t priority,
                 xQueueHandle sampleQueue,
                 enum led activity_led)
 {
 #if CELLULAR_SUPPORT
+        buffer_file = pvPortMalloc(sizeof(FIL));
 
         {
                 fs_mutex = xSemaphoreCreateMutex();
@@ -182,6 +190,7 @@ static void createTelemetryConnectionTask(int16_t priority,
                 xTaskCreate(cellular_buffering_task, task_name, CELLULAR_TELEMETRY_STACK_SIZE,
                             params, priority, NULL );
         }
+
         {
                 TelemetryConnParams * params = (TelemetryConnParams *)portMalloc(sizeof(TelemetryConnParams));
                 params->connectionName = "CellTelem";
@@ -382,7 +391,6 @@ void connectivityTask(void *params)
                                         break;
                                 }
                         }
-
                         /*//////////////////////////////////////////////////////////
                         // Process any pending API events
                         ////////////////////////////////////////////////////////////*/
@@ -405,6 +413,8 @@ void connectivityTask(void *params)
                         /*now process a complete message if available*/
                         if (msgReceived) {
                                 last_message_time = getUptimeAsInt();
+
+                                pr_info_str_msg("received msg ", buffer);
 
                                 const int msgRes = process_api(serial, buffer, BUFFER_SIZE);
                                 const int msgError = (msgRes == API_ERROR_MALFORMED);
@@ -437,12 +447,6 @@ void connectivityTask(void *params)
         }
 }
 
-typedef struct _BufferedTelemetryMessage {
-        enum LoggerMessageType type;
-        size_t ticks;
-        struct sample *sample;
-} BufferedTelemetryMessage;
-
 void cellular_buffering_task(void *params)
 {
 
@@ -455,32 +459,52 @@ void cellular_buffering_task(void *params)
         const size_t max_telem_rate = connParams->max_sample_rate;
 
         size_t tick = 0;
-        buffer_file = pvPortMalloc(sizeof(FIL));
 
         const LoggerConfig *logger_config = getWorkingLoggerConfig();
 
         bool logging_enabled = false;
+
+        uint32_t re_open_buffer_file_timeout = 0;
+        uint32_t last_open_buffer_attempt = getCurrentTicks();
 
         while (1) {
                 bool should_stream = logging_enabled ||
                                      logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
                                      connParams->always_streaming;
 
-                pr_info_int_msg("Telemetry buffer initfs response ", InitFS());
-
-                int rc = f_open(buffer_file, "tele.buf", FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
-                pr_info_int_msg("Telemetry Buffer open response ", rc);
-
-
                 while (1) {
+                        if (!file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
+                                last_open_buffer_attempt = getCurrentTicks();
+                                read_index = 0;
+                                xSemaphoreTake(fs_mutex, portMAX_DELAY);
+                                FRESULT initfs_rc = InitFS();
+                                FRESULT fopen_rc = f_open(buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+
+                                if (FR_OK == initfs_rc && FR_OK == fopen_rc) {
+                                        file_open = true;
+                                        /* try to connect immediately on the first re-attempt*/
+                                        re_open_buffer_file_timeout = 0;
+                                }
+                                else {
+                                        if (FR_OK != initfs_rc) {
+                                                pr_debug_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
+                                        }
+                                        if (FR_OK != fopen_rc) {
+                                                pr_debug_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
+                                        }
+                                        /* re-connect a bit later */
+                                        re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
+                                }
+                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", file_open ? "win" : "fail");
+                                xSemaphoreGive(fs_mutex);
+                        }
 
                         should_stream =
                                 logging_enabled ||
                                 connParams->always_streaming ||
                                 logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
-                        const char res = receive_logger_message(sampleQueue, &msg,
-                                                                IDLE_TIMEOUT);
+                        const char res = receive_logger_message(sampleQueue, &msg, IDLE_TIMEOUT);
 
                         /*///////////////////////////////////////////////////////////
                         // Process a pending message from logger task, if exists
@@ -493,9 +517,6 @@ void cellular_buffering_task(void *params)
                                         break;
                                 }
                                 case LoggerMessageType_Stop: {
-                                        //if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
-                                          //     connParams->always_streaming))
-                                            //    should_reconnect = true;
                                         logging_enabled = false;
                                         break;
                                 }
@@ -508,11 +529,16 @@ void cellular_buffering_task(void *params)
                                                               (connParams->periodicMeta &&
                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
 
+                                        bool fs_failed = false;
                                         xSemaphoreTake(fs_mutex, portMAX_DELAY);
+                                        if (!file_open) {
+                                                goto BUFFER_DONE;
+                                        }
 
                                         FRESULT fseek_res = f_lseek(buffer_file, f_size(buffer_file));
                                         if (FR_OK != fseek_res) {
                                                 pr_error_int_msg(_LOG_PFX "Failed to seek to end of buffer: ", fseek_res);
+                                                fs_failed = true;
                                                 goto BUFFER_DONE;
                                         }
 
@@ -521,9 +547,14 @@ void cellular_buffering_task(void *params)
                                         FRESULT fsync_res = f_sync(buffer_file);
                                         if (FR_OK != fsync_res) {
                                                 pr_error_int_msg(_LOG_PFX "Failed to sync buffer file: ", fsync_res);
+                                                fs_failed = true;
                                                 goto BUFFER_DONE;
                                         }
                                         BUFFER_DONE:
+                                        if (fs_failed) {
+                                                f_close(buffer_file);
+                                                file_open = false;
+                                        }
                                         xSemaphoreGive(fs_mutex);
 
                                         BufferedLoggerMessage buffer_msg;
@@ -544,8 +575,6 @@ void cellular_buffering_task(void *params)
                 }
         }
 }
-
-static char buffer_buffer[2001];
 
 void cellular_connectivity_task(void *params)
 {
@@ -575,6 +604,8 @@ void cellular_connectivity_task(void *params)
         api_event_create_callback(queue_api_event, api_event_queue);
 
         bool hard_init = true;
+        bool buffering_enabled = false;
+
         while (1) {
                 size_t connect_retries = 0;
                 millis_t connected_at = 0;
@@ -603,9 +634,8 @@ void cellular_connectivity_task(void *params)
                 bool should_reconnect = false;
                 hard_init = false;
 
-                int32_t read_index = 0;
-
                 int32_t backlog_size = f_size(buffer_file) - read_index;
+
                 if ( backlog_size > 0) {
                         pr_info_int_msg(_LOG_PFX "Telemetry backlog: ", backlog_size);
                 }
@@ -618,6 +648,12 @@ void cellular_connectivity_task(void *params)
                                 logging_enabled ||
                                 connParams->always_streaming ||
                                 logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
+
+                        bool current_buffering_enabled = file_open;
+                        if (buffering_enabled != current_buffering_enabled) {
+                                pr_info(current_buffering_enabled ? _LOG_PFX "Telemetry buffering enabled\r\n" : _LOG_PFX "Telemetry buffering disabled\r\n");
+                                buffering_enabled = current_buffering_enabled;
+                        }
 
                         const char res = xQueueReceive(sampleQueue, &msg, IDLE_TIMEOUT);
 
@@ -652,26 +688,37 @@ void cellular_connectivity_task(void *params)
 
                                         toggle_connectivity_indicator(connParams->activity_led);
 
-                                        char * read_string = NULL;
-
-                                        while (1) {
-                                                xSemaphoreTake(fs_mutex, portMAX_DELAY);
-                                                FRESULT fseek_res = f_lseek(buffer_file, read_index);
-                                                read_string = f_gets(buffer_buffer, 2000, buffer_file);
-                                                xSemaphoreGive(fs_mutex);
-
-                                                if (FR_OK != fseek_res) {
-                                                        pr_error_int_msg("Error reading telemetry buffer, aborting ", fseek_res);
-                                                        break;
-                                                }
-                                                if (read_string == NULL)
-                                                        break;
-
-                                                read_index += strlen(read_string);
-                                                serial_write_s(serial, read_string);
+                                        if (tick == 0) {
+                                                /* send one metadata sample at the beginning of the connection */
+                                                api_send_sample_record(serial, msg.sample, tick, true);
+                                                put_crlf(serial);
                                         }
-//                                        api_send_sample_record(serial, msg.sample, tick, send_meta);
-                                        put_crlf(serial);
+                                        if (!current_buffering_enabled) {
+                                                /* Fall back to non-buffered sample streaming */
+                                                api_send_sample_record(serial, msg.sample, tick, false);
+                                                put_crlf(serial);
+                                        }
+                                        else {
+                                                /* Stream buffered samples, catching up with the tail of the file as needed */
+                                                while (true) {
+                                                        char * read_string = NULL;
+                                                        xSemaphoreTake(fs_mutex, portMAX_DELAY);
+                                                        FRESULT fseek_res = f_lseek(buffer_file, read_index);
+                                                        read_string = f_gets(buffer_buffer, BUFFER_BUFFER_SIZE, buffer_file);
+                                                        read_index += strlen(read_string);
+                                                        xSemaphoreGive(fs_mutex);
+
+                                                        if (FR_OK != fseek_res) {
+                                                                pr_error_int_msg("Error reading telemetry buffer, aborting ", fseek_res);
+                                                                break;
+                                                        }
+                                                        if (strlen(read_string) == 0) {
+                                                                break;
+                                                        }
+                                                        serial_write_s(serial, read_string);
+                                                }
+                                        }
+
                                         tick++;
                                         break;
                                 }

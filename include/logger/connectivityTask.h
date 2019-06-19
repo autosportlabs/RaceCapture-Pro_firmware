@@ -71,6 +71,12 @@ typedef struct _BufferingTaskParams {
         int max_sample_rate;
 } BufferingTaskParams;
 
+typedef struct _BufferedTelemetryMessage {
+        enum LoggerMessageType type;
+        size_t ticks;
+        struct sample *sample;
+} BufferedTelemetryMessage;
+
 void queueTelemetryRecord(const LoggerMessage *msg);
 
 void startConnectivityTask(int16_t priority);

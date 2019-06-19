@@ -166,21 +166,6 @@ static bool sara_r4_put_dns_config(struct serial_buffer *sb,
         return true;
 }
 
-static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
-                                         int socket_id)
-{
-        const char *msgs[1];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_printf_append(sb, "AT+USOSO=%d,6,1,1", socket_id);
-        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
-                                               msgs_len);
-        bool is_ok = is_rsp_ok(msgs, count);
-        pr_info_bool_msg("[sara_r4] Configure TCP socket: ", is_ok);
-        return is_ok;
-}
-
 static int sara_r4_create_tcp_socket(struct serial_buffer *sb)
 {
         const char *cmd = "AT+USOCR=6";
@@ -376,6 +361,43 @@ static bool sara_r4_setup_pdp(struct serial_buffer *sb,
                 pr_info("[sara_r4] Using default DNS\r\n");
         }
         return true;
+}
+
+static bool sara_r1_configure_tcp_socket_character_trigger(struct serial_buffer *sb,
+                                                int socket_id)
+{
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_printf_append(sb, "AT+UDCONF=7,%d,10", socket_id);
+        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
+                                               msgs_len);
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Configure TCP socket character trigger: ", is_ok);
+        return is_ok;
+}
+
+static bool sara_r1_configure_tcp_socket_nodelay(struct serial_buffer *sb,
+                                         int socket_id)
+{
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_printf_append(sb, "AT+USOSO=%d,6,1,1", socket_id);
+        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
+                                               msgs_len);
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Configure TCP socket nodelay: ", is_ok);
+        return is_ok;
+}
+
+static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
+                                         int socket_id)
+{
+        return sara_r1_configure_tcp_socket_character_trigger(sb, socket_id) &&
+                        sara_r1_configure_tcp_socket_nodelay(sb, socket_id);
 }
 
 static bool sara_r4_connect_rcl_telem(struct serial_buffer *sb,
