@@ -56,6 +56,7 @@
 #include "api_event.h"
 #include "math.h"
 #include "taskUtil.h"
+#include "connectivityTask.h"
 
 #define TEMP_BUFFER_LEN 		256
 #define DEFAULT_CAN_TIMEOUT 		100
@@ -819,6 +820,14 @@ static int lua_logging_is_active(lua_State *L)
         return 1;
 }
 
+#if CELLULAR_SUPPORT
+static int lua_reconnect_cell(lua_State *L)
+{
+        cellular_telemetry_reconnect();
+        return 0;
+}
+#endif
+
 static int lua_set_led(lua_State *ls)
 {
         lua_validate_args_count(ls, 2, 2);
@@ -1416,7 +1425,9 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "startLogging", lua_logging_start);
         lua_registerlight(L, "stopLogging", lua_logging_stop);
         lua_registerlight(L, "isLogging" , lua_logging_is_active);
-
+#if CELLULAR_SUPPORT
+        lua_registerlight(L, "reconnectCell", lua_reconnect_cell);
+#endif
         lua_registerlight(L, "setLed", lua_set_led);
 
         lua_registerlight(L, "initSer", lua_init_serial);

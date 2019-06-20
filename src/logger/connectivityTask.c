@@ -90,8 +90,20 @@ static CellularState cellular_state = {
                 .buffer_buffer = {},
                 .cell_buffer = {},
                 .read_index = 0,
-                .file_open = false
+                .file_open = false,
+                .should_reconnect = false,
+                .buffering_enabled = false
 };
+
+bool cellular_telemetry_buffering_enabled(void)
+{
+        return cellular_state.buffering_enabled;
+}
+
+void cellular_telemetry_reconnect()
+{
+        cellular_state.should_reconnect = true;
+}
 #endif
 
 static size_t trimBuffer(char *buffer, size_t count)
@@ -611,7 +623,7 @@ void cellular_connectivity_task(void *params)
         api_event_create_callback(queue_cellular_api_event, api_event_queue);
 
         bool hard_init = true;
-        bool buffering_enabled = false;
+        cellular_state.buffering_enabled = false;
 
         while (1) {
                 size_t connect_retries = 0;
@@ -633,13 +645,12 @@ void cellular_connectivity_task(void *params)
                 if (connected_at > 0)
                         GPS_set_UTC_time(connected_at);
 
-                size_t cstart = getCurrentTicks();
                 serial_flush(serial);
                 rxCount = 0;
                 size_t badMsgCount = 0;
                 size_t tick = 0;
                 size_t last_message_time = getUptimeAsInt();
-                bool should_reconnect = false;
+                cellular_state.should_reconnect = false;
                 hard_init = false;
 
                 int32_t backlog_size = f_size(cellular_state.buffer_file) - cellular_state.read_index;
@@ -649,7 +660,7 @@ void cellular_connectivity_task(void *params)
                 }
 
                 while (1) {
-                        if ( should_reconnect )
+                        if ( cellular_state.should_reconnect )
                                 break; /*break out and trigger the re-connection if needed */
 
                         should_stream =
@@ -658,9 +669,9 @@ void cellular_connectivity_task(void *params)
                                 logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
                         bool current_buffering_enabled = cellular_state.file_open;
-                        if (buffering_enabled != current_buffering_enabled) {
+                        if (cellular_state.buffering_enabled != current_buffering_enabled) {
                                 pr_info(current_buffering_enabled ? _LOG_PFX "Telemetry buffering enabled\r\n" : _LOG_PFX "Telemetry buffering disabled\r\n");
-                                buffering_enabled = current_buffering_enabled;
+                                cellular_state.buffering_enabled = current_buffering_enabled;
                         }
 
                         const char res = xQueueReceive(sampleQueue, &msg, IDLE_TIMEOUT);
@@ -677,7 +688,7 @@ void cellular_connectivity_task(void *params)
                                         logging_enabled = true;
                                         /* If we're not already streaming trigger a re-connect */
                                         if (!should_stream)
-                                                should_reconnect = true;
+                                                cellular_state.should_reconnect = true;
                                         break;
                                 }
                                 case LoggerMessageType_Stop: {
@@ -685,7 +696,7 @@ void cellular_connectivity_task(void *params)
                                         put_crlf(serial);
                                         if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
                                                connParams->always_streaming))
-                                                should_reconnect = true;
+                                                cellular_state.should_reconnect = true;
                                         logging_enabled = false;
                                         break;
                                 }
@@ -782,17 +793,12 @@ void cellular_connectivity_task(void *params)
                                 rxCount = 0;
                         }
 
-                        if (isTimeoutMs(cstart, 30000)){
-                                pr_info("Spontaneous reconnect\r\n");
-                                should_reconnect = true;
-                        }
-
                         /*disconnect if a timeout is configured and
                         // we haven't heard from the other side for a while */
                         const size_t timeout = getUptimeAsInt() - last_message_time;
                         if (connection_timeout && timeout > connection_timeout ) {
                                 pr_info_str_msg(_LOG_PFX " Timeout ", connParams->connectionName);
-                                should_reconnect = true;
+                                cellular_state.should_reconnect = true;
                         }
                 }
 

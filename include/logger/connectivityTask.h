@@ -93,7 +93,8 @@ typedef struct _CellularState {
         char cell_buffer[BUFFER_SIZE];
         int32_t read_index;
         bool file_open;
-
+        bool should_reconnect;
+        bool buffering_enabled;
 } CellularState;
 
 void queueTelemetryRecord(const LoggerMessage *msg);
@@ -105,6 +106,10 @@ void blueooth_connectivity_task(void *params);
 void cellular_connectivity_task(void *params);
 
 void cellular_buffering_task(void *params);
+
+bool cellular_telemetry_buffering_enabled(void);
+
+void cellular_telemetry_reconnect();
 
 int process_rx_buffer(struct Serial *serial, char *buffer, size_t *rxCount);
 
