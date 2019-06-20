@@ -108,7 +108,6 @@ struct cell_modem_methods {
         bool (*close_telem_connection)(struct serial_buffer *sb,
                                        struct cellular_info *ci,
                                        struct telemetry_info *ti);
-        bool (*tx_socket)(struct serial_buffer *sb, uint8_t socket_id, char * buffer);
 };
 
 int cell_get_signal_strength();
@@ -132,7 +131,6 @@ int32_t cellular_active_time();
 int cellular_disconnect(DeviceConfig *config);
 int cellular_init_connection(DeviceConfig *config, millis_t * connected_at, bool hard_init);
 int cellular_check_connection_status(DeviceConfig *config);
-bool cellular_tx_socket(DeviceConfig *config, int socket_id, char * buffer);
 const char* readsCell(struct serial_buffer *sb, size_t timeout);
 void putsCell(struct serial_buffer *sb, const char *data);
 const char* cellular_get_net_status_desc();

@@ -82,10 +82,6 @@ struct Serial* serial_create(const char *name, const size_t tx_cap,
                              void *cfg_cb_arg, post_tx_func_t *post_tx_cb,
                              void *post_tx_cb_arg);
 
-struct Serial* serial_create_direct_buffer(const char *name,
-                                           char * buffer,
-                                           size_t buffer_len);
-
 void serial_purge_rx_queue(struct Serial* s);
 
 void serial_purge_tx_queue(struct Serial* s);

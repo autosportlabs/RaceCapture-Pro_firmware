@@ -557,9 +557,6 @@ static const struct at_config* sara_u280_get_at_config()
         return &cfg;
 }
 
-static bool sara_u280_tx_socket(struct serial_buffer *sb, uint8_t socket_id, char * buffer){
-        return true;
-}
 
 static const struct cell_modem_methods sara_u280_methods = {
         .get_at_config = sara_u280_get_at_config,
@@ -570,7 +567,6 @@ static const struct cell_modem_methods sara_u280_methods = {
         .setup_pdp = sara_u280_setup_pdp,
         .open_telem_connection = sara_u280_connect_rcl_telem,
         .close_telem_connection = sara_u280_disconnect,
-        .tx_socket = sara_u280_tx_socket
 };
 
 const struct cell_modem_methods* get_sara_u280_methods()

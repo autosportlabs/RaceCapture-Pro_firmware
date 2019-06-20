@@ -164,7 +164,6 @@ static xSemaphoreHandle fs_mutex = NULL;
 static char buffer_buffer[BUFFER_BUFFER_SIZE + 1];
 static int32_t read_index = 0;
 static bool file_open = false;
-static struct Serial *string_serial = NULL;
 
 static void createTelemetryConnectionTask(int16_t priority,
                 xQueueHandle sampleQueue,
@@ -173,7 +172,6 @@ static void createTelemetryConnectionTask(int16_t priority,
 #if CELLULAR_SUPPORT
         buffer_file = pvPortMalloc(sizeof(FIL));
 
-        string_serial = serial_create_direct_buffer("str_ser", buffer_buffer, BUFFER_BUFFER_SIZE);
         {
                 fs_mutex = xSemaphoreCreateMutex();
                 buffer_queue = xQueueCreate(CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH, sizeof(BufferedLoggerMessage));
@@ -199,7 +197,6 @@ static void createTelemetryConnectionTask(int16_t priority,
                 params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
                 params->disconnect = &cellular_disconnect;
                 params->check_connection_status = &cellular_check_connection_status;
-                params->tx_socket = &cellular_tx_socket;
                 params->init_connection = &cellular_init_connection;
                 params->serial = SERIAL_TELEMETRY;
                 params->sampleQueue = buffer_queue;

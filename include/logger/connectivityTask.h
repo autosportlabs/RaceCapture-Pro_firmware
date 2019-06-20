@@ -55,7 +55,6 @@ typedef struct _TelemetryConnParams {
         int (*disconnect)(DeviceConfig *config);
         int (*init_connection)(DeviceConfig *config, millis_t * connected_at, bool hard_init);
         int (*check_connection_status)(DeviceConfig *config);
-        bool (*tx_socket)(DeviceConfig *config, int socket_id, char * buffer);
         serial_id_t serial;
         uint32_t connection_timeout;
         xQueueHandle sampleQueue;
@@ -78,12 +77,6 @@ typedef struct _BufferedTelemetryMessage {
         struct sample *sample;
 } BufferedTelemetryMessage;
 
-typedef struct _StringSerialParams {
-        struct Serial * serial;
-        char * buffer;
-        size_t buffer_len;
-} StringSerialParams;
-
 void queueTelemetryRecord(const LoggerMessage *msg);
 
 void startConnectivityTask(int16_t priority);
@@ -93,8 +86,6 @@ void connectivityTask(void *params);
 void cellular_connectivity_task(void *params);
 
 void cellular_buffering_task(void *params);
-
-void string_serial_task(void *params);
 
 CPP_GUARD_END
 
