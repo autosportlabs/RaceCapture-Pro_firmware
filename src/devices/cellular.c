@@ -176,7 +176,7 @@ static bool get_methods(const enum cellular_modem modem,
                 break;
         case CELLULAR_MODEM_UBLOX_SARA_U2:
                 modem_name = "UBlox Sara U2";
-                *methods = get_sara_u280_methods();
+                *methods = get_sara_u2_methods();
                 break;
         case CELLULAR_MODEM_UBLOX_SARA_R4:
                 modem_name = "UBlox Sara R4";
