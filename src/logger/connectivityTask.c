@@ -36,7 +36,6 @@
 #include "null_device.h"
 #include "printk.h"
 #include "queue.h"
-#include "semphr.h"
 #include "sampleRecord.h"
 #include "serial.h"
 #include "cellular.h"
@@ -94,8 +93,6 @@ static CellularState cellular_state = {
                 .read_index = 0,
                 .file_open = false
 };
-
-static xSemaphoreHandle fs_mutex = NULL;
 #endif
 
 static size_t trimBuffer(char *buffer, size_t count)
@@ -178,7 +175,6 @@ static void create_cellular_connection_tasks(int16_t priority,
 {
         cellular_state.buffer_file = pvPortMalloc(sizeof(FIL));
         cellular_state.buffer_queue = xQueueCreate(CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH, sizeof(BufferedLoggerMessage));
-        fs_mutex = xSemaphoreCreateMutex();
 
         {
                 BufferingTaskParams * params = (BufferingTaskParams *)portMalloc(sizeof(BufferingTaskParams));
@@ -477,27 +473,31 @@ void cellular_buffering_task(void *params)
                         if (!cellular_state.file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
                                 last_open_buffer_attempt = getCurrentTicks();
                                 cellular_state.read_index = 0;
-                                xSemaphoreTake(fs_mutex, portMAX_DELAY);
-                                FRESULT initfs_rc = InitFS();
+                                fs_lock();
+                                bool fs_good = sdcard_fs_mounted();
+                                if (!fs_good) {
+                                        FRESULT initfs_rc = InitFS();
+                                        pr_debug_int_msg(_LOG_PFX "Remounting filesystem: ", initfs_rc);
+                                        fs_good = (initfs_rc == FR_OK);
+                                        if (FR_OK != initfs_rc) {
+                                                pr_debug_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
+                                        }
+                                }
                                 FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
-
-                                if (FR_OK == initfs_rc && FR_OK == fopen_rc) {
+                                fs_unlock();
+                                if (FR_OK != fopen_rc) {
+                                        pr_debug_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
+                                }
+                                if (fs_good && FR_OK == fopen_rc) {
                                         cellular_state.file_open = true;
                                         /* try to connect immediately on the first re-attempt*/
                                         re_open_buffer_file_timeout = 0;
                                 }
                                 else {
-                                        if (FR_OK != initfs_rc) {
-                                                pr_debug_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
-                                        }
-                                        if (FR_OK != fopen_rc) {
-                                                pr_debug_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
-                                        }
                                         /* re-connect a bit later */
                                         re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
                                 }
                                 pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.file_open ? "win" : "fail");
-                                xSemaphoreGive(fs_mutex);
                         }
 
                         should_stream =
@@ -531,7 +531,7 @@ void cellular_buffering_task(void *params)
                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
 
                                         bool fs_failed = false;
-                                        xSemaphoreTake(fs_mutex, portMAX_DELAY);
+                                        fs_lock();
                                         if (!cellular_state.file_open) {
                                                 goto BUFFER_DONE;
                                         }
@@ -556,7 +556,7 @@ void cellular_buffering_task(void *params)
                                                 f_close(cellular_state.buffer_file);
                                                 cellular_state.file_open = false;
                                         }
-                                        xSemaphoreGive(fs_mutex);
+                                        fs_unlock();
 
                                         BufferedLoggerMessage buffer_msg;
                                         buffer_msg.sample = msg.sample;
@@ -703,11 +703,11 @@ void cellular_connectivity_task(void *params)
                                                 int32_t start_index = cellular_state.read_index;
                                                 while (true) {
                                                         char * read_string = NULL;
-                                                        xSemaphoreTake(fs_mutex, portMAX_DELAY);
+                                                        fs_lock();
                                                         FRESULT fseek_res = f_lseek(cellular_state.buffer_file, cellular_state.read_index);
                                                         read_string = f_gets(cellular_state.buffer_buffer, BUFFER_BUFFER_SIZE, cellular_state.buffer_file);
                                                         cellular_state.read_index += strlen(read_string);
-                                                        xSemaphoreGive(fs_mutex);
+                                                        fs_unlock();
 
                                                         if (FR_OK != fseek_res) {
                                                                 pr_error_int_msg("Error reading telemetry buffer, aborting ", fseek_res);

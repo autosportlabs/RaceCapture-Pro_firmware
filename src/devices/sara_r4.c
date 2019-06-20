@@ -422,7 +422,7 @@ static bool sara_r4_connect_rcl_telem(struct serial_buffer *sb,
         }
 
         if (!sara_r1_configure_tcp_socket(sb, ti->socket)) {
-                        pr_warning("[SARA-R1] Failed to configure socket");
+                        pr_error("[SARA-R1] Failed to configure socket\r\n");
                         return false;
         }
 

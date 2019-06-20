@@ -32,8 +32,10 @@
 #include "diskio.h"
 #include "sdcard_device.h"
 #include "mem_mang.h"
+#include "semphr.h"
 
 static FATFS *fat_fs = NULL;
+static xSemaphoreHandle fs_mutex = NULL;
 
 void InitFSHardware(void)
 {
@@ -44,6 +46,16 @@ void InitFSHardware(void)
 
         if (fat_fs == NULL)
                 pr_error("sdcard: FatFS init fail\r\n");
+
+        fs_mutex = xSemaphoreCreateMutex();
+}
+
+void fs_lock(void){
+        xSemaphoreTake(fs_mutex, portMAX_DELAY);
+}
+
+void fs_unlock(void){
+        xSemaphoreGive(fs_mutex);
 }
 
 static bool is_initialized()
@@ -57,6 +69,13 @@ static bool is_initialized()
 bool sdcard_present(void)
 {
         return sdcard_device_card_present();
+}
+
+bool sdcard_fs_mounted(void)
+{
+        char label[12]; /* max label is 11 bytes */
+        DWORD vsn;
+        return sdcard_present() && f_getlabel("0", label, &vsn) == FR_OK;
 }
 
 int InitFS()
@@ -104,8 +123,16 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
                 serial_write_s(serial,"Card Init... ");
         }
 
-        res = InitFS();
-        if (res) goto exit;
+        fs_lock();
+        bool fs_good = sdcard_fs_mounted();
+        if (!fs_good) {
+                FRESULT init_rc = InitFS();
+                if (!quiet)
+                        pr_info_int_msg(" Remounting filesystem: ", init_rc);
+                fs_good = (init_rc == FR_OK);
+        }
+        if (!fs_good)
+                goto exit;
 
         if (!quiet) {
                 put_int(serial, res);
@@ -158,16 +185,6 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
         }
         if (res) goto exit;
 
-        if (!quiet)
-                serial_write_s(serial,"Unmounting... ");
-
-        res = UnmountFS();
-
-        if (!quiet) {
-                put_int(serial, res);
-                put_crlf(serial);
-        }
-
 exit:
         if (quiet) {
                 put_int(serial, res == 0 ? 1 : 0);
@@ -180,6 +197,7 @@ exit:
                         put_crlf(serial);
                 }
         }
+        fs_unlock();
 
         if (fatFile != NULL)
                 vPortFree(fatFile);
