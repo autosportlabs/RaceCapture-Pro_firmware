@@ -219,7 +219,7 @@ static bool sara_r4_close_tcp_socket(struct serial_buffer *sb,
         const size_t msgs_len = ARRAY_LEN(msgs);
 
         serial_buffer_reset(sb);
-        serial_buffer_printf_append(sb, "AT+USOCL=%d", socket_id);
+        serial_buffer_printf_append(sb, "AT+USOCL=%d,1", socket_id);
         const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs,
                                                msgs_len);
         return is_rsp_ok(msgs, count);
@@ -255,7 +255,7 @@ static bool sara_r4_stop_direct_mode(struct serial_buffer *sb)
         for (size_t events = STOP_DM_RX_EVENTS; events; --events) {
                 serial_buffer_reset(sb);
                 if (serial_buffer_rx(sb, STOP_DM_RX_TIMEOUT_MS) &&
-                    is_rsp_ok((const char**) &(sb->buffer), 1))
+                    is_rsp((const char**) &(sb->buffer), 1, "DISCONNECT"))
                         return true;
         }
 
@@ -436,7 +436,6 @@ static bool sara_r4_disconnect(struct serial_buffer *sb,
         if (!sara_r4_stop_direct_mode(sb)) {
                 /* Then we don't know if can issue commands */
                 pr_warning("[sara_r4] Failed to escape Direct Mode\r\n");
-                return false;
         }
 
         if (!sara_r4_close_tcp_socket(sb, ti->socket)) {
