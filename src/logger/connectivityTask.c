@@ -78,6 +78,9 @@
 #define TELEMETRY_BUFFER_FILE_RETRY_MS 1000
 #define BUFFER_BUFFER_SIZE 2000
 
+#define BUFFERED_CHUNK_SIZE 7000
+#define BUFFERED_CHUNK_WAIT 1000
+
 static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
 
 typedef struct _BufferedLoggerMessage {
@@ -626,6 +629,7 @@ void cellular_connectivity_task(void *params)
                 if (connected_at > 0)
                         GPS_set_UTC_time(connected_at);
 
+                size_t cstart = getCurrentTicks();
                 serial_flush(serial);
                 rxCount = 0;
                 size_t badMsgCount = 0;
@@ -700,6 +704,7 @@ void cellular_connectivity_task(void *params)
                                         }
                                         else {
                                                 /* Stream buffered samples, catching up with the tail of the file as needed */
+                                                int32_t start_index = read_index;
                                                 while (true) {
                                                         char * read_string = NULL;
                                                         xSemaphoreTake(fs_mutex, portMAX_DELAY);
@@ -716,6 +721,10 @@ void cellular_connectivity_task(void *params)
                                                                 break;
                                                         }
                                                         serial_write_s(serial, read_string);
+                                                        if (read_index - start_index > BUFFERED_CHUNK_SIZE){
+                                                                delayMs(BUFFERED_CHUNK_WAIT);
+                                                                start_index = read_index;
+                                                        }
                                                 }
                                         }
 
@@ -766,6 +775,11 @@ void cellular_connectivity_task(void *params)
                                         break;
                                 }
                                 rxCount = 0;
+                        }
+
+                        if (isTimeoutMs(cstart, 10000)){
+                                pr_info("Spontaneous reconnect\r\n");
+                                should_reconnect = true;
                         }
 
                         /*disconnect if a timeout is configured and
