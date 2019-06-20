@@ -32,8 +32,12 @@
 #include "dateTime.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "sdcard.h"
 
 CPP_GUARD_BEGIN
+
+#define BUFFER_SIZE        1025
+#define BUFFER_BUFFER_SIZE 2000
 
 typedef struct _ConnParams {
         bool always_streaming;
@@ -67,7 +71,6 @@ typedef struct _BufferingTaskParams {
         char * connectionName;
         size_t periodicMeta;
         xQueueHandle sampleQueue;
-        xQueueHandle buffer_queue;
         int max_sample_rate;
 } BufferingTaskParams;
 
@@ -76,6 +79,22 @@ typedef struct _BufferedTelemetryMessage {
         size_t ticks;
         struct sample *sample;
 } BufferedTelemetryMessage;
+
+typedef struct _BufferedLoggerMessage {
+        enum LoggerMessageType type;
+        size_t ticks;
+        struct sample *sample;
+} BufferedLoggerMessage;
+
+typedef struct _CellularState {
+        xQueueHandle buffer_queue;
+        FIL *buffer_file;
+        char buffer_buffer[BUFFER_BUFFER_SIZE + 1];
+        char cell_buffer[BUFFER_SIZE];
+        int32_t read_index;
+        bool file_open;
+
+} CellularState;
 
 void queueTelemetryRecord(const LoggerMessage *msg);
 

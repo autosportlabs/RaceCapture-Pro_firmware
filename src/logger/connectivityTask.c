@@ -46,7 +46,6 @@
 #include "usart.h"
 #include "gps_device.h"
 #include "api_event.h"
-#include "sdcard.h"
 
 #if (CONNECTIVITY_CHANNELS == 1)
 #define CONNECTIVITY_TASK_INIT {NULL}
@@ -63,7 +62,6 @@
 
 #define IDLE_TIMEOUT       configTICK_RATE_HZ / 10
 #define INIT_DELAY         600
-#define BUFFER_SIZE        1025
 #define TELEMETRY_DISCONNECT_TIMEOUT            60000
 
 #define TELEMETRY_STACK_SIZE 300
@@ -76,18 +74,29 @@
 
 #define TELEMETRY_BUFFER_FILENAME "tele.buf"
 #define TELEMETRY_BUFFER_FILE_RETRY_MS 1000
-#define BUFFER_BUFFER_SIZE 2000
 
 #define BUFFERED_CHUNK_SIZE 7000
 #define BUFFERED_CHUNK_WAIT 1000
 
 static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
 
-typedef struct _BufferedLoggerMessage {
-        enum LoggerMessageType type;
-        size_t ticks;
-        struct sample *sample;
-} BufferedLoggerMessage;
+#if BLUETOOTH_SUPPORT
+static char bluetooth_buffer[BUFFER_SIZE];
+#endif
+
+#if CELLULAR_SUPPORT
+
+static CellularState cellular_state = {
+                .buffer_queue = NULL,
+                .buffer_file = NULL,
+                .buffer_buffer = {},
+                .cell_buffer = {},
+                .read_index = 0,
+                .file_open = false
+};
+
+static xSemaphoreHandle fs_mutex = NULL;
+#endif
 
 static size_t trimBuffer(char *buffer, size_t count)
 {
@@ -136,11 +145,9 @@ void queueTelemetryRecord(const LoggerMessage *msg)
                 send_logger_message(g_sampleQueue[i], msg);
 }
 
-
 #if BLUETOOTH_SUPPORT
-static char bluetooth_buffer[BUFFER_SIZE];
 
-static void createWirelessConnectionTask(int16_t priority,
+static void create_bluetooth_connection_task(int16_t priority,
                 xQueueHandle sampleQueue,
                 enum led activity_led)
 {
@@ -165,30 +172,19 @@ static void createWirelessConnectionTask(int16_t priority,
 #endif
 
 #if CELLULAR_SUPPORT
-
-static xQueueHandle buffer_queue;
-static FIL *buffer_file = NULL;
-static xSemaphoreHandle fs_mutex = NULL;
-static char buffer_buffer[BUFFER_BUFFER_SIZE + 1];
-static char cell_buffer[BUFFER_SIZE];
-static int32_t read_index = 0;
-static bool file_open = false;
-
-static void createTelemetryConnectionTask(int16_t priority,
+static void create_cellular_connection_tasks(int16_t priority,
                 xQueueHandle sampleQueue,
                 enum led activity_led)
 {
-        buffer_file = pvPortMalloc(sizeof(FIL));
+        cellular_state.buffer_file = pvPortMalloc(sizeof(FIL));
+        cellular_state.buffer_queue = xQueueCreate(CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH, sizeof(BufferedLoggerMessage));
+        fs_mutex = xSemaphoreCreateMutex();
 
         {
-                fs_mutex = xSemaphoreCreateMutex();
-                buffer_queue = xQueueCreate(CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH, sizeof(BufferedLoggerMessage));
-
                 BufferingTaskParams * params = (BufferingTaskParams *)portMalloc(sizeof(BufferingTaskParams));
                 params->connectionName = "TelemBuffer";
                 params->periodicMeta = 0;
                 params->sampleQueue = sampleQueue;
-                params->buffer_queue = buffer_queue;
                 params->always_streaming = false;
                 params->max_sample_rate = SAMPLE_10Hz;
 
@@ -207,7 +203,7 @@ static void createTelemetryConnectionTask(int16_t priority,
                 params->check_connection_status = &cellular_check_connection_status;
                 params->init_connection = &cellular_init_connection;
                 params->serial = SERIAL_TELEMETRY;
-                params->sampleQueue = buffer_queue;
+                params->sampleQueue = cellular_state.buffer_queue;
                 params->always_streaming = false;
                 params->max_sample_rate = SAMPLE_10Hz;
                 params->activity_led = activity_led;
@@ -245,7 +241,7 @@ void startConnectivityTask(int16_t priority)
                 const uint8_t cellEnabled = connConfig->cellularConfig.cellEnabled;
 #if CELLULAR_SUPPORT
                 if (cellEnabled)
-                        createTelemetryConnectionTask(priority,
+                        create_cellular_connection_tasks(priority,
                                                       g_sampleQueue[1], LED_TELEMETRY);
 #endif
 #if BLUETOOTH_SUPPORT
@@ -254,7 +250,7 @@ void startConnectivityTask(int16_t priority)
                         enum led activity_led = led_available(LED_BLUETOOTH) ? LED_BLUETOOTH : LED_TELEMETRY;
                         activity_led = cellEnabled && activity_led == LED_TELEMETRY ? LED_UNKNOWN : activity_led;
 
-                        createWirelessConnectionTask(priority,
+                        create_bluetooth_connection_task(priority,
                                                      g_sampleQueue[0],
                                                      activity_led);
 
@@ -461,8 +457,6 @@ void cellular_buffering_task(void *params)
         LoggerMessage msg;
 
         xQueueHandle sampleQueue = connParams->sampleQueue;
-        xQueueHandle buffer_queue = connParams->buffer_queue;
-
         const size_t max_telem_rate = connParams->max_sample_rate;
 
         size_t tick = 0;
@@ -480,15 +474,15 @@ void cellular_buffering_task(void *params)
                                      connParams->always_streaming;
 
                 while (1) {
-                        if (!file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
+                        if (!cellular_state.file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
                                 last_open_buffer_attempt = getCurrentTicks();
-                                read_index = 0;
+                                cellular_state.read_index = 0;
                                 xSemaphoreTake(fs_mutex, portMAX_DELAY);
                                 FRESULT initfs_rc = InitFS();
-                                FRESULT fopen_rc = f_open(buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+                                FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
 
                                 if (FR_OK == initfs_rc && FR_OK == fopen_rc) {
-                                        file_open = true;
+                                        cellular_state.file_open = true;
                                         /* try to connect immediately on the first re-attempt*/
                                         re_open_buffer_file_timeout = 0;
                                 }
@@ -502,7 +496,7 @@ void cellular_buffering_task(void *params)
                                         /* re-connect a bit later */
                                         re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
                                 }
-                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", file_open ? "win" : "fail");
+                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.file_open ? "win" : "fail");
                                 xSemaphoreGive(fs_mutex);
                         }
 
@@ -538,20 +532,20 @@ void cellular_buffering_task(void *params)
 
                                         bool fs_failed = false;
                                         xSemaphoreTake(fs_mutex, portMAX_DELAY);
-                                        if (!file_open) {
+                                        if (!cellular_state.file_open) {
                                                 goto BUFFER_DONE;
                                         }
 
-                                        FRESULT fseek_res = f_lseek(buffer_file, f_size(buffer_file));
+                                        FRESULT fseek_res = f_lseek(cellular_state.buffer_file, f_size(cellular_state.buffer_file));
                                         if (FR_OK != fseek_res) {
                                                 pr_error_int_msg(_LOG_PFX "Failed to seek to end of buffer: ", fseek_res);
                                                 fs_failed = true;
                                                 goto BUFFER_DONE;
                                         }
 
-                                        fs_write_sample_record(buffer_file, msg.sample, tick, send_meta);
+                                        fs_write_sample_record(cellular_state.buffer_file, msg.sample, tick, send_meta);
 
-                                        FRESULT fsync_res = f_sync(buffer_file);
+                                        FRESULT fsync_res = f_sync(cellular_state.buffer_file);
                                         if (FR_OK != fsync_res) {
                                                 pr_error_int_msg(_LOG_PFX "Failed to sync buffer file: ", fsync_res);
                                                 fs_failed = true;
@@ -559,8 +553,8 @@ void cellular_buffering_task(void *params)
                                         }
                                         BUFFER_DONE:
                                         if (fs_failed) {
-                                                f_close(buffer_file);
-                                                file_open = false;
+                                                f_close(cellular_state.buffer_file);
+                                                cellular_state.file_open = false;
                                         }
                                         xSemaphoreGive(fs_mutex);
 
@@ -568,7 +562,7 @@ void cellular_buffering_task(void *params)
                                         buffer_msg.sample = msg.sample;
                                         buffer_msg.ticks = msg.ticks;
                                         buffer_msg.type = msg.type;
-                                        xQueueSend(buffer_queue, &buffer_msg, 0);
+                                        xQueueSend(cellular_state.buffer_queue, &buffer_msg, 0);
 
                                         tick++;
                                         break;
@@ -598,7 +592,7 @@ void cellular_connectivity_task(void *params)
 
         DeviceConfig deviceConfig;
         deviceConfig.serial = serial;
-        deviceConfig.buffer = cell_buffer;
+        deviceConfig.buffer = cellular_state.cell_buffer;
         deviceConfig.length = BUFFER_SIZE;
 
         const LoggerConfig *logger_config = getWorkingLoggerConfig();
@@ -640,7 +634,7 @@ void cellular_connectivity_task(void *params)
                 bool should_reconnect = false;
                 hard_init = false;
 
-                int32_t backlog_size = f_size(buffer_file) - read_index;
+                int32_t backlog_size = f_size(cellular_state.buffer_file) - cellular_state.read_index;
 
                 if ( backlog_size > 0) {
                         pr_info_int_msg(_LOG_PFX "Telemetry backlog: ", backlog_size);
@@ -655,7 +649,7 @@ void cellular_connectivity_task(void *params)
                                 connParams->always_streaming ||
                                 logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
-                        bool current_buffering_enabled = file_open;
+                        bool current_buffering_enabled = cellular_state.file_open;
                         if (buffering_enabled != current_buffering_enabled) {
                                 pr_info(current_buffering_enabled ? _LOG_PFX "Telemetry buffering enabled\r\n" : _LOG_PFX "Telemetry buffering disabled\r\n");
                                 buffering_enabled = current_buffering_enabled;
@@ -706,13 +700,13 @@ void cellular_connectivity_task(void *params)
                                         }
                                         else {
                                                 /* Stream buffered samples, catching up with the tail of the file as needed */
-                                                int32_t start_index = read_index;
+                                                int32_t start_index = cellular_state.read_index;
                                                 while (true) {
                                                         char * read_string = NULL;
                                                         xSemaphoreTake(fs_mutex, portMAX_DELAY);
-                                                        FRESULT fseek_res = f_lseek(buffer_file, read_index);
-                                                        read_string = f_gets(buffer_buffer, BUFFER_BUFFER_SIZE, buffer_file);
-                                                        read_index += strlen(read_string);
+                                                        FRESULT fseek_res = f_lseek(cellular_state.buffer_file, cellular_state.read_index);
+                                                        read_string = f_gets(cellular_state.buffer_buffer, BUFFER_BUFFER_SIZE, cellular_state.buffer_file);
+                                                        cellular_state.read_index += strlen(read_string);
                                                         xSemaphoreGive(fs_mutex);
 
                                                         if (FR_OK != fseek_res) {
@@ -723,9 +717,9 @@ void cellular_connectivity_task(void *params)
                                                                 break;
                                                         }
                                                         serial_write_s(serial, read_string);
-                                                        if (read_index - start_index > BUFFERED_CHUNK_SIZE){
+                                                        if (cellular_state.read_index - start_index > BUFFERED_CHUNK_SIZE){
                                                                 delayMs(BUFFERED_CHUNK_WAIT);
-                                                                start_index = read_index;
+                                                                start_index = cellular_state.read_index;
                                                         }
                                                 }
                                         }
@@ -751,7 +745,7 @@ void cellular_connectivity_task(void *params)
                         // Process incoming message, if available
                         ////////////////////////////////////////////////////////////
                         //read in available characters, process message as necessary*/
-                        int msgReceived = processRxBuffer(serial, cell_buffer, &rxCount);
+                        int msgReceived = processRxBuffer(serial, cellular_state.cell_buffer, &rxCount);
                         /*check the latest contents of the buffer for something that might indicate an error condition*/
                         if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
                                 pr_info(_LOG_PFX "Disconnected\r\n");
@@ -762,7 +756,7 @@ void cellular_connectivity_task(void *params)
                         if (msgReceived) {
                                 last_message_time = getUptimeAsInt();
 
-                                const int msgRes = process_api(serial, cell_buffer, BUFFER_SIZE);
+                                const int msgRes = process_api(serial, cellular_state.cell_buffer, BUFFER_SIZE);
                                 const int msgError = (msgRes == API_ERROR_MALFORMED);
                                 if (msgError) {
                                         pr_debug(_LOG_PFX " (failed)\r\n");
@@ -779,7 +773,7 @@ void cellular_connectivity_task(void *params)
                                 rxCount = 0;
                         }
 
-                        if (isTimeoutMs(cstart, 10000)){
+                        if (isTimeoutMs(cstart, 30000)){
                                 pr_info("Spontaneous reconnect\r\n");
                                 should_reconnect = true;
                         }
