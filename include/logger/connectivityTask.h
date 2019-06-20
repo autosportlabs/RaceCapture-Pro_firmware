@@ -92,9 +92,8 @@ typedef struct _CellularState {
         char buffer_buffer[BUFFER_BUFFER_SIZE + 1];
         char cell_buffer[BUFFER_SIZE];
         int32_t read_index;
-        bool file_open;
+        bool buffer_file_open;
         bool should_reconnect;
-        bool buffering_enabled;
 } CellularState;
 
 void queueTelemetryRecord(const LoggerMessage *msg);

@@ -76,6 +76,7 @@
 
 #define BUFFERED_CHUNK_SIZE 7000
 #define BUFFERED_CHUNK_WAIT 1000
+#define BUFFERED_MAX_SIZE 1024 * 1000
 
 static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
 
@@ -90,14 +91,13 @@ static CellularState cellular_state = {
                 .buffer_buffer = {},
                 .cell_buffer = {},
                 .read_index = 0,
-                .file_open = false,
-                .should_reconnect = false,
-                .buffering_enabled = false
+                .buffer_file_open = false,
+                .should_reconnect = false
 };
 
 bool cellular_telemetry_buffering_enabled(void)
 {
-        return cellular_state.buffering_enabled;
+        return cellular_state.buffer_file_open;
 }
 
 void cellular_telemetry_reconnect()
@@ -480,7 +480,7 @@ void cellular_buffering_task(void *params)
                                      connParams->always_streaming;
 
                 while (1) {
-                        if (!cellular_state.file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
+                        if (!cellular_state.buffer_file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
                                 last_open_buffer_attempt = getCurrentTicks();
                                 cellular_state.read_index = 0;
                                 fs_lock();
@@ -499,7 +499,7 @@ void cellular_buffering_task(void *params)
                                         pr_debug_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
                                 }
                                 if (fs_good && FR_OK == fopen_rc) {
-                                        cellular_state.file_open = true;
+                                        cellular_state.buffer_file_open = true;
                                         /* try to connect immediately on the first re-attempt*/
                                         re_open_buffer_file_timeout = 0;
                                 }
@@ -507,7 +507,7 @@ void cellular_buffering_task(void *params)
                                         /* re-connect a bit later */
                                         re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
                                 }
-                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.file_open ? "win" : "fail");
+                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
                         }
 
                         should_stream =
@@ -542,11 +542,19 @@ void cellular_buffering_task(void *params)
 
                                         bool fs_failed = false;
                                         fs_lock();
-                                        if (!cellular_state.file_open) {
+                                        if (!cellular_state.buffer_file_open) {
                                                 goto BUFFER_DONE;
                                         }
 
-                                        FRESULT fseek_res = f_lseek(cellular_state.buffer_file, f_size(cellular_state.buffer_file));
+                                        DWORD file_size = f_size(cellular_state.buffer_file);
+
+                                        if (file_size > BUFFERED_MAX_SIZE) {
+                                                pr_info_int_msg(_LOG_PFX "Max buffer size exceeded, resetting: ", BUFFERED_MAX_SIZE);
+                                                fs_failed = true;
+                                                goto BUFFER_DONE;
+                                        }
+
+                                        FRESULT fseek_res = f_lseek(cellular_state.buffer_file, file_size);
                                         if (FR_OK != fseek_res) {
                                                 pr_error_int_msg(_LOG_PFX "Failed to seek to end of buffer: ", fseek_res);
                                                 fs_failed = true;
@@ -562,9 +570,9 @@ void cellular_buffering_task(void *params)
                                                 goto BUFFER_DONE;
                                         }
                                         BUFFER_DONE:
-                                        if (fs_failed) {
+                                        if (fs_failed ) {
                                                 f_close(cellular_state.buffer_file);
-                                                cellular_state.file_open = false;
+                                                cellular_state.buffer_file_open = false;
                                         }
                                         fs_unlock();
 
@@ -623,7 +631,7 @@ void cellular_connectivity_task(void *params)
         api_event_create_callback(queue_cellular_api_event, api_event_queue);
 
         bool hard_init = true;
-        cellular_state.buffering_enabled = false;
+        bool buffering_enabled = false;
 
         while (1) {
                 size_t connect_retries = 0;
@@ -668,10 +676,10 @@ void cellular_connectivity_task(void *params)
                                 connParams->always_streaming ||
                                 logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
-                        bool current_buffering_enabled = cellular_state.file_open;
-                        if (cellular_state.buffering_enabled != current_buffering_enabled) {
+                        bool current_buffering_enabled = cellular_state.buffer_file_open;
+                        if (buffering_enabled != current_buffering_enabled) {
                                 pr_info(current_buffering_enabled ? _LOG_PFX "Telemetry buffering enabled\r\n" : _LOG_PFX "Telemetry buffering disabled\r\n");
-                                cellular_state.buffering_enabled = current_buffering_enabled;
+                                buffering_enabled = current_buffering_enabled;
                         }
 
                         const char res = xQueueReceive(sampleQueue, &msg, IDLE_TIMEOUT);
