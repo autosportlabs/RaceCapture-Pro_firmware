@@ -165,6 +165,7 @@ static xQueueHandle buffer_queue;
 static FIL *buffer_file = NULL;
 static xSemaphoreHandle fs_mutex = NULL;
 static char buffer_buffer[BUFFER_BUFFER_SIZE + 1];
+static char cell_buffer[BUFFER_SIZE];
 static int32_t read_index = 0;
 static bool file_open = false;
 
@@ -581,8 +582,6 @@ void cellular_buffering_task(void *params)
 
 void cellular_connectivity_task(void *params)
 {
-
-        char * buffer = (char *)portMalloc(BUFFER_SIZE);
         size_t rxCount = 0;
 
         TelemetryConnParams *connParams = (TelemetryConnParams*)params;
@@ -596,7 +595,7 @@ void cellular_connectivity_task(void *params)
 
         DeviceConfig deviceConfig;
         deviceConfig.serial = serial;
-        deviceConfig.buffer = buffer;
+        deviceConfig.buffer = cell_buffer;
         deviceConfig.length = BUFFER_SIZE;
 
         const LoggerConfig *logger_config = getWorkingLoggerConfig();
@@ -749,7 +748,7 @@ void cellular_connectivity_task(void *params)
                         // Process incoming message, if available
                         ////////////////////////////////////////////////////////////
                         //read in available characters, process message as necessary*/
-                        int msgReceived = processRxBuffer(serial, buffer, &rxCount);
+                        int msgReceived = processRxBuffer(serial, cell_buffer, &rxCount);
                         /*check the latest contents of the buffer for something that might indicate an error condition*/
                         if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
                                 pr_info(_LOG_PFX "Disconnected\r\n");
@@ -760,7 +759,7 @@ void cellular_connectivity_task(void *params)
                         if (msgReceived) {
                                 last_message_time = getUptimeAsInt();
 
-                                const int msgRes = process_api(serial, buffer, BUFFER_SIZE);
+                                const int msgRes = process_api(serial, cell_buffer, BUFFER_SIZE);
                                 const int msgError = (msgRes == API_ERROR_MALFORMED);
                                 if (msgError) {
                                         pr_debug(_LOG_PFX " (failed)\r\n");
