@@ -136,11 +136,14 @@ void queueTelemetryRecord(const LoggerMessage *msg)
                 send_logger_message(g_sampleQueue[i], msg);
 }
 
+
+#if BLUETOOTH_SUPPORT
+static char bluetooth_buffer[BUFFER_SIZE];
+
 static void createWirelessConnectionTask(int16_t priority,
                 xQueueHandle sampleQueue,
                 enum led activity_led)
 {
-#if BLUETOOTH_SUPPORT
         ConnParams *params = portMalloc(sizeof(ConnParams));
         params->connectionName = "Wireless";
         params->periodicMeta = 0;
@@ -158,8 +161,10 @@ static void createWirelessConnectionTask(int16_t priority,
         static const signed portCHAR task_name[] = "Bluetooth Task ";
         xTaskCreate(connectivityTask, task_name, TELEMETRY_STACK_SIZE,
                     params, priority, NULL );
-#endif
 }
+#endif
+
+#if CELLULAR_SUPPORT
 
 static xQueueHandle buffer_queue;
 static FIL *buffer_file = NULL;
@@ -173,7 +178,6 @@ static void createTelemetryConnectionTask(int16_t priority,
                 xQueueHandle sampleQueue,
                 enum led activity_led)
 {
-#if CELLULAR_SUPPORT
         buffer_file = pvPortMalloc(sizeof(FIL));
 
         {
@@ -214,9 +218,8 @@ static void createTelemetryConnectionTask(int16_t priority,
                 xTaskCreate(cellular_connectivity_task, task_name, CELLULAR_TELEMETRY_STACK_SIZE,
                             params, priority, NULL );
         }
-
-#endif
 }
+#endif
 
 void startConnectivityTask(int16_t priority)
 {
@@ -238,13 +241,14 @@ void startConnectivityTask(int16_t priority)
                  * which is used later to determine which task has control
                  * over LED flashing
                  */
-                const uint8_t cellEnabled =
-                        connConfig->cellularConfig.cellEnabled;
 
+                const uint8_t cellEnabled = connConfig->cellularConfig.cellEnabled;
+#if CELLULAR_SUPPORT
                 if (cellEnabled)
                         createTelemetryConnectionTask(priority,
                                                       g_sampleQueue[1], LED_TELEMETRY);
-
+#endif
+#if BLUETOOTH_SUPPORT
                 if (connConfig->bluetoothConfig.btEnabled) {
                         /* Pick the bluetooth LED if available */
                         enum led activity_led = led_available(LED_BLUETOOTH) ? LED_BLUETOOTH : LED_TELEMETRY;
@@ -255,6 +259,7 @@ void startConnectivityTask(int16_t priority)
                                                      activity_led);
 
                 }
+#endif
         }
         break;
         default:
@@ -285,8 +290,6 @@ static void queue_api_event(const struct api_event * api_event, void * data)
 
 void connectivityTask(void *params)
 {
-
-        char * buffer = (char *)portMalloc(BUFFER_SIZE);
         size_t rxCount = 0;
 
         ConnParams *connParams = (ConnParams*)params;
@@ -300,7 +303,7 @@ void connectivityTask(void *params)
 
         DeviceConfig deviceConfig;
         deviceConfig.serial = serial;
-        deviceConfig.buffer = buffer;
+        deviceConfig.buffer = bluetooth_buffer;
         deviceConfig.length = BUFFER_SIZE;
 
         const LoggerConfig *logger_config = getWorkingLoggerConfig();
@@ -407,7 +410,7 @@ void connectivityTask(void *params)
                         // Process incoming message, if available
                         ////////////////////////////////////////////////////////////
                         //read in available characters, process message as necessary*/
-                        int msgReceived = processRxBuffer(serial, buffer, &rxCount);
+                        int msgReceived = processRxBuffer(serial, bluetooth_buffer, &rxCount);
                         /*check the latest contents of the buffer for something that might indicate an error condition*/
                         if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
                                 pr_info(_LOG_PFX "Disconnected\r\n");
@@ -418,9 +421,9 @@ void connectivityTask(void *params)
                         if (msgReceived) {
                                 last_message_time = getUptimeAsInt();
 
-                                pr_info_str_msg("received msg ", buffer);
+                                pr_info_str_msg("received msg ", bluetooth_buffer);
 
-                                const int msgRes = process_api(serial, buffer, BUFFER_SIZE);
+                                const int msgRes = process_api(serial, bluetooth_buffer, BUFFER_SIZE);
                                 const int msgError = (msgRes == API_ERROR_MALFORMED);
                                 if (msgError) {
                                         pr_debug(_LOG_PFX " (failed)\r\n");
