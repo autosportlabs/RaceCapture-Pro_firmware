@@ -369,19 +369,31 @@ static bool sara_u280_stop_direct_mode(struct serial_buffer *sb)
         for (size_t events = STOP_DM_RX_EVENTS; events; --events) {
                 serial_buffer_reset(sb);
                 if (serial_buffer_rx(sb, STOP_DM_RX_TIMEOUT_MS) &&
-                    is_rsp_ok((const char**) &(sb->buffer), 1))
-                        return true;
+                        is_rsp((const char**) &(sb->buffer), 1, "DISCONNECT"))
+                                return true;
         }
 
         return false;
+}
+
+static bool sara_u280_set_baud_rate(struct serial_buffer *sb)
+{
+        const char *msgs[2];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_append(sb, "AT+IPR=230400");
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs, msgs_len);
+        delayMs(100);
+        serial_config(sb->serial,8,0,1,230400);
+        return is_rsp_ok(msgs, count);
 }
 
 static bool sara_u280_init(struct serial_buffer *sb,
                            struct cellular_info *ci,
                            CellularConfig *cellCfg)
 {
-        /* NO-OP.  This hardware is better than sim900. */
-        return true;
+        return sara_u280_set_baud_rate(sb);
 }
 
 static bool sara_u280_get_sim_info(struct serial_buffer *sb,

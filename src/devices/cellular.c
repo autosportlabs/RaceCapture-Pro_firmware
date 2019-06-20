@@ -444,6 +444,7 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at, bool
         struct serial_buffer *sb = (struct serial_buffer*) config;
 
         if (hard_init) {
+                serial_config(sb->serial,8,0,1,115200);
                 gsm_power_off(sb);
                 pr_info("[cell] Power cycling modem\r\n");
                 const int init_status = cellular_init_modem(sb);
