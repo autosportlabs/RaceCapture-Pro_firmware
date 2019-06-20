@@ -84,7 +84,6 @@ static char bluetooth_buffer[BUFFER_SIZE];
 #endif
 
 #if CELLULAR_SUPPORT
-
 static CellularState cellular_state = {
                 .buffer_queue = NULL,
                 .buffer_file = NULL,
@@ -95,6 +94,7 @@ static CellularState cellular_state = {
 };
 #endif
 
+#if BLUETOOTH_SUPPORT || CELLULAR_SUPPORT
 static size_t trimBuffer(char *buffer, size_t count)
 {
 
@@ -135,6 +135,7 @@ static int processRxBuffer(struct Serial *serial, char *buffer, size_t *rxCount)
         }
         return processMsg;
 }
+#endif
 
 void queueTelemetryRecord(const LoggerMessage *msg)
 {
@@ -163,7 +164,7 @@ static void create_bluetooth_connection_task(int16_t priority,
 
         /* Make all task names 16 chars including NULL char */
         static const signed portCHAR task_name[] = "Bluetooth Task ";
-        xTaskCreate(connectivityTask, task_name, TELEMETRY_STACK_SIZE,
+        xTaskCreate(blueooth_connectivity_task, task_name, TELEMETRY_STACK_SIZE,
                     params, priority, NULL );
 }
 #endif
@@ -213,6 +214,28 @@ static void create_cellular_connection_tasks(int16_t priority,
 }
 #endif
 
+#if BLUETOOTH_SUPPORT || CELLULAR_SUPPPORT
+
+static void toggle_connectivity_indicator(const enum led indicator)
+{
+        led_toggle(indicator);
+}
+
+static void clear_connectivity_indicator(const enum led indicator)
+{
+        led_disable(indicator);
+}
+
+static void queue_api_event(const struct api_event * api_event, void * data)
+{
+        xQueueHandle queue = data;
+        if (xQueueSendToBack(queue, api_event, 0)) {
+                pr_trace(_LOG_PFX "queued api event\r\n");
+        } else {
+                pr_warning(_LOG_PFX "api event queue overflow\r\n");
+        }
+}
+
 void startConnectivityTask(int16_t priority)
 {
         for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++) {
@@ -259,28 +282,12 @@ void startConnectivityTask(int16_t priority)
                 break;
         }
 }
+#else
+void startConnectivityTask(int16_t priority){}
+#endif
 
-static void toggle_connectivity_indicator(const enum led indicator)
-{
-        led_toggle(indicator);
-}
-
-static void clear_connectivity_indicator(const enum led indicator)
-{
-        led_disable(indicator);
-}
-
-static void queue_api_event(const struct api_event * api_event, void * data)
-{
-        xQueueHandle queue = data;
-        if (xQueueSendToBack(queue, api_event, 0)) {
-                pr_trace(_LOG_PFX "queued api event\r\n");
-        } else {
-                pr_warning(_LOG_PFX "api event queue overflow\r\n");
-        }
-}
-
-void connectivityTask(void *params)
+#if BLUETOOTH_SUPPORT
+void blueooth_connectivity_task(void *params)
 {
         size_t rxCount = 0;
 
@@ -445,7 +452,9 @@ void connectivityTask(void *params)
                 connParams->disconnect(&deviceConfig);
         }
 }
+#endif
 
+#if CELLULAR_SUPPORT
 void cellular_buffering_task(void *params)
 {
 
@@ -706,8 +715,9 @@ void cellular_connectivity_task(void *params)
                                                         fs_lock();
                                                         FRESULT fseek_res = f_lseek(cellular_state.buffer_file, cellular_state.read_index);
                                                         read_string = f_gets(cellular_state.buffer_buffer, BUFFER_BUFFER_SIZE, cellular_state.buffer_file);
-                                                        cellular_state.read_index += strlen(read_string);
                                                         fs_unlock();
+                                                        if (read_string != NULL)
+                                                                cellular_state.read_index += strlen(read_string);
 
                                                         if (FR_OK != fseek_res) {
                                                                 pr_error_int_msg("Error reading telemetry buffer, aborting ", fseek_res);
@@ -791,5 +801,5 @@ void cellular_connectivity_task(void *params)
                 connParams->disconnect(&deviceConfig);
         }
 }
-
+#endif
 

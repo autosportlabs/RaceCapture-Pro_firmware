@@ -100,7 +100,7 @@ void queueTelemetryRecord(const LoggerMessage *msg);
 
 void startConnectivityTask(int16_t priority);
 
-void connectivityTask(void *params);
+void blueooth_connectivity_task(void *params);
 
 void cellular_connectivity_task(void *params);
 
