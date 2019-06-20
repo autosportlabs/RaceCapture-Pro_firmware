@@ -106,6 +106,8 @@ void cellular_connectivity_task(void *params);
 
 void cellular_buffering_task(void *params);
 
+int process_rx_buffer(struct Serial *serial, char *buffer, size_t *rxCount);
+
 CPP_GUARD_END
 
 #endif /* CONNECTIVITY_TASK_H_ */

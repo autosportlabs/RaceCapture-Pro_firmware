@@ -94,7 +94,6 @@ static CellularState cellular_state = {
 };
 #endif
 
-#if BLUETOOTH_SUPPORT || CELLULAR_SUPPORT
 static size_t trimBuffer(char *buffer, size_t count)
 {
 
@@ -107,7 +106,7 @@ static size_t trimBuffer(char *buffer, size_t count)
         return count;
 }
 
-static int processRxBuffer(struct Serial *serial, char *buffer, size_t *rxCount)
+int process_rx_buffer(struct Serial *serial, char *buffer, size_t *rxCount)
 {
         const int count = serial_read_line_wait(serial, buffer + *rxCount,
                                                 BUFFER_SIZE - *rxCount, 0);
@@ -135,7 +134,6 @@ static int processRxBuffer(struct Serial *serial, char *buffer, size_t *rxCount)
         }
         return processMsg;
 }
-#endif
 
 void queueTelemetryRecord(const LoggerMessage *msg)
 {
@@ -214,27 +212,7 @@ static void create_cellular_connection_tasks(int16_t priority,
 }
 #endif
 
-#if BLUETOOTH_SUPPORT || CELLULAR_SUPPPORT
 
-static void toggle_connectivity_indicator(const enum led indicator)
-{
-        led_toggle(indicator);
-}
-
-static void clear_connectivity_indicator(const enum led indicator)
-{
-        led_disable(indicator);
-}
-
-static void queue_api_event(const struct api_event * api_event, void * data)
-{
-        xQueueHandle queue = data;
-        if (xQueueSendToBack(queue, api_event, 0)) {
-                pr_trace(_LOG_PFX "queued api event\r\n");
-        } else {
-                pr_warning(_LOG_PFX "api event queue overflow\r\n");
-        }
-}
 
 void startConnectivityTask(int16_t priority)
 {
@@ -249,22 +227,26 @@ void startConnectivityTask(int16_t priority)
 
         switch (CONNECTIVITY_CHANNELS) {
         case 2: {
-                ConnectivityConfig *connConfig =
-                        &getWorkingLoggerConfig()->ConnectivityConfigs;
+                //ConnectivityConfig *connConfig =
+                  //      &getWorkingLoggerConfig()->ConnectivityConfigs;
                 /*
                  * Logic to control which connection is considered 'primary',
                  * which is used later to determine which task has control
                  * over LED flashing
                  */
 
-                const uint8_t cellEnabled = connConfig->cellularConfig.cellEnabled;
 #if CELLULAR_SUPPORT
+                const uint8_t cellEnabled = getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig.cellEnabled;
                 if (cellEnabled)
                         create_cellular_connection_tasks(priority,
                                                       g_sampleQueue[1], LED_TELEMETRY);
+#else
+#if BLUETOOTH_SUPPORT
+                const uint8_t cellEnabled = false;
+#endif
 #endif
 #if BLUETOOTH_SUPPORT
-                if (connConfig->bluetoothConfig.btEnabled) {
+                if (getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig.btEnabled) {
                         /* Pick the bluetooth LED if available */
                         enum led activity_led = led_available(LED_BLUETOOTH) ? LED_BLUETOOTH : LED_TELEMETRY;
                         activity_led = cellEnabled && activity_led == LED_TELEMETRY ? LED_UNKNOWN : activity_led;
@@ -282,11 +264,18 @@ void startConnectivityTask(int16_t priority)
                 break;
         }
 }
-#else
-void startConnectivityTask(int16_t priority){}
-#endif
 
 #if BLUETOOTH_SUPPORT
+
+static void queue_bluetooth_api_event(const struct api_event * api_event, void * data)
+{
+        xQueueHandle queue = data;
+        if (xQueueSendToBack(queue, api_event, 0)) {
+                pr_trace(_LOG_PFX "queued api event\r\n");
+        } else {
+                pr_warning(_LOG_PFX "bluetooth api event queue overflow\r\n");
+        }
+}
 void blueooth_connectivity_task(void *params)
 {
         size_t rxCount = 0;
@@ -310,7 +299,7 @@ void blueooth_connectivity_task(void *params)
         bool logging_enabled = false;
 
         xQueueHandle api_event_queue = xQueueCreate(API_EVENT_QUEUE_DEPTH, sizeof(struct api_event));
-        api_event_create_callback(queue_api_event, api_event_queue);
+        api_event_create_callback(queue_bluetooth_api_event, api_event_queue);
 
         bool hard_init = true;
         while (1) {
@@ -381,7 +370,7 @@ void blueooth_connectivity_task(void *params)
                                             !should_sample(msg.ticks, max_telem_rate))
                                                 break;
 
-                                        toggle_connectivity_indicator(connParams->activity_led);
+                                        led_toggle(connParams->activity_led);
 
                                         const int send_meta = tick == 0 ||
                                                               (connParams->periodicMeta &&
@@ -409,7 +398,7 @@ void blueooth_connectivity_task(void *params)
                         // Process incoming message, if available
                         ////////////////////////////////////////////////////////////
                         //read in available characters, process message as necessary*/
-                        int msgReceived = processRxBuffer(serial, bluetooth_buffer, &rxCount);
+                        int msgReceived = process_rx_buffer(serial, bluetooth_buffer, &rxCount);
                         /*check the latest contents of the buffer for something that might indicate an error condition*/
                         if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
                                 pr_info(_LOG_PFX "Disconnected\r\n");
@@ -448,7 +437,7 @@ void blueooth_connectivity_task(void *params)
                         }
                 }
 
-                clear_connectivity_indicator(connParams->activity_led);
+                led_disable(connParams->activity_led);
                 connParams->disconnect(&deviceConfig);
         }
 }
@@ -586,6 +575,16 @@ void cellular_buffering_task(void *params)
         }
 }
 
+static void queue_cellular_api_event(const struct api_event * api_event, void * data)
+{
+        xQueueHandle queue = data;
+        if (xQueueSendToBack(queue, api_event, 0)) {
+                pr_trace(_LOG_PFX "queued api event\r\n");
+        } else {
+                pr_warning(_LOG_PFX "cellular api event queue overflow\r\n");
+        }
+}
+
 void cellular_connectivity_task(void *params)
 {
         size_t rxCount = 0;
@@ -609,7 +608,7 @@ void cellular_connectivity_task(void *params)
         bool logging_enabled = false;
 
         xQueueHandle api_event_queue = xQueueCreate(API_EVENT_QUEUE_DEPTH, sizeof(struct api_event));
-        api_event_create_callback(queue_api_event, api_event_queue);
+        api_event_create_callback(queue_cellular_api_event, api_event_queue);
 
         bool hard_init = true;
         bool buffering_enabled = false;
@@ -695,7 +694,7 @@ void cellular_connectivity_task(void *params)
                                             !should_sample(msg.ticks, max_telem_rate))
                                                 break;
 
-                                        toggle_connectivity_indicator(connParams->activity_led);
+                                        led_toggle(connParams->activity_led);
 
                                         if (tick == 0) {
                                                 /* send one metadata sample at the beginning of the connection */
@@ -755,7 +754,7 @@ void cellular_connectivity_task(void *params)
                         // Process incoming message, if available
                         ////////////////////////////////////////////////////////////
                         //read in available characters, process message as necessary*/
-                        int msgReceived = processRxBuffer(serial, cellular_state.cell_buffer, &rxCount);
+                        int msgReceived = process_rx_buffer(serial, cellular_state.cell_buffer, &rxCount);
                         /*check the latest contents of the buffer for something that might indicate an error condition*/
                         if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
                                 pr_info(_LOG_PFX "Disconnected\r\n");
@@ -797,7 +796,7 @@ void cellular_connectivity_task(void *params)
                         }
                 }
 
-                clear_connectivity_indicator(connParams->activity_led);
+                led_disable(connParams->activity_led);
                 connParams->disconnect(&deviceConfig);
         }
 }
