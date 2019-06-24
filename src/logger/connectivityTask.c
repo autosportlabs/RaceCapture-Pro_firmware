@@ -787,7 +787,8 @@ void cellular_connectivity_task(void *params)
                                 const int msgRes = process_api(serial, cellular_state.cell_buffer, BUFFER_SIZE);
                                 const int msgError = (msgRes == API_ERROR_MALFORMED);
                                 if (msgError) {
-                                        pr_debug(_LOG_PFX " (failed)\r\n");
+                                        pr_error_int_msg(_LOG_PFX " process_api_failed ", msgRes);
+                                        pr_error_str_msg(_LOG_PFX " message: ", cellular_state.cell_buffer);
                                 }
                                 if (msgError) {
                                         badMsgCount++;
