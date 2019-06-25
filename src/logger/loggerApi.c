@@ -460,13 +460,19 @@ int api_send_button_state(struct Serial *serial, const struct button_state *butt
         return API_SUCCESS_NO_RETURN;
 }
 
+#if CELLULAR_SUPPORT
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json)
 {
+        uint32_t last_timestamp = 0;
+        jsmn_exists_set_val_int(json, "lt", &last_timestamp);
+        cellular_update_last_server_timestamp(last_timestamp);
         json_objStart(serial);
         json_int(serial, "hb", getUptimeAsInt(), 0);
         json_objEnd(serial, 0);
+
         return API_SUCCESS_NO_RETURN;
 }
+#endif
 
 void api_sendLogStart(struct Serial *serial)
 {

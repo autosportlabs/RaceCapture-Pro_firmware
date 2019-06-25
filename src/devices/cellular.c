@@ -45,6 +45,7 @@
 #define AUTOBAUD_BACKOFF_MS	200
 #define PROBE_READ_TIMEOUT_MS	500
 /* Good balance between SIM900 and Ublox sara module */
+#define RESET_MODEM_POWER_DELAY_MS 500
 #define RESET_MODEM_DELAY_MS	1100
 #define RESET_MODEM_WAIT_MS 1100
 #define TELEM_AUTH_JSMN_TOKENS	5
@@ -319,6 +320,13 @@ static void reset_modem()
          * shortly (< 3sec) after powerup.  This balance seems to work
          * "Well enough"(tm).
          */
+
+
+        /* enable/disable voltage regulator */
+        cell_enable_vreg(false);
+        delayMs(RESET_MODEM_POWER_DELAY_MS);
+        cell_enable_vreg(true);
+        delayMs(RESET_MODEM_POWER_DELAY_MS);
         cell_pwr_btn(true);
         delayMs(RESET_MODEM_DELAY_MS);
         cell_pwr_btn(false);

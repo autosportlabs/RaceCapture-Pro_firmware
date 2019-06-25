@@ -61,7 +61,7 @@
 
 #define IDLE_TIMEOUT       configTICK_RATE_HZ / 10
 #define INIT_DELAY         600
-#define TELEMETRY_DISCONNECT_TIMEOUT            60000
+#define TELEMETRY_DISCONNECT_TIMEOUT            3000
 
 #define TELEMETRY_STACK_SIZE 300
 #define CELLULAR_TELEMETRY_STACK_SIZE 330
@@ -92,7 +92,9 @@ static CellularState cellular_state = {
                 .cell_buffer = {},
                 .read_index = 0,
                 .buffer_file_open = false,
-                .should_reconnect = false
+                .should_reconnect = false,
+                .server_tick_echo = 0,
+                .server_tick_echo_changed_at = 0
 };
 
 bool cellular_telemetry_buffering_enabled(void)
@@ -103,6 +105,13 @@ bool cellular_telemetry_buffering_enabled(void)
 void cellular_telemetry_reconnect()
 {
         cellular_state.should_reconnect = true;
+}
+
+void cellular_update_last_server_timestamp(uint32_t server_tick_echo)
+{
+        if (server_tick_echo != cellular_state.server_tick_echo)
+                cellular_state.server_tick_echo_changed_at = getCurrentTicks();
+        cellular_state.server_tick_echo = server_tick_echo;
 }
 #endif
 
@@ -174,7 +183,7 @@ static void create_bluetooth_connection_task(int16_t priority,
 
         /* Make all task names 16 chars including NULL char */
         static const signed portCHAR task_name[] = "Bluetooth Task ";
-        xTaskCreate(blueooth_connectivity_task, task_name, TELEMETRY_STACK_SIZE,
+        xTaskCreate(bluetooth_connectivity_task, task_name, TELEMETRY_STACK_SIZE,
                     params, priority, NULL );
 }
 #endif
@@ -288,9 +297,9 @@ static void queue_bluetooth_api_event(const struct api_event * api_event, void *
                 pr_warning(_LOG_PFX "bluetooth api event queue overflow\r\n");
         }
 }
-void blueooth_connectivity_task(void *params)
+void bluetooth_connectivity_task(void *params)
 {
-        size_t rxCount = 0;
+        size_t rx_buffer_count = 0;
 
         ConnParams *connParams = (ConnParams*)params;
         LoggerMessage msg;
@@ -335,8 +344,8 @@ void blueooth_connectivity_task(void *params)
                         GPS_set_UTC_time(connected_at);
 
                 serial_flush(serial);
-                rxCount = 0;
-                size_t badMsgCount = 0;
+                rx_buffer_count = 0;
+                size_t bad_message_count = 0;
                 size_t tick = 0;
                 size_t last_message_time = getUptimeAsInt();
                 bool should_reconnect = false;
@@ -410,7 +419,7 @@ void blueooth_connectivity_task(void *params)
                         // Process incoming message, if available
                         ////////////////////////////////////////////////////////////
                         //read in available characters, process message as necessary*/
-                        int msgReceived = process_rx_buffer(serial, bluetooth_buffer, &rxCount);
+                        int msgReceived = process_rx_buffer(serial, bluetooth_buffer, &rx_buffer_count);
                         /*check the latest contents of the buffer for something that might indicate an error condition*/
                         if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
                                 pr_info(_LOG_PFX "Disconnected\r\n");
@@ -429,15 +438,15 @@ void blueooth_connectivity_task(void *params)
                                         pr_debug(_LOG_PFX " (failed)\r\n");
                                 }
                                 if (msgError) {
-                                        badMsgCount++;
+                                        bad_message_count++;
                                 } else {
-                                        badMsgCount = 0;
+                                        bad_message_count = 0;
                                 }
-                                if (badMsgCount >= BAD_MESSAGE_THRESHOLD) {
-                                        pr_warning_int_msg(_LOG_PFX "re-connecting- empty/bad msgs :", badMsgCount );
+                                if (bad_message_count >= BAD_MESSAGE_THRESHOLD) {
+                                        pr_warning_int_msg(_LOG_PFX "re-connecting- empty/bad msgs :", bad_message_count );
                                         break;
                                 }
-                                rxCount = 0;
+                                rx_buffer_count = 0;
                         }
 
                         /*disconnect if a timeout is configured and
@@ -607,7 +616,7 @@ static void queue_cellular_api_event(const struct api_event * api_event, void * 
 
 void cellular_connectivity_task(void *params)
 {
-        size_t rxCount = 0;
+        size_t rx_buffer_count = 0;
 
         TelemetryConnParams *connParams = (TelemetryConnParams*)params;
         BufferedLoggerMessage msg;
@@ -654,11 +663,12 @@ void cellular_connectivity_task(void *params)
                         GPS_set_UTC_time(connected_at);
 
                 serial_flush(serial);
-                rxCount = 0;
-                size_t badMsgCount = 0;
-                size_t tick = 0;
-                size_t last_message_time = getUptimeAsInt();
+                rx_buffer_count = 0;
+                size_t bad_api_msg_count = 0;
                 cellular_state.should_reconnect = false;
+                cellular_state.server_tick_echo = 0;
+                cellular_state.server_tick_echo_changed_at = getCurrentTicks();
+
                 hard_init = false;
 
                 int32_t backlog_size = f_size(cellular_state.buffer_file) - cellular_state.read_index;
@@ -692,7 +702,6 @@ void cellular_connectivity_task(void *params)
                                 case LoggerMessageType_Start: {
                                         api_sendLogStart(serial);
                                         put_crlf(serial);
-                                        tick = 0;
                                         logging_enabled = true;
                                         /* If we're not already streaming trigger a re-connect */
                                         if (!should_stream)
@@ -715,14 +724,9 @@ void cellular_connectivity_task(void *params)
 
                                         led_toggle(connParams->activity_led);
 
-                                        if (tick == 0) {
-                                                /* send one metadata sample at the beginning of the connection */
-                                                api_send_sample_record(serial, msg.sample, tick, true);
-                                                put_crlf(serial);
-                                        }
                                         if (!current_buffering_enabled) {
                                                 /* Fall back to non-buffered sample streaming */
-                                                api_send_sample_record(serial, msg.sample, tick, false);
+                                                api_send_sample_record(serial, msg.sample, msg.ticks, false);
                                                 put_crlf(serial);
                                         }
                                         else {
@@ -751,8 +755,6 @@ void cellular_connectivity_task(void *params)
                                                         }
                                                 }
                                         }
-
-                                        tick++;
                                         break;
                                 }
                                 default:
@@ -773,7 +775,7 @@ void cellular_connectivity_task(void *params)
                         // Process incoming message, if available
                         ////////////////////////////////////////////////////////////
                         //read in available characters, process message as necessary*/
-                        int msgReceived = process_rx_buffer(serial, cellular_state.cell_buffer, &rxCount);
+                        int msgReceived = process_rx_buffer(serial, cellular_state.cell_buffer, &rx_buffer_count);
                         /*check the latest contents of the buffer for something that might indicate an error condition*/
                         if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
                                 pr_info(_LOG_PFX "Disconnected\r\n");
@@ -782,8 +784,6 @@ void cellular_connectivity_task(void *params)
 
                         /*now process a complete message if available*/
                         if (msgReceived) {
-                                last_message_time = getUptimeAsInt();
-
                                 const int msgRes = process_api(serial, cellular_state.cell_buffer, BUFFER_SIZE);
                                 const int msgError = (msgRes == API_ERROR_MALFORMED);
                                 if (msgError) {
@@ -791,22 +791,21 @@ void cellular_connectivity_task(void *params)
                                         pr_error_str_msg(_LOG_PFX " message: ", cellular_state.cell_buffer);
                                 }
                                 if (msgError) {
-                                        badMsgCount++;
+                                        bad_api_msg_count++;
                                 } else {
-                                        badMsgCount = 0;
+                                        bad_api_msg_count = 0;
                                 }
-                                if (badMsgCount >= BAD_MESSAGE_THRESHOLD) {
-                                        pr_warning_int_msg(_LOG_PFX "re-connecting- empty/bad msgs :", badMsgCount );
+                                if (bad_api_msg_count >= BAD_MESSAGE_THRESHOLD) {
+                                        pr_warning_int_msg(_LOG_PFX "re-connecting- empty/bad msgs :", bad_api_msg_count );
                                         break;
                                 }
-                                rxCount = 0;
+                                rx_buffer_count = 0;
                         }
 
                         /*disconnect if a timeout is configured and
                         // we haven't heard from the other side for a while */
-                        const size_t timeout = getUptimeAsInt() - last_message_time;
-                        if (connection_timeout && timeout > connection_timeout ) {
-                                pr_info_str_msg(_LOG_PFX " Timeout ", connParams->connectionName);
+                        if (isTimeoutMs(cellular_state.server_tick_echo_changed_at, connection_timeout)) {
+                                pr_info_str_msg(_LOG_PFX " Heartbeat timeout ", connParams->connectionName);
                                 cellular_state.should_reconnect = true;
                         }
                 }
