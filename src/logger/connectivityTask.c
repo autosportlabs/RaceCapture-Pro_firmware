@@ -61,7 +61,6 @@
 
 #define IDLE_TIMEOUT       configTICK_RATE_HZ / 10
 #define INIT_DELAY         600
-#define TELEMETRY_DISCONNECT_TIMEOUT            3000
 
 #define TELEMETRY_STACK_SIZE 300
 #define CELLULAR_TELEMETRY_STACK_SIZE 330
@@ -94,7 +93,9 @@ static CellularState cellular_state = {
                 .buffer_file_open = false,
                 .should_reconnect = false,
                 .server_tick_echo = 0,
-                .server_tick_echo_changed_at = 0
+                .server_tick_echo_changed_at = 0,
+                .sample_offset_map = {0},
+                .sample_offset_map_index = 0
 };
 
 bool cellular_telemetry_buffering_enabled(void)
@@ -107,11 +108,52 @@ void cellular_telemetry_reconnect()
         cellular_state.should_reconnect = true;
 }
 
-void cellular_update_last_server_timestamp(uint32_t server_tick_echo)
+void cellular_update_last_server_tick_echo(uint32_t server_tick_echo)
 {
         if (server_tick_echo != cellular_state.server_tick_echo)
                 cellular_state.server_tick_echo_changed_at = getCurrentTicks();
         cellular_state.server_tick_echo = server_tick_echo;
+}
+
+/* reset the sample offset map circular buffer */
+static void cellular_reset_buffer_offset_map(void){
+        memset(cellular_state.sample_offset_map, 0, SAMPLE_TRACKING_WINDOW * sizeof(SampleOffsetMap));
+}
+
+/* get an offset by the specified tick */
+static bool cellular_get_buffer_offset_by_tick(uint32_t tick, uint32_t *offset)
+{
+        SampleOffsetMap *map = cellular_state.sample_offset_map;
+        for (size_t i = 0; i < SAMPLE_TRACKING_WINDOW; i++){
+                if (map->tick == tick){
+                        *offset = map->buffer_file_index;
+                        return true;
+                }
+                map++;
+        }
+        return false;
+}
+
+/* store an offset into the circular buffer using the tick as a 'key' */
+static void cellular_add_buffer_offset_tick(uint32_t tick, uint32_t offset)
+{
+        int32_t index = cellular_state.sample_offset_map_index;
+        index++;
+        index = index >= SAMPLE_TRACKING_WINDOW ? 0 : index;
+        cellular_state.sample_offset_map[index].buffer_file_index = offset;
+        cellular_state.sample_offset_map[index].tick = tick;
+        cellular_state.sample_offset_map_index = index;
+}
+
+/* A cheap way to extract a value from the json sample string */
+static bool get_tick_from_sample_string(char * sample_string, uint32_t *tick)
+{
+        char * tick_string = strstr(sample_string,"{\"s\":{\"t\":");
+        if (tick_string) {
+                *tick = atoi(tick_string + 10);
+                return true;
+        }
+        return false;
 }
 #endif
 
@@ -214,7 +256,7 @@ static void create_cellular_connection_tasks(int16_t priority,
         {
                 TelemetryConnParams * params = (TelemetryConnParams *)portMalloc(sizeof(TelemetryConnParams));
                 params->connectionName = "CellTelem";
-                params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
+                params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT * 1000;
                 params->disconnect = &cellular_disconnect;
                 params->check_connection_status = &cellular_check_connection_status;
                 params->init_connection = &cellular_init_connection;
@@ -346,7 +388,7 @@ void bluetooth_connectivity_task(void *params)
                 serial_flush(serial);
                 rx_buffer_count = 0;
                 size_t bad_message_count = 0;
-                size_t tick = 0;
+                uint32_t tick = 0;
                 size_t last_message_time = getUptimeAsInt();
                 bool should_reconnect = false;
                 hard_init = false;
@@ -503,6 +545,7 @@ void cellular_buffering_task(void *params)
                                         }
                                 }
                                 FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+                                cellular_reset_buffer_offset_map();
                                 fs_unlock();
                                 if (FR_OK != fopen_rc) {
                                         pr_debug_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
@@ -578,6 +621,7 @@ void cellular_buffering_task(void *params)
                                                 fs_failed = true;
                                                 goto BUFFER_DONE;
                                         }
+
                                         BUFFER_DONE:
                                         if (fs_failed ) {
                                                 f_close(cellular_state.buffer_file);
@@ -666,6 +710,15 @@ void cellular_connectivity_task(void *params)
                 rx_buffer_count = 0;
                 size_t bad_api_msg_count = 0;
                 cellular_state.should_reconnect = false;
+
+                uint32_t file_offset = 0;
+                if(cellular_get_buffer_offset_by_tick(cellular_state.server_tick_echo, &file_offset)) {
+                        cellular_state.read_index = file_offset;
+                }
+                else {
+                        pr_info_int_msg(_LOG_PFX "could not find precise resume location in buffer file for tick: ", cellular_state.server_tick_echo);
+                }
+
                 cellular_state.server_tick_echo = 0;
                 cellular_state.server_tick_echo_changed_at = getCurrentTicks();
 
@@ -738,17 +791,23 @@ void cellular_connectivity_task(void *params)
                                                         FRESULT fseek_res = f_lseek(cellular_state.buffer_file, cellular_state.read_index);
                                                         read_string = f_gets(cellular_state.buffer_buffer, BUFFER_BUFFER_SIZE, cellular_state.buffer_file);
                                                         fs_unlock();
-                                                        if (read_string != NULL)
-                                                                cellular_state.read_index += strlen(read_string);
 
                                                         if (FR_OK != fseek_res) {
                                                                 pr_error_int_msg("Error reading telemetry buffer, aborting ", fseek_res);
                                                                 break;
                                                         }
-                                                        if (strlen(read_string) == 0) {
+
+                                                        if (read_string == NULL || strlen(read_string) == 0)
                                                                 break;
-                                                        }
+
                                                         serial_write_s(serial, read_string);
+                                                        cellular_state.read_index += strlen(read_string);
+
+                                                        uint32_t tick = 0;
+                                                        if(get_tick_from_sample_string(read_string, &tick)){
+                                                                cellular_add_buffer_offset_tick(tick, cellular_state.read_index);
+                                                        }
+
                                                         if (cellular_state.read_index - start_index > BUFFERED_CHUNK_SIZE){
                                                                 delayMs(BUFFERED_CHUNK_WAIT);
                                                                 start_index = cellular_state.read_index;

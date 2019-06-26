@@ -39,6 +39,22 @@ CPP_GUARD_BEGIN
 #define BUFFER_SIZE        1025
 #define BUFFER_BUFFER_SIZE 2000
 
+/* 5 second disconnect timeout */
+#define TELEMETRY_DISCONNECT_TIMEOUT 5
+
+/* Disconnect timeout + 1 seconds at 10Hz for tracking samples
+ * This is used to calculate the size of the circular buffer
+ * for tracking sample byte offsets within buffer file.
+ * We add 1 second to the timeout to allow some overhead.
+ */
+#define SAMPLE_TRACKING_WINDOW 10 * (TELEMETRY_DISCONNECT_TIMEOUT + 1)
+
+/* maps a tick against a byte offset in a file */
+typedef struct _SampleOffsetMap {
+        uint32_t tick;
+        uint32_t buffer_file_index;
+} SampleOffsetMap;
+
 typedef struct _ConnParams {
         bool always_streaming;
         char * connectionName;
@@ -96,6 +112,8 @@ typedef struct _CellularState {
         bool should_reconnect;
         uint32_t server_tick_echo;
         size_t server_tick_echo_changed_at;
+        SampleOffsetMap sample_offset_map[SAMPLE_TRACKING_WINDOW];
+        size_t sample_offset_map_index;
 } CellularState;
 
 void queueTelemetryRecord(const LoggerMessage *msg);
@@ -114,7 +132,7 @@ void cellular_telemetry_reconnect();
 
 int process_rx_buffer(struct Serial *serial, char *buffer, size_t *rxCount);
 
-void cellular_update_last_server_timestamp(uint32_t timestamp);
+void cellular_update_last_server_tick_echo(uint32_t timestamp);
 
 CPP_GUARD_END
 

@@ -465,7 +465,7 @@ int api_heart_beat(struct Serial *serial, const jsmntok_t *json)
 {
         uint32_t last_timestamp = 0;
         jsmn_exists_set_val_int(json, "lt", &last_timestamp);
-        cellular_update_last_server_timestamp(last_timestamp);
+        cellular_update_last_server_tick_echo(last_timestamp);
         json_objStart(serial);
         json_int(serial, "hb", getUptimeAsInt(), 0);
         json_objEnd(serial, 0);
