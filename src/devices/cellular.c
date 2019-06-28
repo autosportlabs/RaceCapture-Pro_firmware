@@ -48,7 +48,7 @@
 #define RESET_MODEM_POWER_DELAY_MS 500
 #define RESET_MODEM_DELAY_MS	1100
 #define RESET_MODEM_WAIT_MS 1100
-#define TELEM_AUTH_JSMN_TOKENS	5
+#define TELEM_AUTH_JSMN_TOKENS	11
 #define TELEM_AUTH_RX_TRIES	3
 #define TELEM_AUTH_RX_WAIT_MS	5000
 
@@ -371,7 +371,8 @@ static void print_registration_failure()
 
 static bool auth_telem_stream(struct serial_buffer *sb,
                               const TelemetryConfig *tc,
-                              millis_t * connected_at)
+                              millis_t * connected_at,
+                              uint32_t * last_tick)
 {
         serial_buffer_reset(sb);
 
@@ -381,7 +382,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         json_objStart(serial);
         json_objStartString(serial, "auth");
         json_string(serial, "deviceId", deviceId, 1);
-        json_int(serial, "apiVer", API_REV, 1);
+        json_float(serial, "apiVer", API_REV, 1, 1);
         json_string(serial, "device", DEVICE_NAME, 1);
         json_string(serial, "ver", version_full(), 1);
         json_string(serial, "sn", cpu_get_serialnumber(), 0);
@@ -416,8 +417,11 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                         const char *status = status_val->data;
                         if (0 == strcmp(status, "ok")) {
                                 jsmn_exists_set_val_uint64(toks, "utc", (uint64_t *)connected_at);
+                                jsmn_exists_set_val_uint32(toks, "lt", (uint32_t *)last_tick);
                                 pr_info("[cell] Connected to Podium\r\n");
                                 return true;
+
+
                         }
 
                         /* If here, then something went wrong. */
@@ -439,7 +443,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         return false;
 }
 
-int cellular_init_connection(DeviceConfig *config, millis_t * connected_at, bool hard_init)
+int cellular_init_connection(DeviceConfig *config, millis_t * connected_at, uint32_t * last_tick, bool hard_init)
 {
         telemetry_info.active_since = 0;
         LoggerConfig *loggerConfig = getWorkingLoggerConfig();
@@ -504,7 +508,7 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at, bool
         }
 
         /* Auth against RCL */
-        if (!auth_telem_stream(sb, telemetryConfig, connected_at)) {
+        if (!auth_telem_stream(sb, telemetryConfig, connected_at, last_tick)) {
                 telemetry_info.status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
                 return DEVICE_INIT_FAIL;
         }

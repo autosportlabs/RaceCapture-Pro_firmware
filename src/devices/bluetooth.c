@@ -217,7 +217,7 @@ int bt_disconnect(DeviceConfig *config)
         return 0; /* NOOP */
 }
 
-int bt_init_connection(DeviceConfig *config,  millis_t * connected_at, bool hard_init)
+int bt_init_connection(DeviceConfig *config,  millis_t * connected_at, uint32_t * last_tick, bool hard_init)
 {
         BluetoothConfig *btConfig =
                 &(getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig);

@@ -368,11 +368,12 @@ void bluetooth_connectivity_task(void *params)
         while (1) {
                 size_t connect_retries = 0;
                 millis_t connected_at = 0;
+                uint32_t last_tick = 0;
                 bool should_stream = logging_enabled ||
                                      logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
                                      connParams->always_streaming;
 
-                while (should_stream && connParams->init_connection(&deviceConfig, &connected_at, hard_init) != DEVICE_INIT_SUCCESS) {
+                while (should_stream && connParams->init_connection(&deviceConfig, &connected_at, &last_tick, hard_init) != DEVICE_INIT_SUCCESS) {
                         pr_info(_LOG_PFX "not connected. retrying\r\n");
                         vTaskDelay(INIT_DELAY);
                         connect_retries++;
@@ -689,11 +690,12 @@ void cellular_connectivity_task(void *params)
         while (1) {
                 size_t connect_retries = 0;
                 millis_t connected_at = 0;
+                uint32_t last_tick = 0;
                 bool should_stream = logging_enabled ||
                                      logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
                                      connParams->always_streaming;
 
-                while (should_stream && connParams->init_connection(&deviceConfig, &connected_at, hard_init) != DEVICE_INIT_SUCCESS) {
+                while (should_stream && connParams->init_connection(&deviceConfig, &connected_at, &last_tick, hard_init) != DEVICE_INIT_SUCCESS) {
                         pr_info(_LOG_PFX "not connected. retrying\r\n");
                         vTaskDelay(INIT_DELAY);
                         connect_retries++;
@@ -712,11 +714,12 @@ void cellular_connectivity_task(void *params)
                 cellular_state.should_reconnect = false;
 
                 uint32_t file_offset = 0;
-                if(cellular_get_buffer_offset_by_tick(cellular_state.server_tick_echo, &file_offset)) {
+                if(cellular_get_buffer_offset_by_tick(last_tick, &file_offset)) {
                         cellular_state.read_index = file_offset;
+                        cellular_state.server_tick_echo = last_tick;
                 }
                 else {
-                        pr_info_int_msg(_LOG_PFX "could not find precise resume location in buffer file for tick: ", cellular_state.server_tick_echo);
+                        pr_info_int_msg(_LOG_PFX "could not find precise resume location in buffer file for tick: ", last_tick);
                 }
 
                 cellular_state.server_tick_echo = 0;

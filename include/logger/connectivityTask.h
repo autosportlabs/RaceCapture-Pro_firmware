@@ -47,7 +47,7 @@ CPP_GUARD_BEGIN
  * for tracking sample byte offsets within buffer file.
  * We add 1 second to the timeout to allow some overhead.
  */
-#define SAMPLE_TRACKING_WINDOW 10 * (TELEMETRY_DISCONNECT_TIMEOUT + 1)
+#define SAMPLE_TRACKING_WINDOW 10 * (TELEMETRY_DISCONNECT_TIMEOUT + 4)
 
 /* maps a tick against a byte offset in a file */
 typedef struct _SampleOffsetMap {
@@ -59,7 +59,7 @@ typedef struct _ConnParams {
         bool always_streaming;
         char * connectionName;
         int (*disconnect)(DeviceConfig *config);
-        int (*init_connection)(DeviceConfig *config, millis_t * connected_at, bool hard_init);
+        int (*init_connection)(DeviceConfig *config, millis_t * connected_at, uint32_t * last_tick, bool hard_init);
         int (*check_connection_status)(DeviceConfig *config);
         serial_id_t serial;
         size_t periodicMeta;
@@ -73,7 +73,7 @@ typedef struct _TelemetryConnParams {
         bool always_streaming;
         char * connectionName;
         int (*disconnect)(DeviceConfig *config);
-        int (*init_connection)(DeviceConfig *config, millis_t * connected_at, bool hard_init);
+        int (*init_connection)(DeviceConfig *config, millis_t * connected_at, uint32_t * last_tick, bool hard_init);
         int (*check_connection_status)(DeviceConfig *config);
         serial_id_t serial;
         uint32_t connection_timeout;
