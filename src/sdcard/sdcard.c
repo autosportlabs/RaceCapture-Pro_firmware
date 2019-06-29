@@ -123,7 +123,6 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
                 put_crlf(serial);
         }
 
-        fs_lock();
         if (!quiet)
                 serial_write_s(serial,"Card Init... ");
 
@@ -240,7 +239,6 @@ exit:
                 serial_write_s(serial, res== 0 ? "WIN":"FAIL");
                 put_crlf(serial);
         }
-        fs_unlock();
 
         if (fatFile != NULL)
                 vPortFree(fatFile);
@@ -250,9 +248,11 @@ exit:
 
 void test_sd_interactive(struct Serial *serial, int lines, int doFlush, int quiet)
 {
+        fs_lock();
         bool result = test_sd(serial, lines, doFlush, quiet);
         if (quiet)
                 put_int(serial, result);
+        fs_unlock();
 }
 
 

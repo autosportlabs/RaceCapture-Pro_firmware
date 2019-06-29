@@ -545,13 +545,22 @@ void cellular_buffering_task(void *params)
                                                 pr_debug_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
                                         }
                                 }
+                                bool sd_write_validated = test_sd(NULL, 1, 0, 1);
+                                if (!sd_write_validated)
+                                        pr_error(_LOG_PFX "SD write verification failed");
+
                                 FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
                                 cellular_reset_buffer_offset_map();
+
+                                FRESULT truncate_rc = f_truncate(cellular_state.buffer_file);
+                                if (FR_OK != truncate_rc)
+                                        pr_error_int_msg(_LOG_PFX "Error truncating telemetry buffer file: ", truncate_rc);
+
                                 fs_unlock();
                                 if (FR_OK != fopen_rc) {
                                         pr_debug_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
                                 }
-                                if (fs_good && FR_OK == fopen_rc) {
+                                if (fs_good && sd_write_validated && FR_OK == fopen_rc && FR_OK == truncate_rc) {
                                         cellular_state.buffer_file_open = true;
                                         /* try to connect immediately on the first re-attempt*/
                                         re_open_buffer_file_timeout = 0;
@@ -560,7 +569,7 @@ void cellular_buffering_task(void *params)
                                         /* re-connect a bit later */
                                         re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
                                 }
-                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
+                                pr_info_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
                         }
 
                         should_stream =
@@ -727,7 +736,9 @@ void cellular_connectivity_task(void *params)
 
                 hard_init = false;
 
+                fs_lock();
                 int32_t backlog_size = f_size(cellular_state.buffer_file) - cellular_state.read_index;
+                fs_unlock();
 
                 if ( backlog_size > 0) {
                         pr_info_int_msg(_LOG_PFX "Telemetry backlog: ", backlog_size);
