@@ -62,6 +62,7 @@
 #define IDLE_TIMEOUT       configTICK_RATE_HZ / 10
 #define INIT_DELAY         600
 
+#define TELEMETRY_BUFFER_FILE_SYNC_INTERVAL 100
 #define TELEMETRY_STACK_SIZE 300
 #define CELLULAR_TELEMETRY_STACK_SIZE 330
 #define BAD_MESSAGE_THRESHOLD     10
@@ -525,6 +526,7 @@ void cellular_buffering_task(void *params)
 
         uint32_t re_open_buffer_file_timeout = 0;
         uint32_t last_open_buffer_attempt = getCurrentTicks();
+        uint32_t buffer_file_open_retries = 0;
 
         while (1) {
                 bool should_stream = logging_enabled ||
@@ -534,42 +536,53 @@ void cellular_buffering_task(void *params)
                 while (1) {
                         if (!cellular_state.buffer_file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
                                 last_open_buffer_attempt = getCurrentTicks();
+                                cellular_reset_buffer_offset_map();
                                 cellular_state.read_index = 0;
                                 fs_lock();
                                 bool fs_good = sdcard_fs_mounted();
                                 if (!fs_good) {
                                         FRESULT initfs_rc = InitFS();
-                                        pr_debug_int_msg(_LOG_PFX "Remounting filesystem: ", initfs_rc);
                                         fs_good = (initfs_rc == FR_OK);
                                         if (FR_OK != initfs_rc) {
-                                                pr_debug_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
+                                                if (!buffer_file_open_retries)
+                                                        pr_info_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
                                         }
                                 }
-                                bool sd_write_validated = test_sd(NULL, 1, 0, 1);
-                                if (!sd_write_validated)
-                                        pr_error(_LOG_PFX "SD write verification failed");
 
-                                FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
-                                cellular_reset_buffer_offset_map();
-
-                                FRESULT truncate_rc = f_truncate(cellular_state.buffer_file);
-                                if (FR_OK != truncate_rc)
-                                        pr_error_int_msg(_LOG_PFX "Error truncating telemetry buffer file: ", truncate_rc);
-
+                                if (fs_good) {
+                                        bool sd_write_validated = test_sd(NULL, 1, 0, 1);
+                                        if (sd_write_validated) {
+                                                FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+                                                if (FR_OK == fopen_rc) {
+                                                        FRESULT truncate_rc = f_truncate(cellular_state.buffer_file);
+                                                        if (FR_OK == truncate_rc){
+                                                                cellular_state.buffer_file_open = true;
+                                                                /* try to connect immediately on the first re-attempt*/
+                                                                re_open_buffer_file_timeout = 0;
+                                                                buffer_file_open_retries = 0;
+                                                        }
+                                                        else{
+                                                                if (!buffer_file_open_retries)
+                                                                        pr_info_int_msg(_LOG_PFX "Error truncating telemetry buffer file: ", truncate_rc);
+                                                        }
+                                                }
+                                                else {
+                                                        if (!buffer_file_open_retries)
+                                                                pr_info_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
+                                                }
+                                        }
+                                        else {
+                                                if (!buffer_file_open_retries)
+                                                        pr_info(_LOG_PFX "SD write verification failed. Try re-formatting SD card\r\n");
+                                        }
+                                }
                                 fs_unlock();
-                                if (FR_OK != fopen_rc) {
-                                        pr_debug_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
-                                }
-                                if (fs_good && sd_write_validated && FR_OK == fopen_rc && FR_OK == truncate_rc) {
-                                        cellular_state.buffer_file_open = true;
-                                        /* try to connect immediately on the first re-attempt*/
-                                        re_open_buffer_file_timeout = 0;
-                                }
-                                else {
-                                        /* re-connect a bit later */
+                                if (!cellular_state.buffer_file_open) {
+                                        /* try re-opening a bit later */
                                         re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
+                                        buffer_file_open_retries++;
                                 }
-                                pr_info_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
+                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
                         }
 
                         should_stream =
@@ -625,11 +638,14 @@ void cellular_buffering_task(void *params)
 
                                         fs_write_sample_record(cellular_state.buffer_file, msg.sample, tick, send_meta);
 
-                                        FRESULT fsync_res = f_sync(cellular_state.buffer_file);
-                                        if (FR_OK != fsync_res) {
-                                                pr_error_int_msg(_LOG_PFX "Failed to sync buffer file: ", fsync_res);
-                                                fs_failed = true;
-                                                goto BUFFER_DONE;
+                                        if (tick % TELEMETRY_BUFFER_FILE_SYNC_INTERVAL == 0) {
+                                                pr_debug_int_msg(_LOG_PFX "Flushing buffer file: ", tick);
+                                                FRESULT fsync_res = f_sync(cellular_state.buffer_file);
+                                                if (FR_OK != fsync_res) {
+                                                        pr_error_int_msg(_LOG_PFX "Failed to sync buffer file: ", fsync_res);
+                                                        fs_failed = true;
+                                                        goto BUFFER_DONE;
+                                                }
                                         }
 
                                         BUFFER_DONE:
@@ -728,7 +744,7 @@ void cellular_connectivity_task(void *params)
                         cellular_state.server_tick_echo = last_tick;
                 }
                 else {
-                        pr_info_int_msg(_LOG_PFX "could not find precise resume location in buffer file for tick: ", last_tick);
+                        pr_info_int_msg(_LOG_PFX "could not find precise location in buffer file for tick: ", last_tick);
                 }
 
                 cellular_state.server_tick_echo = 0;

@@ -191,8 +191,6 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
                 put_crlf(serial);
         }
 
-        //f_sync(fatFile);
-
         if (!quiet)
                 serial_write_s(serial, "Validating... ");
         FRESULT fseek_res = f_lseek(fatFile, 0);
