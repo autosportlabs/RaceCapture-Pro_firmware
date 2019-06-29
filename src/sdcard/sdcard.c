@@ -202,6 +202,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         char * buffer_result = NULL;
         bool validate_success = true;
+        startTicks = xTaskGetTickCount();
         for (size_t i = 0; i < lines; i++){
                 buffer_result = f_gets(buffer, sizeof(buffer), fatFile);
                 if (strstr(SD_TEST_PATTERN, buffer_result) != 0) {
@@ -218,6 +219,16 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
                 serial_write_s(serial, validate_success ? "WIN" : "FAIL");
                 put_crlf(serial);
         }
+
+        endTicks = xTaskGetTickCount();
+
+        if (!quiet) {
+                serial_write_s(serial,"time to read: ");
+                put_int(serial, ticksToMs(endTicks - startTicks));
+                serial_write_s(serial, " ms");
+                put_crlf(serial);
+        }
+
         res = validate_success ? 0 : -1;
         if (res)
                 goto exit;
