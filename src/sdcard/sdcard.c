@@ -37,6 +37,8 @@
 static FATFS *fat_fs = NULL;
 static xSemaphoreHandle fs_mutex = NULL;
 
+#define SD_TEST_PATTERN "0123456789"
+
 void InitFSHardware(void)
 {
         disk_init_hardware();
@@ -98,18 +100,17 @@ int UnmountFS()
         return f_mount(NULL, "0", 1);
 }
 
-void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
-{
+bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
         int res = 0;
         FIL *fatFile = NULL;
+        char buffer[strlen(SD_TEST_PATTERN) + 2];
 
         if(!is_initialized())
-                return;
+                return false;
 
         fatFile = pvPortMalloc(sizeof(FIL));
         if (NULL == fatFile) {
-                if (!quiet) serial_write_s(serial,
-                                                   "could not allocate file object\r\n");
+                if (!quiet) serial_write_s(serial, "could not allocate file object\r\n");
                 goto exit;
         }
 
@@ -117,13 +118,15 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
                 serial_write_s(serial,"Test Write: Lines: ");
                 put_int(serial, lines);
                 put_crlf(serial);
-                serial_write_s(serial,"Flushing Enabled: " );
-                put_int(serial, doFlush);
+                serial_write_s(serial,"Periodic flushing enabled: " );
+                serial_write_s(serial, doFlush ? "YES" : "NO");
                 put_crlf(serial);
-                serial_write_s(serial,"Card Init... ");
         }
 
         fs_lock();
+        if (!quiet)
+                serial_write_s(serial,"Card Init... ");
+
         bool fs_good = sdcard_fs_mounted();
         if (!fs_good) {
                 FRESULT init_rc = InitFS();
@@ -131,18 +134,21 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
                         pr_info_int_msg(" Remounting filesystem: ", init_rc);
                 fs_good = (init_rc == FR_OK);
         }
-        if (!fs_good)
-                goto exit;
-
         if (!quiet) {
-                put_int(serial, res);
+                serial_write_s(serial, fs_good ? "WIN" : "FAIL");
                 put_crlf(serial);
-                serial_write_s(serial,"Opening File... ");
         }
 
-        res = f_open(fatFile,"test1.txt", FA_WRITE | FA_CREATE_ALWAYS);
+        if (!fs_good){
+                res = -1;
+                goto exit;
+        }
+
+        if (!quiet)
+                serial_write_s(serial,"Opening File... ");
+        res = f_open(fatFile,"test1.txt", FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
         if (!quiet) {
-                put_int(serial, res);
+                serial_write_s(serial, res == 0? "WIN" : "FAIL");
                 put_crlf(serial);
         }
 
@@ -150,57 +156,103 @@ void TestSDWrite(struct Serial *serial, int lines, int doFlush, int quiet)
                 goto exit;
 
         if (!quiet)
-                serial_write_s(serial, "Writing file..");
+                serial_write_s(serial, "Writing file...  ");
 
         portTickType startTicks = xTaskGetTickCount();
         for (int i = 1; i <= lines; i++) {
-                res = f_puts("The quick brown fox jumped over the lazy dog\n",fatFile);
+                res = f_puts(SD_TEST_PATTERN "\r\n",fatFile);
                 if (doFlush) f_sync(fatFile);
+                if (!quiet) {
+                        serial_write_s(serial, "\b");
+                        serial_write_s(serial, i % 2 == 0 ? "O" : "o");
+                }
                 if (res == EOF) {
-                        if (!quiet)
+                        if (!quiet){
                                 serial_write_s(serial, "failed writing at line ");
 
-                        put_int(serial, i);
-                        serial_write_s(serial,"(");
-                        put_int(serial, res);
-                        serial_write_s(serial,")");
-                        put_crlf(serial);
+                                put_int(serial, i);
+                                serial_write_s(serial,"(");
+                                put_int(serial, res);
+                                serial_write_s(serial,")");
+                                put_crlf(serial);
+                        }
                         goto exit;
                 }
                 watchdog_reset();
         }
+        if (!quiet)
+                serial_write_s(serial, "\b WIN\r\n");
+
         portTickType endTicks = xTaskGetTickCount();
 
         if (!quiet) {
-                serial_write_s(serial,"Ticks to write: ");
-                put_int(serial, endTicks - startTicks);
+                serial_write_s(serial,"time to write: ");
+                put_int(serial, ticksToMs(endTicks - startTicks));
+                serial_write_s(serial, " ms");
                 put_crlf(serial);
-                serial_write_s(serial,"Closing... ");
         }
 
+        //f_sync(fatFile);
+
+        if (!quiet)
+                serial_write_s(serial, "Validating... ");
+        FRESULT fseek_res = f_lseek(fatFile, 0);
+        if (FR_OK != fseek_res) {
+                serial_write_s(serial, "SEEK FAILED");
+                put_crlf(serial);
+                goto exit;
+        }
+
+        char * buffer_result = NULL;
+        bool validate_success = true;
+        for (size_t i = 0; i < lines; i++){
+                buffer_result = f_gets(buffer, sizeof(buffer), fatFile);
+                if (strstr(SD_TEST_PATTERN, buffer_result) != 0) {
+                        validate_success = false;
+                        break;
+                }
+                if (!quiet) {
+                        serial_write_s(serial, "\b");
+                        serial_write_s(serial, i % 2 == 0 ? "O" : "o");
+                }
+        }
+        if (!quiet) {
+                serial_write_s(serial, "\b ");
+                serial_write_s(serial, validate_success ? "WIN" : "FAIL");
+                put_crlf(serial);
+        }
+        res = validate_success ? 0 : -1;
+        if (res)
+                goto exit;
+
+        if (!quiet) {
+                serial_write_s(serial,"Closing... ");
+        }
         res = f_close(fatFile);
+
         if (!quiet) {
                 put_int(serial, res);
                 put_crlf(serial);
         }
-        if (res) goto exit;
-
 exit:
-        if (quiet) {
-                put_int(serial, res == 0 ? 1 : 0);
-        } else {
-                if(res == 0) {
-                        serial_write_s(serial,"SUCCESS");
-                } else {
-                        serial_write_s(serial,"ERROR");
-                        put_int(serial, res);
-                        put_crlf(serial);
-                }
+        if (!quiet) {
+                serial_write_s(serial, "Test write overall: ");
+                serial_write_s(serial, res== 0 ? "WIN":"FAIL");
+                put_crlf(serial);
         }
         fs_unlock();
 
         if (fatFile != NULL)
                 vPortFree(fatFile);
+
+        return res == 0 ? true : false;
+}
+
+void test_sd_interactive(struct Serial *serial, int lines, int doFlush, int quiet)
+{
+        bool result = test_sd(serial, lines, doFlush, quiet);
+        if (quiet)
+                put_int(serial, result);
 }
 
 

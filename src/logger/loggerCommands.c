@@ -66,7 +66,7 @@ void TestSD(struct Serial *serial, unsigned int argc, char **argv)
         if (argc > 1) lines = atoi(argv[1]);
         if (argc > 2) doFlush = atoi(argv[2]);
         if (argc > 3) quiet = atoi(argv[3]);
-        TestSDWrite(serial, lines, doFlush, quiet);
+        test_sd_interactive(serial, lines, doFlush, quiet);
 #endif
 
 }
