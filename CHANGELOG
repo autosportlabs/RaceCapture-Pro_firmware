@@ -1,3 +1,7 @@
+= 2.17.0=
+* Telemetry: Add telemetry buffering via SD card to account for marginal cellular conditions. 
+* Core: improve testSD command
+
 = 2.16.0=
 * IMU: Add real-time Gsum channel 
 * Core: Add metric/imperial switches for calculated Distance, GPS Speed, GPS Altitude
