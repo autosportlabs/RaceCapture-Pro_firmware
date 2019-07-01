@@ -93,6 +93,7 @@ static CellularState cellular_state = {
                 .read_index = 0,
                 .buffer_file_open = false,
                 .should_reconnect = false,
+                .should_stream = false,
                 .server_tick_echo = 0,
                 .server_tick_echo_changed_at = 0,
                 .sample_offset_map = {0},
@@ -291,8 +292,6 @@ void startConnectivityTask(int16_t priority)
 
         switch (CONNECTIVITY_CHANNELS) {
         case 2: {
-                //ConnectivityConfig *connConfig =
-                  //      &getWorkingLoggerConfig()->ConnectivityConfigs;
                 /*
                  * Logic to control which connection is considered 'primary',
                  * which is used later to determine which task has control
@@ -529,7 +528,7 @@ void cellular_buffering_task(void *params)
         uint32_t buffer_file_open_retries = 0;
 
         while (1) {
-                bool should_stream = logging_enabled ||
+                cellular_state.should_stream = logging_enabled ||
                                      logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
                                      connParams->always_streaming;
 
@@ -585,7 +584,7 @@ void cellular_buffering_task(void *params)
                                 pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
                         }
 
-                        should_stream =
+                        cellular_state.should_stream =
                                 logging_enabled ||
                                 connParams->always_streaming ||
                                 logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
@@ -598,8 +597,8 @@ void cellular_buffering_task(void *params)
                         if (pdFALSE != res) {
                                 switch(msg.type) {
                                 case LoggerMessageType_Start: {
-                                        tick = 0;
                                         logging_enabled = true;
+                                        tick = 0;
                                         break;
                                 }
                                 case LoggerMessageType_Stop: {
@@ -607,7 +606,7 @@ void cellular_buffering_task(void *params)
                                         break;
                                 }
                                 case LoggerMessageType_Sample: {
-                                        if (!should_stream ||
+                                        if (!cellular_state.should_stream ||
                                             !should_sample(msg.ticks, max_telem_rate))
                                                 break;
 
@@ -658,7 +657,6 @@ void cellular_buffering_task(void *params)
                                         BufferedLoggerMessage buffer_msg;
                                         buffer_msg.sample = msg.sample;
                                         buffer_msg.ticks = msg.ticks;
-                                        buffer_msg.type = msg.type;
                                         xQueueSend(cellular_state.buffer_queue, &buffer_msg, 0);
 
                                         tick++;
@@ -669,7 +667,6 @@ void cellular_buffering_task(void *params)
                                         break;
                                 }
                         }
-
                 }
         }
 }
@@ -702,10 +699,6 @@ void cellular_connectivity_task(void *params)
         deviceConfig.buffer = cellular_state.cell_buffer;
         deviceConfig.length = BUFFER_SIZE;
 
-        const LoggerConfig *logger_config = getWorkingLoggerConfig();
-
-        bool logging_enabled = false;
-
         xQueueHandle api_event_queue = xQueueCreate(API_EVENT_QUEUE_DEPTH, sizeof(struct api_event));
         api_event_create_callback(queue_cellular_api_event, api_event_queue);
 
@@ -716,11 +709,13 @@ void cellular_connectivity_task(void *params)
                 size_t connect_retries = 0;
                 millis_t connected_at = 0;
                 uint32_t last_tick = 0;
-                bool should_stream = logging_enabled ||
-                                     logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
-                                     connParams->always_streaming;
 
-                while (should_stream && connParams->init_connection(&deviceConfig, &connected_at, &last_tick, hard_init) != DEVICE_INIT_SUCCESS) {
+                led_disable(connParams->activity_led);
+                delayMs(INIT_DELAY);
+                if (!cellular_state.should_stream)
+                        continue;
+
+                while (connParams->init_connection(&deviceConfig, &connected_at, &last_tick, hard_init) != DEVICE_INIT_SUCCESS) {
                         pr_info(_LOG_PFX "not connected. retrying\r\n");
                         vTaskDelay(INIT_DELAY);
                         connect_retries++;
@@ -760,14 +755,9 @@ void cellular_connectivity_task(void *params)
                         pr_info_int_msg(_LOG_PFX "Telemetry backlog: ", backlog_size);
                 }
 
-                while (1) {
+                while (cellular_state.should_stream) {
                         if ( cellular_state.should_reconnect )
                                 break; /*break out and trigger the re-connection if needed */
-
-                        should_stream =
-                                logging_enabled ||
-                                connParams->always_streaming ||
-                                logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
                         bool current_buffering_enabled = cellular_state.buffer_file_open;
                         if (buffering_enabled != current_buffering_enabled) {
@@ -781,29 +771,7 @@ void cellular_connectivity_task(void *params)
                         // Process a pending message from logger task, if exists
                         ////////////////////////////////////////////////////////////*/
                         if (pdFALSE != res) {
-                                switch(msg.type) {
-                                case LoggerMessageType_Start: {
-                                        api_sendLogStart(serial);
-                                        put_crlf(serial);
-                                        logging_enabled = true;
-                                        /* If we're not already streaming trigger a re-connect */
-                                        if (!should_stream)
-                                                cellular_state.should_reconnect = true;
-                                        break;
-                                }
-                                case LoggerMessageType_Stop: {
-                                        api_sendLogEnd(serial);
-                                        put_crlf(serial);
-                                        if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
-                                               connParams->always_streaming))
-                                                cellular_state.should_reconnect = true;
-                                        logging_enabled = false;
-                                        break;
-                                }
-                                case LoggerMessageType_Sample: {
-                                        if (!should_stream ||
-                                            !should_sample(msg.ticks, max_telem_rate))
-                                                break;
+                                if (cellular_state.should_stream && should_sample(msg.ticks, max_telem_rate)) {
 
                                         led_toggle(connParams->activity_led);
 
@@ -844,11 +812,6 @@ void cellular_connectivity_task(void *params)
                                                         }
                                                 }
                                         }
-                                        break;
-                                }
-                                default:
-                                        pr_info_int_msg(_LOG_PFX "Unknown logger message type ", msg.type);
-                                        break;
                                 }
                         }
 
@@ -893,13 +856,11 @@ void cellular_connectivity_task(void *params)
 
                         /*disconnect if a timeout is configured and
                         // we haven't heard from the other side for a while */
-                        if (isTimeoutMs(cellular_state.server_tick_echo_changed_at, connection_timeout)) {
+                        if (cellular_state.should_stream && isTimeoutMs(cellular_state.server_tick_echo_changed_at, connection_timeout)) {
                                 pr_info_str_msg(_LOG_PFX " Heartbeat timeout ", connParams->connectionName);
                                 cellular_state.should_reconnect = true;
                         }
                 }
-
-                led_disable(connParams->activity_led);
                 connParams->disconnect(&deviceConfig);
         }
 }

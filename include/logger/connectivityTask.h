@@ -90,14 +90,7 @@ typedef struct _BufferingTaskParams {
         int max_sample_rate;
 } BufferingTaskParams;
 
-typedef struct _BufferedTelemetryMessage {
-        enum LoggerMessageType type;
-        size_t ticks;
-        struct sample *sample;
-} BufferedTelemetryMessage;
-
 typedef struct _BufferedLoggerMessage {
-        enum LoggerMessageType type;
         size_t ticks;
         struct sample *sample;
 } BufferedLoggerMessage;
@@ -109,6 +102,7 @@ typedef struct _CellularState {
         char cell_buffer[BUFFER_SIZE];
         int32_t read_index;
         bool buffer_file_open;
+        bool should_stream;
         bool should_reconnect;
         uint32_t server_tick_echo;
         size_t server_tick_echo_changed_at;
