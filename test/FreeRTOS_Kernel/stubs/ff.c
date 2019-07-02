@@ -73,3 +73,8 @@ TCHAR* f_gets (
         return "";
 }
 
+FRESULT f_truncate (FIL* fp )
+{
+        return FR_OK;
+}
+

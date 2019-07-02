@@ -22,6 +22,11 @@
 
 #include "sdcard.h"
 
+bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet)
+{
+        return true;
+}
+
 void test_sd_interactive(struct Serial *serial, int lines,int doFlush, int quiet)
 {
 
@@ -71,3 +76,4 @@ void fs_write_sample_record(FIL *buffer_file,
 {
 
 }
+
