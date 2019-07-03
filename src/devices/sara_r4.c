@@ -166,21 +166,6 @@ static bool sara_r4_put_dns_config(struct serial_buffer *sb,
         return true;
 }
 
-static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
-                                         int socket_id)
-{
-        const char *msgs[1];
-        const size_t msgs_len = ARRAY_LEN(msgs);
-
-        serial_buffer_reset(sb);
-        serial_buffer_printf_append(sb, "AT+USOSO=%d,6,1,1", socket_id);
-        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
-                                               msgs_len);
-        bool is_ok = is_rsp_ok(msgs, count);
-        pr_info_bool_msg("[sara_r4] Configure TCP socket: ", is_ok);
-        return is_ok;
-}
-
 static int sara_r4_create_tcp_socket(struct serial_buffer *sb)
 {
         const char *cmd = "AT+USOCR=6";
@@ -234,7 +219,7 @@ static bool sara_r4_close_tcp_socket(struct serial_buffer *sb,
         const size_t msgs_len = ARRAY_LEN(msgs);
 
         serial_buffer_reset(sb);
-        serial_buffer_printf_append(sb, "AT+USOCL=%d", socket_id);
+        serial_buffer_printf_append(sb, "AT+USOCL=%d,1", socket_id);
         const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs,
                                                msgs_len);
         return is_rsp_ok(msgs, count);
@@ -270,7 +255,7 @@ static bool sara_r4_stop_direct_mode(struct serial_buffer *sb)
         for (size_t events = STOP_DM_RX_EVENTS; events; --events) {
                 serial_buffer_reset(sb);
                 if (serial_buffer_rx(sb, STOP_DM_RX_TIMEOUT_MS) &&
-                    is_rsp_ok((const char**) &(sb->buffer), 1))
+                    is_rsp((const char**) &(sb->buffer), 1, "DISCONNECT"))
                         return true;
         }
 
@@ -295,12 +280,27 @@ static bool sara_r4_set_profile(struct serial_buffer *sb)
         pr_info_bool_msg("[sara_r4] Set Profile: ", is_ok);
         return is_ok;
 }
+
+static bool sara_r4_set_baud_rate(struct serial_buffer *sb)
+{
+        const char *msgs[2];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_append(sb, "AT+IPR=115200");
+        const size_t count = cellular_exec_cmd(sb, READ_TIMEOUT, msgs, msgs_len);
+        delayMs(100);
+        serial_config(sb->serial,8,0,1,115200);
+        return is_rsp_ok(msgs, count);
+}
+
 static bool sara_r4_init(struct serial_buffer *sb,
                            struct cellular_info *ci,
                            CellularConfig *cc)
 {
+
         pr_info("[sara_r4] Initializing\r\n");
-        return (sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) && sara_r4_set_profile(sb));
+        return (sara_r4_set_baud_rate(sb) && sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) && sara_r4_set_profile(sb));
 }
 
 static bool sara_r4_get_sim_info(struct serial_buffer *sb,
@@ -363,6 +363,43 @@ static bool sara_r4_setup_pdp(struct serial_buffer *sb,
         return true;
 }
 
+static bool sara_r1_configure_tcp_socket_character_trigger(struct serial_buffer *sb,
+                                                int socket_id)
+{
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_printf_append(sb, "AT+UDCONF=7,%d,10", socket_id);
+        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
+                                               msgs_len);
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Configure TCP socket character trigger: ", is_ok);
+        return is_ok;
+}
+
+static bool sara_r1_configure_tcp_socket_nodelay(struct serial_buffer *sb,
+                                         int socket_id)
+{
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        serial_buffer_printf_append(sb, "AT+USOSO=%d,6,1,1", socket_id);
+        const size_t count = cellular_exec_cmd(sb, CONNECT_TIMEOUT, msgs,
+                                               msgs_len);
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Configure TCP socket nodelay: ", is_ok);
+        return is_ok;
+}
+
+static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
+                                         int socket_id)
+{
+        return sara_r1_configure_tcp_socket_character_trigger(sb, socket_id) &&
+                        sara_r1_configure_tcp_socket_nodelay(sb, socket_id);
+}
+
 static bool sara_r4_connect_rcl_telem(struct serial_buffer *sb,
                                         struct cellular_info *ci,
                                         struct telemetry_info *ti,
@@ -385,7 +422,7 @@ static bool sara_r4_connect_rcl_telem(struct serial_buffer *sb,
         }
 
         if (!sara_r1_configure_tcp_socket(sb, ti->socket)) {
-                        pr_warning("[SARA-R1] Failed to configure socket");
+                        pr_error("[SARA-R1] Failed to configure socket\r\n");
                         return false;
         }
 
@@ -399,7 +436,6 @@ static bool sara_r4_disconnect(struct serial_buffer *sb,
         if (!sara_r4_stop_direct_mode(sb)) {
                 /* Then we don't know if can issue commands */
                 pr_warning("[sara_r4] Failed to escape Direct Mode\r\n");
-                return false;
         }
 
         if (!sara_r4_close_tcp_socket(sb, ti->socket)) {

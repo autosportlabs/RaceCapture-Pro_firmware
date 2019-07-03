@@ -30,7 +30,7 @@
 
 CPP_GUARD_BEGIN
 
-const struct cell_modem_methods* get_sara_u280_methods();
+const struct cell_modem_methods* get_sara_u2_methods();
 
 CPP_GUARD_END
 

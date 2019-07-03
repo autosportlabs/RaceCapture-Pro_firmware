@@ -244,7 +244,8 @@ static void get_cellular_status(struct Serial* serial, const bool more)
         json_string(serial, "IMEI", cell_get_IMEI(), 1);
         json_int(serial, "sig_str", cell_get_signal_strength(), 1);
         json_string(serial, "number", cell_get_subscriber_number(), 1);
-        json_string(serial, "state", ns_val, 0);
+        json_string(serial, "state", ns_val, 1);
+        json_bool(serial, "buff", cellular_telemetry_buffering_enabled(), 0);
         json_objEnd(serial, 1);
 
         const telemetry_status_t ts = cellular_get_connection_status();
@@ -255,6 +256,7 @@ static void get_cellular_status(struct Serial* serial, const bool more)
         json_string(serial, "state", ts_val, 1);
         json_int(serial, "dur", cellular_active_time(), 0);
         json_objEnd(serial, more);
+
 #endif
 }
 
@@ -458,13 +460,19 @@ int api_send_button_state(struct Serial *serial, const struct button_state *butt
         return API_SUCCESS_NO_RETURN;
 }
 
+#if CELLULAR_SUPPORT
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json)
 {
+        uint32_t last_timestamp = 0;
+        jsmn_exists_set_val_int(json, "lt", &last_timestamp);
+        cellular_update_last_server_tick_echo(last_timestamp);
         json_objStart(serial);
         json_int(serial, "hb", getUptimeAsInt(), 0);
         json_objEnd(serial, 0);
+
         return API_SUCCESS_NO_RETURN;
 }
+#endif
 
 void api_sendLogStart(struct Serial *serial)
 {

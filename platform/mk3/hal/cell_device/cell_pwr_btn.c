@@ -29,6 +29,9 @@
 #define EXT_POWER_CONTROL_PIN GPIO_Pin_10
 #define EXT_POWER_CONTROL_PORT GPIOE
 
+#define EXT_VREG_CONTROL_PIN GPIO_Pin_11
+#define EXT_VREG_CONTROL_PORT GPIOE
+
 static void cell_pwr_btn_init()
 {
         static bool configured = false;
@@ -41,21 +44,41 @@ static void cell_pwr_btn_init()
         /* Clear the GPIO Structure */
         GPIO_StructInit(&gpio_conf);
 
-        /* turn on debug port and clock */
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
 
         /*
-         * This configuration should work on both the u-blox sara u280 and
-         * the sim900 without issue.
+         * Configure the power on port
          */
         gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
         gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
         gpio_conf.GPIO_Pin = EXT_POWER_CONTROL_PIN;
         gpio_conf.GPIO_OType = GPIO_OType_OD;
         gpio_conf.GPIO_PuPd = GPIO_PuPd_UP;
-
         GPIO_Init(EXT_POWER_CONTROL_PORT, &gpio_conf);
+
+        /*
+         * Configure the voltage regulator port
+         */
+        gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
+        gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
+        gpio_conf.GPIO_Pin = EXT_VREG_CONTROL_PIN;
+        gpio_conf.GPIO_OType = GPIO_OType_OD;
+        gpio_conf.GPIO_PuPd = GPIO_PuPd_UP;
+        GPIO_Init(EXT_VREG_CONTROL_PORT, &gpio_conf);
+
         configured = true;
+}
+
+void cell_enable_vreg(const bool enabled){
+
+        cell_pwr_btn_init();
+
+        if (enabled) {
+                GPIO_SetBits(EXT_VREG_CONTROL_PORT, EXT_VREG_CONTROL_PIN);
+        }
+        else {
+                GPIO_ResetBits(EXT_VREG_CONTROL_PORT, EXT_VREG_CONTROL_PIN);
+        }
 }
 
 void cell_pwr_btn(const bool pressed)

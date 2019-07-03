@@ -10,8 +10,8 @@
 
 /* Support Flags */
 #define GPS_HARDWARE_SUPPORT     1
-#define BLUETOOTH_SUPPORT           0
-#define CELLULAR_SUPPORT	        0
+/*#define BLUETOOTH_SUPPORT           1 */
+/*#define CELLULAR_SUPPORT	        1 */
 #define LUA_SUPPORT		            0
 #define SDCARD_SUPPORT		        0
 #define USB_SERIAL_SUPPORT	        1

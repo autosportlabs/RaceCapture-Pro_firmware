@@ -63,3 +63,18 @@ FRESULT f_lseek (
 {
         return FR_OK;
 }
+
+TCHAR* f_gets (
+        TCHAR* buff, /* Pointer to the string buffer to read */
+        int len,  /* Size of string buffer (characters) */
+        FIL* fp   /* Pointer to the file object */
+)
+{
+        return "";
+}
+
+FRESULT f_truncate (FIL* fp )
+{
+        return FR_OK;
+}
+
