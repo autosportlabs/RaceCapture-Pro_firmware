@@ -473,8 +473,6 @@ void bluetooth_connectivity_task(void *params)
                         if (msgReceived) {
                                 last_message_time = getUptimeAsInt();
 
-                                pr_info_str_msg("received msg ", bluetooth_buffer);
-
                                 const int msgRes = process_api(serial, bluetooth_buffer, BUFFER_SIZE);
                                 const int msgError = (msgRes == API_ERROR_MALFORMED);
                                 if (msgError) {
@@ -809,6 +807,12 @@ void cellular_connectivity_task(void *params)
                                                         if (cellular_state.read_index - start_index > BUFFERED_CHUNK_SIZE){
                                                                 delayMs(BUFFERED_CHUNK_WAIT);
                                                                 start_index = cellular_state.read_index;
+
+                                                                /* here we're catching up on a lot of buffered data,
+                                                                 * so reset the timestamp so we don't time out
+                                                                 * prematurely
+                                                                 */
+                                                                cellular_state.server_tick_echo_changed_at = getCurrentTicks();
                                                         }
                                                 }
                                         }
