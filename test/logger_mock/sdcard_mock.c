@@ -22,7 +22,12 @@
 
 #include "sdcard.h"
 
-void TestSDWrite(struct Serial *serial, int lines,int doFlush, int quiet)
+bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet)
+{
+        return true;
+}
+
+void test_sd_interactive(struct Serial *serial, int lines,int doFlush, int quiet)
 {
 
 }
@@ -51,3 +56,24 @@ bool sdcard_present()
 {
         return true;
 }
+
+void fs_lock(void){
+
+}
+
+void fs_unlock(void){
+
+}
+
+bool sdcard_fs_mounted(void)
+{
+        return true;
+}
+
+void fs_write_sample_record(FIL *buffer_file,
+                            const struct sample *sample,
+                            const unsigned int tick, const int sendMeta)
+{
+
+}
+

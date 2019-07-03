@@ -127,6 +127,7 @@ bool gsm_get_signal_strength(struct serial_buffer *sb,
                 *comma = '\0';
                 const int signal = atoi(rssi_string);
                 ci->signal = signal;
+                pr_info_int_msg("[gsm] signal strength rssi: ", signal);
         }
 
         /* TODO: Interpret cellular value per page in ublox AT CMD Sheet */

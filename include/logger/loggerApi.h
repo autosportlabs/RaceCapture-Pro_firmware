@@ -51,7 +51,6 @@ CPP_GUARD_BEGIN
 	API_METHOD("getTrackDb", api_getTrackDb)			\
 	API_METHOD("getVer", api_getVersion)				\
 	API_METHOD("getWifiCfg", api_get_wifi_cfg)			\
-	API_METHOD("hb", api_heart_beat)				\
 	API_METHOD("log", api_log)					\
 	API_METHOD("s", api_sampleData)					\
 	API_METHOD("alertmessage", api_alertmessage)     \
@@ -144,6 +143,13 @@ CPP_GUARD_BEGIN
 #define LUA_API_METHODS
 #endif
 
+#if CELLULAR_SUPPORT
+#define CELLULAR_API_METHODS \
+        API_METHOD("hb", api_heart_beat)
+#else
+#define CELLULAR_API_METHODS
+#endif
+
 #define API_METHODS                             \
         AUTOLOGGING_METHODS                     \
         CAMERA_CONTROL_METHODS                  \
@@ -154,7 +160,8 @@ CPP_GUARD_BEGIN
         PWM_API_METHODS                         \
         GPIO_API_METHODS                        \
         TIMER_API_METHODS                       \
-        LUA_API_METHODS
+        LUA_API_METHODS                         \
+        CELLULAR_API_METHODS
 
 
 /* commands */
@@ -172,7 +179,9 @@ int api_send_alertmessage(struct Serial *serial, const struct alertmessage *aler
 int api_send_alertmsg_ack(struct Serial *serial, const struct alertmessage_ack *alertmsg_ack);
 int api_send_alertmsg_reply(struct Serial *serial, const struct alertmessage *alertmsg);
 int api_send_button_state(struct Serial *serial, const struct button_state *butt_state);
+#if CELLULAR_SUPPORT
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json);
+#endif
 int api_log(struct Serial *serial, const jsmntok_t *json);
 int api_getMeta(struct Serial *serial, const jsmntok_t *json);
 int api_getConnectivityConfig(struct Serial *serial, const jsmntok_t *json);

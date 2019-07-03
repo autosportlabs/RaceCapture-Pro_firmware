@@ -24,3 +24,5 @@
 void cell_pwr_btn_init(const enum cellular_modem cm) {}
 
 void cell_pwr_btn(const bool pressed) {}
+
+void cell_enable_vreg(const bool enabled){}

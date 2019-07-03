@@ -36,7 +36,7 @@ typedef enum {
 } bluetooth_status_t;
 
 bluetooth_status_t bt_get_status();
-int bt_init_connection(DeviceConfig *config, millis_t * connected_at, bool hard_init);
+int bt_init_connection(DeviceConfig *config, millis_t * connected_at, uint32_t *last_tick, bool hard_init);
 int bt_disconnect(DeviceConfig *config);
 int bt_check_connection_status(DeviceConfig *config);
 

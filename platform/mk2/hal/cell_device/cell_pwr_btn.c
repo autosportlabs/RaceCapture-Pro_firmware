@@ -58,6 +58,9 @@ static void cell_pwr_btn_init()
         configured = true;
 }
 
+void cell_enable_vreg(const bool enabled)
+{}
+
 void cell_pwr_btn(const bool pressed)
 {
         cell_pwr_btn_init();
