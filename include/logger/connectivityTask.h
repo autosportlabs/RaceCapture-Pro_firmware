@@ -40,9 +40,9 @@ CPP_GUARD_BEGIN
 #define BUFFER_BUFFER_SIZE 2000
 
 /* 5 second disconnect timeout */
-#define TELEMETRY_DISCONNECT_TIMEOUT 5
+#define TELEMETRY_DISCONNECT_TIMEOUT 10
 
-/* Disconnect timeout + 1 seconds at 10Hz for tracking samples
+/* Disconnect timeout + extra seconds at 10Hz for tracking samples
  * This is used to calculate the size of the circular buffer
  * for tracking sample byte offsets within buffer file.
  * We add 1 second to the timeout to allow some overhead.
