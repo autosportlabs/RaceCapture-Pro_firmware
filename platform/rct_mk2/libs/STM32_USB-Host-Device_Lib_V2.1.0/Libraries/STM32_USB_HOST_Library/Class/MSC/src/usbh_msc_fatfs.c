@@ -110,9 +110,7 @@ DRESULT disk_write (
             if(!HCD_IsDeviceConnected(&USB_OTG_Core)) {
                 return RES_ERROR;
             }
-        }
-
-        while(status == USBH_MSC_BUSY );
+        } while(status == USBH_MSC_BUSY );
 
     }
 
