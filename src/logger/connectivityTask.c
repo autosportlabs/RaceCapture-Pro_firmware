@@ -753,6 +753,7 @@ void cellular_connectivity_task(void *params)
                         pr_info_int_msg(_LOG_PFX "Telemetry backlog: ", backlog_size);
                 }
 
+                bool needs_meta = true;
                 while (cellular_state.should_stream) {
                         if ( cellular_state.should_reconnect )
                                 break; /*break out and trigger the re-connection if needed */
@@ -775,7 +776,8 @@ void cellular_connectivity_task(void *params)
 
                                         if (!current_buffering_enabled) {
                                                 /* Fall back to non-buffered sample streaming */
-                                                api_send_sample_record(serial, msg.sample, msg.ticks, false);
+                                                api_send_sample_record(serial, msg.sample, msg.ticks, needs_meta);
+                                                needs_meta = false;
                                                 put_crlf(serial);
                                         }
                                         else {

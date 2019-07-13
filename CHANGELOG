@@ -1,4 +1,5 @@
 = 2.17.2=
+* Telemetry: Ensure telemetry stream starts correctly if no SD card is installed
 
 = 2.17.0=
 * Telemetry: Add telemetry buffering via SD card to account for marginal cellular conditions. 
