@@ -763,9 +763,9 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
 
         if (result != GPS_MSG_SUCCESS) return result;
 
-        float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01;
-        float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01;
-        float ecef_z_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vz)) * 0.01;
+        float ecef_x_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vx)) * 0.01f;
+        float ecef_y_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vy)) * 0.01f;
+        float ecef_z_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vz)) * 0.01f;
 
         float velocity = sqrt((ecef_x_velocity * ecef_x_velocity)
                               + (ecef_y_velocity * ecef_y_velocity)
@@ -776,15 +776,15 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
 
         gpsSample->quality = gpsMsg.navigationDataMessage.fixMode;
         gpsSample->satellites = gpsMsg.navigationDataMessage.satellitesInFix;
-        gpsSample->DOP = ((float)swap_uint16(gpsMsg.navigationDataMessage.PDOP)) * 0.01;
+        gpsSample->DOP = ((float)swap_uint16(gpsMsg.navigationDataMessage.PDOP)) * 0.01f;
         int32_t latitude_raw = swap_int32(gpsMsg.navigationDataMessage.latitude);
         int32_t longitude_raw = swap_int32(gpsMsg.navigationDataMessage.longitude);
         gpsSample->point.latitude = ((float)latitude_raw) * 0.0000001f;
         gpsSample->point.longitude = ((float)longitude_raw) * 0.0000001f;
 
         //convert m/sec to km/hour
-        gpsSample->speed = velocity * 3.6;
-        gpsSample->altitude = (((float) swap_int32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01) * 3.28084;
+        gpsSample->speed = velocity * 3.6f;
+        gpsSample->altitude = (((float) swap_int32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01f) * 3.28084f;
 
         //convert GNSS_week to milliseconds and add time of week converted to milliseconds
         uint16_t GNSS_week = swap_uint16(gpsMsg.navigationDataMessage.GNSS_week);
