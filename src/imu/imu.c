@@ -51,8 +51,15 @@ static void init_filters(LoggerConfig *loggerConfig)
 void imu_sample_all()
 {
         for (size_t i = 0; i < CONFIG_IMU_CHANNELS; i++) {
-                update_filter(&g_imu_filter[i], imu_read(i));
+                update_filter(&g_imu_filter[i], imu_read_raw(i));
         }
+}
+
+float imu_read_cal_value(enum imu_channel channel )
+{
+        ImuConfig *ac = &getWorkingLoggerConfig()->ImuConfigs[channel];
+        float val = imu_read_value(channel, ac);
+	return val;
 }
 
 float imu_read_value(enum imu_channel channel, ImuConfig *ac)
@@ -78,7 +85,8 @@ float imu_read_value(enum imu_channel channel, ImuConfig *ac)
 static void imu_flush_filter(size_t physicalChannel)
 {
         for (size_t i = 0; i < 1000; i++) {
-                update_filter(&g_imu_filter[physicalChannel], imu_read(physicalChannel));
+                update_filter(&g_imu_filter[physicalChannel], imu_read_raw(physicalChannel));
+
         }
 }
 
@@ -114,7 +122,7 @@ int imu_soft_init(LoggerConfig *loggerConfig)
         return 1;
 }
 
-int imu_read(enum imu_channel channel)
+int imu_read_raw(enum imu_channel channel)
 {
         return imu_device_read(channel);
 }
