@@ -26,6 +26,7 @@
 #include "cpp_guard.h"
 #include "devices_common.h"
 #include "queue.h"
+#include "led.h"
 #include "sampleRecord.h"
 #include "serial.h"
 #include "task.h"
