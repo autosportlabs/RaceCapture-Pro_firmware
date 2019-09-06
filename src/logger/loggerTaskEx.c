@@ -51,7 +51,7 @@
 #define BACKGROUND_SAMPLE_RATE	SAMPLE_50Hz
 
 int g_loggingShouldRun;
-int g_config_changed;
+bool g_config_changed;
 int g_telemetryBackgroundStreaming;
 struct sample * current_sample = NULL;
 
