@@ -51,7 +51,7 @@
 #define BACKGROUND_SAMPLE_RATE	SAMPLE_50Hz
 
 int g_loggingShouldRun;
-int g_configChanged;
+bool g_config_changed;
 int g_telemetryBackgroundStreaming;
 struct sample * current_sample = NULL;
 
@@ -67,12 +67,12 @@ struct sample * get_current_sample(void)
 
 static LoggerMessage getLogStartMessage()
 {
-        return create_logger_message(LoggerMessageType_Start, 0, NULL);
+        return create_logger_message(LoggerMessageType_Start, 0, NULL, false);
 }
 
 static LoggerMessage getLogStopMessage()
 {
-        return create_logger_message(LoggerMessageType_Stop, 0, NULL);
+        return create_logger_message(LoggerMessageType_Stop, 0, NULL, false);
 }
 
 /**
@@ -86,7 +86,7 @@ void vApplicationTickHook(void)
 
 void configChanged()
 {
-        g_configChanged = 1;
+        g_config_changed = true;
 }
 
 void startLogging()
@@ -181,7 +181,7 @@ void loggerTaskEx(void *params)
         vSemaphoreCreateBinary(onTick);
         logging_set_status(LOGGING_STATUS_IDLE);
         logging_set_logging_start(0);
-        g_configChanged = 1;
+        g_config_changed = true;
 
 #if CAMERA_CONTROL
         camera_control_init(&loggerConfig->camera_control_cfg);
@@ -195,7 +195,7 @@ void loggerTaskEx(void *params)
                 xSemaphoreTake(onTick, portMAX_DELAY);
                 ++currentTicks;
 
-                if (g_configChanged) {
+                if (g_config_changed) {
                         buffer_size = init_sample_ring_buffer(loggerConfig);
                         if (!buffer_size) {
                                 pr_error("Failed to allocate any buffers!\r\n");
@@ -217,7 +217,6 @@ void loggerTaskEx(void *params)
                         resetLapCount();
                         lapstats_reset_distance();
                         currentTicks = 0;
-                        g_configChanged = 0;
                 }
 
                 /* Only reset the watchdog when we are configured and ready to rock */
@@ -263,7 +262,7 @@ void loggerTaskEx(void *params)
 
                 /* If here, create the LoggerMessage to send with the sample */
                 const LoggerMessage msg = create_logger_message(
-                                                  LoggerMessageType_Sample, currentTicks, sample);
+                                                  LoggerMessageType_Sample, currentTicks, sample, g_config_changed);
 
                 /*
                  * We only log to file if the user has manually pushed the
@@ -293,6 +292,7 @@ void loggerTaskEx(void *params)
                 bufferIndex %= buffer_size;
 
                 current_sample = sample;
+                g_config_changed = false;
         }
 
         panic(PANIC_CAUSE_UNREACHABLE);

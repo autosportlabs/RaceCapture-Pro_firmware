@@ -135,13 +135,15 @@ xQueueHandle create_logger_message_queue()
 }
 
 LoggerMessage create_logger_message(const enum LoggerMessageType t,
-                                    const size_t ticks, struct sample *s)
+                                    const size_t ticks, struct sample *s,
+                                    bool needs_meta)
 {
         LoggerMessage msg;
 
         msg.type = t;
         msg.ticks = ticks;
         msg.sample = s;
+        msg.needs_meta = needs_meta;
 
         return msg;
 }
