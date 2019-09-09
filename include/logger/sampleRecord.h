@@ -88,9 +88,10 @@ struct sample {
 };
 
 typedef struct _LoggerMessage {
-        enum LoggerMessageType type;
         size_t ticks;
         struct sample *sample;
+        enum LoggerMessageType type;
+        bool needs_meta;
 } LoggerMessage;
 
 /**
@@ -126,9 +127,11 @@ bool get_sample_value_by_name(const struct sample *s, const char * name, double 
  * @param t The messaget type.
  * @param ticks The logger tick value.
  * @param s The associated sample object (if any).
+ * @param needs_meta true if metadata changed
  */
 LoggerMessage create_logger_message(const enum LoggerMessageType t,
-                                    const size_t ticks, struct sample *s);
+                                    const size_t ticks, struct sample *s,
+                                    const bool needs_meta);
 
 /**
  * Receives and validates a LoggerMessage from the provided queue.  If the

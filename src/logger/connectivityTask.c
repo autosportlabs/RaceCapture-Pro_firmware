@@ -436,7 +436,7 @@ void bluetooth_connectivity_task(void *params)
 
                                         led_toggle(connParams->activity_led);
 
-                                        const int send_meta = tick == 0 ||
+                                        const int send_meta = msg.needs_meta || tick == 0 ||
                                                               (connParams->periodicMeta &&
                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
                                         api_send_sample_record(serial, msg.sample, tick, send_meta);
@@ -604,13 +604,18 @@ void cellular_buffering_task(void *params)
                                         break;
                                 }
                                 case LoggerMessageType_Sample: {
-                                        if (!cellular_state.should_stream ||
-                                            !should_sample(msg.ticks, max_telem_rate))
-                                                break;
-
-                                        const int send_meta = tick == 0 ||
+                                        const int send_meta =  msg.needs_meta ||
+                                                               tick == 0 ||
                                                               (connParams->periodicMeta &&
                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
+
+
+                                        /* skip buffing data if we shouldn't stream/or the sample rate is higher than telemetry sample rate
+                                         * unless we need to send meta
+                                         */
+                                        if ((!cellular_state.should_stream ||
+                                            !should_sample(msg.ticks, max_telem_rate)) && !send_meta)
+                                                break;
 
                                         bool fs_failed = false;
                                         fs_lock();
@@ -655,6 +660,7 @@ void cellular_buffering_task(void *params)
                                         BufferedLoggerMessage buffer_msg;
                                         buffer_msg.sample = msg.sample;
                                         buffer_msg.ticks = msg.ticks;
+                                        buffer_msg.needs_meta = msg.needs_meta;
                                         xQueueSend(cellular_state.buffer_queue, &buffer_msg, 0);
 
                                         tick++;
@@ -776,7 +782,7 @@ void cellular_connectivity_task(void *params)
 
                                         if (!current_buffering_enabled) {
                                                 /* Fall back to non-buffered sample streaming */
-                                                api_send_sample_record(serial, msg.sample, msg.ticks, needs_meta);
+                                                api_send_sample_record(serial, msg.sample, msg.ticks, needs_meta || msg.needs_meta);
                                                 needs_meta = false;
                                                 put_crlf(serial);
                                         }
