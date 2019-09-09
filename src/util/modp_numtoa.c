@@ -141,14 +141,6 @@ void modp_ftoa(float value, char* str, int prec)
                 prec = 9;
         }
 
-	/* check for nan */
-	if ( value != value )
-	{
-                strcpy(str,"nan");
-		return;
-	}
-
-
         /* we'll work in positive values and deal with the
            negative sign issue later */
         int neg = 0;
@@ -239,14 +231,6 @@ void modp_dtoa(double value, char* str, int prec)
                 /* precision of >= 10 can lead to overflow errors */
                 prec = 9;
         }
-
-	/* check for nan */
-	if ( value != value )
-	{
-                strcpy(str,"nan");
-		return;
-	}
-
 
         /* we'll work in positive values and deal with the
            negative sign issue later */

@@ -625,7 +625,8 @@ static int lua_imu_read(lua_State *L)
         const size_t channel = lua_tointeger(L, 1);
         validate_imu_channel(L, channel);
 
-        lua_pushnumber(L, imu_read_cal_value(channel));
+	ImuConfig *ac = &getWorkingLoggerConfig()->ImuConfigs[channel];
+	lua_pushnumber(L, imu_read_value(channel, ac));
         return 1;
 }
 
@@ -637,7 +638,7 @@ static int lua_imu_read_raw(lua_State *L)
         const size_t channel = lua_tointeger(L, 1);
         validate_imu_channel(L, channel);
 
-        lua_pushinteger(L, imu_read_raw(channel));
+        lua_pushinteger(L, imu_read(channel));
         return 1;
 }
 #endif
