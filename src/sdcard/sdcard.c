@@ -126,6 +126,15 @@ FRESULT sd_mount (FATFS* fs, const TCHAR* path, BYTE opt)
 	fs_unlock();
 	return rc;
 }
+
+int     sd_puts( const TCHAR* str, FIL* fp )
+{
+	fs_lock();
+	const int rc = f_puts (str, fp );
+	fs_unlock();
+	return rc;
+}
+
 #define SD_TEST_PATTERN "0123456789"
 
 void InitFSHardware(void)
@@ -244,7 +253,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         if (!quiet)
                 serial_write_s(serial,"Opening File... ");
-        res = f_open(fatFile,"test1.txt", FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+        res = sd_open(fatFile,"test1.txt", FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
         if (!quiet) {
                 serial_write_s(serial, res == 0? "WIN" : "FAIL");
                 put_crlf(serial);
@@ -258,8 +267,8 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         portTickType startTicks = xTaskGetTickCount();
         for (int i = 1; i <= lines; i++) {
-                res = f_puts(SD_TEST_PATTERN "\r\n",fatFile);
-                if (doFlush) f_sync(fatFile);
+                res = sd_puts(SD_TEST_PATTERN "\r\n",fatFile);
+                if (doFlush) sd_sync(fatFile);
                 if (!quiet) {
                         serial_write_s(serial, "\b");
                         serial_write_s(serial, i % 2 == 0 ? "O" : "o");
@@ -292,7 +301,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         if (!quiet)
                 serial_write_s(serial, "Validating... ");
-        FRESULT fseek_res = f_lseek(fatFile, 0);
+        FRESULT fseek_res = sd_lseek(fatFile, 0);
         if (FR_OK != fseek_res) {
                 serial_write_s(serial, "SEEK FAILED");
                 put_crlf(serial);
@@ -303,7 +312,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
         bool validate_success = true;
         startTicks = xTaskGetTickCount();
         for (size_t i = 0; i < lines; i++){
-                buffer_result = f_gets(buffer, sizeof(buffer), fatFile);
+                buffer_result = sd_gets(buffer, sizeof(buffer), fatFile);
                 if (strstr(SD_TEST_PATTERN, buffer_result) != 0) {
                         validate_success = false;
                         break;
@@ -335,7 +344,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
         if (!quiet) {
                 serial_write_s(serial,"Closing... ");
         }
-        res = f_close(fatFile);
+        res = sd_close(fatFile);
 
         if (!quiet) {
                 put_int(serial, res);
@@ -369,6 +378,7 @@ void test_sd_interactive(struct Serial *serial, int lines, int doFlush, int quie
 static void fs_write_sample_meta(FIL *buffer_file, const struct sample *sample,
                               int sampleRateLimit, char * buf, bool more)
 {
+        fs_lock();
         f_puts("\"meta\":[", buffer_file);
         ChannelSample *channel_sample = sample->channel_samples;
 
@@ -405,6 +415,7 @@ static void fs_write_sample_meta(FIL *buffer_file, const struct sample *sample,
                 f_puts("}", buffer_file);
         }
         f_puts(more ? "]," : "]", buffer_file);
+        fs_unlock();
 }
 
 void fs_write_sample_record(FIL *buffer_file,

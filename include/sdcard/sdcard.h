@@ -36,6 +36,7 @@ FRESULT sd_read( FIL* file, void* buff, UINT btr, UINT* br );
 FRESULT sd_lseek( FIL* file, DWORD ofs );
 FRESULT sd_sync( FIL* file );
 TCHAR*  sd_gets( TCHAR* buff, int len, FIL* fp );
+int     sd_puts( const TCHAR* str, FIL* fp );
 FRESULT sd_truncate( FIL* file );
 DWORD sd_size( FIL* file );
 FRESULT sd_getlabel (const TCHAR* path, TCHAR* label, DWORD* vsn);
