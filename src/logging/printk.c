@@ -26,6 +26,8 @@
 #include "printk.h"
 #include "ts_ring_buff.h"
 #include "serial.h"
+#include "sdcard.h"
+#include "led.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -35,11 +37,53 @@
 static enum log_level curr_level = INFO;
 static struct ts_ring_buff *log_buff;
 
+#define SD_PR_FILE
+#ifdef SD_PR_FILE
+#define PR_FILENAME "pr_log.txt"
+static FIL pr_file_data;
+static FIL* pr_file = &pr_file_data;
+static bool pr_file_open = false;
+static bool pr_open_attempt = false;
+
+FRESULT pr_init_sd_file()
+{
+	led_enable(LED_LOGGER);
+        FRESULT ret = FR_OK;
+        if ( ! pr_open_attempt && ! pr_file_open )
+        {
+		led_enable(LED_CAN);
+                pr_open_attempt = true;
+                if ( sdcard_fs_mounted() )
+                {
+			led_enable(LED_GPS);
+                        pr_info( "mount sd" );
+                        if( FR_OK == sd_open( pr_file, PR_FILENAME,
+                                FA_READ | FA_WRITE | FA_CREATE_ALWAYS ) )
+                        {
+                                pr_info( "open sd" );
+                                if ( FR_OK == sd_truncate( pr_file ) )
+                                {
+                                        pr_info( "truncate sd" );
+                                        pr_file_open = true;
+                                }
+                                else
+                                {
+                                        pr_info( "close sd" );
+                                        sd_close( pr_file );
+                                }
+                        }
+                }
+        }
+	return ret;
+}
+#endif
+
 size_t read_log_to_serial(struct Serial *s, int escape)
 {
         char buff[16];
         size_t read = 0;
 
+        pr_init_sd_file();
         while(true) {
                 size_t bytes = ts_ring_buff_get(log_buff, &buff,
                                                 ARRAY_LEN(buff) - 1);
@@ -53,7 +97,17 @@ size_t read_log_to_serial(struct Serial *s, int escape)
                 } else {
                         serial_write_s(s, buff);
                 }
+		if ( pr_file_open )
+		{
+			unsigned int written = 0;
+			sd_write( pr_file, buff, bytes, &written );
+		}
         }
+	if ( pr_file_open )
+	{
+		led_enable(LED_LOGGER);
+		sd_sync( pr_file );
+	}
 
         return read;
 }

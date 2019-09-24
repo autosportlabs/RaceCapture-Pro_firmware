@@ -33,10 +33,99 @@
 #include "sdcard_device.h"
 #include "mem_mang.h"
 #include "semphr.h"
+#include "led.h"
+
 
 static FATFS *fat_fs = NULL;
 static xSemaphoreHandle fs_mutex = NULL;
 
+FRESULT sd_open( FIL* file, const TCHAR* path, BYTE mode )
+{
+	fs_lock();
+	const FRESULT rc = f_open( file, path, mode );
+	fs_unlock();
+	return rc;
+}
+
+FRESULT sd_close( FIL* file )
+{
+	fs_lock();
+	const FRESULT rc = f_close( file );
+	fs_unlock();
+	return rc;
+}
+
+FRESULT sd_write( FIL* file, const void* buff, UINT btr, UINT* br )
+{
+	fs_lock();
+	const FRESULT res = f_write( file, buff, btr, br );
+	fs_unlock();
+	return res;
+}
+
+FRESULT sd_read( FIL* file, void* buff, UINT btr, UINT* br )
+{
+	fs_lock();
+	const FRESULT rc = f_read( file, buff, btr, br );
+	fs_unlock();
+	return rc;
+}
+
+FRESULT sd_lseek( FIL* file, DWORD ofs )
+{
+	fs_lock();
+	const FRESULT res = f_lseek( file, ofs );
+	fs_unlock();
+	return res;
+}
+
+FRESULT sd_sync( FIL* file )
+{
+	fs_lock();
+	const FRESULT rc = f_sync( file );
+	fs_unlock();
+	return rc;
+}
+
+TCHAR*  sd_gets( TCHAR* buff, int len, FIL* fp )
+{
+	fs_lock();
+	TCHAR* rc = f_gets( buff, len, fp );
+	fs_unlock();
+	return rc;
+}
+
+FRESULT sd_truncate( FIL* file )
+{
+	fs_lock();
+	const FRESULT rc = f_truncate( file );
+	fs_unlock();
+	return rc;
+}
+
+DWORD sd_size( FIL* file )
+{
+	fs_lock();
+        DWORD ret = f_size( file );
+        fs_unlock();
+        return ret;
+}
+
+FRESULT sd_getlabel (const TCHAR* path, TCHAR* label, DWORD* vsn)
+{
+	fs_lock();
+	const FRESULT rc = f_getlabel (path, label, vsn);
+	fs_unlock();
+	return rc;
+}
+
+FRESULT sd_mount (FATFS* fs, const TCHAR* path, BYTE opt) 
+{
+	fs_lock();
+	const FRESULT rc = f_mount (fs, path, opt);
+	fs_unlock();
+	return rc;
+}
 #define SD_TEST_PATTERN "0123456789"
 
 void InitFSHardware(void)
@@ -52,12 +141,17 @@ void InitFSHardware(void)
         fs_mutex = xSemaphoreCreateMutex();
 }
 
+static int fs_lockcount = 0;
 void fs_lock(void){
+	led_enable(LED_CAN);
+	fs_lockcount++;
         xSemaphoreTake(fs_mutex, portMAX_DELAY);
 }
 
 void fs_unlock(void){
+	fs_lockcount--;
         xSemaphoreGive(fs_mutex);
+	led_disable(LED_CAN);
 }
 
 static bool is_initialized()
@@ -70,26 +164,31 @@ static bool is_initialized()
 
 bool sdcard_present(void)
 {
-        return sdcard_device_card_present();
+	fs_lock();
+	bool ret = sdcard_device_card_present();
+	fs_unlock();
+        return ret;
 }
 
 bool sdcard_fs_mounted(void)
 {
         char label[12]; /* max label is 11 bytes */
         DWORD vsn;
-        return sdcard_present() && f_getlabel("0", label, &vsn) == FR_OK;
+        return sdcard_present() && sd_getlabel("0", label, &vsn) == FR_OK;
 }
+
 
 int InitFS()
 {
         if(!is_initialized())
                 return -1;
 
-        if(!sdcard_device_card_present()) {
+        if(!sdcard_present()) {
                 return -1;
         }
 
-        return f_mount(fat_fs, "0", 1);
+        const int ret = sd_mount(fat_fs, "0", 1);
+	return ret;
 }
 
 int UnmountFS()
@@ -97,7 +196,7 @@ int UnmountFS()
         if(!is_initialized())
                 return -1;
 
-        return f_mount(NULL, "0", 1);
+        return sd_mount(NULL, "0", 1);
 }
 
 bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
@@ -313,6 +412,8 @@ void fs_write_sample_record(FIL *buffer_file,
                             const unsigned int tick, const int sendMeta)
 {
         char buf[30];
+
+	fs_lock();
         f_puts("{\"s\":{\"t\":", buffer_file);
 
         modp_uitoa10(tick, buf);
@@ -383,5 +484,6 @@ void fs_write_sample_record(FIL *buffer_file,
                         f_puts(",", buffer_file);
         }
         f_puts("]}}\r\n", buffer_file);
+	fs_unlock();
 }
 

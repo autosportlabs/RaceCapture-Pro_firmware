@@ -67,9 +67,7 @@ static FRESULT flush_file_buffer(void)
                         return FR_OK;
 
                 unsigned int written = 0;
-                fs_lock();
-                const FRESULT res = f_write(g_logfile, buff, available, &written);
-                fs_unlock();
+                const FRESULT res = sd_write(g_logfile, buff, available, &written);
                 ring_buffer_dma_read_fini(file_buff, written);
                 if (FR_OK != res) {
                         pr_debug_int_msg("[FileWriter] f_write failed "
@@ -222,17 +220,13 @@ static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
         pr_debug_str_msg(_LOG_PFX "Opening log file ", ls->name);
 
-        fs_lock();
-        int rc = f_open(g_logfile, ls->name, FA_WRITE);
-        fs_unlock();
+        int rc = sd_open(g_logfile, ls->name, FA_WRITE);
 
         if (FR_OK != rc)
                 return WRITING_INACTIVE;
 
         // Seek to the end so we append instead of overwriting
-        fs_lock();
-        rc = f_lseek(g_logfile, f_size(g_logfile));
-        fs_unlock();
+        rc = sd_lseek(g_logfile, f_size(g_logfile));
 
         return rc == FR_OK ? WRITING_ACTIVE : WRITING_INACTIVE;
 }
@@ -251,16 +245,12 @@ static enum writing_status open_new_log_file(struct logging_status *ls)
                 strcat(ls->name, buf);
                 strcat(ls->name, ".log");
 
-                fs_lock();
-                const FRESULT res = f_open(g_logfile, ls->name, FA_WRITE | FA_CREATE_NEW);
-                fs_unlock();
+                const FRESULT res = sd_open(g_logfile, ls->name, FA_WRITE | FA_CREATE_NEW);
 
                 if ( FR_OK == res )
                         return WRITING_ACTIVE;
 
-                fs_lock();
-                f_close(g_logfile);
-                fs_unlock();
+                sd_close(g_logfile);
         }
 
         /* We fail if here. Be sure to clean up name buffer.*/
@@ -271,9 +261,7 @@ static enum writing_status open_new_log_file(struct logging_status *ls)
 static void close_log_file(struct logging_status *ls)
 {
         ls->writing_status = WRITING_INACTIVE;
-        fs_lock();
-        f_close(g_logfile);
-        fs_unlock();
+        sd_close(g_logfile);
 }
 
 static void logging_led_toggle(void)
@@ -298,7 +286,6 @@ static void open_log_file(struct logging_status *ls)
         }
 
 
-        fs_lock();
         bool fs_good = sdcard_fs_mounted();
         if (!fs_good) {
                 FRESULT initfs_rc = InitFS();
@@ -308,7 +295,6 @@ static void open_log_file(struct logging_status *ls)
                         pr_error_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
                 }
         }
-        fs_unlock();
         if (!fs_good)
                 return;
 
@@ -446,9 +432,7 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
                 return -2;
 
         pr_debug(_LOG_PFX "flush\r\n");
-        fs_lock();
-        const int res = f_sync(g_logfile);
-        fs_unlock();
+        const FRESULT res = sd_sync(g_logfile);
         if (0 != res)
                 pr_debug_int_msg(_LOG_PFX "flush err ", res);
 

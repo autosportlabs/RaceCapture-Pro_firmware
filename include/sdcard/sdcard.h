@@ -29,6 +29,18 @@
 
 CPP_GUARD_BEGIN
 
+FRESULT sd_open( FIL* file, const TCHAR* path, BYTE mode );
+FRESULT sd_close( FIL* file );
+FRESULT sd_write( FIL* file, const void* buf, UINT btr, UINT* br );
+FRESULT sd_read( FIL* file, void* buff, UINT btr, UINT* br );
+FRESULT sd_lseek( FIL* file, DWORD ofs );
+FRESULT sd_sync( FIL* file );
+TCHAR*  sd_gets( TCHAR* buff, int len, FIL* fp );
+FRESULT sd_truncate( FIL* file );
+DWORD sd_size( FIL* file );
+FRESULT sd_getlabel (const TCHAR* path, TCHAR* label, DWORD* vsn);
+FRESULT sd_mount (FATFS* fs, const TCHAR* path, BYTE opt);
+
 bool test_sd(struct Serial *serial, int lines,int doFlush, int quiet);
 void test_sd_interactive(struct Serial *serial, int lines,int doFlush, int quiet);
 void InitFSHardware(void);

@@ -535,7 +535,6 @@ void cellular_buffering_task(void *params)
                                 last_open_buffer_attempt = getCurrentTicks();
                                 cellular_reset_buffer_offset_map();
                                 cellular_state.read_index = 0;
-                                fs_lock();
                                 bool fs_good = sdcard_fs_mounted();
                                 if (!fs_good) {
                                         FRESULT initfs_rc = InitFS();
@@ -549,9 +548,9 @@ void cellular_buffering_task(void *params)
                                 if (fs_good) {
                                         bool sd_write_validated = test_sd(NULL, 1, 0, 1);
                                         if (sd_write_validated) {
-                                                FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+                                                FRESULT fopen_rc = sd_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
                                                 if (FR_OK == fopen_rc) {
-                                                        FRESULT truncate_rc = f_truncate(cellular_state.buffer_file);
+                                                        FRESULT truncate_rc = sd_truncate(cellular_state.buffer_file);
                                                         if (FR_OK == truncate_rc){
                                                                 cellular_state.buffer_file_open = true;
                                                                 /* try to connect immediately on the first re-attempt*/
@@ -573,7 +572,6 @@ void cellular_buffering_task(void *params)
                                                         pr_info(_LOG_PFX "SD write verification failed. Try re-formatting SD card\r\n");
                                         }
                                 }
-                                fs_unlock();
                                 if (!cellular_state.buffer_file_open) {
                                         /* try re-opening a bit later */
                                         re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
@@ -613,12 +611,11 @@ void cellular_buffering_task(void *params)
                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
 
                                         bool fs_failed = false;
-                                        fs_lock();
                                         if (!cellular_state.buffer_file_open) {
                                                 goto BUFFER_DONE;
                                         }
 
-                                        DWORD file_size = f_size(cellular_state.buffer_file);
+                                        DWORD file_size = sd_size(cellular_state.buffer_file);
 
                                         if (file_size > BUFFERED_MAX_SIZE) {
                                                 pr_info_int_msg(_LOG_PFX "Max buffer size exceeded, resetting: ", BUFFERED_MAX_SIZE);
@@ -626,7 +623,7 @@ void cellular_buffering_task(void *params)
                                                 goto BUFFER_DONE;
                                         }
 
-                                        FRESULT fseek_res = f_lseek(cellular_state.buffer_file, file_size);
+                                        FRESULT fseek_res = sd_lseek(cellular_state.buffer_file, file_size);
                                         if (FR_OK != fseek_res) {
                                                 pr_error_int_msg(_LOG_PFX "Failed to seek to end of buffer: ", fseek_res);
                                                 fs_failed = true;
@@ -637,7 +634,7 @@ void cellular_buffering_task(void *params)
 
                                         if (tick % TELEMETRY_BUFFER_FILE_SYNC_INTERVAL == 0) {
                                                 pr_debug_int_msg(_LOG_PFX "Flushing buffer file: ", tick);
-                                                FRESULT fsync_res = f_sync(cellular_state.buffer_file);
+                                                FRESULT fsync_res = sd_sync(cellular_state.buffer_file);
                                                 if (FR_OK != fsync_res) {
                                                         pr_error_int_msg(_LOG_PFX "Failed to sync buffer file: ", fsync_res);
                                                         fs_failed = true;
@@ -647,10 +644,9 @@ void cellular_buffering_task(void *params)
 
                                         BUFFER_DONE:
                                         if (fs_failed ) {
-                                                f_close(cellular_state.buffer_file);
+                                                sd_close(cellular_state.buffer_file);
                                                 cellular_state.buffer_file_open = false;
                                         }
-                                        fs_unlock();
 
                                         BufferedLoggerMessage buffer_msg;
                                         buffer_msg.sample = msg.sample;
@@ -745,9 +741,7 @@ void cellular_connectivity_task(void *params)
 
                 hard_init = false;
 
-                fs_lock();
-                int32_t backlog_size = f_size(cellular_state.buffer_file) - cellular_state.read_index;
-                fs_unlock();
+                int32_t backlog_size = sd_size(cellular_state.buffer_file) - cellular_state.read_index;
 
                 if ( backlog_size > 0) {
                         pr_info_int_msg(_LOG_PFX "Telemetry backlog: ", backlog_size);
@@ -785,10 +779,8 @@ void cellular_connectivity_task(void *params)
                                                 int32_t start_index = cellular_state.read_index;
                                                 while (true) {
                                                         char * read_string = NULL;
-                                                        fs_lock();
-                                                        FRESULT fseek_res = f_lseek(cellular_state.buffer_file, cellular_state.read_index);
-                                                        read_string = f_gets(cellular_state.buffer_buffer, BUFFER_BUFFER_SIZE, cellular_state.buffer_file);
-                                                        fs_unlock();
+                                                        FRESULT fseek_res = sd_lseek(cellular_state.buffer_file, cellular_state.read_index);
+                                                        read_string = sd_gets(cellular_state.buffer_buffer, BUFFER_BUFFER_SIZE, cellular_state.buffer_file);
 
                                                         if (FR_OK != fseek_res) {
                                                                 pr_error_int_msg("Error reading telemetry buffer, aborting ", fseek_res);
