@@ -29,24 +29,28 @@
 
 CPP_GUARD_BEGIN
 
+
+
 FRESULT sd_open( FIL* file, const TCHAR* path, BYTE mode );
 FRESULT sd_close( FIL* file );
 FRESULT sd_write( FIL* file, const void* buf, UINT btr, UINT* br );
 FRESULT sd_read( FIL* file, void* buff, UINT btr, UINT* br );
 FRESULT sd_lseek( FIL* file, DWORD ofs );
 FRESULT sd_sync( FIL* file );
-TCHAR*  sd_gets( TCHAR* buff, int len, FIL* fp );
-int     sd_puts( const TCHAR* str, FIL* fp );
 FRESULT sd_truncate( FIL* file );
-DWORD sd_size( FIL* file );
-FRESULT sd_getlabel (const TCHAR* path, TCHAR* label, DWORD* vsn);
-FRESULT sd_mount (FATFS* fs, const TCHAR* path, BYTE opt);
+
+TCHAR*  sd_gets( TCHAR* buff, int len, FIL* fp );
+DWORD   sd_size( FIL* file );
 
 bool test_sd(struct Serial *serial, int lines,int doFlush, int quiet);
 void test_sd_interactive(struct Serial *serial, int lines,int doFlush, int quiet);
 void InitFSHardware(void);
-int InitFS();
-int UnmountFS();
+int InitFS(); // Why doesn't this return FRESULT?
+int UnmountFS(); // Why doesn't this return FRESULT?
+// check the sdcard to see if its ready
+// remount the filesystem if necessary.
+bool sdcard_write_ready( const bool no_delay );
+bool sdcard_ready( const bool no_delay );
 bool sdcard_present();
 bool sdcard_fs_mounted(void);
 int OpenNextLogFile(FIL *f);

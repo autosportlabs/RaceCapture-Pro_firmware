@@ -69,9 +69,7 @@ static FRESULT flush_file_buffer(void)
                 unsigned int written = 0;
                 const FRESULT res = sd_write(g_logfile, buff, available, &written);
                 ring_buffer_dma_read_fini(file_buff, written);
-                if (FR_OK != res) {
-                        pr_debug_int_msg("[FileWriter] f_write failed "
-                                         "with status: ", (int) res);
+                if ( FR_OK != res) {
                         error_led(true);
                         return res;
                 }
@@ -220,15 +218,13 @@ static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
         pr_debug_str_msg(_LOG_PFX "Opening log file ", ls->name);
 
-        int rc = sd_open(g_logfile, ls->name, FA_WRITE);
+        const FRESULT rc = sd_open(g_logfile, ls->name, FA_WRITE);
 
-        if (FR_OK != rc)
+        if (rc != FR_OK )
                 return WRITING_INACTIVE;
 
         // Seek to the end so we append instead of overwriting
-        rc = sd_lseek(g_logfile, f_size(g_logfile));
-
-        return rc == FR_OK ? WRITING_ACTIVE : WRITING_INACTIVE;
+        return FR_OK == sd_lseek(g_logfile, f_size(g_logfile)) ? WRITING_ACTIVE : WRITING_INACTIVE;
 }
 
 static enum writing_status open_new_log_file(struct logging_status *ls)
@@ -247,10 +243,16 @@ static enum writing_status open_new_log_file(struct logging_status *ls)
 
                 const FRESULT res = sd_open(g_logfile, ls->name, FA_WRITE | FA_CREATE_NEW);
 
-                if ( FR_OK == res )
+                if ( res == FR_OK )
                         return WRITING_ACTIVE;
 
-                sd_close(g_logfile);
+                if ( res != FR_EXIST )
+		{
+			pr_error_int_msg( "Failed to open log file: ", res );
+                        break;
+		}
+
+                // sd_close(g_logfile); // this close always fails.
         }
 
         /* We fail if here. Be sure to clean up name buffer.*/
@@ -285,16 +287,7 @@ static void open_log_file(struct logging_status *ls)
                 return;
         }
 
-
-        bool fs_good = sdcard_fs_mounted();
-        if (!fs_good) {
-                FRESULT initfs_rc = InitFS();
-                pr_info_int_msg(_LOG_PFX "Remounting filesystem: ", initfs_rc);
-                fs_good = (initfs_rc == FR_OK);
-                if (FR_OK != initfs_rc) {
-                        pr_error_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
-                }
-        }
+        bool fs_good = sdcard_ready( true ); // true == attempt remount immediately even if just attempted.
         if (!fs_good)
                 return;
 
@@ -384,7 +377,7 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
         if (!ls->logging)
                 return 0;
 
-        int attempts = 2;
+        int attempts = 200000;
         int rc = WRITE_FAIL;
         while (attempts--) {
                 /*
@@ -412,7 +405,7 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
 
                 /*
                  * We yield here because init/f_open/f_close all involve
-                 * locks and can eat up significant resournce.  This ensures
+                 * locks and can eat up significant resource.  This ensures
                  * we don't hog resources beyond reason.  Or, you know, you
                  * could keep your damn SD card plugged in.  --Stieg
                  */
@@ -433,7 +426,7 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 
         pr_debug(_LOG_PFX "flush\r\n");
         const FRESULT res = sd_sync(g_logfile);
-        if (0 != res)
+        if ( FR_OK != res )
                 pr_debug_int_msg(_LOG_PFX "flush err ", res);
 
         ls->flush_tick = xTaskGetTickCount();

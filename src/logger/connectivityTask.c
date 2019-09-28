@@ -521,145 +521,111 @@ void cellular_buffering_task(void *params)
 
         bool logging_enabled = false;
 
+#ifdef DELETE_ME
         uint32_t re_open_buffer_file_timeout = 0;
         uint32_t last_open_buffer_attempt = getCurrentTicks();
         uint32_t buffer_file_open_retries = 0;
+#endif // DELETE_ME
 
         while (1) {
                 cellular_state.should_stream = logging_enabled ||
                                      logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
                                      connParams->always_streaming;
 
-                while (1) {
-                        if (!cellular_state.buffer_file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
-                                last_open_buffer_attempt = getCurrentTicks();
-                                cellular_reset_buffer_offset_map();
-                                cellular_state.read_index = 0;
-                                bool fs_good = sdcard_fs_mounted();
-                                if (!fs_good) {
-                                        FRESULT initfs_rc = InitFS();
-                                        fs_good = (initfs_rc == FR_OK);
-                                        if (FR_OK != initfs_rc) {
-                                                if (!buffer_file_open_retries)
-                                                        pr_info_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
+                if (!cellular_state.buffer_file_open ) {
+                        cellular_reset_buffer_offset_map();
+                        cellular_state.read_index = 0;
+                        bool sd_write_validated = sdcard_write_ready( false ); // (false ==  honor retry delay)
+                        if (sd_write_validated) {
+                                const FRESULT fopen_rc = sd_open(cellular_state.buffer_file,
+                                                TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+                                if (fopen_rc == FR_OK) {
+                                        FRESULT truncate_rc = sd_truncate(cellular_state.buffer_file);
+                                        if (FR_OK == truncate_rc){
+                                                cellular_state.buffer_file_open = true;
                                         }
                                 }
-
-                                if (fs_good) {
-                                        bool sd_write_validated = test_sd(NULL, 1, 0, 1);
-                                        if (sd_write_validated) {
-                                                FRESULT fopen_rc = sd_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
-                                                if (FR_OK == fopen_rc) {
-                                                        FRESULT truncate_rc = sd_truncate(cellular_state.buffer_file);
-                                                        if (FR_OK == truncate_rc){
-                                                                cellular_state.buffer_file_open = true;
-                                                                /* try to connect immediately on the first re-attempt*/
-                                                                re_open_buffer_file_timeout = 0;
-                                                                buffer_file_open_retries = 0;
-                                                        }
-                                                        else{
-                                                                if (!buffer_file_open_retries)
-                                                                        pr_info_int_msg(_LOG_PFX "Error truncating telemetry buffer file: ", truncate_rc);
-                                                        }
-                                                }
-                                                else {
-                                                        if (!buffer_file_open_retries)
-                                                                pr_info_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
-                                                }
-                                        }
-                                        else {
-                                                if (!buffer_file_open_retries)
-                                                        pr_info(_LOG_PFX "SD write verification failed. Try re-formatting SD card\r\n");
-                                        }
-                                }
-                                if (!cellular_state.buffer_file_open) {
-                                        /* try re-opening a bit later */
-                                        re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
-                                        buffer_file_open_retries++;
-                                }
-                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
                         }
+                        pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
+                }
 
-                        cellular_state.should_stream =
-                                logging_enabled ||
-                                connParams->always_streaming ||
-                                logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
+                cellular_state.should_stream =
+                        logging_enabled ||
+                        connParams->always_streaming ||
+                        logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
 
-                        const char res = receive_logger_message(sampleQueue, &msg, IDLE_TIMEOUT);
+                const char res = receive_logger_message(sampleQueue, &msg, IDLE_TIMEOUT);
 
-                        /*///////////////////////////////////////////////////////////
-                        // Process a pending message from logger task, if exists
-                        ////////////////////////////////////////////////////////////*/
-                        if (pdFALSE != res) {
-                                switch(msg.type) {
-                                case LoggerMessageType_Start: {
-                                        logging_enabled = true;
-                                        tick = 0;
+                /*///////////////////////////////////////////////////////////
+                // Process a pending message from logger task, if exists
+                ////////////////////////////////////////////////////////////*/
+                if (pdFALSE != res) {
+                        switch(msg.type) {
+                        case LoggerMessageType_Start: {
+                                logging_enabled = true;
+                                tick = 0;
+                                break;
+                        }
+                        case LoggerMessageType_Stop: {
+                                logging_enabled = false;
+                                break;
+                        }
+                        case LoggerMessageType_Sample: {
+                                if (!cellular_state.should_stream ||
+                                    !should_sample(msg.ticks, max_telem_rate))
                                         break;
+
+                                const int send_meta = tick == 0 ||
+                                                      (connParams->periodicMeta &&
+                                                       (tick % METADATA_SAMPLE_INTERVAL == 0));
+
+                                bool fs_failed = false;
+                                if (!cellular_state.buffer_file_open) {
+                                        goto BUFFER_DONE;
                                 }
-                                case LoggerMessageType_Stop: {
-                                        logging_enabled = false;
-                                        break;
+
+                                DWORD file_size = sd_size(cellular_state.buffer_file);
+
+                                if (file_size > BUFFERED_MAX_SIZE) {
+                                        pr_info_int_msg(_LOG_PFX "Max buffer size exceeded, resetting: ", BUFFERED_MAX_SIZE);
+                                        fs_failed = true;
+                                        goto BUFFER_DONE;
                                 }
-                                case LoggerMessageType_Sample: {
-                                        if (!cellular_state.should_stream ||
-                                            !should_sample(msg.ticks, max_telem_rate))
-                                                break;
 
-                                        const int send_meta = tick == 0 ||
-                                                              (connParams->periodicMeta &&
-                                                               (tick % METADATA_SAMPLE_INTERVAL == 0));
+                                FRESULT fseek_res = sd_lseek(cellular_state.buffer_file, file_size);
+                                if (FR_OK != fseek_res) {
+                                        fs_failed = true;
+                                        goto BUFFER_DONE;
+                                }
 
-                                        bool fs_failed = false;
-                                        if (!cellular_state.buffer_file_open) {
-                                                goto BUFFER_DONE;
-                                        }
+                                fs_write_sample_record(cellular_state.buffer_file, msg.sample, tick, send_meta);
 
-                                        DWORD file_size = sd_size(cellular_state.buffer_file);
-
-                                        if (file_size > BUFFERED_MAX_SIZE) {
-                                                pr_info_int_msg(_LOG_PFX "Max buffer size exceeded, resetting: ", BUFFERED_MAX_SIZE);
+                                if (tick % TELEMETRY_BUFFER_FILE_SYNC_INTERVAL == 0) {
+                                        pr_debug_int_msg(_LOG_PFX "Flushing buffer file: ", tick);
+                                        FRESULT fsync_res = sd_sync(cellular_state.buffer_file);
+                                        if ( FR_OK != fsync_res) {
                                                 fs_failed = true;
                                                 goto BUFFER_DONE;
                                         }
-
-                                        FRESULT fseek_res = sd_lseek(cellular_state.buffer_file, file_size);
-                                        if (FR_OK != fseek_res) {
-                                                pr_error_int_msg(_LOG_PFX "Failed to seek to end of buffer: ", fseek_res);
-                                                fs_failed = true;
-                                                goto BUFFER_DONE;
-                                        }
-
-                                        fs_write_sample_record(cellular_state.buffer_file, msg.sample, tick, send_meta);
-
-                                        if (tick % TELEMETRY_BUFFER_FILE_SYNC_INTERVAL == 0) {
-                                                pr_debug_int_msg(_LOG_PFX "Flushing buffer file: ", tick);
-                                                FRESULT fsync_res = sd_sync(cellular_state.buffer_file);
-                                                if (FR_OK != fsync_res) {
-                                                        pr_error_int_msg(_LOG_PFX "Failed to sync buffer file: ", fsync_res);
-                                                        fs_failed = true;
-                                                        goto BUFFER_DONE;
-                                                }
-                                        }
-
-                                        BUFFER_DONE:
-                                        if (fs_failed ) {
-                                                sd_close(cellular_state.buffer_file);
-                                                cellular_state.buffer_file_open = false;
-                                        }
-
-                                        BufferedLoggerMessage buffer_msg;
-                                        buffer_msg.sample = msg.sample;
-                                        buffer_msg.ticks = msg.ticks;
-                                        xQueueSend(cellular_state.buffer_queue, &buffer_msg, 0);
-
-                                        tick++;
-                                        break;
                                 }
-                                default:
-                                        pr_info_int_msg(_LOG_PFX "Unknown logger message type ", msg.type);
-                                        break;
+
+                                BUFFER_DONE:
+                                if (fs_failed ) {
+                                        sd_close(cellular_state.buffer_file);
+                                        cellular_state.buffer_file_open = false;
                                 }
+
+                                BufferedLoggerMessage buffer_msg;
+                                buffer_msg.sample = msg.sample;
+                                buffer_msg.ticks = msg.ticks;
+                                xQueueSend(cellular_state.buffer_queue, &buffer_msg, 0);
+
+                                tick++;
+                                break;
+                        }
+                        default:
+                                pr_info_int_msg(_LOG_PFX "Unknown logger message type ", msg.type);
+                                break;
                         }
                 }
         }

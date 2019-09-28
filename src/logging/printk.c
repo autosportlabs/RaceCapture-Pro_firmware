@@ -27,7 +27,6 @@
 #include "ts_ring_buff.h"
 #include "serial.h"
 #include "sdcard.h"
-#include "led.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -37,53 +36,77 @@
 static enum log_level curr_level = INFO;
 static struct ts_ring_buff *log_buff;
 
+#ifdef SDCARD_SUPPORT
 #define SD_PR_FILE
+#endif //  SDCARD_SUPPORT
+
 #ifdef SD_PR_FILE
 #define PR_FILENAME "pr_log.txt"
-static FIL pr_file_data;
-static FIL* pr_file = &pr_file_data;
+static FIL* pr_file = NULL;
 static bool pr_file_open = false;
-static bool pr_open_attempt = false;
 
-FRESULT pr_init_sd_file()
+bool pr_sd_init_file()
 {
-	led_enable(LED_LOGGER);
-        FRESULT ret = FR_OK;
-        if ( ! pr_open_attempt && ! pr_file_open )
-        {
-		led_enable(LED_CAN);
-                pr_open_attempt = true;
-                if ( sdcard_fs_mounted() )
-                {
-			led_enable(LED_GPS);
-                        pr_info( "mount sd" );
-                        if( FR_OK == sd_open( pr_file, PR_FILENAME,
-                                FA_READ | FA_WRITE | FA_CREATE_ALWAYS ) )
-                        {
-                                pr_info( "open sd" );
-                                if ( FR_OK == sd_truncate( pr_file ) )
-                                {
-                                        pr_info( "truncate sd" );
-                                        pr_file_open = true;
-                                }
-                                else
-                                {
-                                        pr_info( "close sd" );
-                                        sd_close( pr_file );
-                                }
-                        }
-                }
-        }
+        bool ret = false;
+	if ( sdcard_write_ready( false ) )
+	{
+		if( pr_file == NULL )
+		{
+			pr_file = pvPortMalloc(sizeof(FIL));
+		}
+		if ( pr_file == NULL )
+		{
+			pr_error( "Failed to allocate FIL for pr_log.txt" );
+		}
+		else if( FR_OK == sd_open( pr_file, PR_FILENAME,
+			FA_READ | FA_WRITE | FA_CREATE_ALWAYS ) )
+		{
+			pr_file_open = true;
+			if ( FR_OK == sd_truncate( pr_file ) )
+			{
+				pr_info( "truncate sd\r\n" );
+				unsigned int written = 0;
+				sd_write( pr_file, "-", 1, &written );
+				sd_sync( pr_file );
+			}
+			else
+			{
+				pr_info( "close sd" );
+				sd_close( pr_file );
+				pr_file_open = false;
+			}
+		}
+	}
 	return ret;
+}
+
+void pr_sd_write( const char* buff, const int bytes )
+{
+	unsigned int written = 0;
+	if ( FR_OK != sd_write( pr_file, buff, bytes, &written ) )
+	{
+		pr_file_open = false;
+		sd_close( pr_file );
+	}
 }
 #endif
 
+/*
+ * this function is called to send log data via serial to the app.
+ * The app polls when it is ready for more logs.
+ */
+
 size_t read_log_to_serial(struct Serial *s, int escape)
 {
+#ifdef SD_PR_FILE
+	if ( ! pr_file_open )
+	{
+		pr_sd_init_file();
+	}
+#endif // SD_PR_FILE
+
         char buff[16];
         size_t read = 0;
-
-        pr_init_sd_file();
         while(true) {
                 size_t bytes = ts_ring_buff_get(log_buff, &buff,
                                                 ARRAY_LEN(buff) - 1);
@@ -92,24 +115,26 @@ size_t read_log_to_serial(struct Serial *s, int escape)
 
                 buff[bytes] = 0;
                 read += bytes;
+#ifdef SD_PR_FILE
+		if ( pr_file_open )
+		{
+			pr_sd_write( buff, bytes );
+		}
+#endif // SD_PR_FILE
+
                 if (escape) {
                         put_escapedString(s, buff, bytes);
                 } else {
                         serial_write_s(s, buff);
                 }
-		if ( pr_file_open )
-		{
-			unsigned int written = 0;
-			sd_write( pr_file, buff, bytes, &written );
-		}
         }
+#ifdef SD_PR_FILE
 	if ( pr_file_open )
 	{
-		led_enable(LED_LOGGER);
 		sd_sync( pr_file );
 	}
-
-        return read;
+#endif // SD_PR_FILE
+	return read;
 }
 
 int writek(const char *msg)
@@ -120,7 +145,9 @@ int writek(const char *msg)
         if (NULL == msg)
                 return 0;
 
-        return ts_ring_buff_put(log_buff, msg, strlen(msg));
+	int ret = ts_ring_buff_put(log_buff, msg, strlen(msg));
+	
+        return ret;
 }
 
 int writek_crlf()
@@ -157,7 +184,8 @@ int writek_float(float value)
 int printk(enum log_level level, const char *msg)
 {
         IF_LEVEL_GT_CURR_LEVEL_RET_ZERO(level);
-        return writek(msg);
+	int ret = writek(msg);
+        return ret;
 }
 
 int printk_char(enum log_level level, const char c)
