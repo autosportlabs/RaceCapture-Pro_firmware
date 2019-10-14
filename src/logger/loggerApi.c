@@ -65,6 +65,7 @@
 #include "units.h"
 #include "wifi.h"
 #include "connectivityTask.h"
+#include "alertmsg_can_drv.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -370,6 +371,9 @@ int api_alertmessage(struct Serial *serial, const jsmntok_t *json)
 
         /* Broadcast to other connections */
         api_event_process_callbacks(&event);
+
+        /* Broadcast CAN message for alertmessage */
+        alertmsg_can_send_message(&event.data.alertmsg);
         return API_SUCCESS_NO_RETURN;
 }
 
