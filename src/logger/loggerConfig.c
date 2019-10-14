@@ -33,6 +33,7 @@
 #include "stdutil.h"
 #include <stdbool.h>
 #include <string.h>
+#include "tracks.h"
 
 #define _LOG_PFX "[LoggerConfig] "
 
@@ -825,4 +826,10 @@ LoggerConfig * getWorkingLoggerConfig()
 bool should_sample(const int sample_rate, const int max_rate)
 {
         return sample_rate == 0 ? false : sample_rate % max_rate == 0;
+}
+
+void track_config_sanitize()
+{
+        TrackConfig *tc = &g_workingLoggerConfig.TrackConfigs;
+        tc->radius = MIN(MAX_TRACK_TARGET_RADIUS, MAX(MIN_TRACK_TARGET_RADIUS, tc->radius));
 }
