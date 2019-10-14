@@ -268,18 +268,43 @@ static bool sara_r4_set_profile(struct serial_buffer *sb)
         const size_t msgs_len = ARRAY_LEN(msgs);
 
         serial_buffer_reset(sb);
-        /* Set the default profile, 0 - universal profile that should work with all carriers.
-         *
-         * NOTE: setting 1 (get from sim card) sometimes causes instability
-         * where power button can have no effect, especially when attempting
-         * to re-connect
-         * */
-        serial_buffer_printf_append(sb, "AT+UMNOPROF=%d", 0);
+        /* Set the default profile, 1 - pick from SIM card
+         */
+        serial_buffer_printf_append(sb, "AT+UMNOPROF=%d", 1);
         const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs, msgs_len);
         bool is_ok = is_rsp_ok(msgs, count);
         pr_info_bool_msg("[sara_r4] Set Profile: ", is_ok);
         return is_ok;
 }
+
+static bool sara_r4_set_urat(struct serial_buffer *sb)
+{
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        /* Set the URAT to CAT M1 */
+        serial_buffer_printf_append(sb, "AT+URAT=%d", 7);
+        const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs, msgs_len);
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Set URAT: ", is_ok);
+        return is_ok;
+}
+
+static bool sara_r4_set_error_reporting(struct serial_buffer *sb)
+{
+        const char *msgs[1];
+        const size_t msgs_len = ARRAY_LEN(msgs);
+
+        serial_buffer_reset(sb);
+        /* Set the URAT to CAT M1 */
+        serial_buffer_printf_append(sb, "AT+CMEE=%d", 2);
+        const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs, msgs_len);
+        bool is_ok = is_rsp_ok(msgs, count);
+        pr_info_bool_msg("[sara_r4] Set CMEE: ", is_ok);
+        return is_ok;
+}
+
 
 static bool sara_r4_set_baud_rate(struct serial_buffer *sb)
 {
@@ -300,7 +325,11 @@ static bool sara_r4_init(struct serial_buffer *sb,
 {
 
         pr_info("[sara_r4] Initializing\r\n");
-        return (sara_r4_set_baud_rate(sb) && sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) && sara_r4_set_profile(sb));
+        return (sara_r4_set_baud_rate(sb) &&
+                        sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) &&
+                        sara_r4_set_profile(sb) &&
+                        sara_r4_set_urat(sb) &&
+                        sara_r4_set_error_reporting(sb));
 }
 
 static bool sara_r4_get_sim_info(struct serial_buffer *sb,
