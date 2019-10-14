@@ -826,3 +826,36 @@ bool should_sample(const int sample_rate, const int max_rate)
 {
         return sample_rate == 0 ? false : sample_rate % max_rate == 0;
 }
+
+
+void lap_config_sanitize()
+{
+        LapConfig *lc = &g_workingLoggerConfig.LapConfigs;
+        /**
+         * Sets the sampleRate in the LapConfig struct of all channels to the
+         * rate of the highest channel within the LapConfig struct.
+         */
+        ChannelConfig *lc_cfgs[] = {
+                &lc->lapCountCfg,
+                &lc->lapTimeCfg,
+                &lc->sectorCfg,
+                &lc->sectorTimeCfg,
+                &lc->elapsed_time_cfg,
+                &lc->current_lap_cfg,
+                &lc->distance,
+                &lc->session_time_cfg,
+                NULL,
+        };
+
+        /* Find the highest sample rate */
+        int high_sr = 0;
+        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
+                high_sr = getHigherSampleRate(high_sr, (*cc_ptr)->sampleRate);
+
+        /* Now set them all to the highest rate. */
+        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
+                (*cc_ptr)->sampleRate = high_sr;
+
+        /* Ensure distance precision */
+        lc->distance.precision = DEFAULT_DISTANCE_PRECISION;
+}
