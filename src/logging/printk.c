@@ -89,7 +89,14 @@ int writek_int(int value)
 int writek_float(float value)
 {
         char buf[20];
-        modp_ftoa(value, buf, 6);
+	if ( value != value )
+	{
+		strcpy( buf, "nan" );
+	}
+	else
+	{
+		modp_ftoa(value, buf, 6);
+	}
         return writek(buf);
 }
 

@@ -54,6 +54,7 @@ ASL_CFLAGS += $(ASL_WARNING_FLAGS)
 ASL_CFLAGS_MISC := \
 -fno-common \
 -fno-strict-aliasing \
+-fdata-sections -ffunction-sections  \
 
 ASL_CFLAGS += $(ASL_CFLAGS_MISC)
 
