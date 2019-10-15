@@ -31,7 +31,7 @@
  * Arbitrarily choosing 3MPH because if you are going faster than that,
  * you are driving/racing.
  */
-#define LC_SPEED_THRESHOLD 3.0
+#define LC_SPEED_THRESHOLD 3.0f
 
 static tiny_millis_t g_startTime = -1;
 static struct GeoCircle g_geoCircle;

@@ -30,7 +30,7 @@
 /* What is the required GPS fix quality to be used as a sample */
 #define GPS_FIX_QUALITY_REQUIRED GPS_QUALITY_3D
 /* What is the maximum GPS DOP we accept to be used as a sample */
-#define GPS_MAXIMUM_DOP_ALLOWED 3.0
+#define GPS_MAXIMUM_DOP_ALLOWED 3.0f
 
 /**
  * How frequently to initially take in GPS data.  To small and we overflow.  To large and we don't
@@ -165,15 +165,15 @@ static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime)
         // Target 90% buffer use +- 10%.
         const float slots = (float) PREDICTIVE_TIME_MAX_SAMPLES;
         const float percentUsed = ((float) buffIndex) / slots;
-        DEBUG("Recorded %d samples.  Targeting ~ %f samples.\n", buffIndex, slots * 0.9);
+        DEBUG("Recorded %d samples.  Targeting ~ %f samples.\n", buffIndex, slots * 0.9f);
 
-        if (percentUsed > 0.8 && status != FULL) {
+        if (percentUsed > 0.8f && status != FULL) {
                 DEBUG("Within target range.  Not adjusting sample rate.\n");
                 return pollInterval;
         }
 
         // Careful here of gotchas with tiny_millis_t and floats.
-        pollInterval = lapTime / (slots / 0.9);
+        pollInterval = lapTime / (slots / 0.9f);
         DEBUG("Setting poll interval to %ull\n", pollInterval);
 
         return pollInterval;
