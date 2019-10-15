@@ -360,9 +360,7 @@ int api_sampleData(struct Serial *serial, const jsmntok_t *json)
 
 int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json)
 {
-        struct api_event event;
-        event.source=serial;
-        event.type = ApiEventType_TimingScoring;
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_alertmessage(struct Serial *serial, const jsmntok_t *json)

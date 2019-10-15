@@ -33,7 +33,7 @@
 #include "tracks.h"
 #include "versionInfo.h"
 #include "wifi.h"
-
+#include "timing_scoring_drv.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -518,40 +518,6 @@ typedef struct _ConnectivityConfig {
         struct wifi_cfg wifi;
 } ConnectivityConfig;
 
-#define DEFAULT_TIMING_SCORING_SAMPLE_RATE SAMPLE_1Hz
-#define DEFAULT_COMPETITOR_NUMBER_AHEAD_CONFIG {"CompAhead", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-#define DEFAULT_GAP_TO_AHEAD_CONFIG {"GapToAhead", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-#define DEFAULT_COMPETITOR_NUMBER_BEHIND_CONFIG {"CompBehind", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-#define DEFAULT_GAP_TO_BEHIND_CONFIG {"GapToBehind", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-#define DEFAULT_TNS_LAPTIME_CONFIG {"TnSLaptime", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-#define DEFAULT_DRIVER_ID_CONFIG {"DriverId", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-#define DEFAULT_FLAG_STATUS_CONFIG {"FlagStatus", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-#define DEFAULT_POSITION_IN_CLASS_CONFIG {"PosInClass", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-#define DEFAULT_BLACK_FLAG_CONFIG {"BlackFlag", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
-
-#define DEFAULT_TIMING_SCORING_CONFIG {                         \
-                DEFAULT_COMPETITOR_NUMBER_AHEAD_CONFIG,        \
-                DEFAULT_GAP_TO_AHEAD_CONFIG,                   \
-                DEFAULT_COMPETITOR_NUMBER_BEHIND_CONFIG,       \
-                DEFAULT_GAP_TO_BEHIND_CONFIG,                  \
-                DEFAULT_TNS_LAPTIME_CONFIG,                    \
-                DEFAULT_DRIVER_ID_CONFIG,                      \
-                DEFAULT_FLAG_STATUS_CONFIG,             \
-                DEFAULT_POSITION_IN_CLASS_CONFIG,              \
-                DEFAULT_BLACK_FLAG_CONFIG                      \
-                        }
-
-typedef struct __TimingScoringConfig {
-        ChannelConfig car_number_ahead;
-        ChannelConfig gap_to_ahead;
-        ChannelConfig car_number_behind;
-        ChannelConfig gap_to_behind;
-        ChannelConfig tns_laptime;
-        ChannelConfig driver_id;
-        ChannelConfig full_course_status;
-        ChannelConfig position_in_class;
-        ChannelConfig black_flag;
-} TimingScoringConfig;
 /**
  * Configurations specific to our logging infrastructure.
  */
@@ -626,9 +592,11 @@ typedef struct _LoggerConfig {
 #if CAMERA_CONTROL
         struct camera_control_config camera_control_cfg;
 #endif
-        //Timing and Scoring config
-        TimingScoringConfig TimingScoringConfig;
 
+#if TIMING_SCORING == 1
+        //Timing and Scoring config
+        TimingScoringConfig timing_scoring_cfg;
+#endif
         //Padding data to accommodate flash routine
         char padding_data[FLASH_PAGE_SIZE];
 } LoggerConfig;
