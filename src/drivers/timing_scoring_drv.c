@@ -41,55 +41,15 @@ void update_timing_scoring(const TimingScoringState *state)
         timing_scoring_state.car_number_behind = state->car_number_behind;
         timing_scoring_state.gap_to_ahead = state->gap_to_ahead;
         timing_scoring_state.gap_to_behind = state->gap_to_behind;
-        timing_scoring_state.full_course_status = state->full_course_status;
+        timing_scoring_state.full_course_flag_status = state->full_course_flag_status;
         timing_scoring_state.driver_id = state->driver_id;
         timing_scoring_state.tns_laptime = state->tns_laptime;
         timing_scoring_state.black_flag = state->black_flag;
 }
 
-void timing_scoring_set_driver_id(uint32_t driver_id)
+TimingScoringState * timing_scoring_get_state(void)
 {
-        timing_scoring_state.driver_id = driver_id;
-}
-
-void timing_scoring_set_position_in_class(uint8_t position_in_class)
-{
-        timing_scoring_state.position_in_class = position_in_class;
-}
-
-void timing_scoring_set_car_number_ahead(uint16_t car_number_ahead)
-{
-        timing_scoring_state.car_number_ahead = car_number_ahead;
-}
-
-void timing_scoring_set_gap_to_ahead(float gap_to_ahead)
-{
-        timing_scoring_state.gap_to_ahead = gap_to_ahead;
-}
-
-void timing_scoring_set_car_number_behind(uint16_t car_number_behind)
-{
-        timing_scoring_state.car_number_behind = car_number_behind;
-}
-
-void timing_scoring_set_gap_to_behind(float gap_to_behind)
-{
-        timing_scoring_state.gap_to_behind = gap_to_behind;
-}
-
-void timing_scoring_set_tns_laptime(float tns_laptime)
-{
-        timing_scoring_state.tns_laptime = tns_laptime;
-}
-
-void timing_scoring_set_full_course_status(uint8_t full_course_status)
-{
-        timing_scoring_state.full_course_status = full_course_status;
-}
-
-void timing_scoring_set_black_flag(bool black_flag)
-{
-        timing_scoring_state.black_flag = black_flag;
+        return &timing_scoring_state;
 }
 
 uint32_t timing_scoring_get_driver_id(void)
@@ -129,7 +89,7 @@ float timing_scoring_get_tns_laptime(void)
 
 uint8_t timing_scoring_get_full_course_status(void)
 {
-        return timing_scoring_state.full_course_status;
+        return timing_scoring_state.full_course_flag_status;
 }
 
 bool timing_scoring_get_black_flag(void)

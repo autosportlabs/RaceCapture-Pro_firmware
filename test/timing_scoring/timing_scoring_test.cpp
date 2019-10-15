@@ -31,32 +31,32 @@ void TimingScoringTest::tearDown() {}
 
 void TimingScoringTest::test_getter_setters()
 {
-
-        timing_scoring_set_driver_id(1234);
+        TimingScoringState *ts = timing_scoring_get_state();
+        ts->driver_id = 1234;
         CPPUNIT_ASSERT_EQUAL((uint32_t)1234, timing_scoring_get_driver_id());
 
-        timing_scoring_set_position_in_class(43);
+        ts->position_in_class = 43;
         CPPUNIT_ASSERT_EQUAL((uint8_t)43, timing_scoring_get_position_in_class());
 
-        timing_scoring_set_car_number_ahead(55);
+        ts->car_number_ahead = 55;
         CPPUNIT_ASSERT_EQUAL((uint16_t)55, timing_scoring_get_car_number_ahead());
 
-        timing_scoring_set_gap_to_ahead(1.234);
+        ts->gap_to_ahead = 1.234;
         CPPUNIT_ASSERT_EQUAL((float)1.234, timing_scoring_get_gap_to_ahead());
 
-        timing_scoring_set_car_number_behind(66);
+        ts->car_number_behind = 66;
         CPPUNIT_ASSERT_EQUAL((uint16_t)66, timing_scoring_get_car_number_behind());
 
-        timing_scoring_set_gap_to_behind(2.35);
+        ts->gap_to_behind = 2.35;
         CPPUNIT_ASSERT_EQUAL((float)2.35, timing_scoring_get_gap_to_behind());
 
-        timing_scoring_set_tns_laptime(4.23);
+        ts->tns_laptime = 4.23;
         CPPUNIT_ASSERT_EQUAL((float)4.23, timing_scoring_get_tns_laptime());
 
-        timing_scoring_set_full_course_status(3);
+        ts->full_course_flag_status = 3;
         CPPUNIT_ASSERT_EQUAL((uint8_t)3, timing_scoring_get_full_course_status());
 
-        timing_scoring_set_black_flag(true);
+        ts->black_flag = true;
         CPPUNIT_ASSERT_EQUAL((bool)true, timing_scoring_get_black_flag());
 }
 

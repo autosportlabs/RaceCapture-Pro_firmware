@@ -360,6 +360,18 @@ int api_sampleData(struct Serial *serial, const jsmntok_t *json)
 
 int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json)
 {
+        TimingScoringState *ts = timing_scoring_get_state();
+
+        jsmn_exists_set_val_uint32(json, "driverId", &(ts->driver_id));
+        jsmn_exists_set_val_uint8(json, "posInCls", &(ts->position_in_class), NULL);
+        jsmn_exists_set_val_uint16(json, "carNumAhead", &ts->car_number_ahead, NULL);
+        jsmn_exists_set_val_float(json, "gapToAhead", &ts->gap_to_ahead);
+        jsmn_exists_set_val_uint16(json, "carNumBehind", &ts->car_number_behind, NULL);
+        jsmn_exists_set_val_float(json, "gapToBehind", &ts->gap_to_behind);
+        jsmn_exists_set_val_float(json, "tnsLaptime", &ts->tns_laptime);
+        jsmn_exists_set_val_float(json, "fullFlag", &ts->full_course_flag_status);
+        jsmn_exists_set_val_bool(json, "blackFlag", &ts->black_flag);
+
         return API_SUCCESS_NO_RETURN;
 }
 
