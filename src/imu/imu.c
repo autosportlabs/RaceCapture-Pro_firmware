@@ -79,6 +79,7 @@ static void imu_flush_filter(size_t physicalChannel)
 {
         for (size_t i = 0; i < 1000; i++) {
                 update_filter(&g_imu_filter[physicalChannel], imu_read(physicalChannel));
+
         }
 }
 
