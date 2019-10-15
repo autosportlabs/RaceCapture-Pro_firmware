@@ -393,31 +393,31 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         TimingScoringConfig *ts_config = &(loggerConfig->timing_scoring_cfg);
 
         chanCfg = &(ts_config->driver_id);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_driver_id);
+        sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, (long long (*)())timing_scoring_get_driver_id);
 
         chanCfg = &(ts_config->position_in_class);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_position_in_class);
+        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_position_in_class);
 
         chanCfg = &(ts_config->car_number_ahead);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_car_number_ahead);
+        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_car_number_ahead);
 
         chanCfg = &(ts_config->gap_to_ahead);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_gap_to_ahead);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, timing_scoring_get_gap_to_ahead);
 
         chanCfg = &(ts_config->car_number_behind);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_car_number_behind);
+        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_car_number_behind);
 
         chanCfg = &(ts_config->gap_to_behind);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_gap_to_behind);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, timing_scoring_get_gap_to_behind);
 
         chanCfg = &(ts_config->tns_laptime);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_tns_laptime);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, timing_scoring_get_tns_laptime);
 
         chanCfg = &(ts_config->full_course_status);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_full_course_status);
+        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_full_course_status);
 
         chanCfg = &(ts_config->black_flag);
-        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, timing_scoring_get_black_flag);
+        sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_black_flag);
 #endif
 }
 
