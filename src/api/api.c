@@ -25,6 +25,7 @@
 #include "loggerApi.h"
 #include "panic.h"
 #include "printk.h"
+#include <stdlib.h>
 #include <string.h>
 
 #define JSON_TOKENS 200

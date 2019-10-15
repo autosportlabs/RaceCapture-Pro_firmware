@@ -27,9 +27,9 @@
 #include "printk.h"
 
 /* Adds 25% to the max RPM value */
-#define MAX_RPM_MULT	1.25
-#define SEC_IN_A_MIN	60.0
-#define SEC_IN_A_SEC	1.0
+#define MAX_RPM_MULT	1.25f
+#define SEC_IN_A_MIN	60.0f
+#define SEC_IN_A_SEC	1.0f
 #define US_IN_A_SEC	1000000
 
 static Filter g_timer_filter[CONFIG_TIMER_CHANNELS];

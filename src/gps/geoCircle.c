@@ -42,5 +42,5 @@ bool gc_isPointInGeoCircle(const GeoPoint * point, const struct GeoCircle gc)
 
 bool gc_isValidGeoCircle(const struct GeoCircle gc)
 {
-        return isValidPoint(&(gc.point)) && gc.radius > 0.0;
+        return isValidPoint(&(gc.point)) && gc.radius > 0.0f;
 }
