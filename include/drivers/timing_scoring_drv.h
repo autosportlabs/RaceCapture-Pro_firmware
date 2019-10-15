@@ -78,17 +78,25 @@ typedef struct _TimingScoringState {
 
 void timing_scoring_reset_config(TimingScoringConfig * cfg);
 
-void update_timing_scoring(const TimingScoringState *state);
+void timing_scoring_set_driver_id(uint32_t driver_id);
+void timing_scoring_set_position_in_class(uint8_t position_in_class);
+void timing_scoring_set_car_number_ahead(uint16_t car_number_ahead);
+void timing_scoring_set_gap_to_ahead(float gap_to_ahead);
+void timing_scoring_set_car_number_behind(uint16_t car_number_behind);
+void timing_scoring_set_gap_to_behind(float gap_to_behind);
+void timing_scoring_set_tns_laptime(float tns_laptime);
+void timing_scoring_set_full_course_status(uint8_t full_course_status);
+void timing_scoring_set_black_flag(bool black_flag);
 
-int timing_scoring_get_driver_id(void);
-int timing_scoring_get_position_in_class(void);
-int timing_scoring_get_car_number_ahead(void);
-int timing_scoring_get_gap_to_ahead(void);
-int timing_scoring_get_car_number_behind(void);
-int timing_scoring_get_gap_to_behind(void);
-int timing_scoring_get_tns_laptime(void);
-int timing_scoring_get_full_course_status(void);
-int timing_scoring_get_black_flag(void);
+uint32_t timing_scoring_get_driver_id(void);
+uint8_t timing_scoring_get_position_in_class(void);
+uint16_t timing_scoring_get_car_number_ahead(void);
+float timing_scoring_get_gap_to_ahead(void);
+uint16_t timing_scoring_get_car_number_behind(void);
+float timing_scoring_get_gap_to_behind(void);
+float timing_scoring_get_tns_laptime(void);
+uint8_t timing_scoring_get_full_course_status(void);
+bool timing_scoring_get_black_flag(void);
 
 CPP_GUARD_END
 

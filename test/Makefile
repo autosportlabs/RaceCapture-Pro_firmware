@@ -28,6 +28,7 @@ MK2_SRC=$(RCP_BASE)/platform/mk2
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
 GPS_DIR=gps
+TIMING_SCORING_DIR=timing_scoring
 CAN_OBD2_DIR=can_obd2
 FREE_RTOS_KERNEL_DIR=FreeRTOS_Kernel
 LAP_STATS_DIR=lap_stats
@@ -134,6 +135,7 @@ build/rcp_base/%.o: ../%.c
 
 T_SRC = \
 $(GPS_DIR)/geoTriggerTest.cpp \
+$(TIMING_SCORING_DIR)/timing_scoring_test.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \

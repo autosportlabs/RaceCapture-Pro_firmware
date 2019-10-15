@@ -47,47 +47,92 @@ void update_timing_scoring(const TimingScoringState *state)
         timing_scoring_state.black_flag = state->black_flag;
 }
 
-int timing_scoring_get_driver_id(void)
+void timing_scoring_set_driver_id(uint32_t driver_id)
+{
+        timing_scoring_state.driver_id = driver_id;
+}
+
+void timing_scoring_set_position_in_class(uint8_t position_in_class)
+{
+        timing_scoring_state.position_in_class = position_in_class;
+}
+
+void timing_scoring_set_car_number_ahead(uint16_t car_number_ahead)
+{
+        timing_scoring_state.car_number_ahead = car_number_ahead;
+}
+
+void timing_scoring_set_gap_to_ahead(float gap_to_ahead)
+{
+        timing_scoring_state.gap_to_ahead = gap_to_ahead;
+}
+
+void timing_scoring_set_car_number_behind(uint16_t car_number_behind)
+{
+        timing_scoring_state.car_number_behind = car_number_behind;
+}
+
+void timing_scoring_set_gap_to_behind(float gap_to_behind)
+{
+        timing_scoring_state.gap_to_behind = gap_to_behind;
+}
+
+void timing_scoring_set_tns_laptime(float tns_laptime)
+{
+        timing_scoring_state.tns_laptime = tns_laptime;
+}
+
+void timing_scoring_set_full_course_status(uint8_t full_course_status)
+{
+        timing_scoring_state.full_course_status = full_course_status;
+}
+
+void timing_scoring_set_black_flag(bool black_flag)
+{
+        timing_scoring_state.black_flag = black_flag;
+}
+
+uint32_t timing_scoring_get_driver_id(void)
 {
         return timing_scoring_state.driver_id;
 }
 
-int timing_scoring_get_position_in_class(void)
+uint8_t timing_scoring_get_position_in_class(void)
 {
         return timing_scoring_state.position_in_class;
 }
 
-int timing_scoring_get_car_number_ahead(void)
+uint16_t timing_scoring_get_car_number_ahead(void)
 {
         return timing_scoring_state.car_number_ahead;
 }
 
-int timing_scoring_get_gap_to_ahead(void)
+float timing_scoring_get_gap_to_ahead(void)
 {
         return timing_scoring_state.gap_to_ahead;
 }
 
-int timing_scoring_get_car_number_behind(void)
+uint16_t timing_scoring_get_car_number_behind(void)
 {
         return timing_scoring_state.car_number_behind;
 }
 
-int timing_scoring_get_gap_to_behind(void)
+float timing_scoring_get_gap_to_behind(void)
 {
         return timing_scoring_state.gap_to_behind;
 }
 
-int timing_scoring_get_tns_laptime(void)
+float timing_scoring_get_tns_laptime(void)
 {
         return timing_scoring_state.tns_laptime;
 }
 
-int timing_scoring_get_full_course_status(void)
+uint8_t timing_scoring_get_full_course_status(void)
 {
         return timing_scoring_state.full_course_status;
 }
 
-int timing_scoring_get_black_flag(void)
+bool timing_scoring_get_black_flag(void)
 {
         return timing_scoring_state.black_flag;
 }

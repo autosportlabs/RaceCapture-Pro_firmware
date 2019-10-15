@@ -150,6 +150,13 @@ CPP_GUARD_BEGIN
 #define CELLULAR_API_METHODS
 #endif
 
+#if TIMING_SCORING
+#define TIMING_SCORING_METHODS \
+        API_METHOD("updateTnS", api_update_timing_scoring)
+#else
+#define TIMING_SCORING_METHODS
+#endif
+
 #define API_METHODS                             \
         AUTOLOGGING_METHODS                     \
         CAMERA_CONTROL_METHODS                  \
@@ -161,7 +168,8 @@ CPP_GUARD_BEGIN
         GPIO_API_METHODS                        \
         TIMER_API_METHODS                       \
         LUA_API_METHODS                         \
-        CELLULAR_API_METHODS
+        CELLULAR_API_METHODS                    \
+        TIMING_SCORING_METHODS
 
 
 /* commands */
