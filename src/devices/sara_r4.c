@@ -283,7 +283,7 @@ static bool sara_r4_set_urat(struct serial_buffer *sb)
         const size_t msgs_len = ARRAY_LEN(msgs);
 
         serial_buffer_reset(sb);
-        /* Set the URAT to CAT M1 */
+        /* Set the URAT to CAT M1 only */
         serial_buffer_printf_append(sb, "AT+URAT=%d", 7);
         const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs, msgs_len);
         bool is_ok = is_rsp_ok(msgs, count);
@@ -297,7 +297,7 @@ static bool sara_r4_set_error_reporting(struct serial_buffer *sb)
         const size_t msgs_len = ARRAY_LEN(msgs);
 
         serial_buffer_reset(sb);
-        /* Set the URAT to CAT M1 */
+        /* Turn on extended error reporting */
         serial_buffer_printf_append(sb, "AT+CMEE=%d", 2);
         const size_t count = cellular_exec_cmd(sb, MEDIUM_TIMEOUT, msgs, msgs_len);
         bool is_ok = is_rsp_ok(msgs, count);
