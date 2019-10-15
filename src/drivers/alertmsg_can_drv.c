@@ -30,7 +30,6 @@
 #define DEFAULT_CAN_TIMEOUT   100
 #define ALERTMSG_CAN_BUS 1
 #define ALERTMSG_CAN_BASE_ADDRESS 0xA100
-#define ALERTMSG_MIN_PRIOIRTY 0
 #define ALERTMSG_MAX_PRIORITY 2
 
 void alertmsg_can_send_message(const struct alertmessage *alertmsg)
