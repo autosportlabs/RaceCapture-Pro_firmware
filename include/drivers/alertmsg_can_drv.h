@@ -1,7 +1,7 @@
 /*
  * Race Capture Firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2019 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -20,10 +20,11 @@
  */
 
 #ifndef _ALERTMSG_CAN_DRV_H_
-#define _ALERTMSG_DRV_H_
+#define _ALERTMSG_CAN_DRV_H_
 
-#include "CAN.h"
+
 #include "api_event.h"
+
 
 CPP_GUARD_BEGIN
 
