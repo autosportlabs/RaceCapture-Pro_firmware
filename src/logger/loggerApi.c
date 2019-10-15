@@ -358,6 +358,13 @@ int api_sampleData(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
+int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json)
+{
+        struct api_event event;
+        event.source=serial;
+        event.type = ApiEventType_TimingScoring;
+}
+
 int api_alertmessage(struct Serial *serial, const jsmntok_t *json)
 {
         /* Called when Podium broadcasts an alertmessage destined for the device (client app) */

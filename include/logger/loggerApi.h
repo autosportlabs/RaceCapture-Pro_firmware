@@ -172,6 +172,7 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json);
 int api_systemReset(struct Serial *serial, const jsmntok_t *json);
 int api_factoryReset(struct Serial *serial, const jsmntok_t *json);
 int api_sampleData(struct Serial *serial, const jsmntok_t *json);
+int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json);
 int api_alertmessage(struct Serial *serial, const jsmntok_t *json);
 int api_alertmsg_reply(struct Serial *serial, const jsmntok_t *json);
 int api_alertmsg_ack(struct Serial *serial, const jsmntok_t *json);
