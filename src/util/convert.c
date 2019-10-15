@@ -23,30 +23,35 @@
 
 float convert_kph_mph(const float kph)
 {
-        return kph * 0.621371192;
+        return kph * 0.621371192f;
+}
+
+float convert_kph_mps(const float kph)
+{
+        return kph * (1000.0f / 3600.0f );
 }
 
 float convert_mph_kph(const float mph)
 {
-        return mph * 1.60934400061;
+        return mph * 1.60934400061f;
 }
 
 float convert_km_mi(const float km)
 {
-        return km * 0.621371;
+        return km * 0.621371f;
 }
 
 float convert_mi_km(const float mi)
 {
-        return mi * 1.609344;
+        return mi * 1.609344f;
 }
 
 float convert_ft_m(const float ft)
 {
-        return ft * 0.3048;
+        return ft * 0.3048f;
 }
 
 float convert_m_ft(const float m)
 {
-        return m * 3.28084;
+        return m * 3.28084f;
 }
