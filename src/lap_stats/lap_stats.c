@@ -49,7 +49,7 @@
 #define MEASUREMENT_SPEED_MIN_KPH	1
 /* In Millis */
 #define START_FINISH_TIME_THRESHOLD 	10000
-#define FINISH_TRIGGER_MINIMUM_DISTANCE_KM 0.1
+#define FINISH_TRIGGER_MINIMUM_DISTANCE_KM 0.1f
 #define TIME_NULL -1
 
 /* Threshold where we start interpolating between GPS samples. 10Hz */
@@ -293,7 +293,7 @@ float lapstats_degrees_to_meters(const float degrees)
          * this in the future.
          * 110574.27 meters per degree of latitude at the equator.
          */
-        return degrees * 110574.27;
+        return degrees * 110574.27f;
 }
 
 /**
@@ -360,7 +360,7 @@ void lapstats_update_distance(void)
         size_t current_time = getCurrentTicks();
 
         if (last_distance_sample_at > 0) {
-                g_distance += speed_avg * (ticksToMs(current_time - last_distance_sample_at)) / 3600000.0;
+                g_distance += speed_avg * (ticksToMs(current_time - last_distance_sample_at)) / 3600000.0f;
         }
         last_distance_sample_at = current_time;
         last_speed = current_speed;
@@ -787,7 +787,7 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
          * Evenly split up difference in latitiude into intervals
          * longitude is linearly interpolated based on changing latitude
          */
-        float lat_interval = fabs(lat2 - lat1) / (float)interval_count;
+        float lat_interval = fabsf(lat2 - lat1) / (float)interval_count;
         if (lat1 > lat2)
                 /* Account for reverse direction */
                 lat_interval = -lat_interval;
@@ -804,7 +804,7 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
         float speed2 = gps_snapshot->sample.speed;
 
         /* evenly split up changes in speed based on the interval */
-        float speed_interval = fabs(speed2 - speed1)/ (float)interval_count;
+        float speed_interval = fabsf(speed2 - speed1)/ (float)interval_count;
         if (speed1 > speed2)
                 /* Account for reverse direction */
                 speed_interval = -speed_interval;

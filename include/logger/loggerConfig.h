@@ -269,7 +269,7 @@ typedef struct _PWMConfig {
 #define MODE_LOGGING_PWM_DUTY				1
 #define	MODE_LOGGING_PWM_VOLTS				2
 
-#define PWM_VOLTAGE_SCALING			0.05
+#define PWM_VOLTAGE_SCALING			0.05f
 
 #define DEFAULT_PWM_DUTY_CYCLE (50)
 #define DEFAULT_PWM_PERIOD (100)
