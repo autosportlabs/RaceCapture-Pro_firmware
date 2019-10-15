@@ -58,7 +58,7 @@ include libs/stm32_usb.mk
 # for this changeset alone plus need to address in other libraries
 # as well.
 #
-CFLAGS := -c -MD $(ASL_CFLAGS) $(CPU_DEFINES) $(BOARD_DEFINES) \
+CFLAGS := -c -MD -Wdouble-promotion $(ASL_CFLAGS) $(CPU_DEFINES) $(BOARD_DEFINES) \
 $(APP_DEFINES) $(CPU_FLAGS)
 
 LUA_INCLUDE=-I$(APP_PATH)/lib/lua/src
@@ -91,6 +91,9 @@ endif
 
 # common objects
 OBJS += $(CPU_OBJS) $(BOARD_OBJS) $(APP_OBJS)
+
+DEPS = $(OBJS:.o=.d)
+-include $(DEPS)
 
 ifeq ($(TARGET),)
 $(error TARGET is not defined, please define it in your applications config.mk)

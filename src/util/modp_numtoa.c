@@ -141,7 +141,6 @@ void modp_ftoa(float value, char* str, int prec)
                 prec = 9;
         }
 
-
         /* we'll work in positive values and deal with the
            negative sign issue later */
         int neg = 0;
@@ -156,14 +155,14 @@ void modp_ftoa(float value, char* str, int prec)
         uint32_t frac = (uint32_t)(tmp);
         diff = tmp - frac;
 
-        if (diff > 0.5) {
+        if (diff > 0.5f) {
                 ++frac;
                 /* handle rollover, e.g.  case 0.99 with prec 1 is 1.0  */
                 if (frac >= aPow10[prec]) {
                         frac = 0;
                         ++whole;
                 }
-        } else if (diff == 0.5 && ((frac == 0) || (frac & 1))) {
+        } else if (diff == 0.5f && ((frac == 0) || (frac & 1))) {
                 /* if halfway, round up if odd, OR
                    if last digit is 0.  That last part is strange */
                 ++frac;
@@ -183,10 +182,10 @@ void modp_ftoa(float value, char* str, int prec)
 
         if (prec == 0) {
                 diff = value - whole;
-                if (diff > 0.5) {
+                if (diff > 0.5f) {
                         /* greater than 0.5, round up, e.g. 1.6 -> 2 */
                         ++whole;
-                } else if (diff == 0.5 && (whole & 1)) {
+                } else if (diff == 0.5f && (whole & 1)) {
                         /* exactly 0.5 and ODD, then round up */
                         /* 1.5 -> 2, but 2.5 -> 2 */
                         ++whole;
@@ -233,7 +232,6 @@ void modp_dtoa(double value, char* str, int prec)
                 prec = 9;
         }
 
-
         /* we'll work in positive values and deal with the
            negative sign issue later */
         int neg = 0;
@@ -244,7 +242,7 @@ void modp_dtoa(double value, char* str, int prec)
 
 
         int whole = (int) value;
-        double tmp = (value - whole) * aPow10[prec];
+        double tmp = (value - whole) * (double) aPow10[prec];
         uint32_t frac = (uint32_t)(tmp);
         diff = tmp - frac;
 

@@ -625,8 +625,8 @@ static int lua_imu_read(lua_State *L)
         const size_t channel = lua_tointeger(L, 1);
         validate_imu_channel(L, channel);
 
-        ImuConfig *ac = &getWorkingLoggerConfig()->ImuConfigs[channel];
-        lua_pushnumber(L, imu_read_value(channel, ac));
+	ImuConfig *ac = &getWorkingLoggerConfig()->ImuConfigs[channel];
+	lua_pushnumber(L, imu_read_value(channel, ac));
         return 1;
 }
 
@@ -1049,7 +1049,7 @@ static int lua_calc_gear(lua_State *L)
                 speed = value;
                 if (strcasecmp("kph", units) != 0) {
                         /* if units are not kph, assume mph and convert */
-                        speed *= 1.60934;
+                        speed *= 1.60934f;
                 }
 
                 if (!(s && get_sample_value_by_name(s, lua_tostring(L, 2), &value, &units)))
@@ -1077,7 +1077,7 @@ static int lua_calc_gear(lua_State *L)
                 return 0;
 
         /* Calculate ratio based on cm per minute */
-        float rpm_speed_ratio = (rpm / speed)/(final_drive_ratio * 1666.67 / (tire_diameter_cm * 3.14159));
+        float rpm_speed_ratio = (rpm / speed)/(final_drive_ratio * 1666.67f / (tire_diameter_cm * 3.14159f));
 
         float gear_error = 0.1;
         uint8_t gear_pos = 0;
@@ -1087,7 +1087,7 @@ static int lua_calc_gear(lua_State *L)
         {
                 lua_validate_arg_number(L, i);
                 float gear_ratio = lua_tonumber(L, i);
-                if (fabs(gear_ratio - rpm_speed_ratio) < gear_error) {
+                if (fabsf(gear_ratio - rpm_speed_ratio) < gear_error) {
                         gear_pos = i - (params_start - 1);
                         break;
                 }

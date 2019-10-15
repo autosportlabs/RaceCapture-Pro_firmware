@@ -37,7 +37,7 @@
  */
 static float toRad(float val)
 {
-        return val * (M_PI / 180.0);
+        return val * ((float)M_PI / 180.0f);
 }
 
 float distPythag(const GeoPoint *a, const GeoPoint *b)
@@ -47,14 +47,14 @@ float distPythag(const GeoPoint *a, const GeoPoint *b)
         const float latARad = toRad(a->latitude);
         const float latBRad = toRad(b->latitude);
 
-        const float tmp = dLonRad * cos((latARad + latBRad) / 2);
+        const float tmp = dLonRad * cosf((latARad + latBRad) / 2);
 
-        return sqrt(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
+        return sqrtf(tmp * tmp + dLatRad * dLatRad) * GP_EARTH_RADIUS_M;
 }
 
 int isValidPoint(const GeoPoint *p)
 {
-        return p->latitude != 0.0 || p->longitude != 0.0;
+        return p->latitude != 0.0f || p->longitude != 0.0f;
 }
 
 bool are_geo_points_equal(const GeoPoint *p1, const GeoPoint *p2)
