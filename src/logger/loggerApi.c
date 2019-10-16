@@ -2251,6 +2251,7 @@ int api_set_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json)
         TimingScoringConfig * cfg = &getWorkingLoggerConfig()->timing_scoring_cfg;
         bool current_enabled = cfg->timing_scoring_enabled;
         jsmn_exists_set_val_bool(json, "en", &cfg->timing_scoring_enabled);
+        jsmn_exists_set_val_int(json, "canBus", &cfg->can_bus);
 
         if (current_enabled != cfg->timing_scoring_enabled) {
                 configChanged();
@@ -2263,7 +2264,8 @@ int api_get_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json)
         json_objStart(serial);
         json_objStartString(serial, "tnSCfg");
         TimingScoringConfig * cfg = &getWorkingLoggerConfig()->timing_scoring_cfg;
-        json_bool(serial, "en", cfg->timing_scoring_enabled, false);
+        json_bool(serial, "en", cfg->timing_scoring_enabled, true);
+        json_int(serial, "canBus", cfg->can_bus, false);
         json_objEnd(serial, false);
         json_objEnd(serial, false);
         return API_SUCCESS_NO_RETURN;

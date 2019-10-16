@@ -22,6 +22,7 @@
 #include "timing_scoring_drv.h"
 #include "CAN.h"
 #include "printk.h"
+#include "loggerConfig.h"
 #define _LOG_PFX "[TimingScoring] "
 
 #define TIMING_SCORING_CAN_BUS 1
@@ -32,6 +33,7 @@ static TimingScoringState timing_scoring_state = {0};
 
 static void _timing_scoring_broadcast_can(void)
 {
+        uint8_t can_bus = getWorkingLoggerConfig()->timing_scoring_cfg.can_bus;
         {
                 CAN_msg msg;
                 msg.data16[0] = (uint16_t)(timing_scoring_get_gap_to_ahead() * 10);
@@ -41,7 +43,7 @@ static void _timing_scoring_broadcast_can(void)
                 msg.addressValue = TIMING_SCORING_CAN_ID;
                 msg.isExtendedAddress = true;
                 msg.dataLength = 8;
-                if (! CAN_tx_msg(TIMING_SCORING_CAN_BUS, &msg, TIMING_SCORING_DEFAULT_CAN_TIMEOUT)) {
+                if (! CAN_tx_msg(can_bus, &msg, TIMING_SCORING_DEFAULT_CAN_TIMEOUT)) {
                         pr_warning(_LOG_PFX "Timed out sending timing&scoring CAN message 1\r\n");
                 }
         }
@@ -56,7 +58,7 @@ static void _timing_scoring_broadcast_can(void)
                 msg.addressValue = TIMING_SCORING_CAN_ID + 1;
                 msg.isExtendedAddress = true;
                 msg.dataLength = 6;
-                if (! CAN_tx_msg(TIMING_SCORING_CAN_BUS, &msg, TIMING_SCORING_DEFAULT_CAN_TIMEOUT)) {
+                if (! CAN_tx_msg(can_bus, &msg, TIMING_SCORING_DEFAULT_CAN_TIMEOUT)) {
                         pr_warning(_LOG_PFX "Timed out sending timing&scoring CAN message 2\r\n");
                 }
         }
@@ -67,7 +69,7 @@ static void _timing_scoring_broadcast_can(void)
                 msg.addressValue = TIMING_SCORING_CAN_ID + 2;
                 msg.isExtendedAddress = true;
                 msg.dataLength = 4;
-                if (! CAN_tx_msg(TIMING_SCORING_CAN_BUS, &msg, TIMING_SCORING_DEFAULT_CAN_TIMEOUT)) {
+                if (! CAN_tx_msg(can_bus, &msg, TIMING_SCORING_DEFAULT_CAN_TIMEOUT)) {
                         pr_warning(_LOG_PFX "Timed out sending timing&scoring CAN message 3\r\n");
                 }
         }

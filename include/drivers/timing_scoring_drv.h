@@ -29,6 +29,8 @@
 
 CPP_GUARD_BEGIN
 
+#define DEFAULT_TIMING_SCORING_ENABLED false
+#define DEFAULT_TIMING_SCORING_CAN_BUS 1
 #define DEFAULT_TIMING_SCORING_SAMPLE_RATE SAMPLE_1Hz
 #define DEFAULT_COMPETITOR_NUMBER_AHEAD_CONFIG {"CompAhead", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GAP_TO_AHEAD_CONFIG {"GapToAhead", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
@@ -41,7 +43,6 @@ CPP_GUARD_BEGIN
 #define DEFAULT_BLACK_FLAG_CONFIG {"BlackFlag", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
 
 #define DEFAULT_TIMING_SCORING_CONFIG {                       \
-                false,                                        \
                 DEFAULT_DRIVER_ID_CONFIG,                     \
                 DEFAULT_POSITION_IN_CLASS_CONFIG,             \
                 DEFAULT_COMPETITOR_NUMBER_AHEAD_CONFIG,       \
@@ -50,11 +51,12 @@ CPP_GUARD_BEGIN
                 DEFAULT_GAP_TO_BEHIND_CONFIG,                 \
                 DEFAULT_TNS_LAPTIME_CONFIG,                   \
                 DEFAULT_FLAG_STATUS_CONFIG,                   \
-                DEFAULT_BLACK_FLAG_CONFIG                     \
-                        }
+                DEFAULT_BLACK_FLAG_CONFIG,                    \
+                DEFAULT_TIMING_SCORING_ENABLED,               \
+                DEFAULT_TIMING_SCORING_CAN_BUS                \
+                }
 
 typedef struct _TimingScoringConfig {
-        bool timing_scoring_enabled;
         ChannelConfig driver_id;
         ChannelConfig position_in_class;
         ChannelConfig car_number_ahead;
@@ -64,6 +66,8 @@ typedef struct _TimingScoringConfig {
         ChannelConfig tns_laptime;
         ChannelConfig full_course_status;
         ChannelConfig black_flag;
+        bool timing_scoring_enabled;
+        uint8_t can_bus;
 } TimingScoringConfig;
 
 typedef struct _TimingScoringState {

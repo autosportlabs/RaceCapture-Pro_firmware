@@ -52,6 +52,7 @@
 #include <streambuf>
 #include <string.h>
 #include <string>
+#include <stdio.h>
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
@@ -1823,10 +1824,12 @@ void LoggerApiTest::test_set_timing_scoring_cfg()
         char *response;
         response = processApiGeneric("setTnSCfg1.json");
         CPPUNIT_ASSERT_EQUAL(true, cfg->timing_scoring_enabled);
+        CPPUNIT_ASSERT_EQUAL((uint8_t)1, cfg->can_bus);
         assertGenericResponse(response, "setTnSCfg", API_SUCCESS);
 
         response = processApiGeneric("setTnSCfg2.json");
         CPPUNIT_ASSERT_EQUAL(false, cfg->timing_scoring_enabled);
+        CPPUNIT_ASSERT_EQUAL((uint8_t)0, cfg->can_bus);
         assertGenericResponse(response, "setTnSCfg", API_SUCCESS);
 }
 
@@ -1836,6 +1839,7 @@ void LoggerApiTest::test_get_timing_scoring_cfg()
         TimingScoringConfig * cfg = &lc->timing_scoring_cfg;
 
         cfg->timing_scoring_enabled = true;
+        cfg->can_bus = 1;
         {
                 const char *response = processApiGeneric("getTnSCfg.json");
 
@@ -1844,9 +1848,11 @@ void LoggerApiTest::test_get_timing_scoring_cfg()
 
                 Object c = json["tnSCfg"];
                 CPPUNIT_ASSERT_EQUAL(true, (bool)(Boolean)c["en"]);
+                CPPUNIT_ASSERT_EQUAL(1, (int)(Number)c["canBus"]);
         }
 
         cfg->timing_scoring_enabled = false;
+        cfg->can_bus = 0;
         {
                 const char *response = processApiGeneric("getTnSCfg.json");
 
@@ -1855,5 +1861,6 @@ void LoggerApiTest::test_get_timing_scoring_cfg()
 
                 Object c = json["tnSCfg"];
                 CPPUNIT_ASSERT_EQUAL(false, (bool)(Boolean)c["en"]);
+                CPPUNIT_ASSERT_EQUAL(0, (int)(Number)c["canBus"]);
         }
 }
