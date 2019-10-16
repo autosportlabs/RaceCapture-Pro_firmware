@@ -152,7 +152,9 @@ CPP_GUARD_BEGIN
 
 #if TIMING_SCORING
 #define TIMING_SCORING_METHODS \
-        API_METHOD("updateTnS", api_update_timing_scoring)
+        API_METHOD("updateTnS", api_update_timing_scoring) \
+        API_METHOD("getTnSCfg", api_get_timing_scoring_cfg) \
+        API_METHOD("setTnSCfg", api_set_timing_scoring_cfg)
 #else
 #define TIMING_SCORING_METHODS
 #endif
@@ -180,7 +182,6 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json);
 int api_systemReset(struct Serial *serial, const jsmntok_t *json);
 int api_factoryReset(struct Serial *serial, const jsmntok_t *json);
 int api_sampleData(struct Serial *serial, const jsmntok_t *json);
-int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json);
 int api_alertmessage(struct Serial *serial, const jsmntok_t *json);
 int api_alertmsg_reply(struct Serial *serial, const jsmntok_t *json);
 int api_alertmsg_ack(struct Serial *serial, const jsmntok_t *json);
@@ -255,6 +256,12 @@ int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 #if CAMERA_CONTROL
 int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
+#if TIMING_SCORING
+int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json);
+int api_set_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json);
+int api_get_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json);
 #endif
 
 CPP_GUARD_END

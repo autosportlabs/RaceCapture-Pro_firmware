@@ -699,22 +699,24 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (lapConfig->distance.sampleRate != SAMPLE_DISABLED) channels++;
         if (lapConfig->session_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
 
+#if TIMING_SCORING
+        TimingScoringConfig *ts_config = &(loggerConfig->timing_scoring_cfg);
+        if (ts_config->timing_scoring_enabled) {
+                if (ts_config->driver_id.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->position_in_class.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->car_number_ahead.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->gap_to_ahead.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->car_number_behind.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->gap_to_behind.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->tns_laptime.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->full_course_status.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->black_flag.sampleRate != SAMPLE_DISABLED) channels++;
+        }
+#endif
+
 #if VIRTUAL_CHANNEL_SUPPORT
         channels += get_virtual_channel_count();
 #endif /* VIRTUAL_CHANNEL_SUPPORT */
-
-#if TIMING_SCORING
-        TimingScoringConfig *ts_config = &(loggerConfig->timing_scoring_cfg);
-        if (ts_config->driver_id.sampleRate != SAMPLE_DISABLED) channels++;
-        if (ts_config->position_in_class.sampleRate != SAMPLE_DISABLED) channels++;
-        if (ts_config->car_number_ahead.sampleRate != SAMPLE_DISABLED) channels++;
-        if (ts_config->gap_to_ahead.sampleRate != SAMPLE_DISABLED) channels++;
-        if (ts_config->car_number_behind.sampleRate != SAMPLE_DISABLED) channels++;
-        if (ts_config->gap_to_behind.sampleRate != SAMPLE_DISABLED) channels++;
-        if (ts_config->tns_laptime.sampleRate != SAMPLE_DISABLED) channels++;
-        if (ts_config->full_course_status.sampleRate != SAMPLE_DISABLED) channels++;
-        if (ts_config->black_flag.sampleRate != SAMPLE_DISABLED) channels++;
-#endif
 
         return channels;
 }
@@ -771,7 +773,7 @@ void reset_logger_config(void)
         camera_control_reset_config(&lc->camera_control_cfg);
 #endif
 
-#if TIMING_SCORING == 1
+#if TIMING_SCORING
         timing_scoring_reset_config(&lc->timing_scoring_cfg);
 #endif
         strcpy(lc->padding_data, "");

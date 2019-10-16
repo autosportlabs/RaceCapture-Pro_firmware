@@ -358,23 +358,6 @@ int api_sampleData(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS_NO_RETURN;
 }
 
-int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json)
-{
-        TimingScoringState *ts = timing_scoring_get_state();
-
-        jsmn_exists_set_val_uint32(json, "driverId", &(ts->driver_id));
-        jsmn_exists_set_val_uint8(json, "posInCls", &(ts->position_in_class), NULL);
-        jsmn_exists_set_val_uint16(json, "carNumAhead", &ts->car_number_ahead, NULL);
-        jsmn_exists_set_val_float(json, "gapToAhead", &ts->gap_to_ahead);
-        jsmn_exists_set_val_uint16(json, "carNumBehind", &ts->car_number_behind, NULL);
-        jsmn_exists_set_val_float(json, "gapToBehind", &ts->gap_to_behind);
-        jsmn_exists_set_val_float(json, "tnsLaptime", &ts->tns_laptime);
-        jsmn_exists_set_val_float(json, "fullFlag", &ts->full_course_flag_status);
-        jsmn_exists_set_val_bool(json, "blackFlag", &ts->black_flag);
-
-        return API_SUCCESS_NO_RETURN;
-}
-
 int api_alertmessage(struct Serial *serial, const jsmntok_t *json)
 {
         /* Called when Podium broadcasts an alertmessage destined for the device (client app) */
@@ -2256,3 +2239,44 @@ int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json)
 }
 #endif
 
+#if TIMING_SCORING
+int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json)
+{
+        TimingScoringState *ts = timing_scoring_get_state();
+
+        jsmn_exists_set_val_int(json, "driverId", &ts->driver_id);
+
+        jsmn_exists_set_val_int(json, "posInCls", &ts->position_in_class);
+        jsmn_exists_set_val_int(json, "carNumAhead", &ts->car_number_ahead);
+        jsmn_exists_set_val_float(json, "gapToAhead", &ts->gap_to_ahead);
+        jsmn_exists_set_val_int(json, "carNumBehind", &ts->car_number_behind);
+        jsmn_exists_set_val_float(json, "gapToBehind", &ts->gap_to_behind);
+        jsmn_exists_set_val_float(json, "tnsLaptime", &ts->tns_laptime);
+        jsmn_exists_set_val_int(json, "fcFlag", &ts->full_course_flag_status);
+        jsmn_exists_set_val_bool(json, "blackFlag", &ts->black_flag);
+        return API_SUCCESS;
+}
+
+int api_set_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        TimingScoringConfig * cfg = &getWorkingLoggerConfig()->timing_scoring_cfg;
+        bool current_enabled = cfg->timing_scoring_enabled;
+        jsmn_exists_set_val_bool(json, "en", &cfg->timing_scoring_enabled);
+
+        if (current_enabled != cfg->timing_scoring_enabled) {
+                configChanged();
+        }
+        return API_SUCCESS;
+}
+
+int api_get_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        json_objStart(serial);
+        json_objStartString(serial, "tnSCfg");
+        TimingScoringConfig * cfg = &getWorkingLoggerConfig()->timing_scoring_cfg;
+        json_bool(serial, "en", cfg->timing_scoring_enabled, false);
+        json_objEnd(serial, false);
+        json_objEnd(serial, false);
+        return API_SUCCESS_NO_RETURN;
+}
+#endif

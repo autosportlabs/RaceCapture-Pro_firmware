@@ -21,11 +21,13 @@
 #include "timing_scoring_test.h"
 #include "timing_scoring_drv.h"
 #include <cppunit/extensions/HelperMacros.h>
-
+#include "loggerConfig.h"
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( TimingScoringTest );
 
-void TimingScoringTest::setUp() {}
+void TimingScoringTest::setUp() {
+        reset_logger_config();
+}
 
 void TimingScoringTest::tearDown() {}
 
@@ -33,19 +35,19 @@ void TimingScoringTest::test_getter_setters()
 {
         TimingScoringState *ts = timing_scoring_get_state();
         ts->driver_id = 1234;
-        CPPUNIT_ASSERT_EQUAL((uint32_t)1234, timing_scoring_get_driver_id());
+        CPPUNIT_ASSERT_EQUAL((int)1234, timing_scoring_get_driver_id());
 
         ts->position_in_class = 43;
-        CPPUNIT_ASSERT_EQUAL((uint8_t)43, timing_scoring_get_position_in_class());
+        CPPUNIT_ASSERT_EQUAL((int)43, timing_scoring_get_position_in_class());
 
         ts->car_number_ahead = 55;
-        CPPUNIT_ASSERT_EQUAL((uint16_t)55, timing_scoring_get_car_number_ahead());
+        CPPUNIT_ASSERT_EQUAL((int)55, timing_scoring_get_car_number_ahead());
 
         ts->gap_to_ahead = 1.234;
         CPPUNIT_ASSERT_EQUAL((float)1.234, timing_scoring_get_gap_to_ahead());
 
         ts->car_number_behind = 66;
-        CPPUNIT_ASSERT_EQUAL((uint16_t)66, timing_scoring_get_car_number_behind());
+        CPPUNIT_ASSERT_EQUAL((int)66, timing_scoring_get_car_number_behind());
 
         ts->gap_to_behind = 2.35;
         CPPUNIT_ASSERT_EQUAL((float)2.35, timing_scoring_get_gap_to_behind());
@@ -54,7 +56,7 @@ void TimingScoringTest::test_getter_setters()
         CPPUNIT_ASSERT_EQUAL((float)4.23, timing_scoring_get_tns_laptime());
 
         ts->full_course_flag_status = 3;
-        CPPUNIT_ASSERT_EQUAL((uint8_t)3, timing_scoring_get_full_course_status());
+        CPPUNIT_ASSERT_EQUAL((int)3, timing_scoring_get_full_course_status());
 
         ts->black_flag = true;
         CPPUNIT_ASSERT_EQUAL((bool)true, timing_scoring_get_black_flag());

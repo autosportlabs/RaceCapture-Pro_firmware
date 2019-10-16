@@ -39,19 +39,21 @@ CPP_GUARD_BEGIN
 #define DEFAULT_POSITION_IN_CLASS_CONFIG {"PosInClass", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
 #define DEFAULT_BLACK_FLAG_CONFIG {"BlackFlag", "", 0, 0, DEFAULT_TIMING_SCORING_SAMPLE_RATE, 0, 0}
 
-#define DEFAULT_TIMING_SCORING_CONFIG {                         \
-                DEFAULT_COMPETITOR_NUMBER_AHEAD_CONFIG,        \
-                DEFAULT_GAP_TO_AHEAD_CONFIG,                   \
-                DEFAULT_COMPETITOR_NUMBER_BEHIND_CONFIG,       \
-                DEFAULT_GAP_TO_BEHIND_CONFIG,                  \
-                DEFAULT_TNS_LAPTIME_CONFIG,                    \
-                DEFAULT_DRIVER_ID_CONFIG,                      \
-                DEFAULT_FLAG_STATUS_CONFIG,             \
-                DEFAULT_POSITION_IN_CLASS_CONFIG,              \
-                DEFAULT_BLACK_FLAG_CONFIG                      \
+#define DEFAULT_TIMING_SCORING_CONFIG {                       \
+                false,                                        \
+                DEFAULT_DRIVER_ID_CONFIG,                     \
+                DEFAULT_POSITION_IN_CLASS_CONFIG,             \
+                DEFAULT_COMPETITOR_NUMBER_AHEAD_CONFIG,       \
+                DEFAULT_GAP_TO_AHEAD_CONFIG,                  \
+                DEFAULT_COMPETITOR_NUMBER_BEHIND_CONFIG,      \
+                DEFAULT_GAP_TO_BEHIND_CONFIG,                 \
+                DEFAULT_TNS_LAPTIME_CONFIG,                   \
+                DEFAULT_FLAG_STATUS_CONFIG,                   \
+                DEFAULT_BLACK_FLAG_CONFIG                     \
                         }
 
 typedef struct _TimingScoringConfig {
+        bool timing_scoring_enabled;
         ChannelConfig driver_id;
         ChannelConfig position_in_class;
         ChannelConfig car_number_ahead;
@@ -64,15 +66,15 @@ typedef struct _TimingScoringConfig {
 } TimingScoringConfig;
 
 typedef struct _TimingScoringState {
-        uint16_t car_number_ahead;
-        uint16_t car_number_behind;
+        int car_number_ahead;
+        int car_number_behind;
         float gap_to_ahead;
         float gap_to_behind;
 
         float tns_laptime;
-        uint32_t driver_id;
-        uint8_t full_course_flag_status;
-        uint8_t position_in_class;
+        int driver_id;
+        int full_course_flag_status;
+        int position_in_class;
         bool black_flag;
 } TimingScoringState;
 
@@ -80,14 +82,14 @@ void timing_scoring_reset_config(TimingScoringConfig * cfg);
 
 TimingScoringState * timing_scoring_get_state(void);
 
-uint32_t timing_scoring_get_driver_id(void);
-uint8_t timing_scoring_get_position_in_class(void);
-uint16_t timing_scoring_get_car_number_ahead(void);
+int timing_scoring_get_driver_id(void);
+int timing_scoring_get_position_in_class(void);
+int timing_scoring_get_car_number_ahead(void);
 float timing_scoring_get_gap_to_ahead(void);
-uint16_t timing_scoring_get_car_number_behind(void);
+int timing_scoring_get_car_number_behind(void);
 float timing_scoring_get_gap_to_behind(void);
 float timing_scoring_get_tns_laptime(void);
-uint8_t timing_scoring_get_full_course_status(void);
+int timing_scoring_get_full_course_status(void);
 bool timing_scoring_get_black_flag(void);
 
 CPP_GUARD_END

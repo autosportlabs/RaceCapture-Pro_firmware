@@ -21,8 +21,6 @@
 
 #include "timing_scoring_drv.h"
 #include "CAN.h"
-#include "printk.h"
-
 #define _LOG_PFX "[TimingScoring] "
 
 #define DEFAULT_CAN_TIMEOUT   100
@@ -34,35 +32,22 @@ void timing_scoring_reset_config(TimingScoringConfig * cfg)
         *cfg = (TimingScoringConfig) DEFAULT_TIMING_SCORING_CONFIG;
 }
 
-void update_timing_scoring(const TimingScoringState *state)
-{
-        timing_scoring_state.position_in_class = state->position_in_class;
-        timing_scoring_state.car_number_ahead = state->car_number_ahead;
-        timing_scoring_state.car_number_behind = state->car_number_behind;
-        timing_scoring_state.gap_to_ahead = state->gap_to_ahead;
-        timing_scoring_state.gap_to_behind = state->gap_to_behind;
-        timing_scoring_state.full_course_flag_status = state->full_course_flag_status;
-        timing_scoring_state.driver_id = state->driver_id;
-        timing_scoring_state.tns_laptime = state->tns_laptime;
-        timing_scoring_state.black_flag = state->black_flag;
-}
-
 TimingScoringState * timing_scoring_get_state(void)
 {
         return &timing_scoring_state;
 }
 
-uint32_t timing_scoring_get_driver_id(void)
+int timing_scoring_get_driver_id(void)
 {
         return timing_scoring_state.driver_id;
 }
 
-uint8_t timing_scoring_get_position_in_class(void)
+int timing_scoring_get_position_in_class(void)
 {
         return timing_scoring_state.position_in_class;
 }
 
-uint16_t timing_scoring_get_car_number_ahead(void)
+int timing_scoring_get_car_number_ahead(void)
 {
         return timing_scoring_state.car_number_ahead;
 }
@@ -72,7 +57,7 @@ float timing_scoring_get_gap_to_ahead(void)
         return timing_scoring_state.gap_to_ahead;
 }
 
-uint16_t timing_scoring_get_car_number_behind(void)
+int timing_scoring_get_car_number_behind(void)
 {
         return timing_scoring_state.car_number_behind;
 }
@@ -87,7 +72,7 @@ float timing_scoring_get_tns_laptime(void)
         return timing_scoring_state.tns_laptime;
 }
 
-uint8_t timing_scoring_get_full_course_status(void)
+int timing_scoring_get_full_course_status(void)
 {
         return timing_scoring_state.full_course_flag_status;
 }
