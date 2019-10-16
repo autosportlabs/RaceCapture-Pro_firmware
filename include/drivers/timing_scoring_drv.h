@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <jsmn.h>
 
 CPP_GUARD_BEGIN
 
@@ -81,6 +82,7 @@ typedef struct _TimingScoringState {
 void timing_scoring_reset_config(TimingScoringConfig * cfg);
 
 TimingScoringState * timing_scoring_get_state(void);
+void timing_scoring_update(const jsmntok_t *json);
 
 int timing_scoring_get_driver_id(void);
 int timing_scoring_get_position_in_class(void);
