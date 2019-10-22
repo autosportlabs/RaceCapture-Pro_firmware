@@ -160,6 +160,9 @@ bool jsmn_exists_set_val_uint64(const jsmntok_t* root, const char* field,
 bool jsmn_exists_set_val_uint8(const jsmntok_t *root, const char * field,
                                uint8_t *val, uint8_t (*filter)(uint8_t));
 
+bool jsmn_exists_set_val_uint16(const jsmntok_t *root, const char * field,
+                               uint16_t *val, uint16_t (*filter)(uint16_t));
+
 bool jsmn_exists_set_val_string(const jsmntok_t* root, const char* field,
                                 void* val, const size_t max_len,
                                 const bool strip);

@@ -18,6 +18,7 @@
 #define VIRTUAL_CHANNEL_SUPPORT	    0
 #define WIFI_SUPPORT		        1
 #define CAMERA_CONTROL              1
+#define TIMING_SCORING 1
 
 /* Wifi Specific Info */
 #define WIFI_MAX_BAUD		        921600
