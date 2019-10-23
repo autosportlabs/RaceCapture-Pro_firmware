@@ -521,12 +521,6 @@ void cellular_buffering_task(void *params)
 
         bool logging_enabled = false;
 
-#ifdef DELETE_ME
-        uint32_t re_open_buffer_file_timeout = 0;
-        uint32_t last_open_buffer_attempt = getCurrentTicks();
-        uint32_t buffer_file_open_retries = 0;
-#endif // DELETE_ME
-
         while (1) {
                 cellular_state.should_stream = logging_enabled ||
                                      logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||

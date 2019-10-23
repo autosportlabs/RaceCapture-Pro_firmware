@@ -220,7 +220,7 @@ static enum writing_status open_existing_log_file(struct logging_status *ls)
 
         const FRESULT rc = sd_open(g_logfile, ls->name, FA_WRITE);
 
-        if (rc != FR_OK )
+        if (FR_OK != rc)
                 return WRITING_INACTIVE;
 
         // Seek to the end so we append instead of overwriting
@@ -241,17 +241,6 @@ static void close_log_file(struct logging_status *ls)
         sd_close(g_logfile);
 }
 
-/* DELETE
-static void logging_led_toggle(void)
-{
-        led_toggle(LED_LOGGER);
-}
-
-static void logging_led_off(void)
-{
-        led_disable(LED_LOGGER);
-}
-*/
 
 static void open_log_file(struct logging_status *ls)
 {
@@ -354,7 +343,7 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
         if (!ls->logging)
                 return 0;
 
-        int attempts = 200000;
+        int attempts = 2;
         int rc = WRITE_FAIL;
         while (attempts--) {
                 /*
