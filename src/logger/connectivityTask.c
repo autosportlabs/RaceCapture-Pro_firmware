@@ -64,7 +64,7 @@
 
 #define TELEMETRY_BUFFER_FILE_SYNC_INTERVAL 100
 #define TELEMETRY_STACK_SIZE 300
-#define CELLULAR_TELEMETRY_STACK_SIZE 330
+#define CELLULAR_TELEMETRY_STACK_SIZE 330+96
 #define BAD_MESSAGE_THRESHOLD     10
 #define API_EVENT_QUEUE_DEPTH 2
 #define CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH 1
@@ -545,6 +545,10 @@ void cellular_buffering_task(void *params)
                                                 cellular_state.buffer_file_open = true;
                                         }
                                 }
+                        }
+                        else
+                        {
+                                vTaskDelay( 1000 );
                         }
                         pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
                 }

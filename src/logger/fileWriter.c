@@ -224,40 +224,15 @@ static enum writing_status open_existing_log_file(struct logging_status *ls)
                 return WRITING_INACTIVE;
 
         // Seek to the end so we append instead of overwriting
-        return FR_OK == sd_lseek(g_logfile, f_size(g_logfile)) ? WRITING_ACTIVE : WRITING_INACTIVE;
+        return FR_OK == sd_lseek(g_logfile, sd_size(g_logfile)) ? WRITING_ACTIVE : WRITING_INACTIVE;
 }
 
 static enum writing_status open_new_log_file(struct logging_status *ls)
 {
         pr_debug(_LOG_PFX "Opening new log file\r\n");
 
-        int i;
-
-        for (i = 0; i < MAX_LOG_FILE_INDEX; i++) {
-                char buf[12];
-                modp_itoa10(i, buf);
-
-                strcpy(ls->name, "rc_");
-                strcat(ls->name, buf);
-                strcat(ls->name, ".log");
-
-                const FRESULT res = sd_open(g_logfile, ls->name, FA_WRITE | FA_CREATE_NEW);
-
-                if ( res == FR_OK )
-                        return WRITING_ACTIVE;
-
-                if ( res != FR_EXIST )
-		{
-			pr_error_int_msg( "Failed to open log file: ", res );
-                        break;
-		}
-
-                // sd_close(g_logfile); // this close always fails.
-        }
-
-        /* We fail if here. Be sure to clean up name buffer.*/
-        ls->name[0] = '\0';
-        return WRITING_INACTIVE;
+        return  sdcard_open_next( g_logfile, ls->name, "rc_", ".log", MAX_LOG_FILE_INDEX )
+                ? WRITING_ACTIVE : WRITING_INACTIVE;
 }
 
 static void close_log_file(struct logging_status *ls)
@@ -266,6 +241,7 @@ static void close_log_file(struct logging_status *ls)
         sd_close(g_logfile);
 }
 
+/* DELETE
 static void logging_led_toggle(void)
 {
         led_toggle(LED_LOGGER);
@@ -275,6 +251,7 @@ static void logging_led_off(void)
 {
         led_disable(LED_LOGGER);
 }
+*/
 
 static void open_log_file(struct logging_status *ls)
 {
@@ -287,7 +264,7 @@ static void open_log_file(struct logging_status *ls)
                 return;
         }
 
-        bool fs_good = sdcard_ready( true ); // true == attempt remount immediately even if just attempted.
+        bool fs_good = sdcard_ready( false ); // true == attempt remount immediately even if just attempted.
         if (!fs_good)
                 return;
 
@@ -314,7 +291,7 @@ TESTABLE_STATIC int logging_start(struct logging_status *ls)
         /* Set this here because this is the start of the log stream */
         ls->rows_written = 0;
 
-        logging_led_toggle();
+        // logging_led_toggle();
         return 0;
 }
 
@@ -328,7 +305,7 @@ TESTABLE_STATIC int logging_stop(struct logging_status *ls)
         /* Prevent log file from being re-opened */
         ls->name[0] = '\0';
 
-        logging_led_off();
+        // logging_led_off();
         return 0;
 }
 
@@ -412,7 +389,7 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
                 taskYIELD();
         }
 
-        logging_led_toggle();
+        // logging_led_toggle();
         return rc;
 }
 

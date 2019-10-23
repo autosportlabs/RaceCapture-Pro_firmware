@@ -22,7 +22,6 @@
 
 #include "printk.h"
 #include "sdcard.h"
-#include <string.h>
 #include "modp_numtoa.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -33,9 +32,11 @@
 #include "sdcard_device.h"
 #include "mem_mang.h"
 #include "semphr.h"
+#include "led.h"
 
+#include <string.h>
 
-#define LOG_PFX "[SDCARD] "
+#define LOG_PFX "[SD] "
 static FATFS *fat_fs = NULL;
 static xSemaphoreHandle fs_mutex = NULL;
 #define SD_MOUNT_RETRY_TIME_MS 1000
@@ -46,15 +47,40 @@ static uint32_t re_mount_timeout = 0;
 static uint32_t last_mount_attempt = 0;
 static bool     write_ready = false;
 
+bool sdcard_open_next( FIL* fp, char* name, const char* base, const char* ext, const uint32_t maxIdx )
+{
+        char num_buf[16];
+        int i = 0;
+        for ( ; i < maxIdx; i++ )
+        {
+                modp_itoa10(i, &num_buf[0] );
+                strcpy(name, base );
+                strcat(name, num_buf );
+                strcat(name, ext );
+                const FRESULT res = sd_open(fp, name, FA_WRITE | FA_CREATE_NEW );
+
+                if ( res == FR_OK )
+                {
+                        return true;
+                }
+
+                if ( res != FR_EXIST )
+                {
+                        pr_error_int_msg( LOG_PFX "Failed to open file: ", res );
+                        break;
+                }
+       }
+       pr_error_int_msg( "Failed to open file: out of indices:",  maxIdx ); 
+       name[0] = '\0';
+       return false;
+}
+   
+// the calls for mounting and setuup are little bit stack heavy.
+// currently had to add > 96 < 128 bytes to the stack to get this thread to mount.
 
 bool sdcard_write_ready( const bool no_delay )
 {
 	pr_trace( LOG_PFX "sdcard_write_ready\r\n" );
-	if ( fs_mutex == NULL )
-	{
-		pr_trace( "no mutex\r\n" );
-		return false;
-	}
         if ( sdcard_ready( no_delay ) && ! write_ready )
         {
             write_ready = test_sd( NULL, 1, 0, 1 );
@@ -68,7 +94,7 @@ bool sdcard_ready( const bool no_delay )
 {
 	if ( fs_mutex == NULL )
 	{
-		pr_trace( "no mutex\r\n" );
+		pr_debug( "no mutex\r\n" );
 		return false;
 	}
 	pr_trace( LOG_PFX "sdcard_ready\r\n" );
@@ -85,6 +111,7 @@ bool sdcard_ready( const bool no_delay )
 
                         if ( ! fs_good )
                         {
+                                led_enable( LED_ERROR );
                                 re_mount_retries--;
                                 pr_error(LOG_PFX "Error Initializing filesystem:\r\n" );
                                 if ( ! re_mount_retries )
@@ -101,6 +128,7 @@ bool sdcard_ready( const bool no_delay )
 		if ( fs_good )
 		{
 			pr_trace( LOG_PFX "Filesystem sucessfully initialized\r\n" );
+                        led_disable( LED_ERROR );
 		}
 
         }
@@ -111,10 +139,23 @@ bool sdcard_ready( const bool no_delay )
         return fs_good;
 }
 
+inline
+bool fs_lock(void){
+        led_enable( LED_LOGGER );
+        bool ret = xSemaphoreTake(fs_mutex, portMAX_DELAY) != pdTRUE;
+        return ret;
+}
+
+inline
+void fs_unlock(void){
+        xSemaphoreGive(fs_mutex);
+        led_disable( LED_LOGGER );
+}
+
 FRESULT sd_open( FIL* file, const TCHAR* path, BYTE mode )
 {
 	pr_info_str_msg( LOG_PFX "sd_open: ", path );
-	fs_lock();
+        fs_lock();
 	const FRESULT rc = f_open( file, path, mode );
 	fs_unlock();
         if ( rc != FR_OK )
@@ -176,6 +217,14 @@ FRESULT sd_sync( FIL* file )
 	fs_unlock();
         if ( rc != FR_OK )
                 pr_error_int_msg(LOG_PFX "Failed to sync buffer file: ", rc);
+	return rc;
+}
+
+int	sd_puts(const TCHAR* str, FIL* cp)
+{
+	fs_lock();
+	int rc = f_puts( str, cp );
+	fs_unlock();
 	return rc;
 }
 
@@ -242,25 +291,13 @@ void InitFSHardware(void)
 	if ( fs_mutex == NULL )
 		fs_mutex = xSemaphoreCreateMutex();
 
-	fs_lock();
         if (fat_fs == NULL)
                 fat_fs = pvPortMalloc(sizeof(FATFS));
+
+	fs_lock();
 	disk_init_hardware();
 	fs_unlock();
 }
-
-static int fs_lockcount = 0;
-void fs_lock(void){
-	fs_lockcount++;
-	// pr_trace_int_msg( LOG_PFX "fs_lock: ", fs_lockcount );
-        xSemaphoreTake(fs_mutex, portMAX_DELAY);
-}
-
-void fs_unlock(void){
-	fs_lockcount--;
-        xSemaphoreGive(fs_mutex);
-}
-
 static bool is_initialized()
 {
 	pr_trace( LOG_PFX "is_initialized\r\n" );
@@ -275,14 +312,7 @@ bool sdcard_present(void)
 	fs_lock();
 	bool ret = sdcard_device_card_present();
 	fs_unlock();
-	if ( ret )
-	{
-		pr_trace( LOG_PFX "sdcard_present: yes\r\n" );
-	}
-	else 
-	{
-		pr_trace( LOG_PFX "sdcard_present: no\r\n" );
-	}
+        pr_trace_str_msg( LOG_PFX "sdcard_present: ", ret ?  "yes" : "no" );
         return ret;
 }
 
@@ -334,7 +364,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         fatFile = pvPortMalloc(sizeof(FIL));
         if (NULL == fatFile) {
-                if (!quiet) serial_write_s(serial, "could not allocate file object\r\n");
+                if (!quiet && serial ) serial_write_s(serial, "could not allocate file object\r\n");
                 goto exit;
         }
 
@@ -352,7 +382,6 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         bool fs_good = sdcard_ready( true );
 
-	fs_lock();
         if (!quiet) {
                 serial_write_s(serial, fs_good ? "WIN" : "FAIL");
                 put_crlf(serial);
@@ -365,7 +394,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         if (!quiet)
                 serial_write_s(serial,"Opening File... ");
-        res = f_open(fatFile,"test1.txt", FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+        res = sd_open(fatFile,"test1.txt", FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
         if (!quiet) {
                 serial_write_s(serial, res == 0? "WIN" : "FAIL");
                 put_crlf(serial);
@@ -379,8 +408,8 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         portTickType startTicks = xTaskGetTickCount();
         for (int i = 1; i <= lines; i++) {
-                res = f_puts(SD_TEST_PATTERN "\r\n",fatFile);
-                if (doFlush) f_sync(fatFile);
+                res = sd_puts(SD_TEST_PATTERN "\r\n",fatFile);
+                if (doFlush) sd_sync(fatFile);
                 if (!quiet) {
                         serial_write_s(serial, "\b");
                         serial_write_s(serial, i % 2 == 0 ? "O" : "o");
@@ -413,7 +442,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
 
         if (!quiet)
                 serial_write_s(serial, "Validating... ");
-        FRESULT fseek_res = f_lseek(fatFile, 0);
+        FRESULT fseek_res = sd_lseek(fatFile, 0);
         if (FR_OK != fseek_res) {
                 serial_write_s(serial, "SEEK FAILED");
                 put_crlf(serial);
@@ -424,7 +453,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
         bool validate_success = true;
         startTicks = xTaskGetTickCount();
         for (size_t i = 0; i < lines; i++){
-                buffer_result = f_gets(buffer, sizeof(buffer), fatFile);
+                buffer_result = sd_gets(buffer, sizeof(buffer), fatFile);
                 if (strstr(SD_TEST_PATTERN, buffer_result) != 0) {
                         validate_success = false;
                         break;
@@ -456,7 +485,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
         if (!quiet) {
                 serial_write_s(serial,"Closing... ");
         }
-        res = f_close(fatFile);
+        res = sd_close(fatFile);
 
         if (!quiet) {
                 put_int(serial, res);
@@ -479,11 +508,9 @@ exit:
 void test_sd_interactive(struct Serial *serial, int lines, int doFlush, int quiet)
 {
 	pr_trace( LOG_PFX "test_sd_intereactive\r\n" );
-        fs_lock();
         bool result = test_sd(serial, lines, doFlush, quiet);
         if (quiet)
                 put_int(serial, result);
-        fs_unlock();
 }
 
 
@@ -493,42 +520,42 @@ static void fs_write_sample_meta(FIL *buffer_file, const struct sample *sample,
                               int sampleRateLimit, char * buf, bool more)
 {
 	pr_trace( LOG_PFX "fs_write_sample_meta\r\n" );
-        f_puts("\"meta\":[", buffer_file);
+        sd_puts("\"meta\":[", buffer_file);
         ChannelSample *channel_sample = sample->channel_samples;
 
         for (size_t i = 0; i < sample->channel_count; ++i, ++channel_sample) {
                 ChannelConfig *cfg = channel_sample->cfg;
                 if (0 < i)
-                        f_puts(",", buffer_file);
+                        sd_puts(",", buffer_file);
 
-                f_puts("{", buffer_file);
+                sd_puts("{", buffer_file);
 
 
-                f_puts("\"nm\":\"", buffer_file);
-                f_puts(cfg->label, buffer_file);
+                sd_puts("\"nm\":\"", buffer_file);
+                sd_puts(cfg->label, buffer_file);
 
-                f_puts("\",\"ut\":\"", buffer_file);
-                f_puts(cfg->units, buffer_file);
+                sd_puts("\",\"ut\":\"", buffer_file);
+                sd_puts(cfg->units, buffer_file);
 
-                f_puts("\",\"min\":", buffer_file);
+                sd_puts("\",\"min\":", buffer_file);
                 modp_ftoa(cfg->min, buf, cfg->precision);
-                f_puts(buf, buffer_file);
+                sd_puts(buf, buffer_file);
 
-                f_puts(",\"max\":", buffer_file);
+                sd_puts(",\"max\":", buffer_file);
                 modp_ftoa(cfg->max, buf, cfg->precision);
-                f_puts(buf, buffer_file);
+                sd_puts(buf, buffer_file);
 
-                f_puts(",\"prec\":", buffer_file);
+                sd_puts(",\"prec\":", buffer_file);
                 modp_itoa10((int)cfg->precision, buf);
-                f_puts(buf, buffer_file);
+                sd_puts(buf, buffer_file);
 
-                f_puts(",\"sr\":", buffer_file);
+                sd_puts(",\"sr\":", buffer_file);
                 modp_itoa10(decodeSampleRate(cfg->sampleRate), buf);
-                f_puts(buf, buffer_file);
+                sd_puts(buf, buffer_file);
 
-                f_puts("}", buffer_file);
+                sd_puts("}", buffer_file);
         }
-        f_puts(more ? "]," : "]", buffer_file);
+        sd_puts(more ? "]," : "]", buffer_file);
 }
 
 void fs_write_sample_record(FIL *buffer_file,
@@ -538,12 +565,11 @@ void fs_write_sample_record(FIL *buffer_file,
 	pr_trace( LOG_PFX "fs_write_sample_record\r\n" );
         char buf[30];
 
-	fs_lock();
-        f_puts("{\"s\":{\"t\":", buffer_file);
+        sd_puts("{\"s\":{\"t\":", buffer_file);
 
         modp_uitoa10(tick, buf);
-        f_puts(buf, buffer_file);
-        f_puts(",", buffer_file);
+        sd_puts(buf, buffer_file);
+        sd_puts(",", buffer_file);
         if (sendMeta)
                 fs_write_sample_meta(buffer_file, sample, getConnectivitySampleRateLimit(), buf, true);
 
@@ -551,7 +577,7 @@ void fs_write_sample_record(FIL *buffer_file,
         unsigned int channelBitmask[MAX_BITMAPS];
         memset(channelBitmask, 0, sizeof(channelBitmask));
 
-        f_puts("\"d\":[", buffer_file);
+        sd_puts("\"d\":[", buffer_file);
         ChannelSample *cs = sample->channel_samples;
 
         size_t channelBitPosition = 0;
@@ -574,22 +600,22 @@ void fs_write_sample_record(FIL *buffer_file,
                         case SampleData_Float:
                         case SampleData_Float_Noarg:
                                 modp_ftoa(cs->valueFloat, buf, precision);
-                                f_puts(buf, buffer_file);
+                                sd_puts(buf, buffer_file);
                                 break;
                         case SampleData_Int:
                         case SampleData_Int_Noarg:
                                 modp_itoa10(cs->valueInt, buf);
-                                f_puts(buf, buffer_file);
+                                sd_puts(buf, buffer_file);
                                 break;
                         case SampleData_LongLong:
                         case SampleData_LongLong_Noarg:
                                 modp_ltoa10(cs->valueLongLong, buf);
-                                f_puts(buf, buffer_file);
+                                sd_puts(buf, buffer_file);
                                 break;
                         case SampleData_Double:
                         case SampleData_Double_Noarg:
                                 modp_dtoa(cs->valueDouble, buf, precision);
-                                f_puts(buf, buffer_file);
+                                sd_puts(buf, buffer_file);
                                 break;
                         default:
                                 pr_warning_int_msg( LOG_PFX "Unknown sample"
@@ -597,18 +623,17 @@ void fs_write_sample_record(FIL *buffer_file,
                                                    cs->sampleData);
                                 break;
                         }
-                        f_puts(",", buffer_file);
+                        sd_puts(",", buffer_file);
                 }
         }
 
         size_t channelBitmaskCount = channelBitmaskIndex + 1;
         for (size_t i = 0; i < channelBitmaskCount; i++) {
                 modp_uitoa10(channelBitmask[i], buf);
-                f_puts(buf, buffer_file);
+                sd_puts(buf, buffer_file);
                 if (i < channelBitmaskCount - 1)
-                        f_puts(",", buffer_file);
+                        sd_puts(",", buffer_file);
         }
-        f_puts("]}}\r\n", buffer_file);
-	fs_unlock();
+        sd_puts("]}}\r\n", buffer_file);
 }
 

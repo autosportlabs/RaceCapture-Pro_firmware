@@ -29,7 +29,7 @@
 
 CPP_GUARD_BEGIN
 
-
+#define SD_EXTRA_STACK 128
 
 FRESULT sd_open( FIL* file, const TCHAR* path, BYTE mode );
 FRESULT sd_close( FIL* file );
@@ -41,6 +41,7 @@ FRESULT sd_truncate( FIL* file );
 
 TCHAR*  sd_gets( TCHAR* buff, int len, FIL* fp );
 DWORD   sd_size( FIL* file );
+int	sd_puts (const TCHAR* str, FIL* cp);	
 
 bool test_sd(struct Serial *serial, int lines,int doFlush, int quiet);
 void test_sd_interactive(struct Serial *serial, int lines,int doFlush, int quiet);
@@ -52,9 +53,10 @@ int UnmountFS(); // Why doesn't this return FRESULT?
 bool sdcard_write_ready( const bool no_delay );
 bool sdcard_ready( const bool no_delay );
 bool sdcard_present();
+bool sdcard_open_next(FIL* fp, char* name_buf, const char* base, const char* ext, const uint32_t maxIdx );
 bool sdcard_fs_mounted(void);
 int OpenNextLogFile(FIL *f);
-void fs_lock(void);
+bool fs_lock(void);
 void fs_unlock(void);
 void fs_write_sample_record(FIL *buffer_file,
                             const struct sample *sample,

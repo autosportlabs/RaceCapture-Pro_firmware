@@ -143,6 +143,7 @@ $(RCP_SRC)/modem/at.c \
 $(RCP_SRC)/modem/at_basic.c \
 $(RCP_SRC)/predictive_timer/predictive_timer_2.c \
 $(RCP_SRC)/sdcard/sdcard.c \
+$(RCP_SRC)/sdcard/sd_log.c \
 $(RCP_SRC)/serial/rx_buff.c \
 $(RCP_SRC)/serial/serial.c \
 $(RCP_SRC)/serial/serial_buffer.c \
