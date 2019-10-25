@@ -33,7 +33,7 @@
 #include "tracks.h"
 #include "versionInfo.h"
 #include "wifi.h"
-
+#include "timing_scoring_drv.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -584,12 +584,18 @@ typedef struct _LoggerConfig {
         ConnectivityConfig ConnectivityConfigs;
 
         struct logging_config logging_cfg;
+
 #if SDCARD_SUPPORT
         struct auto_logger_config auto_logger_cfg;
 #endif
 
 #if CAMERA_CONTROL
         struct camera_control_config camera_control_cfg;
+#endif
+
+#if TIMING_SCORING == 1
+        //Timing and Scoring config
+        TimingScoringConfig timing_scoring_cfg;
 #endif
         //Padding data to accommodate flash routine
         char padding_data[FLASH_PAGE_SIZE];

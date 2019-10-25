@@ -94,6 +94,7 @@ typedef struct _BufferingTaskParams {
 typedef struct _BufferedLoggerMessage {
         size_t ticks;
         struct sample *sample;
+        bool needs_meta;
 } BufferedLoggerMessage;
 
 typedef struct _CellularState {

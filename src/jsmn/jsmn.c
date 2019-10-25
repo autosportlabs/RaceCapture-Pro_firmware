@@ -391,6 +391,19 @@ bool jsmn_exists_set_val_uint8(const jsmntok_t *root, const char * field,
         return (valueNode != NULL);
 }
 
+bool jsmn_exists_set_val_uint16(const jsmntok_t *root, const char * field,
+                               uint16_t *val, uint16_t (*filter)(uint16_t))
+{
+        const jsmntok_t *value_node = jsmn_find_get_node_value_prim(root, field);
+        if (value_node) {
+                uint16_t value = atoi(value_node->data);
+                if (filter != NULL)
+                        value = filter(value);
+                * val = value;
+        }
+        return (value_node != NULL);
+}
+
 bool jsmn_exists_set_val_uint32(const jsmntok_t* root, const char* field,
                                 uint32_t* val)
 {

@@ -102,6 +102,10 @@ static const char* feature_flags[] = {
 #if CAMERA_CONTROL
         FEATURE_FLAG("camctl")
 #endif
+
+#if TIMING_SCORING
+        FEATURE_FLAG("tns")
+#endif
         NULL, /* Always NULL terminated! */
 };
 
