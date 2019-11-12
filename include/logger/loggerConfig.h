@@ -647,6 +647,7 @@ uint16_t logger_config_get_gps_sample_rate(void);
 
 enum CANMappingType filter_can_mapping_type(enum CANMappingType type);
 
+void track_config_sanitize();
 void lap_config_sanitize();
 
 CPP_GUARD_END

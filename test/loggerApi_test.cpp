@@ -966,6 +966,16 @@ void LoggerApiTest::testSetTrackCfgCircuit()
                 CPPUNIT_ASSERT_CLOSE_ENOUGH(startingValue, cfg->track.circuit.sectors[i].longitude);
                 startingValue++;
         }
+
+        /* Test sanitization */
+
+        cfg->radius = 0.0000001;
+        track_config_sanitize();
+        CPPUNIT_ASSERT_CLOSE_ENOUGH(MIN_TRACK_TARGET_RADIUS, cfg->radius);
+
+        cfg->radius = 0.1;
+        track_config_sanitize();
+        CPPUNIT_ASSERT_CLOSE_ENOUGH(MAX_TRACK_TARGET_RADIUS, cfg->radius);
 }
 
 void LoggerApiTest::testGetTrackCfgCircuit()
