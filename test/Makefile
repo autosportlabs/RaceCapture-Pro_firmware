@@ -28,6 +28,7 @@ MK2_SRC=$(RCP_BASE)/platform/mk2
 COMMAND_SRC=$(RCP_SRC)/command
 MOCK_DIR=logger_mock
 GPS_DIR=gps
+TIMING_SCORING_DIR=timing_scoring
 CAN_OBD2_DIR=can_obd2
 FREE_RTOS_KERNEL_DIR=FreeRTOS_Kernel
 LAP_STATS_DIR=lap_stats
@@ -134,6 +135,7 @@ build/rcp_base/%.o: ../%.c
 
 T_SRC = \
 $(GPS_DIR)/geoTriggerTest.cpp \
+$(TIMING_SCORING_DIR)/timing_scoring_test.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
@@ -202,6 +204,7 @@ $(RCP_SRC)/devices/sara_r4.c \
 $(RCP_SRC)/devices/sim900.c \
 $(RCP_SRC)/drivers/esp8266_drv.c \
 $(RCP_SRC)/drivers/alertmsg_can_drv.c \
+$(RCP_SRC)/drivers/timing_scoring_drv.c \
 $(RCP_SRC)/filter/filter.c \
 $(RCP_SRC)/gps/dateTime.c \
 $(RCP_SRC)/gps/geoCircle.c \

@@ -1644,34 +1644,6 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS;
 }
 
-/**
- * Sets the sampleRate in the LapConfig struct of all channels to the
- * rate of the highest channel within the LapConfig struct.
- */
-void set_consistent_sample_rates(LapConfig *lc)
-{
-        ChannelConfig *lc_cfgs[] = {
-                &lc->lapCountCfg,
-                &lc->lapTimeCfg,
-                &lc->sectorCfg,
-                &lc->sectorTimeCfg,
-                &lc->elapsed_time_cfg,
-                &lc->current_lap_cfg,
-                &lc->distance,
-                &lc->session_time_cfg,
-                NULL,
-        };
-
-        /* Find the highest sample rate */
-        int high_sr = 0;
-        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
-                high_sr = getHigherSampleRate(high_sr, (*cc_ptr)->sampleRate);
-
-        /* Now set them all to the highest rate. */
-        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
-                (*cc_ptr)->sampleRate = high_sr;
-}
-
 int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
 {
         LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
@@ -1720,7 +1692,7 @@ int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
                                  &lapCfg->session_time_cfg,
                                  NULL, NULL);
 
-        set_consistent_sample_rates(lapCfg);
+        lap_config_sanitize();
         configChanged();
         return API_SUCCESS;
 }
@@ -2243,3 +2215,35 @@ int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json)
 }
 #endif
 
+#if TIMING_SCORING
+int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json)
+{
+        timing_scoring_update(json);
+        return API_SUCCESS;
+}
+
+int api_set_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        TimingScoringConfig * cfg = &getWorkingLoggerConfig()->timing_scoring_cfg;
+        bool current_enabled = cfg->timing_scoring_enabled;
+        jsmn_exists_set_val_bool(json, "en", &cfg->timing_scoring_enabled);
+        jsmn_exists_set_val_int(json, "canBus", &cfg->can_bus);
+
+        if (current_enabled != cfg->timing_scoring_enabled) {
+                configChanged();
+        }
+        return API_SUCCESS;
+}
+
+int api_get_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json)
+{
+        json_objStart(serial);
+        json_objStartString(serial, "tnSCfg");
+        TimingScoringConfig * cfg = &getWorkingLoggerConfig()->timing_scoring_cfg;
+        json_bool(serial, "en", cfg->timing_scoring_enabled, true);
+        json_int(serial, "canBus", cfg->can_bus, false);
+        json_objEnd(serial, false);
+        json_objEnd(serial, false);
+        return API_SUCCESS_NO_RETURN;
+}
+#endif

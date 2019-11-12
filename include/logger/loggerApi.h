@@ -150,6 +150,15 @@ CPP_GUARD_BEGIN
 #define CELLULAR_API_METHODS
 #endif
 
+#if TIMING_SCORING
+#define TIMING_SCORING_METHODS \
+        API_METHOD("updateTnS", api_update_timing_scoring) \
+        API_METHOD("getTnSCfg", api_get_timing_scoring_cfg) \
+        API_METHOD("setTnSCfg", api_set_timing_scoring_cfg)
+#else
+#define TIMING_SCORING_METHODS
+#endif
+
 #define API_METHODS                             \
         AUTOLOGGING_METHODS                     \
         CAMERA_CONTROL_METHODS                  \
@@ -161,7 +170,8 @@ CPP_GUARD_BEGIN
         GPIO_API_METHODS                        \
         TIMER_API_METHODS                       \
         LUA_API_METHODS                         \
-        CELLULAR_API_METHODS
+        CELLULAR_API_METHODS                    \
+        TIMING_SCORING_METHODS
 
 
 /* commands */
@@ -246,6 +256,12 @@ int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 #if CAMERA_CONTROL
 int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
+#if TIMING_SCORING
+int api_update_timing_scoring(struct Serial *serial, const jsmntok_t *json);
+int api_set_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json);
+int api_get_timing_scoring_cfg(struct Serial *serial, const jsmntok_t *json);
 #endif
 
 CPP_GUARD_END

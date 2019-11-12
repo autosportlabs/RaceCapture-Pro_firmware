@@ -33,6 +33,7 @@
 #include "stdutil.h"
 #include <stdbool.h>
 #include <string.h>
+#include "tracks.h"
 
 #define _LOG_PFX "[LoggerConfig] "
 
@@ -699,6 +700,21 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (lapConfig->distance.sampleRate != SAMPLE_DISABLED) channels++;
         if (lapConfig->session_time_cfg.sampleRate != SAMPLE_DISABLED) channels++;
 
+#if TIMING_SCORING
+        TimingScoringConfig *ts_config = &(loggerConfig->timing_scoring_cfg);
+        if (ts_config->timing_scoring_enabled) {
+                if (ts_config->driver_id.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->position_in_class.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->car_number_ahead.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->gap_to_ahead.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->car_number_behind.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->gap_to_behind.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->tns_laptime.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->full_course_status.sampleRate != SAMPLE_DISABLED) channels++;
+                if (ts_config->black_flag.sampleRate != SAMPLE_DISABLED) channels++;
+        }
+#endif
+
 #if VIRTUAL_CHANNEL_SUPPORT
         channels += get_virtual_channel_count();
 #endif /* VIRTUAL_CHANNEL_SUPPORT */
@@ -756,6 +772,10 @@ void reset_logger_config(void)
 
 #if CAMERA_CONTROL
         camera_control_reset_config(&lc->camera_control_cfg);
+#endif
+
+#if TIMING_SCORING
+        timing_scoring_reset_config(&lc->timing_scoring_cfg);
 #endif
         strcpy(lc->padding_data, "");
 }
@@ -825,4 +845,43 @@ LoggerConfig * getWorkingLoggerConfig()
 bool should_sample(const int sample_rate, const int max_rate)
 {
         return sample_rate == 0 ? false : sample_rate % max_rate == 0;
+}
+
+
+void track_config_sanitize()
+{
+        TrackConfig *tc = &g_workingLoggerConfig.TrackConfigs;
+        tc->radius = MIN(MAX_TRACK_TARGET_RADIUS, MAX(MIN_TRACK_TARGET_RADIUS, tc->radius));
+}
+
+void lap_config_sanitize()
+{
+        LapConfig *lc = &g_workingLoggerConfig.LapConfigs;
+        /**
+         * Sets the sampleRate in the LapConfig struct of all channels to the
+         * rate of the highest channel within the LapConfig struct.
+         */
+        ChannelConfig *lc_cfgs[] = {
+                &lc->lapCountCfg,
+                &lc->lapTimeCfg,
+                &lc->sectorCfg,
+                &lc->sectorTimeCfg,
+                &lc->elapsed_time_cfg,
+                &lc->current_lap_cfg,
+                &lc->distance,
+                &lc->session_time_cfg,
+                NULL,
+        };
+
+        /* Find the highest sample rate */
+        int high_sr = 0;
+        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
+                high_sr = getHigherSampleRate(high_sr, (*cc_ptr)->sampleRate);
+
+        /* Now set them all to the highest rate. */
+        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
+                (*cc_ptr)->sampleRate = high_sr;
+
+        /* Ensure distance precision */
+        lc->distance.precision = DEFAULT_DISTANCE_PRECISION;
 }
