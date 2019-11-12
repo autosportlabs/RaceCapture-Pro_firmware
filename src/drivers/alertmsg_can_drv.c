@@ -42,6 +42,10 @@ void alertmsg_can_send_message(const struct alertmessage *alertmsg)
         /* Calculate offset using base address and priority */
         uint32_t address = ALERTMSG_CAN_BASE_ADDRESS + (MAX(ALERTMSG_MAX_PRIORITY, alertmsg->priority) * 2);
 
+        pr_info(_LOG_PFX "Broadcasting alertmessage on CAN ");
+        pr_info_int(address);
+        pr_info_str_msg("; msg ", message_text);
+
         /* Send the two messages, each with 1/2 of message (16 characters max) */
         CAN_msg msg;
         msg.isExtendedAddress = true;
