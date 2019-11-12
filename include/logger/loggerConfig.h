@@ -442,7 +442,8 @@ typedef struct _LapConfig {
 #define DEFAULT_PRED_TIME_CONFIG {"PredTime", "Min", 0, 0, SAMPLE_5Hz, 4, 0}
 #define DEFAULT_ELAPSED_LAP_TIME_CONFIG {"ElapsedTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
 #define DEFAULT_CURRENT_LAP_CONFIG {"CurrentLap", "", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 0, 0}
-#define DEFAULT_DISTANCE_CONFIG {"Distance", "mi", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 3, 0}
+#define DEFAULT_DISTANCE_PRECISION 4
+#define DEFAULT_DISTANCE_CONFIG {"Distance", "mi", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, DEFAULT_DISTANCE_PRECISION, 0}
 #define DEFAULT_SESSION_TIME_CONFIG {"SessionTime", "Min", 0, 0, DEFAULT_LAPSTATS_SAMPLE_RATE, 4, 0}
 
 #define DEFAULT_LAP_CONFIG {                                    \
@@ -645,6 +646,8 @@ void logger_config_reset_gps_config(GPSConfig *cfg);
 uint16_t logger_config_get_gps_sample_rate(void);
 
 enum CANMappingType filter_can_mapping_type(enum CANMappingType type);
+
+void lap_config_sanitize();
 
 CPP_GUARD_END
 

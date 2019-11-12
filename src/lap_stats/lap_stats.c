@@ -112,6 +112,7 @@ void resetLapCount()
  */
 void lapstats_reset(bool reset_session)
 {
+        lap_config_sanitize();
         if (reset_session)
                 g_session_time = getUptime();
         g_distance = 0;
