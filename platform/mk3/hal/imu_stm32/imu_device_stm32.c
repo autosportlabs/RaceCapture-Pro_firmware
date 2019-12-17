@@ -40,10 +40,9 @@ static void imu_update_task(void *params)
 
     i2c_init(i2c1, 400000);
 
+
     res = is9150_init(i2c1, IS_9150_ADDR << 1);
-    pr_info("IMU: init res=");
-    pr_info_int(res);
-    pr_info("\r\n");
+    pr_info_int_msg("IMU: init res=", res);
     (void)res;
 
     /* Clear the sensor data structures */
