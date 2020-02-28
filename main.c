@@ -49,6 +49,7 @@
 #include "usb_comm.h"
 #include "wifi.h"
 #include "watchdog.h"
+#include "versionInfo.h"
 #include <app_info.h>
 #include <stdbool.h>
 
@@ -113,7 +114,11 @@ int main( void )
 {
         ALWAYS_KEEP(info_block);
         cpu_init();
-        pr_info("*** Start! ***\r\n");
+        pr_info("*** ");
+        pr_info(FRIENDLY_DEVICE_NAME);
+        pr_info(" ");
+        pr_info(version_full());
+        pr_info(" ***\r\n");
 
         /* Defined as part of our compilation process */
         if (true == ASL_WATCHDOG)

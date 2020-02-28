@@ -1640,34 +1640,6 @@ int api_setObd2Config(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS;
 }
 
-/**
- * Sets the sampleRate in the LapConfig struct of all channels to the
- * rate of the highest channel within the LapConfig struct.
- */
-void set_consistent_sample_rates(LapConfig *lc)
-{
-        ChannelConfig *lc_cfgs[] = {
-                &lc->lapCountCfg,
-                &lc->lapTimeCfg,
-                &lc->sectorCfg,
-                &lc->sectorTimeCfg,
-                &lc->elapsed_time_cfg,
-                &lc->current_lap_cfg,
-                &lc->distance,
-                &lc->session_time_cfg,
-                NULL,
-        };
-
-        /* Find the highest sample rate */
-        int high_sr = 0;
-        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
-                high_sr = getHigherSampleRate(high_sr, (*cc_ptr)->sampleRate);
-
-        /* Now set them all to the highest rate. */
-        for (ChannelConfig **cc_ptr = lc_cfgs; *cc_ptr; ++cc_ptr)
-                (*cc_ptr)->sampleRate = high_sr;
-}
-
 int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
 {
         LapConfig *lapCfg = &(getWorkingLoggerConfig()->LapConfigs);
@@ -1716,7 +1688,7 @@ int api_setLapConfig(struct Serial *serial, const jsmntok_t *json)
                                  &lapCfg->session_time_cfg,
                                  NULL, NULL);
 
-        set_consistent_sample_rates(lapCfg);
+        lap_config_sanitize();
         configChanged();
         return API_SUCCESS;
 }
