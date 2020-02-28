@@ -57,11 +57,12 @@ static int is9150_read_reg_block(uint8_t start_addr, size_t len,
     return res;
 }
 
-static bool is_9150_or_9250(const int reg)
+static bool is_compatible_IMU(const int reg)
 {
         switch(reg) {
         case (IS_WHOAMI_9150):
         case (IS_WHOAMI_9250):
+        case (IS_WHOAMI_6500):
                 return true;
         default:
                 return false;
@@ -79,7 +80,7 @@ int is9150_init(struct i2c_dev *dev, uint8_t addr)
     /* Read the 'who am I' register to make sure that the device
      * is out there and alive */
     res = is9150_readreg(IS_REG_WHOAMI, &reg);
-    if (res || !is_9150_or_9250(reg)) {
+    if (res || !is_compatible_IMU(reg)) {
             pr_error_int_msg("IMU: failed who am I test.  Value: ", reg);
             return IS_9150_ERR_INIT;
     }
