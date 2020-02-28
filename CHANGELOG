@@ -1,3 +1,9 @@
+= 2.17.6=
+* Lua: Ensure factory reset also resets script, even in out of memory conditions
+* TrackMap: Ensure Lap target radius is within reasonable bounds
+* LapConfig: Ensure sample rates are consistent for Lap Timing
+* Core: Expand IMU device support
+
 = 2.17.4=
 * Telemetry: Fix issue with telemetry failing if buffering is enabled + virtual channels present
 

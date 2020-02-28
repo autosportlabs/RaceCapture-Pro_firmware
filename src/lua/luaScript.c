@@ -34,6 +34,8 @@ static ScriptConfig g_scriptConfig = {MAGIC_NUMBER_SCRIPT_INIT,
                                      };
 #endif
 
+#define _LOG_PFX   "[luaScript] "
+
 void initialize_script()
 {
         if (g_scriptConfig.magicInit != MAGIC_NUMBER_SCRIPT_INIT) {
@@ -44,35 +46,24 @@ void initialize_script()
 int flash_default_script()
 {
         int result = -1;
-        pr_info("flashing default script...");
+        pr_info(_LOG_PFX "Flashing default script...");
 
-        /*
-         * Stop LUA if we are flashing its data.  This is mainly done to recover
-         * RAM since our flashing operation is a heavy bugger
-         */
         lua_task_stop();
 
-        ScriptConfig *defaultScriptConfig =
-                (ScriptConfig *) calloc(sizeof(ScriptConfig), 1);
-        if (defaultScriptConfig == NULL) {
-                pr_error("LUA: Can't flash.  Can't allocate RAM\r\n");
-                return result;
-        }
+        /* Define a minimal script, enough
+         * to flash the lua script memory region */
+        typedef struct {
+                uint32_t script_init_magic_number;
+                char script[sizeof(DEFAULT_SCRIPT) + 1];
+        } minimal_script_t;
 
-        defaultScriptConfig->magicInit = MAGIC_NUMBER_SCRIPT_INIT;
-        strntcpy(defaultScriptConfig->script, DEFAULT_SCRIPT,
-                 sizeof(DEFAULT_SCRIPT));
+        minimal_script_t minimal_script = {MAGIC_NUMBER_SCRIPT_INIT, DEFAULT_SCRIPT};
+
         result = memory_flash_region((void *)&g_scriptConfig,
-                                     (void *)defaultScriptConfig,
-                                     sizeof (ScriptConfig));
-        portFree(defaultScriptConfig);
+                                     (void *)&minimal_script,
+                                     sizeof (minimal_script_t));
 
-        if (result == 0) {
-                pr_info("win\r\n");
-        } else {
-                pr_info("fail\r\n");
-        }
-
+        pr_info(result == 0 ? "win\r\n" : "fail\r\n");
         return result;
 }
 
@@ -125,7 +116,7 @@ enum script_add_result flashScriptPage(const unsigned int page,
                                        const enum script_add_mode mode)
 {
         if (page >= MAX_SCRIPT_PAGES) {
-                pr_error("lua: invalid script index\r\n");
+                pr_error(_LOG_PFX "invalid script index\r\n");
                 return SCRIPT_ADD_RESULT_FAIL;
         }
 
@@ -135,7 +126,7 @@ enum script_add_result flashScriptPage(const unsigned int page,
                 /* Valid cases.  Carry on */
                 break;
         default:
-                pr_error_int_msg("lua: Unknown script_add_mode: ", mode);
+                pr_error_int_msg(_LOG_PFX "Unknown script_add_mode: ", mode);
                 return SCRIPT_ADD_RESULT_FAIL;
         }
 
@@ -143,7 +134,7 @@ enum script_add_result flashScriptPage(const unsigned int page,
         if (NULL == g_scriptBuffer) {
                 lua_task_stop();
 
-                pr_debug("lua: Allocating new script buffer\r\n");
+                pr_debug(_LOG_PFX "Allocating new script buffer\r\n");
                 g_scriptBuffer =
                         (ScriptConfig *) portMalloc(sizeof(ScriptConfig));
                 memcpy((void *)g_scriptBuffer, (void *)&g_scriptConfig,
@@ -151,7 +142,7 @@ enum script_add_result flashScriptPage(const unsigned int page,
         }
 
         if (NULL == g_scriptBuffer) {
-                pr_error("lua: Failed to allocate memory for script "
+                pr_error(_LOG_PFX "Failed to allocate memory for script "
                          "buffer.\r\n");
                 return SCRIPT_ADD_RESULT_FAIL;
         }
@@ -162,7 +153,7 @@ enum script_add_result flashScriptPage(const unsigned int page,
         if (SCRIPT_ADD_MODE_IN_PROGRESS == mode)
                 return SCRIPT_ADD_RESULT_OK;
 
-        pr_info("lua: Completed updating LUA. Flashing... ");
+        pr_info(_LOG_PFX "Completed updating LUA. Flashing... ");
         const int rc = memory_flash_region((void*) &g_scriptConfig,
                                            (void*) g_scriptBuffer,
                                            sizeof(ScriptConfig));
@@ -170,7 +161,7 @@ enum script_add_result flashScriptPage(const unsigned int page,
         g_scriptBuffer = NULL;
 
         if (0 != rc) {
-                pr_info_int_msg("failed with code ", rc);
+                pr_info_int_msg(_LOG_PFX "Failed with code ", rc);
                 return SCRIPT_ADD_RESULT_FAIL;
         }
 
