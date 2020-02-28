@@ -3,6 +3,7 @@
 * TrackMap: Ensure Lap target radius is within reasonable bounds
 * LapConfig: Ensure sample rates are consistent for Lap Timing
 * Core: Expand IMU device support
+* Telemetry: Configure 4G module based on settings from SIM card, for faster connection
 
 = 2.17.4=
 * Telemetry: Fix issue with telemetry failing if buffering is enabled + virtual channels present
