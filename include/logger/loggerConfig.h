@@ -240,6 +240,8 @@ typedef struct _ImuConfig {
                 IMU_GYRO_CONFIG("Roll", IMU_MODE_NORMAL, IMU_CHANNEL_ROLL),   \
                 }
 #define IMU_GSUM_CONFIG_DEFAULT {"Gsum", "G", 0, 3, SAMPLE_25Hz, 2, 0}
+#define IMU_GSUMMAX_CONFIG_DEFAULT {"GSumMax", "G", 0, 3, SAMPLE_25Hz, 2, 0}
+#define IMU_FLATOUT_CONFIG_DEFAULT {"FlatOut", "", 0, 100, SAMPLE_25Hz, 0, 0}
 
 typedef struct _PWMConfig {
         ChannelConfig cfg;
@@ -562,6 +564,8 @@ typedef struct _LoggerConfig {
         //IMU Configurations
         ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
         ChannelConfig imu_gsum;
+        ChannelConfig imu_gsum_max;
+        ChannelConfig imu_flatout;
 #endif
 
         //CAN Configuration
