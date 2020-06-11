@@ -183,12 +183,14 @@ static void resetGpioConfig(GPIOConfig cfg[])
 #endif
 
 #if IMU_CHANNELS > 0
-static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config)
+static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config, GSumMaxConfig *imu_gsummax_config)
 {
         static const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
         memcpy(cfg, defaults, sizeof(defaults));
         static const ChannelConfig default_imu_gsum = IMU_GSUM_CONFIG_DEFAULT;
         memcpy(imu_gsum_config, &default_imu_gsum, sizeof(ChannelConfig));
+        static const GSumMaxConfig default_gsum_max = DEFAULT_IMU_GSUMMAX_CONFIG;
+        memcpy(imu_gsummax_config, &default_gsum_max, sizeof(GSumMaxConfig));
 }
 #endif
 
@@ -752,7 +754,7 @@ void reset_logger_config(void)
 #endif
 
 #if IMU_CHANNELS > 0
-        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum);
+        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum, &lc->imu_GSumMax);
 #endif
 
         resetCanConfig(&lc->CanConfig);
