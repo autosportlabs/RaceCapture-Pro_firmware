@@ -639,6 +639,14 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
                         ++channels;
 
         if (loggerConfig->imu_gsum.sampleRate != SAMPLE_DISABLED) channels++;
+
+        /* Check if GSumMax channel is enabled */
+        bool enabled = true;
+        for (size_t i = 0; i < CONFIG_GSUM_MAX_SEGMENTS; i++) {
+                if (lc->imu_GSumMax.gSumMax[i].sampleRate == SAMPLE_DISABLED)
+                        enabled = false;
+        }
+        if (enabled = true) ++channels;
 #endif
 
 #if ANALOG_CHANNELS > 0
