@@ -457,6 +457,9 @@ void update_calculated_imu_channel_configs(void){
         }
         /* align the sample rate for the calculated Gsum channel, possibly disabling it */
         lc->imu_gsum.sampleRate = encodeSampleRate(max_sample_rate);
+        for (size_t i = 0; i < CONFIG_GSUM_MAX_SEGMENTS; i++) {
+                lc->imu_GSumMax.gSumMax[i].sampleRate = encodeSampleRate(max_sample_rate);
+        }
 }
 
 #endif
