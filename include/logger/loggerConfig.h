@@ -240,7 +240,26 @@ typedef struct _ImuConfig {
                 IMU_GYRO_CONFIG("Roll", IMU_MODE_NORMAL, IMU_CHANNEL_ROLL),   \
                 }
 #define IMU_GSUM_CONFIG_DEFAULT {"Gsum", "G", 0, 3, SAMPLE_25Hz, 2, 0}
-#define IMU_GSUMMAX_CONFIG_DEFAULT {"GSumMax", "G", 0, 3, SAMPLE_25Hz, 2, 0}
+
+#define CONFIG_GSUM_MAX_SEGMENTS             DISTANCE_SEGMENTS
+
+typedef struct _GSumMaxConfig {
+        ChannelConfig gSumMax[CONFIG_GSUM_MAX_SEGMENTS];
+        unsigned short current_segment;
+        float segmentBorderDistance[CONFIG_GSUM_MAX_SEGMENTS];
+} GSumMaxConfig;
+
+#define DEFAULT_GSUMMAX_SEGMENT_CONFIG[0] {"GsumMax", "G", 0, 3, SAMPLE_25Hz, 2, 0}
+
+#define DEFAULT_SEGMENT                                1
+#define DEFAULT_SEGMENT_BORDER_DISTANCE[0]             0
+
+#define DEFAULT_IMU_GSUMMAX_CONFIG{                     \
+                DEFAULT_GSUMMAX_SEGMENT_CONFIG,         \
+                DEFAULT_SEGMENT,                        \
+                DEFAULT_SEGMENT_BORDER_DISTANCE,        \
+}
+
 #define IMU_FLATOUT_CONFIG_DEFAULT {"FlatOut", "", 0, 100, SAMPLE_25Hz, 0, 0}
 
 typedef struct _PWMConfig {
@@ -564,7 +583,7 @@ typedef struct _LoggerConfig {
         //IMU Configurations
         ImuConfig ImuConfigs[CONFIG_IMU_CHANNELS];
         ChannelConfig imu_gsum;
-        ChannelConfig imu_gsum_max;
+        GSumMaxConfig imu_GSumMax;
         ChannelConfig imu_flatout;
 #endif
 
