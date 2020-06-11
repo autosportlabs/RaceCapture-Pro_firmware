@@ -646,7 +646,7 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
                 if (lc->imu_GSumMax.gSumMax[i].sampleRate == SAMPLE_DISABLED)
                         enabled = false;
         }
-        if (enabled = true) ++channels;
+        if (enabled) ++channels;
 #endif
 
 #if ANALOG_CHANNELS > 0
