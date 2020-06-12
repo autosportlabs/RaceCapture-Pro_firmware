@@ -230,6 +230,36 @@ float get_imu_gsum_getter(void)
         float y_value = imu_read_value(IMU_CHANNEL_Y, &config->ImuConfigs[IMU_CHANNEL_Y]);
         return sqrt((powf(y_value,2))+(powf(x_value,2)));
 }
+
+float get_imu_gsum_max_getter()
+{
+        float distance = get_current_distance()
+        float *distance_segments = get_distance_segments()
+        float gsum = get_current_gsum()
+        float *gsum_maxes = get_gsum_maxes()
+        
+        int segment = 0;
+        for (int i=0; i < CONFIG_GSUM_MAX_SEGMENTS; i++) {
+                if (i = 0 && distance <= distance_segments[0]) {
+                        segment = 0;
+                        break;
+                } else if (distance > distance_segments[i-1] && distance <= distance_segments[i]) {
+                        segment = i;
+                        break;
+                } else {
+                        // if distance > last segment distance then return the last segment
+                        segment = CONFIG_GSUM_MAX_SEGMENTS;
+                }
+        }
+
+        current_max_gsum = gsum_maxes[segment];
+        if (gsum > current_max_gsum) {
+                current_max_gsum = gsum;
+                gsum_maxes[segment] = gsum;
+        }
+
+        return current_max_gsum;
+}
 #endif
 
 #if GPS_HARDWARE_SUPPORT
@@ -294,6 +324,7 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
                 sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_imu_sample);
         }
         sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsum, get_imu_gsum_getter);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsum_max, get_imu_gsum_max_getter);
 #endif
 
 #if TIMER_CHANNELS > 0
