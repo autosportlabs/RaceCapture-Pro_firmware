@@ -183,14 +183,16 @@ static void resetGpioConfig(GPIOConfig cfg[])
 #endif
 
 #if IMU_CHANNELS > 0
-static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config, GSumMaxConfig *imu_gsummax_config)
+static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config, ChannelConfig * gsum_max_config, ChannelConfig * gsum_pct_config)
 {
         static const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
         memcpy(cfg, defaults, sizeof(defaults));
         static const ChannelConfig default_imu_gsum = IMU_GSUM_CONFIG_DEFAULT;
         memcpy(imu_gsum_config, &default_imu_gsum, sizeof(ChannelConfig));
-        static const GSumMaxConfig default_gsum_max = DEFAULT_IMU_GSUMMAX_CONFIG;
-        memcpy(imu_gsummax_config, &default_gsum_max, sizeof(GSumMaxConfig));
+        static const ChannelConfig default_gsum_max = IMU_GSUM_MAX_CONFIG_DEFAULT;
+        memcpy(gsum_max_config, &default_gsum_max, sizeof(ChannelConfig));
+        static const ChannelConfig default_gsum_pct = IMU_GSUM_PCT_CONFIG_DEFAULT;
+        memcpy(gsum_pct_config, &default_gsum_pct, sizeof(ChannelConfig)); 
 }
 #endif
 
@@ -455,11 +457,10 @@ void update_calculated_imu_channel_configs(void){
                 ImuConfig *cfg = &(lc->ImuConfigs[i]);
                 max_sample_rate = MAX(decodeSampleRate(cfg->cfg.sampleRate), max_sample_rate);
         }
-        /* align the sample rate for the calculated Gsum channel, possibly disabling it */
+        /* align the sample rate for the calculated Gsum channels, possibly disabling it */
         lc->imu_gsum.sampleRate = encodeSampleRate(max_sample_rate);
-        for (size_t i = 0; i < CONFIG_GSUM_MAX_SEGMENTS; i++) {
-                lc->imu_GSumMax.gSumMax[i].sampleRate = encodeSampleRate(max_sample_rate);
-        }
+        lc->imu_gsum_max.sampleRate = encodeSampleRate(max_sample_rate);
+        lc->imu_gsum_pct.sampleRate = encodeSampleRate(max_sample_rate);
 }
 
 #endif
@@ -639,14 +640,8 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
                         ++channels;
 
         if (loggerConfig->imu_gsum.sampleRate != SAMPLE_DISABLED) channels++;
-
-        /* Check if GSumMax channel is enabled */
-        bool enabled = true;
-        for (size_t i = 0; i < CONFIG_GSUM_MAX_SEGMENTS; i++) {
-                if (lc->imu_GSumMax.gSumMax[i].sampleRate == SAMPLE_DISABLED)
-                        enabled = false;
-        }
-        if (enabled) ++channels;
+        if (loggerConfig->imu_gsum_max.sampleRate != SAMPLE_DISABLED) channels++;
+        if (loggerConfig->imu_gsum_pct.sampleRate != SAMPLE_DISABLED) channels++;
 #endif
 
 #if ANALOG_CHANNELS > 0
@@ -765,7 +760,7 @@ void reset_logger_config(void)
 #endif
 
 #if IMU_CHANNELS > 0
-        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum, &lc->imu_GSumMax);
+        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum, &lc->imu_gsum_max, &lc->imu_gsum_pct);
 #endif
 
         resetCanConfig(&lc->CanConfig);
