@@ -20,6 +20,7 @@
  */
 
 
+#include "imu_gsum.h"
 #include "imu.h"
 #include "imu_device.h"
 #include "loggerConfig.h"
