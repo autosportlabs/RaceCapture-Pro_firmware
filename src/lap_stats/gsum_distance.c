@@ -19,9 +19,10 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
- #include "lap_stats.h"
- #include "loggerConfig.h"
- #include <stdint.h>
+#include "gsum_distance.h"
+#include "lap_stats.h"
+#include "loggerConfig.h"
+#include <stdint.h>
 #include <string.h>
 
 #define _LOG_PFX            "[lapstats] "
