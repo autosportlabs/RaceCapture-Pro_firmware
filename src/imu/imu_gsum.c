@@ -34,12 +34,17 @@ int gsum_init()
         calculate_gsum_distance_segments();
 }
 
-float get_current_gsum()
+float get_imu_gsum(void)
 {
+        LoggerConfig *config = getWorkingLoggerConfig();
+        float x_value = imu_read_value(IMU_CHANNEL_X, &config->ImuConfigs[IMU_CHANNEL_X]);
+        float y_value = imu_read_value(IMU_CHANNEL_Y, &config->ImuConfigs[IMU_CHANNEL_Y]);
+        g_gsum = sqrt((powf(y_value,2))+(powf(x_value,2)));
+
         return g_gsum;
 }
 
-float get_gsum_max()
+float get_imu_gsum_max(void)
 {
         int current_segment = get_segment_by_distance();
         float *distance_segments = get_distance_segments();
@@ -53,10 +58,10 @@ float get_gsum_max()
         return current_gsum_max;
 }
 
-float get_gsum_pct()
+float get_imu_gsum_pct(void)
 {
         int current_segment = get_segment_by_distance();
         float *distance_segments = get_distance_segments();
 
-        return g_gsum / g_gsum_maxes[segment]
+        return g_gsum / g_gsum_maxes[segment];
 }
