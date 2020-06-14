@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#define _LOG_PFX            "[lapstats] "
+#define _LOG_PFX            "[gsumdistance] "
 
 #define CONFIG_GSUM_MAX_SEGMENTS             DISTANCE_SEGMENTS
 
