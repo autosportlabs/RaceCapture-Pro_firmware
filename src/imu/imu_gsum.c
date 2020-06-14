@@ -34,7 +34,12 @@ int gsum_init()
         calculate_gsum_distance_segments();
 }
 
-float calculate_gsum_max()
+float get_current_gsum()
+{
+        return g_gsum;
+}
+
+float get_gsum_max()
 {
         int current_segment = get_segment_by_distance();
         float *distance_segments = get_distance_segments();
@@ -48,7 +53,10 @@ float calculate_gsum_max()
         return current_gsum_max;
 }
 
-float get_current_gsum()
+float get_gsum_pct()
 {
-        return g_gsum;
+        int current_segment = get_segment_by_distance();
+        float *distance_segments = get_distance_segments();
+
+        return g_gsum / g_gsum_maxes[segment]
 }
