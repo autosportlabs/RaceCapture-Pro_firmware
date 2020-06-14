@@ -54,6 +54,7 @@ float get_imu_gsum_max(void)
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 float get_imu_gsum_pct(void)
 {
         int current_segment = get_segment_by_distance();
@@ -61,10 +62,17 @@ float get_imu_gsum_pct(void)
         return (g_gsum / g_gsum_maxes[current_segment]) * 100;
 =======
 float get_gsum_pct()
+=======
+float get_imu_gsum_pct(void)
+>>>>>>> move gsum calculation to imu_gsum.c
 {
         int current_segment = get_segment_by_distance();
         float *distance_segments = get_distance_segments();
 
+<<<<<<< HEAD
         return g_gsum / g_gsum_maxes[segment]
 >>>>>>> add gsum_pct calculation
+=======
+        return g_gsum / g_gsum_maxes[segment];
+>>>>>>> move gsum calculation to imu_gsum.c
 }
