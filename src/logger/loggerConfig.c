@@ -183,16 +183,16 @@ static void resetGpioConfig(GPIOConfig cfg[])
 #endif
 
 #if IMU_CHANNELS > 0
-static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config, ChannelConfig * gsum_max_config, ChannelConfig * gsum_pct_config)
+static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config, ChannelConfig * imu_gsum_max_config, ChannelConfig * imu_gsum_pct_config)
 {
         static const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
         memcpy(cfg, defaults, sizeof(defaults));
         static const ChannelConfig default_imu_gsum = IMU_GSUM_CONFIG_DEFAULT;
         memcpy(imu_gsum_config, &default_imu_gsum, sizeof(ChannelConfig));
-        static const ChannelConfig default_gsum_max = IMU_GSUM_MAX_CONFIG_DEFAULT;
-        memcpy(gsum_max_config, &default_gsum_max, sizeof(ChannelConfig));
-        static const ChannelConfig default_gsum_pct = IMU_GSUM_PCT_CONFIG_DEFAULT;
-        memcpy(gsum_pct_config, &default_gsum_pct, sizeof(ChannelConfig)); 
+        static const ChannelConfig default_imu_gsum_max = IMU_GSUM_MAX_CONFIG_DEFAULT;
+        memcpy(imu_gsum_max_config, &default_imu_gsum_max, sizeof(ChannelConfig));
+        static const ChannelConfig default_imu_gsum_pct = IMU_GSUM_PCT_CONFIG_DEFAULT;
+        memcpy(imu_gsum_pct_config, &default_imu_gsum_pct, sizeof(ChannelConfig)); 
 }
 #endif
 
