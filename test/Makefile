@@ -138,6 +138,7 @@ $(GPS_DIR)/geoTriggerTest.cpp \
 $(TIMING_SCORING_DIR)/timing_scoring_test.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
+$(LAP_STATS_DIR)/GsumDistanceTest.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
 $(UTIL_DIR)/byteswap_test.cpp \
 $(CAN_OBD2_DIR)/can_mapping_test.cpp \
@@ -150,6 +151,7 @@ PredictiveTimeTest2.cpp \
 RxBuffTest.cpp \
 StrUtilTest.cpp \
 date_time_test.cpp \
+ImuGsumTest.cpp \
 launch_control_test.cpp \
 loggerApi_test.cpp \
 loggerConfig_test.cpp \
