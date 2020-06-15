@@ -28,8 +28,6 @@
 
 CPP_GUARD_BEGIN
 
-void init_gsum_distance_segments();
-
 int get_segment_by_distance();
 
 CPP_GUARD_END

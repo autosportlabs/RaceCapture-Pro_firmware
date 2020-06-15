@@ -28,13 +28,7 @@
 #include "capabilities.h"
 
 static float g_gsum;
-static float g_gsum_maxes[MAX_SEGMENTS];
-
-int gsum_init()
-{
-        init_gsum_distance_segments();
-        return 1;
-}
+static float g_gsum_maxes[GSUM_MAX_SEGMENTS];
 
 float get_imu_gsum(void)
 {
