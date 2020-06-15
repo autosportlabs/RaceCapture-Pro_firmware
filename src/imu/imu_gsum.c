@@ -63,5 +63,5 @@ float get_imu_gsum_pct(void)
 {
         int current_segment = get_segment_by_distance();
 
-        return g_gsum / g_gsum_maxes[current_segment];
+        return (g_gsum / g_gsum_maxes[current_segment]) * 100;
 }
