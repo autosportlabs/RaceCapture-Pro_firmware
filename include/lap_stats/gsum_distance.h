@@ -28,11 +28,9 @@
 
 CPP_GUARD_BEGIN
 
-void calculate_gsum_distance_segments();
+void init_gsum_distance_segments();
 
 int get_segment_by_distance();
-
-float * get_distance_segments();
 
 CPP_GUARD_END
 

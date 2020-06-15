@@ -27,44 +27,28 @@
 
 #define _LOG_PFX            "[gsumdistance] "
 
-#define CONFIG_GSUM_MAX_SEGMENTS             DISTANCE_SEGMENTS
+#define MAX_SEGMENTS                         DISTANCE_SEGMENTS
+#define MIN_SEGMENT_LEN                      10
 
-static float g_distance_segments[CONFIG_GSUM_MAX_SEGMENTS];
+static int num_segments;
+static float segment_len;
 
-void calculate_gsum_distance_segments()
+void init_gsum_distance_segments()
 {
-        //calculate the distance segments after finishing the first lap
-        if (lapstats_current_lap() = 1) {
-                float distance = getLapDistance();
-                float segment_length = distance / CONFIG_GSUM_MAX_SEGMENTS;
-                for (int i=0; i < CONFIG_GSUM_MAX_SEGMENTS; i++){
-                        if (i = 0)
-                                g_distance_segments[i] = segment_length;
-                        else
-                                g_distance_segments[i] = g_distance_segments[i-1] + segment_length;
-                }
+        float track_len = getLapDistance();
+        if (track_len / MIN_SEGMENT_LEN < MAX_SEGMENTS) {
+                num_segments = track_len / MIN_SEGMENT_LEN;
+                segment_len = MIN_SEGMENT_LEN;
+        } else {
+                num_segments = MAX_SEGMENTS;
+                segment_len = track_len / MAX_SEGMENTS;
         }
 }
 
 int get_segment_by_distance() 
 {
-        float distance = get_current_distance();
+        float current_distance = get_current_distance();
+        int current_segment = current_distance / segment_len;
 
-        int segment = 0;
-        for (int i=0; i < CONFIG_GSUM_MAX_SEGMENTS; i++) {
-                if (i = 0 && distance <= distance_segments[0]) {
-                        segment = 0;
-                        break;
-                } else if (distance > distance_segments[i-1] && distance <= distance_segments[i]) {
-                        segment = i;
-                        break;
-                }
-        }
-
-        return segment;
-}
-
-float * get_distance_segments()
-{
-        return * g_distance_segments;
+        return current_segment;
 }
