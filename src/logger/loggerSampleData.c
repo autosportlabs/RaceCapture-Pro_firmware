@@ -31,6 +31,8 @@
 #include "gps.h"
 #include "gps_device.h"
 #include "imu.h"
+#include "imu_gsum.h"
+#include "gsum_distance.h"
 #include "lap_stats.h"
 #include "linear_interpolate.h"
 #include "loggerConfig.h"
