@@ -32,7 +32,7 @@ static float g_gsum_maxes[CONFIG_GSUM_MAX_SEGMENTS];
 
 int gsum_init()
 {
-        calculate_gsum_distance_segments();
+        init_gsum_distance_segments();
 }
 
 float get_imu_gsum(void)
@@ -48,7 +48,6 @@ float get_imu_gsum(void)
 float get_imu_gsum_max(void)
 {
         int current_segment = get_segment_by_distance();
-        float *distance_segments = get_distance_segments();
 
         float current_gsum_max = g_gsum_maxes[segment];
         if (g_gsum > current_gsum_max) {
@@ -62,7 +61,6 @@ float get_imu_gsum_max(void)
 float get_imu_gsum_pct(void)
 {
         int current_segment = get_segment_by_distance();
-        float *distance_segments = get_distance_segments();
 
         return g_gsum / g_gsum_maxes[segment];
 }
