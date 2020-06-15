@@ -27,28 +27,16 @@
 
 #define _LOG_PFX            "[gsumdistance] "
 
-#define MAX_SEGMENTS                         DISTANCE_SEGMENTS
-#define MIN_SEGMENT_LEN                      10
-
-static int num_segments;
-static float segment_len;
-
-void init_gsum_distance_segments()
-{
-        float track_len = getLapDistance();
-        if (track_len / MIN_SEGMENT_LEN < MAX_SEGMENTS) {
-                num_segments = track_len / MIN_SEGMENT_LEN;
-                segment_len = MIN_SEGMENT_LEN;
-        } else {
-                num_segments = MAX_SEGMENTS;
-                segment_len = track_len / MAX_SEGMENTS;
-        }
-}
+//can handle a track up to 10km
+#define GSUM_MAX_SEGMENTS                    1000
+#define SEGMENT_LEN                          0.01 //10 meters
 
 int get_segment_by_distance() 
 {
         float current_distance = getLapDistance();
-        int current_segment = (int)(current_distance / segment_len);
+        int current_segment = (int)(current_distance / SEGMENT_LEN);
+        if (current_segment > GSUM_MAX_SEGMENTS - 1)
+                current_segment = GSUM_MAX_SEGMENTS - 1;
 
         return current_segment;
 }

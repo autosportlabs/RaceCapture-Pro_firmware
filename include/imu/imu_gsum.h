@@ -29,8 +29,6 @@
 
 CPP_GUARD_BEGIN
 
-int gsum_init(void);
-
 float get_imu_gsum(void);
 
 float get_imu_gsum_max(void);
