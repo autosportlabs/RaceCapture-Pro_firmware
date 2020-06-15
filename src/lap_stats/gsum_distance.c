@@ -48,7 +48,7 @@ void init_gsum_distance_segments()
 int get_segment_by_distance() 
 {
         float current_distance = getLapDistance();
-        int current_segment = current_distance / segment_len;
+        int current_segment = (int)(current_distance / segment_len);
 
         return current_segment;
 }
