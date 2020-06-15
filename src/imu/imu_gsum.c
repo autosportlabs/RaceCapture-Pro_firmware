@@ -28,7 +28,7 @@
 #include "capabilities.h"
 
 static float g_gsum;
-static float g_gsum_maxes[CONFIG_GSUM_MAX_SEGMENTS];
+static float g_gsum_maxes[MAX_SEGMENTS];
 
 int gsum_init()
 {
@@ -49,10 +49,10 @@ float get_imu_gsum_max(void)
 {
         int current_segment = get_segment_by_distance();
 
-        float current_gsum_max = g_gsum_maxes[segment];
+        float current_gsum_max = g_gsum_maxes[current_segment];
         if (g_gsum > current_gsum_max) {
                 current_gsum_max = g_gsum;
-                g_gsum_maxes[segment] = g_gsum;
+                g_gsum_maxes[current_segment] = g_gsum;
         }
 
         return current_gsum_max;
@@ -62,5 +62,5 @@ float get_imu_gsum_pct(void)
 {
         int current_segment = get_segment_by_distance();
 
-        return g_gsum / g_gsum_maxes[segment];
+        return g_gsum / g_gsum_maxes[current_segment];
 }
