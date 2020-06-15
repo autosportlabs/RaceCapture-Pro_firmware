@@ -33,6 +33,7 @@ static float g_gsum_maxes[MAX_SEGMENTS];
 int gsum_init()
 {
         init_gsum_distance_segments();
+        return 1;
 }
 
 float get_imu_gsum(void)
