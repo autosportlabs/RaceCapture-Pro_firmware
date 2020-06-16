@@ -68,6 +68,7 @@ static ChannelSample* processChannelSampleWithFloatGetter(ChannelSample *s,
         s->cfg = cfg;
         s->channelIndex = index;
         s->sampleData = SampleData_Float;
+	s->sampleStatus = SampleStatus_Invalid;
         s->get_float_sample = getter;
 
         return ++s;
@@ -85,6 +86,7 @@ static ChannelSample* processChannelSampleWithIntGetter(ChannelSample *s,
         s->cfg = cfg;
         s->channelIndex = index;
         s->sampleData = SampleData_Int;
+	s->sampleStatus = SampleStatus_Invalid;
         s->get_int_sample = getter;
 
         return ++s;
@@ -100,6 +102,7 @@ static ChannelSample* processChannelSampleWithFloatGetterNoarg(ChannelSample *s,
 
         s->cfg = cfg;
         s->sampleData = SampleData_Float_Noarg;
+	s->sampleStatus = SampleStatus_Invalid;
         s->get_float_sample_noarg = getter;
 
         return ++s;
@@ -114,6 +117,7 @@ static ChannelSample* processChannelSampleWithIntGetterNoarg(ChannelSample *s,
 
         s->cfg = cfg;
         s->sampleData = SampleData_Int_Noarg;
+	s->sampleStatus = SampleStatus_Invalid;
         s->get_int_sample_noarg = getter;
 
         return ++s;
@@ -128,6 +132,7 @@ static ChannelSample* processChannelSampleWithLongLongGetterNoarg(ChannelSample 
 
         s->cfg = cfg;
         s->sampleData = SampleData_LongLong_Noarg;
+	s->sampleStatus = SampleStatus_Invalid;
         s->get_longlong_sample_noarg = getter;
 
         return ++s;
@@ -471,12 +476,13 @@ int populate_sample_buffer(struct sample *s, size_t logTick)
                 const unsigned short sampleRate = samples->cfg->sampleRate;
 
                 if (logTick % sampleRate != 0) {
-                        samples->populated = false;
+			if( samples->sampleStatus == SampleStatus_Valid )
+				samples->sampleStatus = SampleStatus_Stale;
                         continue;
                 }
 
                 highestRate = getHigherSampleRate(sampleRate, highestRate);
-                samples->populated = true;
+                samples->sampleStatus = SampleStatus_Valid;
                 populate_channel_sample(samples);
         }
 
@@ -491,7 +497,7 @@ int populate_sample_buffer(struct sample *s, size_t logTick)
                 if (!isAlwaysSampled)
                         continue;
 
-                samples->populated = true;
+                samples->sampleStatus = SampleStatus_Valid;
                 populate_channel_sample(samples);
         }
 

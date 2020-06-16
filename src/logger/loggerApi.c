@@ -597,7 +597,7 @@ void api_send_sample_record(struct Serial *serial,
                                 break;
                 }
 
-                if (cs->populated) {
+                if (cs->sampleStatus == SampleStatus_Valid) {
                         channelBitmask[channelBitmaskIndex] |=
                                 (1 << channelBitPosition);
 

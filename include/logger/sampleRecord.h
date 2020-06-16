@@ -58,6 +58,12 @@ enum SampleData {
         SampleData_Double,
 };
 
+enum SampleStatus {
+	SampleStatus_Invalid = 0,
+	SampleStatus_Stale = 1,
+	SampleStatus_Valid = 7,
+};
+
 typedef struct _ChannelSample {
         union {
                 int valueInt;
@@ -77,7 +83,7 @@ typedef struct _ChannelSample {
                 double (*get_double_sample_noarg)();
         };
         uint8_t channelIndex;
-        bool populated;
+        enum SampleStatus sampleStatus;
         enum SampleData sampleData;
 }  __attribute__((__packed__,aligned(4))) ChannelSample;
 

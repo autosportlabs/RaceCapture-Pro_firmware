@@ -64,7 +64,7 @@ bool get_sample_value_by_name(const struct sample *s, const char * name, double 
                 ChannelSample *sam = (s->channel_samples + i);
                 if (!STR_EQ(name, sam->cfg->label)) continue;
 
-                if (!sam->populated) return false;
+                if (sam->sampleStatus == SampleStatus_Invalid) return false;
 
                 *units = sam->cfg->units;
                 switch(sam->sampleData) {
