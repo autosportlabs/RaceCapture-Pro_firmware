@@ -45,7 +45,6 @@
 #include "timer.h"
 #include "units.h"
 #include "virtual_channel.h"
-#include "timing_scoring_drv.h"
 #include <math.h>
 #include <stdbool.h>
 
@@ -387,41 +386,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
                         get_distance_getter(chanCfg));
         chanCfg = &(trackConfig->session_time_cfg);
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, lapstats_session_time_minutes);
-
-#if TIMING_SCORING
-        /* Timing and scoring */
-        TimingScoringConfig *ts_config = &(loggerConfig->timing_scoring_cfg);
-
-        if (ts_config->timing_scoring_enabled) {
-                chanCfg = &(ts_config->driver_id);
-                /* Whe we get close to exceeding 2 billion driver Ids, fix this so we can output unsigned 32 bit IDs. :) */
-                sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_driver_id);
-
-                chanCfg = &(ts_config->position_in_class);
-                sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_position_in_class);
-
-                chanCfg = &(ts_config->car_number_ahead);
-                sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_car_number_ahead);
-
-                chanCfg = &(ts_config->gap_to_ahead);
-                sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, timing_scoring_get_gap_to_ahead);
-
-                chanCfg = &(ts_config->car_number_behind);
-                sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_car_number_behind);
-
-                chanCfg = &(ts_config->gap_to_behind);
-                sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, timing_scoring_get_gap_to_behind);
-
-                chanCfg = &(ts_config->tns_laptime);
-                sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, timing_scoring_get_tns_laptime);
-
-                chanCfg = &(ts_config->full_course_status);
-                sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_full_course_status);
-
-                chanCfg = &(ts_config->black_flag);
-                sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, (int (*)())timing_scoring_get_black_flag);
-        }
-#endif
 }
 
 static void populate_channel_sample(ChannelSample *sample)

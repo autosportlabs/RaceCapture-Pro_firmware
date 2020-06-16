@@ -41,7 +41,6 @@ CPP_GUARD_BEGIN
 #define BLUETOOTH_SUPPORT	1
 #define WIFI_SUPPORT		1
 #define CAMERA_CONTROL      1
-#define TIMING_SCORING 1
 
 //configuration
 #define MAX_TRACKS				240

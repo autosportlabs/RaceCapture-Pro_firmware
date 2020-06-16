@@ -94,9 +94,6 @@ class LoggerApiTest : public CppUnit::TestFixture
         CPPUNIT_TEST( testSetAutoLoggerCfg );
         CPPUNIT_TEST( testGetCameraControlCfgDefault );
         CPPUNIT_TEST( testSetCameraControlCfg );
-        CPPUNIT_TEST( test_update_timing_scoring );
-        CPPUNIT_TEST( test_set_timing_scoring_cfg);
-        CPPUNIT_TEST( test_get_timing_scoring_cfg);
 
         CPPUNIT_TEST_SUITE_END();
 
@@ -168,9 +165,6 @@ public:
         void testSetAutoLoggerCfg();
         void testGetCameraControlCfgDefault();
         void testSetCameraControlCfg();
-        void test_update_timing_scoring();
-        void test_set_timing_scoring_cfg();
-        void test_get_timing_scoring_cfg();
 
 private:
         void testSetScriptFile(string filename);

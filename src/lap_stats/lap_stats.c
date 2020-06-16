@@ -431,9 +431,9 @@ float getLastLapTimeInMinutes()
 void update_elapsed_time(const GpsSnapshot *snap)
 {
         if (!lapstats_lap_in_progress())
-                return;
-
-        g_elapsed_lap_time = snap->deltaFirstFix - g_lapStartTimestamp;
+                g_elapsed_lap_time = getUptime();
+        else
+                g_elapsed_lap_time = snap->deltaFirstFix - g_lapStartTimestamp;
 }
 
 tiny_millis_t lapstats_elapsed_time()
@@ -643,14 +643,16 @@ static void lapstats_location_updated(const GpsSnapshot *gps_snapshot)
         g_at_sf = false;
         g_at_sector = false;
 
-        if (!g_start_finish_enabled)
+        update_elapsed_time(gps_snapshot);
+
+        if (!g_start_finish_enabled) {
                 return;
+        }
 
         /* Process data fields first. */
         const GeoPoint *gp = &gps_snapshot->sample.point;
         updateGeoTrigger(&g_start_geo_trigger, gp);
         updateGeoTrigger(&g_finish_geo_trigger, gp);
-        update_elapsed_time(gps_snapshot);
         addGpsSample(gps_snapshot);
 
         /*
@@ -750,8 +752,10 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
         if (!g_configured)
                 lapstats_setup(gps_snapshot);
 
-        if (isGpsDataCold())
+        if (isGpsDataCold()) {
+                update_elapsed_time(gps_snapshot);
                 return; /* No valid GPS data to work with */
+        }
 
         if (! g_configured)
                 return;
