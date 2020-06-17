@@ -228,7 +228,7 @@ static int lua_get_analog(lua_State *L)
                         analogValue = adcRaw;
                         break;
                 case SCALING_MODE_LINEAR:
-                        analogValue = (ac->linearScaling * (float) adcRaw);
+                        analogValue = (ac->linearScaling * (float) adcRaw) + ac->linearOffset;
                         break;
                 case SCALING_MODE_MAP:
                         analogValue = get_mapped_value((float) adcRaw,
