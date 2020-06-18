@@ -186,7 +186,7 @@ static int write_samples_data(const LoggerMessage *msg)
         for (i = 0; 0 < count; count--, sample++, i++) {
                 append_file_buffer(0 == i ? "" : ",");
 
-                if (sample->sampleStatus != SampleStatus_Valid )
+                if (!sample->populated)
                         continue;
 
                 const int precision = sample->cfg->precision;

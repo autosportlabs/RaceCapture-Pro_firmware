@@ -339,7 +339,7 @@ void fs_write_sample_record(FIL *buffer_file,
                                 break;
                 }
 
-                if (cs->sampleStatus==SampleStatus_Valid) {
+                if (cs->populated) {
                         channelBitmask[channelBitmaskIndex] |=
                                 (1 << channelBitPosition);
 
