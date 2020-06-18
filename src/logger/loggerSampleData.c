@@ -424,48 +424,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
 #endif
 }
 
-// this function is a bit of an abuse of the data that happens to be in the sample buffer,
-// to find the getter used to populate sample buffer.
-// The meta data should prbably be moved out of the sample buffer into a common area.
-//
-double get_channel_value( ChannelSample* sample )
-{
-	double value;
-        size_t channelIndex = sample->channelIndex;
-
-        switch(sample->sampleData) {
-        case SampleData_Int_Noarg:
-                value = (double) sample->get_int_sample_noarg();
-                break;
-        case SampleData_Int:
-                value = (double) sample->get_int_sample(channelIndex);
-                break;
-        case SampleData_LongLong_Noarg:
-                value = (double) sample->get_longlong_sample_noarg();
-                break;
-        case SampleData_LongLong:
-                value = (double) sample->get_longlong_sample(channelIndex);
-                break;
-        case SampleData_Float_Noarg:
-                value = (double) sample->get_float_sample_noarg();
-                break;
-        case SampleData_Float:
-                value = (double) sample->get_float_sample(channelIndex);
-                break;
-        case SampleData_Double_Noarg:
-                value = (double) sample->get_double_sample_noarg();
-                break;
-        case SampleData_Double:
-                value = (double) sample->get_double_sample(channelIndex);
-                break;
-        default:
-                pr_error("populate channel sample: unknown sample type");
-                value = (double) -1;
-                break;
-        }
-	return value;
-}
-
 static void populate_channel_sample(ChannelSample *sample)
 {
         size_t channelIndex = sample->channelIndex;

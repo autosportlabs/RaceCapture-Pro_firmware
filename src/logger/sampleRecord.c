@@ -62,11 +62,39 @@ bool get_sample_value_by_name(const struct sample *s, const char * name, double 
 
         for (size_t i = 0; i < s->channel_count; i++) {
                 ChannelSample *sam = (s->channel_samples + i);
-                if (STR_EQ(name, sam->cfg->label)) {
-			*units = sam->cfg->units;
-			*value = get_channel_value( sam );
+                if (!STR_EQ(name, sam->cfg->label)) continue;
+
+		int channelIndex = sam->channelIndex;
+		*units = sam->cfg->units;
+	        switch(sam->sampleData) {
+                case SampleData_Float:
+			*value = (double) sam->get_float_sample(channelIndex);
 			return true;
-		}
+                case SampleData_Float_Noarg:
+			*value = (double) sam->get_float_sample_noarg();
+			return true;
+                case SampleData_Int:
+			*value = (double) sam->get_int_sample(channelIndex);
+			return true;
+                case SampleData_Int_Noarg:
+			*value = (double) sam->get_int_sample_noarg();
+			return true;
+                case SampleData_Double:
+			*value = sam->get_double_sample(channelIndex);
+			return true;
+                case SampleData_Double_Noarg:
+			*value = sam->get_double_sample_noarg();
+			return true;
+                case SampleData_LongLong:
+                case SampleData_LongLong_Noarg:
+                        /* risk of overflow here - specifically pertains to the UTC milliseconds channel */
+                        pr_warning_str_msg(LOG_PFX "Data type not supported for channel: ", name);
+                        return false;
+                default:
+                        pr_warning_int_msg(LOG_PFX "Unknown channel sample type", sam->sampleData);
+                        return false;
+                }
+
         }
         pr_trace_str_msg(LOG_PFX "Unknown channel name: ", name);
         return false;

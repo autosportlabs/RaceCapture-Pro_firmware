@@ -94,7 +94,6 @@ typedef struct _LoggerMessage {
         bool needs_meta;
 } LoggerMessage;
 
-double get_channel_value( ChannelSample* sample );
 /**
  * Initializes the struct sample channel_sample buffer for use.  May be called
  * again to re-initialize the space.
