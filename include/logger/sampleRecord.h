@@ -121,6 +121,7 @@ void free_sample_buffer(struct sample *s);
  * @return true if the sample was found and set
  */
 bool get_sample_value_by_name(const struct sample *s, const char * name, double *value, char ** units);
+bool get_channel_value_by_name(const char * name, double *value, char ** units);
 
 /**
  * Creates a LoggerMessage for use in the messaging between threads.
