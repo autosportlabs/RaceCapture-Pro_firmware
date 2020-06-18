@@ -24,6 +24,7 @@
 #include "capabilities.h"
 #include "loggerConfig.h"
 #include "loggerSampleData.h"
+#include "loggerTaskEx.h"
 #include "mem_mang.h"
 #include "sampleRecord.h"
 #include "taskUtil.h"
@@ -54,6 +55,12 @@ void free_sample_buffer(struct sample *s)
 {
         portFree(s->channel_samples);
         s->channel_samples = NULL;
+}
+
+bool get_channel_value_by_name(const char * name, double *value, char ** units)
+{
+	struct sample * s = get_current_sample();
+	return get_sample_value_by_name( s, name, value, units );
 }
 
 bool get_sample_value_by_name(const struct sample *s, const char * name, double *value, char ** units)

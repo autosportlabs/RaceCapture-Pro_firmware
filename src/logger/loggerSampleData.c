@@ -471,8 +471,8 @@ int populate_sample_buffer(struct sample *s, size_t logTick)
                 const unsigned short sampleRate = samples->cfg->sampleRate;
 
                 if (logTick % sampleRate != 0) {
-			samples->populated=false;
-		       	continue;
+                        samples->populated = false;
+                        continue;
                 }
 
                 highestRate = getHigherSampleRate(sampleRate, highestRate);
