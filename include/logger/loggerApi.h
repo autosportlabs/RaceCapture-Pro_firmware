@@ -257,7 +257,7 @@ int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
 #endif
 
-#if VIRTUAL_CHANNEL_SUPPORT
+#if VIRTUAL_CHANNEL_SUPPORT == 1
 int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json);
 #endif
 
