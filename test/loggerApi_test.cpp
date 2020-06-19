@@ -180,6 +180,11 @@ void LoggerApiTest::setUp()
         lapstats_config_changed();
 }
 
+void LoggerApiTest::tearDown()
+{
+        reset_virtual_channels();
+}
+
 void LoggerApiTest::populateChannelConfig(ChannelConfig *cfg, const int i, const int splRt)
 {
         sprintf(cfg->label, "testName_%d", i);
@@ -1810,12 +1815,17 @@ void LoggerApiTest::testSetCameraControlCfg()
         assertGenericResponse(response, "setCamCtrlCfg", API_SUCCESS);
 }
 
-void LoggerApiTest::test_set_vchan(string filename)
+void LoggerApiTest::test_set_vchan()
 {
-        char *response = processApiGeneric("set_vchan.json");
+        test_set_vchan_file("set_vchan.json");
+}
+
+void LoggerApiTest::test_set_vchan_file(string filename)
+{
+        char *response = processApiGeneric(filename);
         int channel_id = find_virtual_channel("Foobar");
         VirtualChannel *vc = get_virtual_channel(channel_id);
-        CPPUNIT_ASSERT_EQUAL(string("Foo"), (string)(String)vc->config.label);
+        CPPUNIT_ASSERT_EQUAL(string("Foobar"), (string)(String)vc->config.label);
         CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)vc->config.units);
         CPPUNIT_ASSERT_EQUAL((float)DEFAULT_VIRTUAL_CHANNEL_MINVAL, (float)vc->config.min);
         CPPUNIT_ASSERT_EQUAL((float)DEFAULT_VIRTUAL_CHANNEL_MAXVAL, (float)vc->config.max);
@@ -1827,14 +1837,19 @@ void LoggerApiTest::test_set_vchan(string filename)
         assertGenericResponse(response, "setVChan", API_SUCCESS);
 }
 
-void LoggerApiTest::test_set_vchan_meta(string filename)
+void LoggerApiTest::test_set_vchan_meta()
 {
-        char *response = processApiGeneric("set_vchan_meta.json");
+        test_set_vchan_meta_file("set_vchan_meta.json");
+}
+
+void LoggerApiTest::test_set_vchan_meta_file(string filename)
+{
+        char *response = processApiGeneric(filename);
 
         int channel_id = find_virtual_channel("Foobar");
         VirtualChannel *vc = get_virtual_channel(channel_id);
-        CPPUNIT_ASSERT_EQUAL(string("Foo"), (string)(String)vc->config.label);
-        CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)vc->config.units);
+        CPPUNIT_ASSERT_EQUAL(string("Foobar"), (string)(String)vc->config.label);
+        CPPUNIT_ASSERT_EQUAL(string("units"), (string)(String)vc->config.units);
         CPPUNIT_ASSERT_EQUAL((float)0.5, (float)vc->config.min);
         CPPUNIT_ASSERT_EQUAL((float)10.5, (float)vc->config.max);
         CPPUNIT_ASSERT_EQUAL((int)3, (int)vc->config.precision);

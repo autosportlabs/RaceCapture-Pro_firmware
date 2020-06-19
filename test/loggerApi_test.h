@@ -94,6 +94,8 @@ class LoggerApiTest : public CppUnit::TestFixture
         CPPUNIT_TEST( testSetAutoLoggerCfg );
         CPPUNIT_TEST( testGetCameraControlCfgDefault );
         CPPUNIT_TEST( testSetCameraControlCfg );
+        CPPUNIT_TEST( test_set_vchan );
+        CPPUNIT_TEST( test_set_vchan_meta );
 
         CPPUNIT_TEST_SUITE_END();
 
@@ -102,6 +104,7 @@ public:
         int findAndReplace(string & source, const string find, const string replace);
         string readFile(string filename);
         void setUp();
+        void tearDown();
 
         void setActiveTrack();
         void setActiveTrackSectors();
@@ -165,6 +168,9 @@ public:
         void testSetAutoLoggerCfg();
         void testGetCameraControlCfgDefault();
         void testSetCameraControlCfg();
+        void test_set_vchan();
+        void test_set_vchan_meta();
+
 
 private:
         void testSetScriptFile(string filename);
@@ -205,8 +211,8 @@ private:
         void check_can_mapping_config(Object &json, CANMapping *mapping);
         void check_channel_config(Object &json_cfg, ChannelConfig *cfg);
         void testChannelConfig(ChannelConfig *chCfg, string expNm, string expUt, unsigned short sr);
-        void test_set_vchan(string filename);
-        void test_set_vchan_meta(string filename);
+        void test_set_vchan_file(string filename);
+        void test_set_vchan_meta_file(string filename);
 };
 
 
