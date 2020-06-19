@@ -86,7 +86,6 @@ int create_virtual_channel(const ChannelConfig chCfg)
 
 void set_virtual_channel_value(size_t id, float value)
 {
-        pr_info_float_msg("Set virtual channel ", value);
         if (id < g_virtualChannelCount)
                 g_virtualChannels[id].currentValue = value;
 }
