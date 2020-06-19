@@ -66,6 +66,7 @@
 #include "wifi.h"
 #include "connectivityTask.h"
 #include "alertmsg_can_drv.h"
+#include "virtual_channel.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -79,6 +80,8 @@
 typedef void (*getConfigs_func)(size_t channeId, void ** baseCfg, ChannelConfig ** channelCfg);
 typedef const jsmntok_t * (*setExtField_func)(const jsmntok_t *json, const char *name, const char *value, void *cfg);
 typedef int (*reInitConfig_func)(LoggerConfig *config);
+
+#define _LOG_PFX  "[Logger_API] "
 
 int api_systemReset(struct Serial *serial, const jsmntok_t *json)
 {
@@ -2212,5 +2215,57 @@ int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json)
 
         return camera_control_set_config(cfg, json) ?
                API_SUCCESS : API_ERROR_UNSPECIFIED;
+}
+#endif
+
+#if VIRTUAL_CHANNEL_SUPPORT
+
+int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json)
+{
+        char channel_name[DEFAULT_LABEL_LENGTH];
+        if (!jsmn_exists_set_val_string(json, "nm", channel_name, DEFAULT_LABEL_LENGTH - 1, true))
+                return API_ERROR_PARAMETER;
+
+        float channel_value;
+        if (!jsmn_exists_set_val_float(json, "val", &channel_value))
+                return API_ERROR_PARAMETER;
+
+        int channel_id = find_virtual_channel(channel_name);
+        if (channel_id == INVALID_VIRTUAL_CHANNEL) {
+                /* create the channel if it does not exist already */
+                char units[DEFAULT_UNITS_LENGTH] = "";
+                float minval = DEFAULT_VIRTUAL_CHANNEL_MINVAL;
+                float maxval = DEFAULT_VIRTUAL_CHANNEL_MAXVAL;
+                float precision = DEFAULT_VIRTUAL_CHANNEL_PRECISION;
+                pr_info_str_msg(_LOG_PFX "Create virtual channel for ", channel_name);
+
+                if (!jsmn_exists_set_val_string(json,"ut", units, DEFAULT_UNITS_LENGTH - 1, true))
+                        pr_error_str_msg(_LOG_PFX "Missing units, using default", channel_name);
+
+                if (!jsmn_exists_set_val_float(json, "min", &minval))
+                        pr_error_str_msg(_LOG_PFX "Missing min, using default", channel_name);
+
+                if (!jsmn_exists_set_val_float(json, "max", &maxval))
+                        pr_error_str_msg(_LOG_PFX "Missing max, using default", channel_name);
+
+                if (!jsmn_exists_set_val_float(json, "prec", &precision))
+                        pr_error_str_msg(_LOG_PFX "Missing prec, using default", channel_name);
+
+                ChannelConfig cc;
+                strncpy(cc.label, channel_name, DEFAULT_LABEL_LENGTH);
+                strncpy(cc.units, units, DEFAULT_UNITS_LENGTH);
+                cc.min = minval;
+                cc.max = maxval;
+                cc.precision = precision;
+                channel_id = create_virtual_channel(cc);
+        }
+
+        if (channel_id == INVALID_VIRTUAL_CHANNEL)
+                pr_error_str_msg("Could not make virtual channel ", channel_name);
+                //could not make a virutal channel
+                return API_ERROR_SEVERE;
+
+        set_virtual_channel_value(channel_id, channel_value);
+        return API_SUCCESS;
 }
 #endif

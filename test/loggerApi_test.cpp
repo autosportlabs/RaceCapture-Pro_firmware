@@ -19,6 +19,13 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <streambuf>
+#include <string.h>
+#include <string>
+#include <stdio.h>
 #include "FreeRTOS.h"
 #include "api.h"
 #include "auto_logger.h"
@@ -46,13 +53,7 @@
 #include "task_testing.h"
 #include "units.h"
 #include "versionInfo.h"
-#include <fstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <streambuf>
-#include <string.h>
-#include <string>
-#include <stdio.h>
+#include "virtual_channel.h"
 
 #define JSON_TOKENS 10000
 #define FILE_PREFIX string("json_api_files/")
@@ -1807,4 +1808,39 @@ void LoggerApiTest::testSetCameraControlCfg()
         CPPUNIT_ASSERT_EQUAL(false, cfg->stop.greater_than);
 
         assertGenericResponse(response, "setCamCtrlCfg", API_SUCCESS);
+}
+
+void LoggerApiTest::test_set_vchan(string filename)
+{
+        char *response = processApiGeneric("set_vchan.json");
+        int channel_id = find_virtual_channel("Foobar");
+        VirtualChannel *vc = get_virtual_channel(channel_id);
+        CPPUNIT_ASSERT_EQUAL(string("Foo"), (string)(String)vc->config.label);
+        CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)vc->config.units);
+        CPPUNIT_ASSERT_EQUAL((float)DEFAULT_VIRTUAL_CHANNEL_MINVAL, (float)vc->config.min);
+        CPPUNIT_ASSERT_EQUAL((float)DEFAULT_VIRTUAL_CHANNEL_MAXVAL, (float)vc->config.max);
+        CPPUNIT_ASSERT_EQUAL((float)DEFAULT_VIRTUAL_CHANNEL_PRECISION, (float)vc->config.precision);
+
+        float val = get_virtual_channel_value(channel_id);
+        CPPUNIT_ASSERT_EQUAL((float)1234.5, val);
+
+        assertGenericResponse(response, "setVChan", API_SUCCESS);
+}
+
+void LoggerApiTest::test_set_vchan_meta(string filename)
+{
+        char *response = processApiGeneric("set_vchan_meta.json");
+
+        int channel_id = find_virtual_channel("Foobar");
+        VirtualChannel *vc = get_virtual_channel(channel_id);
+        CPPUNIT_ASSERT_EQUAL(string("Foo"), (string)(String)vc->config.label);
+        CPPUNIT_ASSERT_EQUAL(string(""), (string)(String)vc->config.units);
+        CPPUNIT_ASSERT_EQUAL((float)0.5, (float)vc->config.min);
+        CPPUNIT_ASSERT_EQUAL((float)10.5, (float)vc->config.max);
+        CPPUNIT_ASSERT_EQUAL((int)3, (int)vc->config.precision);
+
+        float val = get_virtual_channel_value(channel_id);
+        CPPUNIT_ASSERT_EQUAL((float)1234.5, val);
+
+        assertGenericResponse(response, "setVChan", API_SUCCESS);
 }

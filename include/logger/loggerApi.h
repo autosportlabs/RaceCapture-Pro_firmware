@@ -68,6 +68,14 @@ CPP_GUARD_BEGIN
 	API_METHOD("setWifiCfg", api_set_wifi_cfg)			\
 	API_METHOD("sysReset", api_systemReset)				\
 
+
+#if VIRTUAL_CHANNEL_SUPPORT == 1
+#define VIRTUAL_CHANNEL_METHODS                 \
+    API_METHOD("setVChan", api_set_virtual_channel_value)
+#else
+#define VIRTUAL_CHANNEL_METHODS
+#endif
+
 #if GPS_HARDWARE_SUPPORT
 #define GPS_API_METHODS                         \
     API_METHOD("getGpsCfg", api_getGpsConfig)   \
@@ -246,6 +254,10 @@ int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 #if CAMERA_CONTROL
 int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
+#if VIRTUAL_CHANNEL_SUPPORT
+int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json);
 #endif
 
 CPP_GUARD_END

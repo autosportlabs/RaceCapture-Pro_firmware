@@ -205,6 +205,8 @@ private:
         void check_can_mapping_config(Object &json, CANMapping *mapping);
         void check_channel_config(Object &json_cfg, ChannelConfig *cfg);
         void testChannelConfig(ChannelConfig *chCfg, string expNm, string expUt, unsigned short sr);
+        void test_set_vchan(string filename);
+        void test_set_vchan_meta(string filename);
 };
 
 
