@@ -228,7 +228,7 @@ static int lua_get_analog(lua_State *L)
                         analogValue = adcRaw;
                         break;
                 case SCALING_MODE_LINEAR:
-                        analogValue = (ac->linearScaling * (float) adcRaw);
+                        analogValue = (ac->linearScaling * (float) adcRaw) + ac->linearOffset;
                         break;
                 case SCALING_MODE_MAP:
                         analogValue = get_mapped_value((float) adcRaw,
@@ -937,10 +937,9 @@ static int lua_get_virtual_channel(lua_State *ls)
                         return 1;
                 }
         } else {
-                struct sample * s = get_current_sample();
                 double value;
                 char * units;
-                if (s && get_sample_value_by_name(s, lua_tostring(ls, 1), &value, &units)) {
+                if (get_channel_value_by_name(lua_tostring(ls, 1), &value, &units)) {
                         lua_pushnumber(ls, value);
                         return 1;
                 }
@@ -1023,7 +1022,6 @@ static int lua_calc_gear(lua_State *L)
         float speed = 0;
         float rpm = 0;
 
-        struct sample * s = get_current_sample();
         double value;
         char * units;
         size_t params_start = 1;
@@ -1036,7 +1034,7 @@ static int lua_calc_gear(lua_State *L)
                 speed = getGPSSpeed();
 
                 /* Ensure RPM is available in the current sample. If not, bail out*/
-                if (!(s && get_sample_value_by_name(s, "RPM", &value, &units)))
+                if (!(get_channel_value_by_name("RPM", &value, &units)))
                         return 0;
                 rpm = value;
         }
@@ -1044,7 +1042,7 @@ static int lua_calc_gear(lua_State *L)
                 /* For Speed and RPM, check if sample is currently available and if
                  * channel exists in current sample. If not, bail out
                  */
-                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 1), &value, &units)))
+                if (!(get_channel_value_by_name(lua_tostring(L, 1), &value, &units)))
                         return 0;
                 speed = value;
                 if (strcasecmp("kph", units) != 0) {
@@ -1052,7 +1050,7 @@ static int lua_calc_gear(lua_State *L)
                         speed *= 1.60934f;
                 }
 
-                if (!(s && get_sample_value_by_name(s, lua_tostring(L, 2), &value, &units)))
+                if (!(get_channel_value_by_name(lua_tostring(L, 2), &value, &units)))
                         return 0;
                 rpm = value;
                 params_start += 2;
