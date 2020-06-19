@@ -239,7 +239,6 @@ static int execute_api(struct Serial * serial, const jsmntok_t *json)
 
 int process_api(struct Serial *serial, char *buffer, size_t bufferSize)
 {
-        pr_info_str_msg("process api ", buffer);
         jsmn_init(&g_jsonParser);
         memset(g_json_tok, 0, sizeof(jsmntok_t) * JSON_TOKENS);
 

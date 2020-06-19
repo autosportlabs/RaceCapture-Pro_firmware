@@ -2218,7 +2218,7 @@ int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json)
 }
 #endif
 
-#if VIRTUAL_CHANNEL_SUPPORT
+#if VIRTUAL_CHANNEL_SUPPORT == 1
 
 int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json)
 {
@@ -2260,10 +2260,11 @@ int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json)
                 channel_id = create_virtual_channel(cc);
         }
 
-        if (channel_id == INVALID_VIRTUAL_CHANNEL)
+        if (channel_id == INVALID_VIRTUAL_CHANNEL) {
                 pr_error_str_msg("Could not make virtual channel ", channel_name);
                 //could not make a virutal channel
                 return API_ERROR_SEVERE;
+        }
 
         set_virtual_channel_value(channel_id, channel_value);
         return API_SUCCESS;

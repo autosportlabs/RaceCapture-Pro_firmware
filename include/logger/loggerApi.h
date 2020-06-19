@@ -159,6 +159,7 @@ CPP_GUARD_BEGIN
 #endif
 
 #define API_METHODS                             \
+        VIRTUAL_CHANNEL_METHODS                 \
         AUTOLOGGING_METHODS                     \
         CAMERA_CONTROL_METHODS                  \
         BASE_API_METHODS                        \
