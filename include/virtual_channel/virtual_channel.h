@@ -37,7 +37,11 @@ typedef struct _VirtualChannel {
 } VirtualChannel;
 
 #define INVALID_VIRTUAL_CHANNEL -1
+#define DEFAULT_VIRTUAL_CHANNEL_MINVAL 0
+#define DEFAULT_VIRTUAL_CHANNEL_MAXVAL 0
+#define DEFAULT_VIRTUAL_CHANNEL_PRECISION 2
 
+void init_virtual_channels(void);
 int find_virtual_channel(const char * channel_name);
 int create_virtual_channel(const ChannelConfig chCfg);
 VirtualChannel * get_virtual_channel(size_t id);

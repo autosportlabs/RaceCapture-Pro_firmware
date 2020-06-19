@@ -50,6 +50,7 @@
 #include "wifi.h"
 #include "watchdog.h"
 #include "versionInfo.h"
+#include "virtual_channel.h"
 #include <app_info.h>
 #include <stdbool.h>
 
@@ -73,6 +74,9 @@ static const struct app_info_block info_block = {
 
 void setupTask(void *param)
 {
+#if VIRTUAL_CHANNEL_SUPPORT == 1
+        init_virtual_channels();
+#endif
         initialize_tracks();
         initialize_logger_config();
 
