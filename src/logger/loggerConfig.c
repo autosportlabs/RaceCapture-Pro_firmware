@@ -849,7 +849,7 @@ bool should_sample(const int sample_rate, const int max_rate)
         if (sample_rate % max_rate == 0 ) return true;
 
 	if (max_rate == SAMPLE_25Hz )
-		return sample_rate % SAMPLE_10Hz;
+		return sample_rate % SAMPLE_10Hz == 0;
 
 	return false;
 }
