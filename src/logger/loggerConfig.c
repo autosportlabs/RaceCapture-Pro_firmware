@@ -844,7 +844,14 @@ LoggerConfig * getWorkingLoggerConfig()
 
 bool should_sample(const int sample_rate, const int max_rate)
 {
-        return sample_rate == 0 ? false : sample_rate % max_rate == 0;
+	if (sample_rate == 0 ) return false;
+
+        if (sample_rate % max_rate == 0 ) return true;
+
+	if (max_rate == SAMPLE_25HZ )
+		return sample_rate % SAMPLE_10Hz;
+
+	return false;
 }
 
 
