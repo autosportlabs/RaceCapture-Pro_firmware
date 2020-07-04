@@ -1,5 +1,8 @@
 = 2.18.0=
 * Lua: Fix issue with getAnalog not adding the offset for 'linear' mode inputs
+* Lua: Avoid nil on getChannelByName, if channel name exists
+* AlertMsg: Broadcast pit-to-car alert messages over CAN bus
+* Telemetry: Enable 'reverse telemetry' to allow Podium to push race stats and more to device, to blend with regular telemetry
 
 = 2.17.8=
 * Telemetry: Disable +URAT feature on 4G as it is not be supported by all carriers
