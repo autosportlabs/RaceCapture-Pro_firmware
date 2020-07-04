@@ -101,6 +101,9 @@ int api_factoryReset(struct Serial *serial, const jsmntok_t *json)
 {
         flash_default_logger_config();
         flash_default_tracks();
+#if WIFI_SUPPORT == 1
+        esp8266_factory_restore();
+#endif
 
 #if LUA_SUPPORT
         flash_default_script();
