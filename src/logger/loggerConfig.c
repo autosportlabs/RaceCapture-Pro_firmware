@@ -826,7 +826,19 @@ LoggerConfig * getWorkingLoggerConfig()
 
 bool should_sample(const int sample_rate, const int max_rate)
 {
-        return sample_rate == 0 ? false : sample_rate % max_rate == 0;
+	if (sample_rate == SAMPLE_DISABLED) return false;
+
+        if (sample_rate % max_rate == 0 ) return true;
+
+	/* this clause is to make 10Hz samples trigger when running at max_rate 
+	 * 25Hz.  Without this, 10Hz samples are only output at 5Hz, due to 25 not
+	 * being divisible by 10.  This is not an issue for any other combo of available 
+	 * sample rates.
+	 */
+	if (max_rate == SAMPLE_25Hz )
+		return sample_rate % SAMPLE_10Hz == 0;
+
+	return false;
 }
 
 
