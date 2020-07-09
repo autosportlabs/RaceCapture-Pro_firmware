@@ -2257,6 +2257,7 @@ int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json)
                 cc.min = minval;
                 cc.max = maxval;
                 cc.precision = precision;
+                cc.sampleRate = encodeSampleRate(1);
                 channel_id = create_virtual_channel(cc);
         }
 
