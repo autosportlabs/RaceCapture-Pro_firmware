@@ -443,6 +443,8 @@ tiny_millis_t lapstats_elapsed_time()
 
 float lapstats_elapsed_time_minutes()
 {
+        GpsSnapshot snap = getGpsSnapshot();
+        update_elapsed_time(&snap);
         return tinyMillisToMinutes(lapstats_elapsed_time());
 }
 
