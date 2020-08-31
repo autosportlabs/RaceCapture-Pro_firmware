@@ -28,8 +28,13 @@
 
 CPP_GUARD_BEGIN
 
+//can handle a track up to 10km
+#define GSUM_MAX_SEGMENTS		1000
+#define GSUM_SEGMENT_LEN		(10.0f/GSUM_MAX_SEGMENTS) // 10km - calculations are in km.
+
 int get_segment_by_distance();
 
 CPP_GUARD_END
 
 #endif /* GSUM_DISTANCE_H_ */
+

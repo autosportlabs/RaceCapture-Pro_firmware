@@ -20,6 +20,8 @@
  */
 
 
+#include <math.h>
+
 #include "imu_gsum.h"
 #include "imu.h"
 #include "imu_device.h"
@@ -35,7 +37,7 @@ float get_imu_gsum(void)
         LoggerConfig *config = getWorkingLoggerConfig();
         float x_value = imu_read_value(IMU_CHANNEL_X, &config->ImuConfigs[IMU_CHANNEL_X]);
         float y_value = imu_read_value(IMU_CHANNEL_Y, &config->ImuConfigs[IMU_CHANNEL_Y]);
-        g_gsum = sqrt((powf(y_value,2))+(powf(x_value,2)));
+        g_gsum = sqrtf((powf(y_value,2))+(powf(x_value,2)));
 
         return g_gsum;
 }
@@ -58,11 +60,4 @@ float get_imu_gsum_pct(void)
         int current_segment = get_segment_by_distance();
 
         return (g_gsum / g_gsum_maxes[current_segment]) * 100;
-}
-
-float get_imu_gsum_pct(void)
-{
-        int current_segment = get_segment_by_distance();
-
-        return g_gsum / g_gsum_maxes[segment];
 }
