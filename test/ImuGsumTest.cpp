@@ -20,9 +20,8 @@
  */
  
 #include "ImuGsumTest.hh"
-#include "imu_gsum.h"
 
-/* Inclue the code to test here */
+/* Include the code to test here */
 extern "C" {
 #include "imu_gsum.c"
 }
@@ -32,25 +31,25 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ImuGsumTest );
 void ImuGsumTest::get_imu_gsum_max_new_value_test()
 {
         g_gsum = 1.05;
-        set_distance(3);
-        g_gsum_maxes[300] = 0.99;
+        set_distance(0);
+        g_gsum_maxes[0] = 0.99;
         CPPUNIT_ASSERT_EQUAL(1.05, get_imu_gsum_max());
-        CPPUNIT_ASSERT_EQUAL(1.05, g_gsum_maxes[300]);
+        CPPUNIT_ASSERT_EQUAL(1.05, g_gsum_maxes[0]);
 }
 
 void ImuGsumTest::get_imu_gsum_max_old_value_test()
 {
         g_gsum = 1.05;
-        set_distance(3);
-        g_gsum_maxes[300] = 1.46;
+        set_distance(0);
+        g_gsum_maxes[0] = 1.46;
         CPPUNIT_ASSERT_EQUAL(1.46, get_imu_gsum_max());
-        CPPUNIT_ASSERT_EQUAL(1.46, g_gsum_maxes[300]);
+        CPPUNIT_ASSERT_EQUAL(1.46, g_gsum_maxes[0]);
 }
 
 void ImuGsumTest::get_imu_gsum_pct_test()
 {
         g_gsum = 1;
-        set_distance(3);
-        g_gsum_maxes[300] = 2;
+        set_distance(0);
+        g_gsum_maxes[0] = 2;
         CPPUNIT_ASSERT_EQUAL(50, get_imu_gsum_pct());
 }

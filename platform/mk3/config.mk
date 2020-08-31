@@ -115,7 +115,6 @@ $(RCP_SRC)/imu/imu.c \
 $(RCP_SRC)/imu/imu_gsum.c \
 $(RCP_SRC)/jsmn/jsmn.c \
 $(RCP_SRC)/lap_stats/lap_stats.c \
-$(RCP_SRC)/lap_stats/gsum_distance.c \
 $(RCP_SRC)/launch_control.c \
 $(RCP_SRC)/logger/auto_control.c \
 $(RCP_SRC)/logger/auto_logger.c \

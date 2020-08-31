@@ -238,6 +238,15 @@ void SampleRecordTest::testInitSampleRecord()
         CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
         ++ts;
 
+        /* Check what should be IMU Gsum_max channel */
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsum_max, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+        ++ts;
+
+        /* Check what should be IMU Gsum_Pct channel */
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsum_pct, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+        ++ts;
 
         for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &lc->TimerConfigs[i];

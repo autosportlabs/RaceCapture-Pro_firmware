@@ -25,14 +25,17 @@
 #include "cpp_guard.h"
 #include "imu.h"
 #include "loggerConfig.h"
-#include "gsum_distance.h"
 
 CPP_GUARD_BEGIN
 
+//can handle a track up to 10km
+#define GSUM_MAX_SEGMENTS		1000
+#define GSUM_SEGMENT_LEN		(10.0f/GSUM_MAX_SEGMENTS) // 10km - calculations are in km.
+#define GSUM_MINVAL			(0.000001f)
+
+int get_segment_by_distance(void);
 float get_imu_gsum(void);
-
 float get_imu_gsum_max(void);
-
 float get_imu_gsum_pct(void);
 
 CPP_GUARD_END

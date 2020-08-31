@@ -20,11 +20,10 @@
  */
  
 #include "GsumDistanceTest.hh"
-#include "lap_stats.h"
 
 /* Inclue the code to test here */
 extern "C" {
-#include "gsum_distance.c"
+#include "imu_gsum.c"
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GsumDistanceTest );
