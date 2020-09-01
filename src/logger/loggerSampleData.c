@@ -286,8 +286,10 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
                 sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_imu_sample);
         }
         sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsum, get_imu_gsum);
-        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsum_max, get_imu_gsum_max);
-        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsum_pct, get_imu_gsum_pct);
+#ifdef GSUMMAX
+        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsummax, get_imu_gsummax);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsumpct, get_imu_gsumpct);
+#endif
 #endif
 
 #if TIMER_CHANNELS > 0

@@ -30,20 +30,7 @@
 #include "stddef.h"
 #include "capabilities.h"
 
-#if IMU_CHANNELS > 0
-
 static float g_gsum;
-static bool  g_gsum_initd = false;
-static float g_gsum_maxes[GSUM_MAX_SEGMENTS+1]; // add an extra segment for when you are "beyond" the track.
-
-void gsum_reset_maxes(void)
-{
-	for( int i=0; i <= GSUM_MAX_SEGMENTS; i++ )
-	{
-		g_gsum_maxes[i] = GSUM_MAX_MINVAL;
-	}
-	g_gsum_initd = true;
-}
 
 float get_imu_gsum(void)
 {
@@ -55,37 +42,50 @@ float get_imu_gsum(void)
         return g_gsum;
 }
 
+#ifdef GSUMMAX
+static bool  g_gsum_initd = false;
+static float g_gsummaxes[GSUMMAX_SEGMENTS+1]; // add an extra segment for when you are "beyond" the track.
+
+void gsum_reset_maxes(void)
+{
+	for( int i=0; i <= GSUMMAX_SEGMENTS; i++ )
+	{
+		g_gsummaxes[i] = GSUMMAX_MINVAL;
+	}
+	g_gsum_initd = true;
+}
+
 int get_segment_by_distance() 
 {
 
         float current_dist_km = getLapDistance();
-        int current_segment = (int)(current_dist_km / GSUM_MAX_SEGMENT_LEN);
-        if (current_segment > GSUM_MAX_SEGMENTS)
-                current_segment = GSUM_MAX_SEGMENTS;
+        int current_segment = (int)(current_dist_km / GSUMMAX_SEGMENT_LEN);
+        if (current_segment > GSUMMAX_SEGMENTS)
+                current_segment = GSUMMAX_SEGMENTS;
 
         return current_segment;
 }
 
-float get_imu_gsum_max(void)
+float get_imu_gsummax(void)
 {
 	if ( ! g_gsum_initd )
 		gsum_reset_maxes();
 
         int current_segment = get_segment_by_distance();
 
-        float current_gsum_max = g_gsum_maxes[current_segment];
-        if (g_gsum > current_gsum_max) {
-                current_gsum_max = g_gsum;
-                g_gsum_maxes[current_segment] = g_gsum;
+        float current_gsummax = g_gsummaxes[current_segment];
+        if (g_gsum > current_gsummax) {
+                current_gsummax = g_gsum;
+                g_gsummaxes[current_segment] = g_gsum;
         }
 
-        return current_gsum_max;
+        return current_gsummax;
 }
 
-float get_imu_gsum_pct(void)
+float get_imu_gsumpct(void)
 {
         int current_segment = get_segment_by_distance();
-	float ret = (g_gsum / g_gsum_maxes[current_segment]) * 100.0f;
+	float ret = (g_gsum / g_gsummaxes[current_segment]) * 100.0f;
 	return ret;
 }
 

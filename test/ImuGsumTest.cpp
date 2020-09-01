@@ -28,28 +28,28 @@ extern "C" {
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ImuGsumTest );
 
-void ImuGsumTest::get_imu_gsum_max_new_value_test()
+void ImuGsumTest::get_imu_gsummax_new_value_test()
 {
         g_gsum = 1.05;
         set_distance(0);
-        g_gsum_maxes[0] = 0.99;
-        CPPUNIT_ASSERT_EQUAL(1.05, get_imu_gsum_max());
-        CPPUNIT_ASSERT_EQUAL(1.05, g_gsum_maxes[0]);
+        g_gsummaxes[0] = 0.99;
+        CPPUNIT_ASSERT_EQUAL(1.05, get_imu_gsummax());
+        CPPUNIT_ASSERT_EQUAL(1.05, g_gsummaxes[0]);
 }
 
-void ImuGsumTest::get_imu_gsum_max_old_value_test()
+void ImuGsumTest::get_imu_gsummax_old_value_test()
 {
         g_gsum = 1.05;
         set_distance(0);
-        g_gsum_maxes[0] = 1.46;
-        CPPUNIT_ASSERT_EQUAL(1.46, get_imu_gsum_max());
-        CPPUNIT_ASSERT_EQUAL(1.46, g_gsum_maxes[0]);
+        g_gsummaxes[0] = 1.46;
+        CPPUNIT_ASSERT_EQUAL(1.46, get_imu_gsummax());
+        CPPUNIT_ASSERT_EQUAL(1.46, g_gsummaxes[0]);
 }
 
-void ImuGsumTest::get_imu_gsum_pct_test()
+void ImuGsumTest::get_imu_gsumpct_test()
 {
         g_gsum = 1;
         set_distance(0);
-        g_gsum_maxes[0] = 2;
-        CPPUNIT_ASSERT_EQUAL(50, get_imu_gsum_pct());
+        g_gsummaxes[0] = 2;
+        CPPUNIT_ASSERT_EQUAL(50, get_imu_gsumpct());
 }

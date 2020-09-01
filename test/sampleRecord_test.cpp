@@ -129,7 +129,7 @@ void SampleRecordTest::testPopulateSampleRecord()
         CPPUNIT_ASSERT_EQUAL( 0.0f, samples->valueFloat); //IMU Gsum channel
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL( GSUM_MAX_MINVAL, samples->valueFloat); //IMU Gsum_max channel
+        CPPUNIT_ASSERT_EQUAL( GSUMMAX_MINVAL, samples->valueFloat); //IMU Gsum_max channel
 
         samples++;
         CPPUNIT_ASSERT_EQUAL( 0.0f, samples->valueFloat); //IMU Gsum_pct channel
@@ -246,12 +246,12 @@ void SampleRecordTest::testInitSampleRecord()
         ++ts;
 
         /* Check what should be IMU Gsum_max channel */
-        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsum_max, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsummax, ts->cfg);
         CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
         ++ts;
 
         /* Check what should be IMU Gsum_Pct channel */
-        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsum_pct, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsumpct, ts->cfg);
         CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
         ++ts;
 

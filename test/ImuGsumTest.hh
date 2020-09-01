@@ -27,15 +27,15 @@
 class ImuGsumTest : public CppUnit::TestFixture
 {
         CPPUNIT_TEST_SUITE( ImuGsumTest );
-        CPPUNIT_TEST( get_imu_gsum_max_new_value_test );
-        CPPUNIT_TEST( get_imu_gsum_max_old_value_test );
-        CPPUNIT_TEST( get_imu_gsum_pct_test );
+        CPPUNIT_TEST( get_imu_gsummax_new_value_test );
+        CPPUNIT_TEST( get_imu_gsummax_old_value_test );
+        CPPUNIT_TEST( get_imu_gsumpct_test );
         CPPUNIT_TEST_SUITE_END();
 
 public:
-        void get_imu_gsum_max_new_value_test();
-        void get_imu_gsum_max_old_value_test();
-        void get_imu_gsum_pct_test();
+        void get_imu_gsummax_new_value_test();
+        void get_imu_gsummax_old_value_test();
+        void get_imu_gsumpct_test();
 };
 
 #endif /* _IMUGSUMTEST_H_ */

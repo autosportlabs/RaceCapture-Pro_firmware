@@ -57,9 +57,6 @@
 //logger message buffering
 #define LOGGER_MESSAGE_BUFFER_SIZE  5
 
-//Buffer size for GSumMax
-#define GSUMMAX_BUFFER_SIZE	400
-
 /* Logging Buffer Size (in 1K Blocks) */
 #define LOG_BUFFER_SIZE	            (1024 * 3)
 
