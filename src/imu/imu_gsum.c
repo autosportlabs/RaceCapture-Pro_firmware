@@ -38,7 +38,7 @@ static void gsum_maxes_init()
 {
 	for( int i=0; i < GSUM_MAX_SEGMENTS; i++ )
 	{
-		g_gsum_maxes[i] = GSUM_MINVAL;
+		g_gsum_maxes[i] = GSUM_MAX_MINVAL;
 	}
 	g_gsum_initd = true;
 }
@@ -57,7 +57,7 @@ int get_segment_by_distance()
 {
 
         float current_dist_km = getLapDistance();
-        int current_segment = (int)(current_dist_km / GSUM_SEGMENT_LEN);
+        int current_segment = (int)(current_dist_km / GSUM_MAX_SEGMENT_LEN);
         if (current_segment > GSUM_MAX_SEGMENTS - 1)
                 current_segment = GSUM_MAX_SEGMENTS - 1;
 

@@ -28,6 +28,7 @@
 #include "capabilities.h"
 #include "gps.h"
 #include "imu.h"
+#include "imu_gsum.h"
 #include "lap_stats.h"
 #include "loggerConfig.h"
 #include "loggerHardware.h"
@@ -125,13 +126,13 @@ void SampleRecordTest::testPopulateSampleRecord()
                              samples->valueFloat);
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0.0f, samples->valueFloat); //IMU Gsum channel
+        CPPUNIT_ASSERT_EQUAL( 0.0f, samples->valueFloat); //IMU Gsum channel
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0.0f, samples->valueFloat); //IMU Gsum_max channel
+        CPPUNIT_ASSERT_EQUAL( GSUM_MAX_MINVAL, samples->valueFloat); //IMU Gsum_max channel
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0.0f, samples->valueFloat); //IMU Gsum_pct channel
+        CPPUNIT_ASSERT_EQUAL( 0.0f, samples->valueFloat); //IMU Gsum_pct channel
 
         //GPS / Track channels
         /*
