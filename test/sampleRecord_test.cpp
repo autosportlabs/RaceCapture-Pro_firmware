@@ -125,13 +125,13 @@ void SampleRecordTest::testPopulateSampleRecord()
                              samples->valueFloat);
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum channel
+        CPPUNIT_ASSERT_EQUAL((float) 0.0f, samples->valueFloat); //IMU Gsum channel
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum_max channel
+        CPPUNIT_ASSERT_EQUAL((float) 0.0f, samples->valueFloat); //IMU Gsum_max channel
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum_pct channel
+        CPPUNIT_ASSERT_EQUAL((float) 0.0f, samples->valueFloat); //IMU Gsum_pct channel
 
         //GPS / Track channels
         /*
