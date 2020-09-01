@@ -240,7 +240,7 @@ typedef struct _ImuConfig {
                 }
 #define IMU_GSUM_CONFIG_DEFAULT {"Gsum", "G", 0, 3, SAMPLE_25Hz, 2, 0}
 #define IMU_GSUM_MAX_CONFIG_DEFAULT {"GsumMax", "G", 0, 3, SAMPLE_25Hz, 2, 0}
-#define IMU_GSUM_PCT_CONFIG_DEFAULT {"GsumPct", "", 0, 100, SAMPLE_25Hz, 0, 0}
+#define IMU_GSUM_PCT_CONFIG_DEFAULT {"GsumPct", "%", 0, 100, SAMPLE_25Hz, 0, 0}
 
 typedef struct _PWMConfig {
         ChannelConfig cfg;

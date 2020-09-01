@@ -127,6 +127,12 @@ void SampleRecordTest::testPopulateSampleRecord()
         samples++;
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum channel
 
+        samples++;
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum_max channel
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum_pct channel
+
         //GPS / Track channels
         /*
          * !!! BE WARNED!!!  It seems some of these samples should be valueInts instead of
@@ -185,7 +191,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
         LoggerConfig *lc = getWorkingLoggerConfig();
 
-        const size_t expectedEnabledChannels = 26;
+        const size_t expectedEnabledChannels = 28;
         size_t channelCount = get_enabled_channel_count(lc);
         CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
 
