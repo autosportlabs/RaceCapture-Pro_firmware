@@ -130,9 +130,7 @@ void lapstats_reset(bool reset_session)
         g_lastSectorTimestamp = 0;
         g_sector = -1;     // Indicates we haven't crossed start/finish yet.
         lapstats_reset_distance();
-#ifdef GSUMMAX
-	gsum_reset_maxes();
-#endif
+	reset_gsum();
         resetPredictiveTimer();
         resetLapCount();
         reset_elapsed_time();

@@ -31,6 +31,11 @@
 #include "capabilities.h"
 
 static float g_gsum;
+#ifdef GSUMMAX
+static bool  g_gsum_initd = false;
+static float g_gsummaxes[GSUMMAX_SEGMENTS+1]; // add an extra segment for when you are "beyond" the track.
+#endif 
+
 
 float get_imu_gsum(void)
 {
@@ -42,18 +47,20 @@ float get_imu_gsum(void)
         return g_gsum;
 }
 
-#ifdef GSUMMAX
-static bool  g_gsum_initd = false;
-static float g_gsummaxes[GSUMMAX_SEGMENTS+1]; // add an extra segment for when you are "beyond" the track.
-
-void gsum_reset_maxes(void)
+void reset_gsum(void)
 {
+#ifdef GSUMMAX
 	for( int i=0; i <= GSUMMAX_SEGMENTS; i++ )
 	{
 		g_gsummaxes[i] = GSUMMAX_MINVAL;
 	}
 	g_gsum_initd = true;
+#endif
+	return;
 }
+
+
+#ifdef GSUMMAX
 
 int get_segment_by_distance() 
 {
@@ -69,7 +76,7 @@ int get_segment_by_distance()
 float get_imu_gsummax(void)
 {
 	if ( ! g_gsum_initd )
-		gsum_reset_maxes();
+		reset_gsum();
 
         int current_segment = get_segment_by_distance();
 
@@ -88,5 +95,4 @@ float get_imu_gsumpct(void)
 	float ret = (g_gsum / g_gsummaxes[current_segment]) * 100.0f;
 	return ret;
 }
-
 #endif
