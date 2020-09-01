@@ -33,10 +33,11 @@ CPP_GUARD_BEGIN
 #define GSUM_MAX_SEGMENT_LEN		(10.0f/GSUM_MAX_SEGMENTS) // 10km - calculations are in km.
 #define GSUM_MAX_MINVAL			(0.000001f)
 
-int get_segment_by_distance(void);
 float get_imu_gsum(void);
 float get_imu_gsum_max(void);
 float get_imu_gsum_pct(void);
+int get_segment_by_distance(void);
+void reset_gsum_maxes(void);
 
 CPP_GUARD_END
 

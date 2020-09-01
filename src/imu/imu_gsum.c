@@ -34,7 +34,7 @@ static float g_gsum;
 static bool  g_gsum_initd = false;
 static float g_gsum_maxes[GSUM_MAX_SEGMENTS];
 
-static void gsum_maxes_init()
+void reset_gsum_maxes(void)
 {
 	for( int i=0; i < GSUM_MAX_SEGMENTS; i++ )
 	{
@@ -67,7 +67,7 @@ int get_segment_by_distance()
 float get_imu_gsum_max(void)
 {
 	if ( ! g_gsum_initd )
-		gsum_maxes_init();
+		reset_gsum_maxes();
 
         int current_segment = get_segment_by_distance();
 
