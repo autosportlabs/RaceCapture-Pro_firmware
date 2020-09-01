@@ -28,16 +28,20 @@
 
 CPP_GUARD_BEGIN
 
-//can handle a track up to 10km
-#define GSUM_MAX_SEGMENTS		1000
+//can handle a track up to 10km with fixed seg length of 10m
+#define GSUM_MAX_SEGMENTS		GSUMMAX_BUFFER_SIZE     // prime number to avoid aliasing artifacts. 
+
 #define GSUM_MAX_SEGMENT_LEN		(10.0f/GSUM_MAX_SEGMENTS) // 10km - calculations are in km.
 #define GSUM_MAX_MINVAL			(0.000001f)
 
+
+#if IMU_CHANNELS > 0
 float get_imu_gsum(void);
 float get_imu_gsum_max(void);
 float get_imu_gsum_pct(void);
-int get_segment_by_distance(void);
-void gsum_reset_maxes(void);
+int   get_segment_by_distance(void);
+void  gsum_reset_maxes(void);
+#endif
 
 CPP_GUARD_END
 

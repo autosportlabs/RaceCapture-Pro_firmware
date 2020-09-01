@@ -30,13 +30,15 @@
 #include "stddef.h"
 #include "capabilities.h"
 
+#if IMU_CHANNELS > 0
+
 static float g_gsum;
 static bool  g_gsum_initd = false;
-static float g_gsum_maxes[GSUM_MAX_SEGMENTS];
+static float g_gsum_maxes[GSUM_MAX_SEGMENTS+1]; // add an extra segment for when you are "beyond" the track.
 
 void gsum_reset_maxes(void)
 {
-	for( int i=0; i < GSUM_MAX_SEGMENTS; i++ )
+	for( int i=0; i <= GSUM_MAX_SEGMENTS; i++ )
 	{
 		g_gsum_maxes[i] = GSUM_MAX_MINVAL;
 	}
@@ -58,8 +60,8 @@ int get_segment_by_distance()
 
         float current_dist_km = getLapDistance();
         int current_segment = (int)(current_dist_km / GSUM_MAX_SEGMENT_LEN);
-        if (current_segment > GSUM_MAX_SEGMENTS - 1)
-                current_segment = GSUM_MAX_SEGMENTS - 1;
+        if (current_segment > GSUM_MAX_SEGMENTS)
+                current_segment = GSUM_MAX_SEGMENTS;
 
         return current_segment;
 }
@@ -86,3 +88,5 @@ float get_imu_gsum_pct(void)
 	float ret = (g_gsum / g_gsum_maxes[current_segment]) * 100.0f;
 	return ret;
 }
+
+#endif
