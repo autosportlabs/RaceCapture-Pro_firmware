@@ -37,7 +37,7 @@ float get_imu_gsum(void);
 float get_imu_gsum_max(void);
 float get_imu_gsum_pct(void);
 int get_segment_by_distance(void);
-void reset_gsum_maxes(void);
+void gsum_reset_maxes(void);
 
 CPP_GUARD_END
 
