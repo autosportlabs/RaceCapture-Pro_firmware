@@ -271,6 +271,12 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
         sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, get_utc_time_helper);
 
+        LapConfig *trackConfig = &(loggerConfig->LapConfigs);
+        chanCfg = &(trackConfig->elapsed_time_cfg);
+        chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+                        lapstats_elapsed_time_minutes);
+
 #if ANALOG_CHANNELS > 0
         for (int i=0; i < CONFIG_ADC_CHANNELS; i++) {
                 ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
@@ -360,7 +366,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
 #endif
 
-        LapConfig *trackConfig = &(loggerConfig->LapConfigs);
         chanCfg = &(trackConfig->lapCountCfg);
         sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getLapCount);
         chanCfg = &(trackConfig->lapTimeCfg);
@@ -372,9 +377,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         chanCfg = &(trackConfig->predTimeCfg);
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
                         getPredictedTimeInMinutes);
-        chanCfg = &(trackConfig->elapsed_time_cfg);
-        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
-                        lapstats_elapsed_time_minutes);
         chanCfg = &(trackConfig->current_lap_cfg);
         sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg,
                         lapstats_current_lap);
