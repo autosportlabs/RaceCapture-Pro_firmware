@@ -55,6 +55,9 @@ CPP_GUARD_BEGIN
 /* Rx Max Message length */
 #define RX_MAX_MSG_LEN	768
 
+// Support GSumMax
+#define GSUMMAX
+
 /*
  * What is the maximum number of samples available per predictive time
  * buffer.  More samples == better resolution. Each slot is 12 bytes.

@@ -89,6 +89,9 @@
 #define MAX_GPS_SAMPLE_RATE		50
 #define MAX_OBD2_SAMPLE_RATE	1000
 
+// support GSUMMAX
+#define GSUMMAX
+
 //logging
 #define LOG_BUFFER_SIZE			8192
 

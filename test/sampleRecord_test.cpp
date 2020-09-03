@@ -28,6 +28,7 @@
 #include "capabilities.h"
 #include "gps.h"
 #include "imu.h"
+#include "imu_gsum.h"
 #include "lap_stats.h"
 #include "loggerConfig.h"
 #include "loggerHardware.h"
@@ -132,7 +133,13 @@ void SampleRecordTest::testPopulateSampleRecord()
                              samples->valueFloat);
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum channel
+        CPPUNIT_ASSERT_EQUAL( 0.0f, samples->valueFloat); //IMU Gsum channel
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL( GSUMMAX_MINVAL, samples->valueFloat); //IMU Gsum_max channel
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL( 0.0f, samples->valueFloat); //IMU Gsum_pct channel
 
         //GPS / Track channels
         /*
@@ -189,7 +196,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
         LoggerConfig *lc = getWorkingLoggerConfig();
 
-        const size_t expectedEnabledChannels = 26;
+        const size_t expectedEnabledChannels = 28;
         size_t channelCount = get_enabled_channel_count(lc);
         CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
 
@@ -249,6 +256,15 @@ void SampleRecordTest::testInitSampleRecord()
         CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
         ++ts;
 
+        /* Check what should be IMU Gsum_max channel */
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsummax, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+        ++ts;
+
+        /* Check what should be IMU Gsum_Pct channel */
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsumpct, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+        ++ts;
 
         for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &lc->TimerConfigs[i];

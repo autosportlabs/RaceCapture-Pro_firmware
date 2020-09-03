@@ -27,6 +27,7 @@
 #include "geopoint.h"
 #include "gps.h"
 #include "gps_device.h"
+#include "imu_gsum.h"
 #include "macros.h"
 #include "math.h"
 #include "lap_stats.h"
@@ -129,6 +130,7 @@ void lapstats_reset(bool reset_session)
         g_lastSectorTimestamp = 0;
         g_sector = -1;     // Indicates we haven't crossed start/finish yet.
         lapstats_reset_distance();
+	reset_gsum();
         resetPredictiveTimer();
         resetLapCount();
         reset_elapsed_time();
