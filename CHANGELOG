@@ -1,4 +1,5 @@
 = 2.18.0=
+* IMU: Enable GSumPctMax and GSumMax channels to act as performance indicators within session
 * Core: Increment ElapsedTime on every sample to maximize analysis resolution
 * Telemetry: Enable 'reverse telemetry' to allow Podium to push timing/scoring data and more to device, to blend with regular telemetry
 * Lua: Fix issue with getAnalog not adding the offset for 'linear' mode inputs
