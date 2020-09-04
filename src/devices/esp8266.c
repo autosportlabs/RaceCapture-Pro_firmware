@@ -411,6 +411,14 @@ static bool init_soft_reset()
                                   init_soft_reset_cb, NULL);
 }
 
+
+bool esp8266_factory_restore(void)
+{
+        const char cmd[] = "AT+RESTORE";
+        return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
+                                        NULL, NULL);
+}
+
 /**
  * Resets and initializes our WiFi device to a known sane state where
  * the driver can then take over and control sanely.

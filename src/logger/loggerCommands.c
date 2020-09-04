@@ -90,6 +90,10 @@ void ResetConfig(struct Serial *serial, unsigned int argc, char **argv)
         res += tmp;
         print_reset_status(serial, "Flashing Default Logger Config", tmp);
 
+#if WIFI_SUPPORT == 1
+        esp8266_factory_restore();
+#endif
+
 #if LUA_SUPPORT
         tmp = flash_default_script();
         res += tmp;

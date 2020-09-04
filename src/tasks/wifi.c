@@ -857,9 +857,6 @@ void wifi_reset_config(struct wifi_cfg *cfg)
         cfg->ap.channel = 11;
         cfg->ap.encryption = ESP8266_ENCRYPTION_NONE;
 
-        /* Inform the Wifi device that settings may have changed */
-        wifi_update_client_config(&cfg->client);
-        wifi_update_ap_config(&cfg->ap);
 }
 
 /**

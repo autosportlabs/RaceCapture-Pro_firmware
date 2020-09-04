@@ -100,6 +100,7 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks);
 typedef void esp8266_init_cb_t(const bool status);
 
 bool esp8266_init(esp8266_init_cb_t* cb);
+bool esp8266_factory_restore(void);
 
 enum dev_init_state esp8266_get_dev_init_state();
 
