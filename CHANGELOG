@@ -1,10 +1,14 @@
 = 2.18.0=
+* Core: Increment ElapsedTime on every sample to maximize analysis resolution
+* Core: Timing and scoring integration
+* Telemetry: Enable 'reverse telemetry' to allow Podium to push race stats and more to device, to blend with regular telemetry
 * Lua: Fix issue with getAnalog not adding the offset for 'linear' mode inputs
 * Lua: Avoid nil on getChannelByName, if channel name exists
-* AlertMsg: Broadcast pit-to-car alert messages over CAN bus
-* Telemetry: Enable 'reverse telemetry' to allow Podium to push race stats and more to device, to blend with regular telemetry
+* Lua: Expose GPS DOP to Lua
+* WiFi: perform factory restore on wifi when doing main configuration reset
+* WiFi: help prevent WiFi from being stuck in a loop, preventing initializaton
 * Logging: Fix case where 10Hz sample rate logs at 5hz under certain circumstances
-* Core: Increment ElapsedTime on every sample to maximize analysis resolution
+* CAN: Broadcast pit-to-car alert message on CAN bus
 
 = 2.17.8=
 * Telemetry: Disable +URAT feature on 4G as it is not be supported by all carriers
