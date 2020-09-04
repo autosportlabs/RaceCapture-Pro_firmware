@@ -31,6 +31,7 @@
 #include "gps.h"
 #include "gps_device.h"
 #include "imu.h"
+#include "imu_gsum.h"
 #include "lap_stats.h"
 #include "linear_interpolate.h"
 #include "loggerConfig.h"
@@ -221,14 +222,6 @@ float get_imu_sample(int channelId)
         float value = imu_read_value(channelId, c);
         return value;
 }
-
-float get_imu_gsum_getter(void)
-{
-        LoggerConfig *config = getWorkingLoggerConfig();
-        float x_value = imu_read_value(IMU_CHANNEL_X, &config->ImuConfigs[IMU_CHANNEL_X]);
-        float y_value = imu_read_value(IMU_CHANNEL_Y, &config->ImuConfigs[IMU_CHANNEL_Y]);
-        return sqrt((powf(y_value,2))+(powf(x_value,2)));
-}
 #endif
 
 #if GPS_HARDWARE_SUPPORT
@@ -278,6 +271,12 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
         sample = processChannelSampleWithLongLongGetterNoarg(sample, chanCfg, get_utc_time_helper);
 
+        LapConfig *trackConfig = &(loggerConfig->LapConfigs);
+        chanCfg = &(trackConfig->elapsed_time_cfg);
+        chanCfg->flags = ALWAYS_SAMPLED; // Set always sampled flag here so we always take samples
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
+                        lapstats_elapsed_time_minutes);
+
 #if ANALOG_CHANNELS > 0
         for (int i=0; i < CONFIG_ADC_CHANNELS; i++) {
                 ADCConfig *config = &(loggerConfig->ADCConfigs[i]);
@@ -292,7 +291,11 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
                 chanCfg = &(config->cfg);
                 sample = processChannelSampleWithFloatGetter(sample, chanCfg, i, get_imu_sample);
         }
-        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsum, get_imu_gsum_getter);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsum, get_imu_gsum);
+#ifdef GSUMMAX
+        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsummax, get_imu_gsummax);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, &loggerConfig->imu_gsumpct, get_imu_gsumpct);
+#endif
 #endif
 
 #if TIMER_CHANNELS > 0
@@ -363,7 +366,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
 #endif
 
-        LapConfig *trackConfig = &(loggerConfig->LapConfigs);
         chanCfg = &(trackConfig->lapCountCfg);
         sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, getLapCount);
         chanCfg = &(trackConfig->lapTimeCfg);
@@ -375,9 +377,6 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         chanCfg = &(trackConfig->predTimeCfg);
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
                         getPredictedTimeInMinutes);
-        chanCfg = &(trackConfig->elapsed_time_cfg);
-        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg,
-                        lapstats_elapsed_time_minutes);
         chanCfg = &(trackConfig->current_lap_cfg);
         sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg,
                         lapstats_current_lap);

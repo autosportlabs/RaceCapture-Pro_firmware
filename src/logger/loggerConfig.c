@@ -183,12 +183,18 @@ static void resetGpioConfig(GPIOConfig cfg[])
 #endif
 
 #if IMU_CHANNELS > 0
-static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config)
+static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config, ChannelConfig * imu_gsummax_config, ChannelConfig * imu_gsumpct_config)
 {
         static const ImuConfig defaults[] = IMU_CONFIG_DEFAULTS;
         memcpy(cfg, defaults, sizeof(defaults));
         static const ChannelConfig default_imu_gsum = IMU_GSUM_CONFIG_DEFAULT;
         memcpy(imu_gsum_config, &default_imu_gsum, sizeof(ChannelConfig));
+#ifdef GSUMMAX
+        static const ChannelConfig default_imu_gsummax = IMU_GSUMMAX_CONFIG_DEFAULT;
+        memcpy(imu_gsummax_config, &default_imu_gsummax, sizeof(ChannelConfig));
+        static const ChannelConfig default_imu_gsumpct = IMU_GSUMPCT_CONFIG_DEFAULT;
+        memcpy(imu_gsumpct_config, &default_imu_gsumpct, sizeof(ChannelConfig)); 
+#endif
 }
 #endif
 
@@ -453,8 +459,12 @@ void update_calculated_imu_channel_configs(void){
                 ImuConfig *cfg = &(lc->ImuConfigs[i]);
                 max_sample_rate = MAX(decodeSampleRate(cfg->cfg.sampleRate), max_sample_rate);
         }
-        /* align the sample rate for the calculated Gsum channel, possibly disabling it */
+        /* align the sample rate for the calculated Gsum channels, possibly disabling it */
         lc->imu_gsum.sampleRate = encodeSampleRate(max_sample_rate);
+#ifdef GSUMMAX
+        lc->imu_gsummax.sampleRate = encodeSampleRate(max_sample_rate);
+        lc->imu_gsumpct.sampleRate = encodeSampleRate(max_sample_rate);
+#endif
 }
 
 #endif
@@ -634,6 +644,10 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
                         ++channels;
 
         if (loggerConfig->imu_gsum.sampleRate != SAMPLE_DISABLED) channels++;
+#ifdef GSUMMAX
+        if (loggerConfig->imu_gsummax.sampleRate != SAMPLE_DISABLED) channels++;
+        if (loggerConfig->imu_gsumpct.sampleRate != SAMPLE_DISABLED) channels++;
+#endif
 #endif
 
 #if ANALOG_CHANNELS > 0
@@ -737,7 +751,11 @@ void reset_logger_config(void)
 #endif
 
 #if IMU_CHANNELS > 0
-        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum);
+#ifdef GSUMMAX
+        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum, &lc->imu_gsummax, &lc->imu_gsumpct);
+#else
+        resetImuConfig(lc->ImuConfigs, &lc->imu_gsum, NULL, NULL );
+#endif
 #endif
 
         resetCanConfig(&lc->CanConfig);
@@ -826,7 +844,19 @@ LoggerConfig * getWorkingLoggerConfig()
 
 bool should_sample(const int sample_rate, const int max_rate)
 {
-        return sample_rate == 0 ? false : sample_rate % max_rate == 0;
+	if (sample_rate == SAMPLE_DISABLED) return false;
+
+        if (sample_rate % max_rate == 0 ) return true;
+
+	/* this clause is to make 10Hz samples trigger when running at max_rate 
+	 * 25Hz.  Without this, 10Hz samples are only output at 5Hz, due to 25 not
+	 * being divisible by 10.  This is not an issue for any other combo of available 
+	 * sample rates.
+	 */
+	if (max_rate == SAMPLE_25Hz )
+		return sample_rate % SAMPLE_10Hz == 0;
+
+	return false;
 }
 
 

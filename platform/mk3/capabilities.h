@@ -82,6 +82,9 @@
 #define CAN_MAPPINGS            100
 #define OBD2_CHANNELS           20
 
+// support GSUMMAX
+#define GSUMMAX
+
 //Wireless connections
 #define CONNECTIVITY_CHANNELS	2
 

@@ -228,7 +228,7 @@ void loggerTaskEx(void *params)
                  * Ensure we refresh the internal sensors at either the
                  * logging rate or at least at background sample rate
                  */
-                if ((is_logging && currentTicks % loggingSampleRate == 0) ||
+                if ((is_logging && should_sample(currentTicks, loggingSampleRate)) ||
                     (currentTicks % BACKGROUND_SAMPLE_RATE == 0))
                         doBackgroundSampling();
 

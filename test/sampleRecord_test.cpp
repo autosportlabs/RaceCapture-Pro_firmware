@@ -28,6 +28,7 @@
 #include "capabilities.h"
 #include "gps.h"
 #include "imu.h"
+#include "imu_gsum.h"
 #include "lap_stats.h"
 #include "loggerConfig.h"
 #include "loggerHardware.h"
@@ -39,6 +40,7 @@
 #include "task_testing.h"
 
 #include <string>
+#include <stdio.h>
 
 using std::string;
 
@@ -90,10 +92,16 @@ void SampleRecordTest::testPopulateSampleRecord()
         CPPUNIT_ASSERT_EQUAL((int) (xTaskGetTickCount() * MS_PER_TICK),
                              samples->valueInt);
 
-        // UtC Channel.  Just test that its 0 for now
+        // UTC Channel.  Just test that its 0 for now
         samples++;
         CPPUNIT_ASSERT_EQUAL(0ll, (long long) getMillisSinceEpoch());
         CPPUNIT_ASSERT_EQUAL(0ll, samples->valueLongLong);
+
+        //ElapsedTime
+        samples++;
+        //5 milliseconds in minutes. We incremented 1 tick earlier;
+        //test is configured for 5ms / tick
+        CPPUNIT_ASSERT_EQUAL((float) (5/60000.0), samples->valueFloat);
 
         //analog channel
         samples++;
@@ -125,7 +133,13 @@ void SampleRecordTest::testPopulateSampleRecord()
                              samples->valueFloat);
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //IMU Gsum channel
+        CPPUNIT_ASSERT_EQUAL( 0.0f, samples->valueFloat); //IMU Gsum channel
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL( GSUMMAX_MINVAL, samples->valueFloat); //IMU Gsum_max channel
+
+        samples++;
+        CPPUNIT_ASSERT_EQUAL( 0.0f, samples->valueFloat); //IMU Gsum_pct channel
 
         //GPS / Track channels
         /*
@@ -172,9 +186,6 @@ void SampleRecordTest::testPopulateSampleRecord()
         CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //PredTime
 
         samples++;
-        CPPUNIT_ASSERT_EQUAL((float) 0, samples->valueFloat); //ElapsedTime
-
-        samples++;
         CPPUNIT_ASSERT_EQUAL((int) 0, samples->valueInt); //CurrentLap
 
         samples++;
@@ -185,7 +196,7 @@ void SampleRecordTest::testInitSampleRecord()
 {
         LoggerConfig *lc = getWorkingLoggerConfig();
 
-        const size_t expectedEnabledChannels = 26;
+        const size_t expectedEnabledChannels = 28;
         size_t channelCount = get_enabled_channel_count(lc);
         CPPUNIT_ASSERT_EQUAL(expectedEnabledChannels, channelCount);
 
@@ -206,6 +217,13 @@ void SampleRecordTest::testInitSampleRecord()
         CPPUNIT_ASSERT_EQUAL(TimeType_UtcMillis, tc->tt);
         CPPUNIT_ASSERT_EQUAL(SampleData_LongLong_Noarg, ts->sampleData);
         ++ts;
+
+        // Elapsed Time should be present on every sample
+        LapConfig *lapConfig = &(lc->LapConfigs);
+        CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->elapsed_time_cfg, (void *) ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+        CPPUNIT_ASSERT_EQUAL((void *) lapstats_elapsed_time_minutes,(void *) ts->get_float_sample);
+        ts++;
 
         for (int i = 0; i < CONFIG_ADC_CHANNELS; i++) {
                 ADCConfig *ac = &lc->ADCConfigs[i];
@@ -238,6 +256,15 @@ void SampleRecordTest::testInitSampleRecord()
         CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
         ++ts;
 
+        /* Check what should be IMU Gsum_max channel */
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsummax, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+        ++ts;
+
+        /* Check what should be IMU Gsum_Pct channel */
+        CPPUNIT_ASSERT_EQUAL(&lc->imu_gsumpct, ts->cfg);
+        CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
+        ++ts;
 
         for (int i = 0; i < CONFIG_TIMER_CHANNELS; i++) {
                 TimerConfig *tc = &lc->TimerConfigs[i];
@@ -343,7 +370,6 @@ void SampleRecordTest::testInitSampleRecord()
                 ts++;
         }
 
-        LapConfig *lapConfig = &(lc->LapConfigs);
         if (lapConfig->lapCountCfg.sampleRate != SAMPLE_DISABLED) {
                 CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->lapCountCfg,
                                      (void *) ts->cfg);
@@ -385,15 +411,6 @@ void SampleRecordTest::testInitSampleRecord()
                                      (void *) ts->cfg);
                 CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
                 CPPUNIT_ASSERT_EQUAL((void *) getPredictedTimeInMinutes,
-                                     (void *) ts->get_float_sample);
-                ts++;
-        }
-
-        if (lapConfig->elapsed_time_cfg.sampleRate != SAMPLE_DISABLED) {
-                CPPUNIT_ASSERT_EQUAL((void *) &lapConfig->elapsed_time_cfg,
-                                     (void *) ts->cfg);
-                CPPUNIT_ASSERT_EQUAL(SampleData_Float_Noarg, ts->sampleData);
-                CPPUNIT_ASSERT_EQUAL((void *) lapstats_elapsed_time_minutes,
                                      (void *) ts->get_float_sample);
                 ts++;
         }
