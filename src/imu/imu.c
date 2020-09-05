@@ -60,7 +60,7 @@ float imu_read_value(enum imu_channel channel, ImuConfig *ac)
         const int raw = g_imu_filter[physicalChannel].current_value;
         const int zeroValue = ac->zeroValue;
         const float countsPerUnit = imu_device_counts_per_unit(channel);
-        float scaledValue = (((float) (raw - zeroValue)) / countsPerUnit);
+        float scaledValue = ((float) (raw - zeroValue)) / countsPerUnit;
 
         /* now alter based on configuration */
         switch (ac->mode) {
@@ -89,6 +89,13 @@ void imu_calibrate_zero()
                 size_t physicalChannel = c->physicalChannel;
                 imu_flush_filter(physicalChannel);
                 int zeroValue = g_imu_filter[physicalChannel].current_value;
+                float countsPerUnit = imu_device_counts_per_unit(physicalChannel);
+                if (logicalChannel == IMU_CHANNEL_Z) { //adjust for gravity
+                        if (c->mode == IMU_MODE_INVERTED) {
+                                countsPerUnit = -countsPerUnit;
+                        }
+                        zeroValue -= countsPerUnit;
+                }
                 c->zeroValue = zeroValue;
         }
 }
