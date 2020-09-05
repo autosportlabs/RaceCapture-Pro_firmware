@@ -62,10 +62,6 @@ float imu_read_value(enum imu_channel channel, ImuConfig *ac)
         const float countsPerUnit = imu_device_counts_per_unit(channel);
         float scaledValue = (((float) (raw - zeroValue)) / countsPerUnit);
 
-        if (channel == IMU_CHANNEL_Z) {
-                scaledValue = (scaledValue - 1.0f) / 2.0f;
-        }
-
         /* now alter based on configuration */
         switch (ac->mode) {
         case IMU_MODE_NORMAL:

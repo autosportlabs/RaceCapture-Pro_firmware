@@ -43,7 +43,7 @@ float get_imu_gsum(void)
         float x_value = imu_read_value(IMU_CHANNEL_X, &config->ImuConfigs[IMU_CHANNEL_X]);
         float y_value = imu_read_value(IMU_CHANNEL_Y, &config->ImuConfigs[IMU_CHANNEL_Y]);
         float z_value = imu_read_value(IMU_CHANNEL_Z, &config->ImuConfigs[IMU_CHANNEL_Z]);
-        g_gsum = sqrtf((y_value*y_value)+(x_value*x_value)+(z_value*z_value));
+        g_gsum = sqrtf((y_value*y_value)+(x_value*x_value)+(z_value*z_value)) - 1.0;
         return g_gsum;
 }
 
