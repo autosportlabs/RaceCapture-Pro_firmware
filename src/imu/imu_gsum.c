@@ -43,20 +43,19 @@ float get_imu_gsum(void)
         float x_value = imu_read_value(IMU_CHANNEL_X, &config->ImuConfigs[IMU_CHANNEL_X]);
         float y_value = imu_read_value(IMU_CHANNEL_Y, &config->ImuConfigs[IMU_CHANNEL_Y]);
         float z_value = imu_read_value(IMU_CHANNEL_Z, &config->ImuConfigs[IMU_CHANNEL_Z]);
-        g_gsum = sqrtf((y_value*y_value)+(x_value*x_value)+(z_value*z_value)) - 1.0f;
+        g_gsum = sqrtf((y_value*y_value)+(x_value*x_value)+(z_value*z_value));
         return g_gsum;
 }
 
 void reset_gsum(void)
 {
 #ifdef GSUMMAX
-	for( int i=0; i <= GSUMMAX_SEGMENTS; i++ )
-	{
-		g_gsummaxes[i] = GSUMMAX_MINVAL;
-	}
-	g_gsum_initd = true;
+        for( int i=0; i <= GSUMMAX_SEGMENTS; i++ ) {
+                g_gsummaxes[i] = GSUMMAX_MINVAL;
+        }
+        g_gsum_initd = true;
 #endif
-	return;
+        return;
 }
 
 
@@ -75,8 +74,8 @@ int get_segment_by_distance()
 
 float get_imu_gsummax(void)
 {
-	if ( ! g_gsum_initd )
-		reset_gsum();
+        if ( ! g_gsum_initd )
+                reset_gsum();
 
         int current_segment = get_segment_by_distance();
 
@@ -92,7 +91,7 @@ float get_imu_gsummax(void)
 float get_imu_gsumpct(void)
 {
         int current_segment = get_segment_by_distance();
-	float ret = (g_gsum / g_gsummaxes[current_segment]) * 100.0f;
-	return ret;
+        float ret = (g_gsum / g_gsummaxes[current_segment]) * 100.0f;
+        return ret;
 }
 #endif
