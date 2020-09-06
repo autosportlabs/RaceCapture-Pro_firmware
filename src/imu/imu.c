@@ -27,7 +27,6 @@
 #include "stddef.h"
 #include "printk.h"
 #include "capabilities.h"
-
 //Channel Filters
 #if IMU_CHANNELS > 0
 #define IMU_INITIALIZER {0}
@@ -61,7 +60,11 @@ float imu_read_value(enum imu_channel channel, ImuConfig *ac)
         const int raw = g_imu_filter[physicalChannel].current_value;
         const int zeroValue = ac->zeroValue;
         const float countsPerUnit = imu_device_counts_per_unit(channel);
-        const float scaledValue = ((float) (raw - zeroValue)) / countsPerUnit;
+        float scaledValue = ((float) (raw - zeroValue)) / countsPerUnit;
+
+        if (channel == IMU_CHANNEL_Z) {
+                scaledValue = scaledValue - 1.0f;
+        }
 
         /* now alter based on configuration */
         switch (ac->mode) {
@@ -100,6 +103,7 @@ void imu_calibrate_zero()
                 c->zeroValue = zeroValue;
         }
 }
+
 
 int imu_init(LoggerConfig *loggerConfig)
 {

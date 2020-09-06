@@ -27,7 +27,7 @@
 #define ACCEL_DEVICE_COUNTS_PER_G 				819
 #define YAW_DEVICE_COUNTS_PER_DEGREE_PER_SEC	4.69
 
-static unsigned int g_imuDevice[CONFIG_IMU_CHANNELS] = {0,0,0,0};
+static unsigned int g_imuDevice[CONFIG_IMU_CHANNELS] = {0,0,0,0,0,0};
 
 void imu_mock_set_value(unsigned int channel, unsigned int value)
 {
