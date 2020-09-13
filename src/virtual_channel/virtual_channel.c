@@ -58,10 +58,14 @@ int find_virtual_channel(const char * channel_name)
 
 int create_virtual_channel(const ChannelConfig chCfg)
 {
+        xSemaphoreTake(vchan_mutex, portMAX_DELAY);
         /* If the channel exists, return it and be done */
         const int id = find_virtual_channel(chCfg.label);
         if (id != INVALID_VIRTUAL_CHANNEL)
+	{
+		xSemaphoreGive(vchan_mutex);
                 return id;
+	}
 
         /*
          * Here we actually try to create a new channel.  But only if we
@@ -69,7 +73,6 @@ int create_virtual_channel(const ChannelConfig chCfg)
          */
         int new_channel_id = INVALID_VIRTUAL_CHANNEL;
 
-        xSemaphoreTake(vchan_mutex, portMAX_DELAY);
         if (g_virtualChannelCount < MAX_VIRTUAL_CHANNELS) {
                 VirtualChannel * channel = g_virtualChannels + g_virtualChannelCount;
                 channel->config = chCfg;
@@ -92,8 +95,8 @@ void set_virtual_channel_value(size_t id, float value)
 
 float get_virtual_channel_value(int id)
 {
-        if ((size_t) id >= g_virtualChannelCount)
-                return 0.0;
+        if (id >= g_virtualChannelCount)
+                return 0.0f;
 
         return g_virtualChannels[id].currentValue;
 }
@@ -105,7 +108,11 @@ size_t get_virtual_channel_count(void)
 
 void reset_virtual_channels(void)
 {
+        xSemaphoreTake(vchan_mutex, portMAX_DELAY);
         g_virtualChannelCount = 0;
+        xSemaphoreGive(vchan_mutex);
+	reset_logger_config();
+	configChanged();
 }
 
 int get_virtual_channel_high_sample_rate(void)
