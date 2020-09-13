@@ -62,10 +62,10 @@ int create_virtual_channel(const ChannelConfig chCfg)
         /* If the channel exists, return it and be done */
         const int id = find_virtual_channel(chCfg.label);
         if (id != INVALID_VIRTUAL_CHANNEL)
-	{
-		xSemaphoreGive(vchan_mutex);
+        {
+                xSemaphoreGive(vchan_mutex);
                 return id;
-	}
+        }
 
         /*
          * Here we actually try to create a new channel.  But only if we
@@ -111,8 +111,7 @@ void reset_virtual_channels(void)
         xSemaphoreTake(vchan_mutex, portMAX_DELAY);
         g_virtualChannelCount = 0;
         xSemaphoreGive(vchan_mutex);
-	reset_logger_config();
-	configChanged();
+        configChanged();
 }
 
 int get_virtual_channel_high_sample_rate(void)
