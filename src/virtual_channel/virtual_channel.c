@@ -89,14 +89,21 @@ int create_virtual_channel(const ChannelConfig chCfg)
 
 void set_virtual_channel_value(size_t id, float value)
 {
-        if (id < g_virtualChannelCount)
-                g_virtualChannels[id].currentValue = value;
+        if (id >= g_virtualChannelCount || id < 0 )
+	{
+                pr_error_int_msg("[vchan] set_channel out of range ", id);
+		return;
+	}
+	g_virtualChannels[id].currentValue = value;
 }
 
 float get_virtual_channel_value(int id)
 {
-        if (id >= g_virtualChannelCount)
+        if (id >= g_virtualChannelCount || id < 0 )
+	{
+                pr_error_int_msg("[vchan] get_channel out of range ", id);
                 return 0.0f;
+	}
 
         return g_virtualChannels[id].currentValue;
 }
