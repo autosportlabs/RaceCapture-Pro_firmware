@@ -46,6 +46,9 @@ typedef struct _GpsSample {
         uint8_t satellites;
         uint8_t fixMode;
         float DOP;
+        float velocity_x;
+        float velocity_y;
+        float velocity_z;
 } GpsSample;
 
 typedef struct _GpsSnapshot {
@@ -98,6 +101,9 @@ int GPS_getSatellitesUsedForPosition();
 
 float getGPSSpeed();
 
+float GPS_getVelocityX();
+float GPS_getVelocityY();
+float GPS_getVelocityZ();
 /**
  * Returns Date time information as provided by the GPS system.
  */

@@ -215,8 +215,10 @@ static int lua_get_analog(lua_State *L)
         lua_validate_args_count(L, 1, 1);
         lua_validate_arg_number(L, 1);
 
-        const int val = lua_tointeger(L, 1);
         float analogValue = -1;
+
+#if ANALOG_CHANNELS > 0
+        const int val = lua_tointeger(L, 1);
         unsigned int channel = (unsigned int) val;
         ADCConfig *ac = getADCConfigChannel(val);
 
@@ -236,6 +238,7 @@ static int lua_get_analog(lua_State *L)
                         break;
                 }
         }
+#endif
 
         lua_pushnumber(L, analogValue);
         return 1;
@@ -565,6 +568,24 @@ static int lua_get_gps_quality(lua_State *L)
 static int lua_get_gps_dop(lua_State *L)
 {
         lua_pushnumber(L,GPS_getDOP());
+        return 1;
+}
+
+static int lua_get_gps_vel_x(lua_State *L)
+{
+        lua_pushnumber(L,GPS_getVelocityX());
+        return 1;
+}
+
+static int lua_get_gps_vel_y(lua_State *L)
+{
+        lua_pushnumber(L,GPS_getVelocityY());
+        return 1;
+}
+
+static int lua_get_gps_vel_z(lua_State *L)
+{
+        lua_pushnumber(L,GPS_getVelocityZ());
         return 1;
 }
 
@@ -1413,6 +1434,9 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getGpsDOP", lua_get_gps_dop);
         lua_registerlight(L, "getGpsDist", lua_get_gps_distance);
         lua_registerlight(L, "getGpsAltitude", lua_get_gps_altitude);
+        lua_registerlight(L, "getGpsVelocityX", lua_get_gps_vel_x);
+        lua_registerlight(L, "getGpsVelocityY", lua_get_gps_vel_y);
+        lua_registerlight(L, "getGpsVelocityZ", lua_get_gps_vel_z);
 
         lua_registerlight(L, "getPredTime", lua_get_predicted_lap_time);
         lua_registerlight(L, "getLapCount", lua_get_lap_count);

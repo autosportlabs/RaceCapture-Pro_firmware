@@ -7,6 +7,9 @@
 	"sats": 1,
 	"alt": 1,
 	"qual": 1,
-	"dop": 1
+	"dop": 1,
+	"velx": 1,
+	"vely": 1,
+	"velz": 1
     }
 }

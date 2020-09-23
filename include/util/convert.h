@@ -26,9 +26,8 @@
 
 CPP_GUARD_BEGIN
 
-float convert_kph_mph(const float kph);
-
-float convert_mph_kph(const float mph);
+#define convert_kph_mph	convert_km_mi
+#define convert_mph_kph convert_mi_km
 
 float convert_km_mi(const float km);
 

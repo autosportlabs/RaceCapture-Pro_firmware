@@ -55,6 +55,7 @@ static void resetVersionInfo(VersionInfo *vi)
 /**
  * Prints a string prefix and add an int suffix to dest buffer.
  */
+#if GPIO_CHANNELS > 0
 static void sPrintStrInt(char *dest, const char *str, const unsigned int i)
 {
         char iStr[3];
@@ -64,6 +65,7 @@ static void sPrintStrInt(char *dest, const char *str, const unsigned int i)
         strcpy(dest, str);
         strcpy(dest + idx, iStr);
 }
+#endif
 
 static void resetTimeConfig(struct TimeConfig *tc)
 {
@@ -151,7 +153,7 @@ char filterPwmLoggingMode(int config)
 }
 #endif
 
-#if GPIO_CHANNELS > 1
+#if GPIO_CHANNELS > 0
 GPIOConfig * getGPIOConfigChannel(int channel)
 {
         GPIOConfig *c = NULL;
@@ -313,7 +315,9 @@ static void resetConnectivityConfig(ConnectivityConfig *cfg)
         resetBluetoothConfig(&cfg->bluetoothConfig);
         resetCellularConfig(&cfg->cellularConfig);
         resetTelemetryConfig(&cfg->telemetryConfig);
+#if WIFI_SUPPORT == 1
         wifi_reset_config(&cfg->wifi);
+#endif
 }
 
 static void reset_logging_config(struct logging_config *lc)
@@ -494,6 +498,8 @@ ADCConfig * getADCConfigChannel(int channel)
         return c;
 }
 
+#endif
+
 unsigned char filterAnalogScalingMode(unsigned char mode)
 {
         switch(mode) {
@@ -506,7 +512,6 @@ unsigned char filterAnalogScalingMode(unsigned char mode)
                 return SCALING_MODE_RAW;
         }
 }
-#endif
 
 unsigned int getHighestSampleRate(LoggerConfig *config)
 {
@@ -584,6 +589,15 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
         s = getHigherSampleRate(sr, s);
 
         sr = gpsConfig->altitude.sampleRate;
+        s = getHigherSampleRate(sr, s);
+
+        sr = gpsConfig->velocity_x.sampleRate;
+        s = getHigherSampleRate(sr, s);
+
+        sr = gpsConfig->velocity_y.sampleRate;
+        s = getHigherSampleRate(sr, s);
+
+        sr = gpsConfig->velocity_z.sampleRate;
         s = getHigherSampleRate(sr, s);
 
         sr = gpsConfig->satellites.sampleRate;
@@ -698,6 +712,9 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->speed.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->altitude.sampleRate != SAMPLE_DISABLED) channels++;
+        if (gpsConfigs->velocity_x.sampleRate != SAMPLE_DISABLED) channels++;
+        if (gpsConfigs->velocity_y.sampleRate != SAMPLE_DISABLED) channels++;
+        if (gpsConfigs->velocity_z.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->satellites.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->quality.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->DOP.sampleRate != SAMPLE_DISABLED) channels++;

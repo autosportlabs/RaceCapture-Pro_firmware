@@ -21,29 +21,19 @@
 
 #include "convert.h"
 
-float convert_kph_mph(const float kph)
-{
-        return kph * 0.621371192f;
-}
-
 float convert_kph_mps(const float kph)
 {
         return kph * (1000.0f / 3600.0f );
 }
 
-float convert_mph_kph(const float mph)
-{
-        return mph * 1.60934400061f;
-}
-
 float convert_km_mi(const float km)
 {
-        return km * 0.621371f;
+        return km * 0.621371192f;
 }
 
 float convert_mi_km(const float mi)
 {
-        return mi * 1.609344f;
+        return mi * 1.60934400061f;
 }
 
 float convert_ft_m(const float ft)
