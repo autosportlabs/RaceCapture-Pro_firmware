@@ -951,7 +951,7 @@ static int lua_get_virtual_channel(lua_State *ls)
                         return 1;
                 }
         }
-        /* Return nil, channel not found */
+        /* Return error, channel not found */
 	return luaL_error(ls, "getChannel: channel not found");
 }
 
