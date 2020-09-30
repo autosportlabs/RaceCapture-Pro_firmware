@@ -55,7 +55,6 @@ static void resetVersionInfo(VersionInfo *vi)
 /**
  * Prints a string prefix and add an int suffix to dest buffer.
  */
-#if GPIO_CHANNELS > 0
 static void sPrintStrInt(char *dest, const char *str, const unsigned int i)
 {
         char iStr[3];
@@ -65,7 +64,6 @@ static void sPrintStrInt(char *dest, const char *str, const unsigned int i)
         strcpy(dest, str);
         strcpy(dest + idx, iStr);
 }
-#endif
 
 static void resetTimeConfig(struct TimeConfig *tc)
 {
