@@ -240,7 +240,7 @@ static void get_wifi_status(struct Serial* serial, const bool more)
 
         json_objEnd(serial, more);
 }
-#endif 
+#endif
 
 static void get_cellular_status(struct Serial* serial, const bool more)
 {
@@ -1369,11 +1369,10 @@ static void gps_set_units(const jsmntok_t *json, GPSConfig *cfg)
                        units_get_label(UNIT_LENGTH_FEET));
 
         /* Speed supports only Kilometers/Hr or Miles/Hr */
-        if (UNIT_SPEED_KILOMETERS_HOUR != units_get_unit(cfg->speed.units))
-	{
+        if (UNIT_SPEED_KILOMETERS_HOUR != units_get_unit(cfg->speed.units)) {
                 strcpy(cfg->speed.units,
                        units_get_label(UNIT_SPEED_MILES_HOUR));
-	}
+        }
 }
 
 static void gpsConfigTestAndSet(const jsmntok_t *json, ChannelConfig *cfg,

@@ -440,6 +440,7 @@ bool OBD2_get_value_for_pid(uint16_t pid, float *value)
         return false;
 }
 
-void OBD2_set_pid_delay(uint32_t delay){
+void OBD2_set_pid_delay(uint32_t delay)
+{
         obd2_state.pid_query_delay = delay;
 }

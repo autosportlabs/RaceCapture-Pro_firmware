@@ -62,13 +62,13 @@ static bool sara_u2_get_subscriber_number(struct serial_buffer *sb,
 }
 
 static bool sara_u2_get_signal_strength(struct serial_buffer *sb,
-                struct cellular_info *ci)
+                                        struct cellular_info *ci)
 {
         return gsm_get_signal_strength(sb, ci);
 }
 
 static bool sara_u2_get_imei(struct serial_buffer *sb,
-                               struct cellular_info *ci)
+                             struct cellular_info *ci)
 {
         return gsm_get_imei(sb, ci);
 }
@@ -193,10 +193,10 @@ static bool sara_u2_is_gprs_connected(struct serial_buffer *sb)
 
 
 static bool sara_u2_put_pdp_config(struct serial_buffer *sb,
-                                     const int pdp_id,
-                                     const char *host,
-                                     const char* user,
-                                     const char* password)
+                                   const int pdp_id,
+                                   const char *host,
+                                   const char* user,
+                                   const char* password)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -218,8 +218,8 @@ static bool sara_u2_put_pdp_config(struct serial_buffer *sb,
 }
 
 static bool sara_u2_put_dns_config(struct serial_buffer *sb,
-                                     const char* dns1,
-                                     const char *dns2)
+                                   const char* dns1,
+                                   const char *dns2)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -243,7 +243,7 @@ enum sara_apn_auth {
 };
 
 static bool sara_u2_set_apn_auth(struct serial_buffer *sb,
-                                   const enum sara_apn_auth auth)
+                                 const enum sara_apn_auth auth)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -259,8 +259,8 @@ static bool sara_u2_set_apn_auth(struct serial_buffer *sb,
 }
 
 static bool sara_u2_gprs_psd_action(struct serial_buffer *sb,
-                                      const int pid,
-                                      const int aid)
+                                    const int pid,
+                                    const int aid)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -275,7 +275,7 @@ static bool sara_u2_gprs_psd_action(struct serial_buffer *sb,
 }
 
 static bool sara_u2_activate_pdp(struct serial_buffer *sb,
-                                   const int pdp_id)
+                                 const int pdp_id)
 {
         return sara_u2_gprs_psd_action(sb, pdp_id, 3);
 }
@@ -311,9 +311,9 @@ static int sara_u2_create_tcp_socket(struct serial_buffer *sb)
 }
 
 static bool sara_u2_connect_tcp_socket(struct serial_buffer *sb,
-                const int socket_id,
-                const char* host,
-                const int port)
+                                       const int socket_id,
+                                       const char* host,
+                                       const int port)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -327,7 +327,7 @@ static bool sara_u2_connect_tcp_socket(struct serial_buffer *sb,
 }
 
 static bool sara_u2_close_tcp_socket(struct serial_buffer *sb,
-                                       const int socket_id)
+                                     const int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -340,7 +340,7 @@ static bool sara_u2_close_tcp_socket(struct serial_buffer *sb,
 }
 
 static bool sara_u2_start_direct_mode(struct serial_buffer *sb,
-                                        const int socket_id)
+                                      const int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -369,8 +369,8 @@ static bool sara_u2_stop_direct_mode(struct serial_buffer *sb)
         for (size_t events = STOP_DM_RX_EVENTS; events; --events) {
                 serial_buffer_reset(sb);
                 if (serial_buffer_rx(sb, STOP_DM_RX_TIMEOUT_MS) &&
-                        is_rsp((const char**) &(sb->buffer), 1, "DISCONNECT"))
-                                return true;
+                    is_rsp((const char**) &(sb->buffer), 1, "DISCONNECT"))
+                        return true;
         }
 
         return false;
@@ -390,14 +390,14 @@ static bool sara_u2_set_baud_rate(struct serial_buffer *sb)
 }
 
 static bool sara_u2_init(struct serial_buffer *sb,
-                           struct cellular_info *ci,
-                           CellularConfig *cellCfg)
+                         struct cellular_info *ci,
+                         CellularConfig *cellCfg)
 {
         return sara_u2_set_baud_rate(sb);
 }
 
 static bool sara_u2_get_sim_info(struct serial_buffer *sb,
-                                   struct cellular_info *ci)
+                                 struct cellular_info *ci)
 {
         bool status = false;
         status = sara_u2_get_subscriber_number(sb, ci);
@@ -406,7 +406,7 @@ static bool sara_u2_get_sim_info(struct serial_buffer *sb,
 }
 
 static bool sara_u2_register_on_network(struct serial_buffer *sb,
-                struct cellular_info *ci)
+                                        struct cellular_info *ci)
 {
         size_t errors = 0;
         /* Check our status on the network */
@@ -430,8 +430,8 @@ out:
 }
 
 static bool sara_u2_setup_pdp(struct serial_buffer *sb,
-                                struct cellular_info *ci,
-                                const CellularConfig *cc)
+                              struct cellular_info *ci,
+                              const CellularConfig *cc)
 {
         /* Check GPRS attached */
         bool gprs_attached;
@@ -516,7 +516,7 @@ static bool sara_u2_setup_pdp(struct serial_buffer *sb,
 }
 
 static bool sara_u2_configure_tcp_socket_character_trigger(struct serial_buffer *sb,
-                                                int socket_id)
+                int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -531,7 +531,7 @@ static bool sara_u2_configure_tcp_socket_character_trigger(struct serial_buffer 
 }
 
 static bool sara_u2_configure_tcp_socket_nodelay(struct serial_buffer *sb,
-                                         int socket_id)
+                int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -546,15 +546,15 @@ static bool sara_u2_configure_tcp_socket_nodelay(struct serial_buffer *sb,
 }
 
 static bool sara_u2_configure_tcp_socket(struct serial_buffer *sb,
-                                         int socket_id)
+                int socket_id)
 {
         return sara_u2_configure_tcp_socket_character_trigger(sb, socket_id) &&
-                        sara_u2_configure_tcp_socket_nodelay(sb, socket_id);
+               sara_u2_configure_tcp_socket_nodelay(sb, socket_id);
 }
 static bool sara_u2_connect_rcl_telem(struct serial_buffer *sb,
-                                        struct cellular_info *ci,
-                                        struct telemetry_info *ti,
-                                        const TelemetryConfig *tc)
+                                      struct cellular_info *ci,
+                                      struct telemetry_info *ti,
+                                      const TelemetryConfig *tc)
 {
         ti->socket = sara_u2_create_tcp_socket(sb);
         if (ti->socket < 0) {
@@ -563,8 +563,8 @@ static bool sara_u2_connect_rcl_telem(struct serial_buffer *sb,
         }
 
         if (!sara_u2_connect_tcp_socket(sb, ti->socket,
-                                          tc->telemetryServerHost,
-                                          tc->telemetry_port)) {
+                                        tc->telemetryServerHost,
+                                        tc->telemetry_port)) {
                 pr_warning("[sara_u2] Failed to connect to ");
                 pr_warning(tc->telemetryServerHost);
                 pr_warning_int_msg(":", tc->telemetry_port);
@@ -573,8 +573,8 @@ static bool sara_u2_connect_rcl_telem(struct serial_buffer *sb,
         }
 
         if (!sara_u2_configure_tcp_socket(sb, ti->socket)) {
-                        pr_error("[sara_u2] Failed to configure socket\r\n");
-                        return false;
+                pr_error("[sara_u2] Failed to configure socket\r\n");
+                return false;
         }
 
 
@@ -582,8 +582,8 @@ static bool sara_u2_connect_rcl_telem(struct serial_buffer *sb,
 }
 
 static bool sara_u2_disconnect(struct serial_buffer *sb,
-                                 struct cellular_info *ci,
-                                 struct telemetry_info *ti)
+                               struct cellular_info *ci,
+                               struct telemetry_info *ti)
 {
         if (!sara_u2_stop_direct_mode(sb)) {
                 /* Then we don't know if can issue commands */

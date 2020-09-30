@@ -86,18 +86,18 @@ static char bluetooth_buffer[BUFFER_SIZE];
 
 #if CELLULAR_SUPPORT
 static CellularState cellular_state = {
-                .buffer_queue = NULL,
-                .buffer_file = NULL,
-                .buffer_buffer = {},
-                .cell_buffer = {},
-                .read_index = 0,
-                .buffer_file_open = false,
-                .should_reconnect = false,
-                .should_stream = false,
-                .server_tick_echo = 0,
-                .server_tick_echo_changed_at = 0,
-                .sample_offset_map = {0},
-                .sample_offset_map_index = 0
+        .buffer_queue = NULL,
+        .buffer_file = NULL,
+        .buffer_buffer = {},
+        .cell_buffer = {},
+        .read_index = 0,
+        .buffer_file_open = false,
+        .should_reconnect = false,
+        .should_stream = false,
+        .server_tick_echo = 0,
+        .server_tick_echo_changed_at = 0,
+        .sample_offset_map = {0},
+        .sample_offset_map_index = 0
 };
 
 bool cellular_telemetry_buffering_enabled(void)
@@ -118,7 +118,8 @@ void cellular_update_last_server_tick_echo(uint32_t server_tick_echo)
 }
 
 /* reset the sample offset map circular buffer */
-static void cellular_reset_buffer_offset_map(void){
+static void cellular_reset_buffer_offset_map(void)
+{
         memset(cellular_state.sample_offset_map, 0, SAMPLE_TRACKING_WINDOW * sizeof(SampleOffsetMap));
 }
 
@@ -126,8 +127,8 @@ static void cellular_reset_buffer_offset_map(void){
 static bool cellular_get_buffer_offset_by_tick(uint32_t tick, uint32_t *offset)
 {
         SampleOffsetMap *map = cellular_state.sample_offset_map;
-        for (size_t i = 0; i < SAMPLE_TRACKING_WINDOW; i++){
-                if (map->tick == tick){
+        for (size_t i = 0; i < SAMPLE_TRACKING_WINDOW; i++) {
+                if (map->tick == tick) {
                         *offset = map->buffer_file_index;
                         return true;
                 }
@@ -302,7 +303,7 @@ void startConnectivityTask(int16_t priority)
                 const uint8_t cellEnabled = getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig.cellEnabled;
                 if (cellEnabled)
                         create_cellular_connection_tasks(priority,
-                                                      g_sampleQueue[1], LED_TELEMETRY);
+                                                         g_sampleQueue[1], LED_TELEMETRY);
 #else
 #if BLUETOOTH_SUPPORT
                 const uint8_t cellEnabled = false;
@@ -315,8 +316,8 @@ void startConnectivityTask(int16_t priority)
                         activity_led = cellEnabled && activity_led == LED_TELEMETRY ? LED_UNKNOWN : activity_led;
 
                         create_bluetooth_connection_task(priority,
-                                                     g_sampleQueue[0],
-                                                     activity_led);
+                                                         g_sampleQueue[0],
+                                                         activity_led);
 
                 }
 #endif
@@ -527,8 +528,8 @@ void cellular_buffering_task(void *params)
 
         while (1) {
                 cellular_state.should_stream = logging_enabled ||
-                                     logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
-                                     connParams->always_streaming;
+                                               logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
+                                               connParams->always_streaming;
 
                 while (1) {
                         if (!cellular_state.buffer_file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
@@ -552,23 +553,20 @@ void cellular_buffering_task(void *params)
                                                 FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
                                                 if (FR_OK == fopen_rc) {
                                                         FRESULT truncate_rc = f_truncate(cellular_state.buffer_file);
-                                                        if (FR_OK == truncate_rc){
+                                                        if (FR_OK == truncate_rc) {
                                                                 cellular_state.buffer_file_open = true;
                                                                 /* try to connect immediately on the first re-attempt*/
                                                                 re_open_buffer_file_timeout = 0;
                                                                 buffer_file_open_retries = 0;
-                                                        }
-                                                        else{
+                                                        } else {
                                                                 if (!buffer_file_open_retries)
                                                                         pr_info_int_msg(_LOG_PFX "Error truncating telemetry buffer file: ", truncate_rc);
                                                         }
-                                                }
-                                                else {
+                                                } else {
                                                         if (!buffer_file_open_retries)
                                                                 pr_info_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
                                                 }
-                                        }
-                                        else {
+                                        } else {
                                                 if (!buffer_file_open_retries)
                                                         pr_info(_LOG_PFX "SD write verification failed. Try re-formatting SD card\r\n");
                                         }
@@ -606,15 +604,15 @@ void cellular_buffering_task(void *params)
                                 case LoggerMessageType_Sample: {
                                         const int send_meta =  msg.needs_meta ||
                                                                tick == 0 ||
-                                                              (connParams->periodicMeta &&
-                                                               (tick % METADATA_SAMPLE_INTERVAL == 0));
+                                                               (connParams->periodicMeta &&
+                                                                (tick % METADATA_SAMPLE_INTERVAL == 0));
 
 
                                         /* skip buffing data if we shouldn't stream/or the sample rate is higher than telemetry sample rate
                                          * unless we need to send meta
                                          */
                                         if ((!cellular_state.should_stream ||
-                                            !should_sample(msg.ticks, max_telem_rate)) && !send_meta)
+                                             !should_sample(msg.ticks, max_telem_rate)) && !send_meta)
                                                 break;
 
                                         bool fs_failed = false;
@@ -650,7 +648,7 @@ void cellular_buffering_task(void *params)
                                                 }
                                         }
 
-                                        BUFFER_DONE:
+BUFFER_DONE:
                                         if (fs_failed ) {
                                                 f_close(cellular_state.buffer_file);
                                                 cellular_state.buffer_file_open = false;
@@ -741,8 +739,7 @@ void cellular_connectivity_task(void *params)
                 if(cellular_get_buffer_offset_by_tick(last_tick, &file_offset)) {
                         cellular_state.read_index = file_offset;
                         cellular_state.server_tick_echo = last_tick;
-                }
-                else {
+                } else {
                         pr_info_int_msg(_LOG_PFX "could not find precise location in buffer file for tick: ", last_tick);
                 }
 
@@ -785,8 +782,7 @@ void cellular_connectivity_task(void *params)
                                                 api_send_sample_record(serial, msg.sample, msg.ticks, needs_meta || msg.needs_meta);
                                                 needs_meta = false;
                                                 put_crlf(serial);
-                                        }
-                                        else {
+                                        } else {
                                                 /* Stream buffered samples, catching up with the tail of the file as needed */
                                                 int32_t start_index = cellular_state.read_index;
                                                 while (true) {
@@ -808,11 +804,11 @@ void cellular_connectivity_task(void *params)
                                                         cellular_state.read_index += strlen(read_string);
 
                                                         uint32_t tick = 0;
-                                                        if(get_tick_from_sample_string(read_string, &tick)){
+                                                        if(get_tick_from_sample_string(read_string, &tick)) {
                                                                 cellular_add_buffer_offset_tick(tick, cellular_state.read_index);
                                                         }
 
-                                                        if (cellular_state.read_index - start_index > BUFFERED_CHUNK_SIZE){
+                                                        if (cellular_state.read_index - start_index > BUFFERED_CHUNK_SIZE) {
                                                                 delayMs(BUFFERED_CHUNK_WAIT);
                                                                 start_index = cellular_state.read_index;
 

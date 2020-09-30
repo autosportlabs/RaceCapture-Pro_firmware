@@ -652,8 +652,8 @@ static int lua_imu_read(lua_State *L)
         const size_t channel = lua_tointeger(L, 1);
         validate_imu_channel(L, channel);
 
-	ImuConfig *ac = &getWorkingLoggerConfig()->ImuConfigs[channel];
-	lua_pushnumber(L, imu_read_value(channel, ac));
+        ImuConfig *ac = &getWorkingLoggerConfig()->ImuConfigs[channel];
+        lua_pushnumber(L, imu_read_value(channel, ac));
         return 1;
 }
 
@@ -958,7 +958,7 @@ static int lua_get_virtual_channel(lua_State *ls)
          */
         if (lua_isnumber(ls, 1)) {
                 VirtualChannel *vc;
-		int channel_id = lua_tointeger(ls, 1);
+                int channel_id = lua_tointeger(ls, 1);
                 vc = get_virtual_channel(channel_id-1);
                 if (vc) {
                         lua_pushnumber(ls, vc->currentValue);
@@ -973,7 +973,7 @@ static int lua_get_virtual_channel(lua_State *ls)
                 }
         }
         /* Return nil, channel not found */
-	return luaL_error(ls, "getChannel: channel not found");
+        return luaL_error(ls, "getChannel: channel not found");
 }
 
 static int lua_set_virt_channel_value(lua_State *L)
@@ -982,8 +982,8 @@ static int lua_set_virt_channel_value(lua_State *L)
 
         const int id = lua_tointeger(L, 1)-1;
         const float value = lua_tonumber(L, 2);
-	if ( id < 0 )
-		return luaL_error(L, "setChannel: channel not found");
+        if ( id < 0 )
+                return luaL_error(L, "setChannel: channel not found");
 
         set_virtual_channel_value(id, value);
 
@@ -1068,8 +1068,7 @@ static int lua_calc_gear(lua_State *L)
                 if (!(get_channel_value_by_name("RPM", &value, &units)))
                         return 0;
                 rpm = value;
-        }
-        else {
+        } else {
                 /* For Speed and RPM, check if sample is currently available and if
                  * channel exists in current sample. If not, bail out
                  */
@@ -1112,8 +1111,7 @@ static int lua_calc_gear(lua_State *L)
         uint8_t gear_pos = 0;
 
         /* Cycle through the remaining parameters to see what ratio matches the specified gear */
-        for (size_t i = params_start; i <= lua_gettop(L); i++)
-        {
+        for (size_t i = params_start; i <= lua_gettop(L); i++) {
                 lua_validate_arg_number(L, i);
                 float gear_ratio = lua_tonumber(L, i);
                 if (fabsf(gear_ratio - rpm_speed_ratio) < gear_error) {
@@ -1124,8 +1122,7 @@ static int lua_calc_gear(lua_State *L)
         if (gear_pos > 0) {
                 lua_pushinteger(L, gear_pos);
                 return 1;
-        }
-        else {
+        } else {
                 return 0;
         }
 }
@@ -1137,8 +1134,7 @@ static int lua_sx_update_linear_graph(lua_State *L)
                 lua_validate_arg_number(L, 1);
                 uint16_t value = lua_tointeger(L, 1);
                 lua_pushinteger(L, shiftx_update_linear_graph(value));
-        }
-        else {
+        } else {
                 lua_pushinteger(L, 0);
         }
         return 1;
@@ -1179,8 +1175,7 @@ static int lua_sx_update_alert(lua_State *L)
                 lua_validate_arg_number(L, 2);
                 uint16_t value = lua_tointeger(L, 2);
                 lua_pushinteger(L, shiftx_update_alert(alert_id, value));
-        }
-        else {
+        } else {
                 lua_pushinteger(L, 0);
         }
         return 1;
@@ -1198,8 +1193,7 @@ static int lua_sx_set_display(lua_State *L)
                 uint8_t value = lua_tointeger(L, 2);
                 /* digit index offset by ascii 0 (48) */
                 lua_pushinteger(L, shiftx_set_display(digit_index, 48 + value));
-        }
-        else {
+        } else {
                 /* blank display if nil value supplied as arg #2, or if arg 2 is missing */
                 shiftx_set_display(digit_index, 32); /* ascii 32 (space character) */
                 lua_pushinteger(L, 0);
@@ -1364,8 +1358,7 @@ static int lua_rx_button_press(lua_State *L)
                 lua_pushinteger(L, button_id);
                 lua_pushinteger(L, state);
                 return 2;
-        }
-        else {
+        } else {
                 return 0;
         }
 }
@@ -1457,7 +1450,7 @@ void registerLuaLoggerBindings(lua_State *L)
 
         lua_registerlight(L, "startLogging", lua_logging_start);
         lua_registerlight(L, "stopLogging", lua_logging_stop);
-        lua_registerlight(L, "isLogging" , lua_logging_is_active);
+        lua_registerlight(L, "isLogging", lua_logging_is_active);
 #if CELLULAR_SUPPORT
         lua_registerlight(L, "reconnectCell", lua_reconnect_cell);
 #endif

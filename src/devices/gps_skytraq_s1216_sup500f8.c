@@ -768,8 +768,8 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
         float ecef_z_velocity = ((float)swap_int32(gpsMsg.navigationDataMessage.ECEF_vz)) * 0.01f;
 
         float speed = sqrt((ecef_x_velocity * ecef_x_velocity)
-                              + (ecef_y_velocity * ecef_y_velocity)
-                              + (ecef_z_velocity * ecef_z_velocity));
+                           + (ecef_y_velocity * ecef_y_velocity)
+                           + (ecef_z_velocity * ecef_z_velocity));
 
         if (speed > SPEED_SPIKE_THRESHOLD_M_SEC)
                 return GPS_MSG_READERR;
