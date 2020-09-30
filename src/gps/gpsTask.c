@@ -46,7 +46,7 @@ void GPSTask(void *pvParameters)
                 size_t failures = 0;
 
                 const gps_status_t gps_status = GPS_init(targetSampleRate, serial);
-                if (!gps_status) {
+                if (gps_status!=GPS_STATUS_PROVISIONED) {
                         pr_error("GPS: Error provisioning\r\n");
                 }
 

@@ -203,6 +203,22 @@ void LoggerConfigTest::testLoggerInitGpsConfig()
         CPPUNIT_ASSERT_EQUAL(string("GPSDOP"), string(cc->label));
         CPPUNIT_ASSERT_EQUAL(string(""), string(cc->units));
         CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
+
+        cc = &lc->GPSConfigs.velocity_x;
+        CPPUNIT_ASSERT_EQUAL(string("VelocityX"), string(cc->label));
+        CPPUNIT_ASSERT_EQUAL(string("m/s"),string(cc->units));
+        CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
+
+        cc = &lc->GPSConfigs.velocity_y;
+        CPPUNIT_ASSERT_EQUAL(string("VelocityY"), string(cc->label));
+        CPPUNIT_ASSERT_EQUAL(string("m/s"),string(cc->units));
+        CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
+
+        cc = &lc->GPSConfigs.velocity_z;
+        CPPUNIT_ASSERT_EQUAL(string("VelocityZ"), string(cc->label));
+        CPPUNIT_ASSERT_EQUAL(string("m/s"),string(cc->units));
+        CPPUNIT_ASSERT(cc->sampleRate == DEFAULT_GPS_SAMPLE_RATE);
+
 }
 
 void LoggerConfigTest::testLoggerInitLapConfig()

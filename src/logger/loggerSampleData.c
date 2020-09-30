@@ -364,6 +364,12 @@ void init_channel_sample_buffer(LoggerConfig *loggerConfig, struct sample *buff)
         sample = processChannelSampleWithIntGetterNoarg(sample, chanCfg, GPS_getQuality);
         chanCfg = &(gpsConfig->DOP);
         sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getDOP);
+        chanCfg = &(gpsConfig->velocity_x);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getVelocityX);
+        chanCfg = &(gpsConfig->velocity_y);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getVelocityY);
+        chanCfg = &(gpsConfig->velocity_z);
+        sample = processChannelSampleWithFloatGetterNoarg(sample, chanCfg, GPS_getVelocityZ);
 #endif
 
         chanCfg = &(trackConfig->lapCountCfg);
