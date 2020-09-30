@@ -61,8 +61,7 @@ int create_virtual_channel(const ChannelConfig chCfg)
         xSemaphoreTake(vchan_mutex, portMAX_DELAY);
         /* If the channel exists, return it and be done */
         const int id = find_virtual_channel(chCfg.label);
-        if (id != INVALID_VIRTUAL_CHANNEL)
-        {
+        if (id != INVALID_VIRTUAL_CHANNEL) {
                 xSemaphoreGive(vchan_mutex);
                 return id;
         }
@@ -79,8 +78,7 @@ int create_virtual_channel(const ChannelConfig chCfg)
                 channel->currentValue = 0;
                 configChanged();
                 new_channel_id = g_virtualChannelCount++;
-        }
-        else {
+        } else {
                 pr_error_int_msg("[vchan] Limit reached: ", g_virtualChannelCount);
         }
         xSemaphoreGive(vchan_mutex);
@@ -89,21 +87,19 @@ int create_virtual_channel(const ChannelConfig chCfg)
 
 void set_virtual_channel_value(size_t id, float value)
 {
-        if (id >= g_virtualChannelCount || id < 0 )
-	{
+        if (id >= g_virtualChannelCount || id < 0 ) {
                 pr_error_int_msg("[vchan] set_channel out of range ", id);
-		return;
-	}
-	g_virtualChannels[id].currentValue = value;
+                return;
+        }
+        g_virtualChannels[id].currentValue = value;
 }
 
 float get_virtual_channel_value(int id)
 {
-        if (id >= g_virtualChannelCount || id < 0 )
-	{
+        if (id >= g_virtualChannelCount || id < 0 ) {
                 pr_error_int_msg("[vchan] get_channel out of range ", id);
                 return 0.0f;
-	}
+        }
 
         return g_virtualChannels[id].currentValue;
 }
