@@ -126,161 +126,161 @@ unsigned long ulCriticalNesting = ( unsigned long ) 9999;
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-    portSTACK_TYPE *pxOriginalTOS;
+        portSTACK_TYPE *pxOriginalTOS;
 
-    pxOriginalTOS = pxTopOfStack;
+        pxOriginalTOS = pxTopOfStack;
 
-    /* To ensure asserts in tasks.c don't fail, although in this case the assert
-    is not really required. */
-    pxTopOfStack--;
+        /* To ensure asserts in tasks.c don't fail, although in this case the assert
+        is not really required. */
+        pxTopOfStack--;
 
-    /* Setup the initial stack of the task.  The stack is set exactly as
-    expected by the portRESTORE_CONTEXT() macro. */
+        /* Setup the initial stack of the task.  The stack is set exactly as
+        expected by the portRESTORE_CONTEXT() macro. */
 
-    /* First on the stack is the return address - which in this case is the
-    start of the task.  The offset is added to make the return address appear
-    as it would within an IRQ ISR. */
-    *pxTopOfStack = ( portSTACK_TYPE ) pxCode + portINSTRUCTION_SIZE;
-    pxTopOfStack--;
+        /* First on the stack is the return address - which in this case is the
+        start of the task.  The offset is added to make the return address appear
+        as it would within an IRQ ISR. */
+        *pxTopOfStack = ( portSTACK_TYPE ) pxCode + portINSTRUCTION_SIZE;
+        pxTopOfStack--;
 
-    *pxTopOfStack = ( portSTACK_TYPE ) 0xaaaaaaaa;	/* R14 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) pxOriginalTOS; /* Stack used when task starts goes in R13. */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x12121212;	/* R12 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x11111111;	/* R11 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x10101010;	/* R10 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x09090909;	/* R9 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x08080808;	/* R8 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x07070707;	/* R7 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x06060606;	/* R6 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x05050505;	/* R5 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x04040404;	/* R4 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x03030303;	/* R3 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x02020202;	/* R2 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x01010101;	/* R1 */
-    pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0xaaaaaaaa;	/* R14 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) pxOriginalTOS; /* Stack used when task starts goes in R13. */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x12121212;	/* R12 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x11111111;	/* R11 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x10101010;	/* R10 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x09090909;	/* R9 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x08080808;	/* R8 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x07070707;	/* R7 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x06060606;	/* R6 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x05050505;	/* R5 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x04040404;	/* R4 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x03030303;	/* R3 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x02020202;	/* R2 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x01010101;	/* R1 */
+        pxTopOfStack--;
 
-    /* When the task starts is will expect to find the function parameter in
-    R0. */
-    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters; /* R0 */
-    pxTopOfStack--;
+        /* When the task starts is will expect to find the function parameter in
+        R0. */
+        *pxTopOfStack = ( portSTACK_TYPE ) pvParameters; /* R0 */
+        pxTopOfStack--;
 
-    /* The status register is set for system mode, with interrupts enabled. */
-    *pxTopOfStack = ( portSTACK_TYPE ) portINITIAL_SPSR;
+        /* The status register is set for system mode, with interrupts enabled. */
+        *pxTopOfStack = ( portSTACK_TYPE ) portINITIAL_SPSR;
 
 #ifdef THUMB_INTERWORK
-    {
-        /* We want the task to start in thumb mode. */
-        *pxTopOfStack |= portTHUMB_MODE_BIT;
-    }
+        {
+                /* We want the task to start in thumb mode. */
+                *pxTopOfStack |= portTHUMB_MODE_BIT;
+        }
 #endif
 
-    pxTopOfStack--;
+        pxTopOfStack--;
 
-    /* Interrupt flags cannot always be stored on the stack and will
-    instead be stored in a variable, which is then saved as part of the
-    tasks context. */
-    *pxTopOfStack = portNO_CRITICAL_NESTING;
+        /* Interrupt flags cannot always be stored on the stack and will
+        instead be stored in a variable, which is then saved as part of the
+        tasks context. */
+        *pxTopOfStack = portNO_CRITICAL_NESTING;
 
-    return pxTopOfStack;
+        return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-    extern void vPortStartFirstTask( void );
+        extern void vPortStartFirstTask( void );
 
-    /* Start the timer that generates the tick ISR.  Interrupts are disabled
-    here already. */
-    prvSetupTimerInterrupt();
+        /* Start the timer that generates the tick ISR.  Interrupts are disabled
+        here already. */
+        prvSetupTimerInterrupt();
 
-    /* Start the first task. */
-    vPortStartFirstTask();
+        /* Start the first task. */
+        vPortStartFirstTask();
 
-    /* Should not get here! */
-    return 0;
+        /* Should not get here! */
+        return 0;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-    /* It is unlikely that the ARM port will require this function as there
-    is nothing to return to.  */
+        /* It is unlikely that the ARM port will require this function as there
+        is nothing to return to.  */
 }
 /*-----------------------------------------------------------*/
 
 static __arm void vPortTickISR( void )
 {
-    volatile unsigned long ulDummy;
+        volatile unsigned long ulDummy;
 
-    /* Increment the tick count - which may wake some tasks but as the
-    preemptive scheduler is not being used any woken task is not given
-    processor time no matter what its priority. */
-    if( xTaskIncrementTick() != pdFALSE ) {
-        vTaskSwitchContext();
-    }
+        /* Increment the tick count - which may wake some tasks but as the
+        preemptive scheduler is not being used any woken task is not given
+        processor time no matter what its priority. */
+        if( xTaskIncrementTick() != pdFALSE ) {
+                vTaskSwitchContext();
+        }
 
-    /* Clear the PIT interrupt. */
-    ulDummy = AT91C_BASE_PITC->PITC_PIVR;
+        /* Clear the PIT interrupt. */
+        ulDummy = AT91C_BASE_PITC->PITC_PIVR;
 
-    /* To remove compiler warning. */
-    ( void ) ulDummy;
+        /* To remove compiler warning. */
+        ( void ) ulDummy;
 
-    /* The AIC is cleared in the asm wrapper, outside of this function. */
+        /* The AIC is cleared in the asm wrapper, outside of this function. */
 }
 /*-----------------------------------------------------------*/
 
 static void prvSetupTimerInterrupt( void )
 {
-    const unsigned long ulPeriodIn_uS = ( 1.0 / ( double ) configTICK_RATE_HZ ) * port1SECOND_IN_uS;
+        const unsigned long ulPeriodIn_uS = ( 1.0 / ( double ) configTICK_RATE_HZ ) * port1SECOND_IN_uS;
 
-    /* Setup the PIT for the required frequency. */
-    PIT_Init( ulPeriodIn_uS, BOARD_MCK / port1MHz_IN_Hz );
+        /* Setup the PIT for the required frequency. */
+        PIT_Init( ulPeriodIn_uS, BOARD_MCK / port1MHz_IN_Hz );
 
-    /* Setup the PIT interrupt. */
-    AIC_DisableIT( AT91C_ID_SYS );
-    AIC_ConfigureIT( AT91C_ID_SYS, AT91C_AIC_PRIOR_LOWEST, vPortTickISR );
-    AIC_EnableIT( AT91C_ID_SYS );
-    PIT_EnableIT();
+        /* Setup the PIT interrupt. */
+        AIC_DisableIT( AT91C_ID_SYS );
+        AIC_ConfigureIT( AT91C_ID_SYS, AT91C_AIC_PRIOR_LOWEST, vPortTickISR );
+        AIC_EnableIT( AT91C_ID_SYS );
+        PIT_EnableIT();
 }
 /*-----------------------------------------------------------*/
 
 void vPortEnterCritical( void )
 {
-    /* Disable interrupts first! */
-    __disable_irq();
+        /* Disable interrupts first! */
+        __disable_irq();
 
-    /* Now interrupts are disabled ulCriticalNesting can be accessed
-    directly.  Increment ulCriticalNesting to keep a count of how many times
-    portENTER_CRITICAL() has been called. */
-    ulCriticalNesting++;
+        /* Now interrupts are disabled ulCriticalNesting can be accessed
+        directly.  Increment ulCriticalNesting to keep a count of how many times
+        portENTER_CRITICAL() has been called. */
+        ulCriticalNesting++;
 }
 /*-----------------------------------------------------------*/
 
 void vPortExitCritical( void )
 {
-    if( ulCriticalNesting > portNO_CRITICAL_NESTING ) {
-        /* Decrement the nesting count as we are leaving a critical section. */
-        ulCriticalNesting--;
+        if( ulCriticalNesting > portNO_CRITICAL_NESTING ) {
+                /* Decrement the nesting count as we are leaving a critical section. */
+                ulCriticalNesting--;
 
-        /* If the nesting level has reached zero then interrupts should be
-        re-enabled. */
-        if( ulCriticalNesting == portNO_CRITICAL_NESTING ) {
-            __enable_irq();
+                /* If the nesting level has reached zero then interrupts should be
+                re-enabled. */
+                if( ulCriticalNesting == portNO_CRITICAL_NESTING ) {
+                        __enable_irq();
+                }
         }
-    }
 }
 /*-----------------------------------------------------------*/
 

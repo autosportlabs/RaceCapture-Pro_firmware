@@ -48,45 +48,45 @@
  */
 
 void arm_pid_init_q31(
-    arm_pid_instance_q31 * S,
-    int32_t resetStateFlag)
+        arm_pid_instance_q31 * S,
+        int32_t resetStateFlag)
 {
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /* Derived coefficient A0 */
-    S->A0 = __QADD(__QADD(S->Kp, S->Ki), S->Kd);
+        /* Derived coefficient A0 */
+        S->A0 = __QADD(__QADD(S->Kp, S->Ki), S->Kd);
 
-    /* Derived coefficient A1 */
-    S->A1 = -__QADD(__QADD(S->Kd, S->Kd), S->Kp);
+        /* Derived coefficient A1 */
+        S->A1 = -__QADD(__QADD(S->Kd, S->Kd), S->Kp);
 
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    q31_t temp;
+        q31_t temp;
 
-    /* Derived coefficient A0 */
-    temp = clip_q63_to_q31((q63_t) S->Kp + S->Ki);
-    S->A0 = clip_q63_to_q31((q63_t) temp + S->Kd);
+        /* Derived coefficient A0 */
+        temp = clip_q63_to_q31((q63_t) S->Kp + S->Ki);
+        S->A0 = clip_q63_to_q31((q63_t) temp + S->Kd);
 
-    /* Derived coefficient A1 */
-    temp = clip_q63_to_q31((q63_t) S->Kd + S->Kd);
-    S->A1 = -clip_q63_to_q31((q63_t) temp + S->Kp);
+        /* Derived coefficient A1 */
+        temp = clip_q63_to_q31((q63_t) S->Kd + S->Kd);
+        S->A1 = -clip_q63_to_q31((q63_t) temp + S->Kp);
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    /* Derived coefficient A2 */
-    S->A2 = S->Kd;
+        /* Derived coefficient A2 */
+        S->A2 = S->Kd;
 
-    /* Check whether state needs reset or not */
-    if(resetStateFlag) {
-        /* Clear the state buffer.  The size will be always 3 samples */
-        memset(S->state, 0, 3u * sizeof(q31_t));
-    }
+        /* Check whether state needs reset or not */
+        if(resetStateFlag) {
+                /* Clear the state buffer.  The size will be always 3 samples */
+                memset(S->state, 0, 3u * sizeof(q31_t));
+        }
 
 }
 

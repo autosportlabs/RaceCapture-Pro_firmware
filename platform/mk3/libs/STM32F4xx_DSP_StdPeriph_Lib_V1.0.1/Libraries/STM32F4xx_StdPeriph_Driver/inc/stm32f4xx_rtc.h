@@ -51,13 +51,13 @@ extern "C" {
   * @brief  RTC Init structures definition
   */
 typedef struct {
-    uint32_t RTC_HourFormat;   /*!< Specifies the RTC Hour Format.
+        uint32_t RTC_HourFormat;   /*!< Specifies the RTC Hour Format.
                              This parameter can be a value of @ref RTC_Hour_Formats */
 
-    uint32_t RTC_AsynchPrediv; /*!< Specifies the RTC Asynchronous Predivider value.
+        uint32_t RTC_AsynchPrediv; /*!< Specifies the RTC Asynchronous Predivider value.
                              This parameter must be set to a value lower than 0x7F */
 
-    uint32_t RTC_SynchPrediv;  /*!< Specifies the RTC Synchronous Predivider value.
+        uint32_t RTC_SynchPrediv;  /*!< Specifies the RTC Synchronous Predivider value.
                              This parameter must be set to a value lower than 0x7FFF */
 } RTC_InitTypeDef;
 
@@ -65,18 +65,18 @@ typedef struct {
   * @brief  RTC Time structure definition
   */
 typedef struct {
-    uint8_t RTC_Hours;    /*!< Specifies the RTC Time Hour.
+        uint8_t RTC_Hours;    /*!< Specifies the RTC Time Hour.
                         This parameter must be set to a value in the 0-12 range
                         if the RTC_HourFormat_12 is selected or 0-23 range if
                         the RTC_HourFormat_24 is selected. */
 
-    uint8_t RTC_Minutes;  /*!< Specifies the RTC Time Minutes.
+        uint8_t RTC_Minutes;  /*!< Specifies the RTC Time Minutes.
                         This parameter must be set to a value in the 0-59 range. */
 
-    uint8_t RTC_Seconds;  /*!< Specifies the RTC Time Seconds.
+        uint8_t RTC_Seconds;  /*!< Specifies the RTC Time Seconds.
                         This parameter must be set to a value in the 0-59 range. */
 
-    uint8_t RTC_H12;      /*!< Specifies the RTC AM/PM Time.
+        uint8_t RTC_H12;      /*!< Specifies the RTC AM/PM Time.
                         This parameter can be a value of @ref RTC_AM_PM_Definitions */
 } RTC_TimeTypeDef;
 
@@ -84,16 +84,16 @@ typedef struct {
   * @brief  RTC Date structure definition
   */
 typedef struct {
-    uint8_t RTC_WeekDay; /*!< Specifies the RTC Date WeekDay.
+        uint8_t RTC_WeekDay; /*!< Specifies the RTC Date WeekDay.
                         This parameter can be a value of @ref RTC_WeekDay_Definitions */
 
-    uint8_t RTC_Month;   /*!< Specifies the RTC Date Month (in BCD format).
+        uint8_t RTC_Month;   /*!< Specifies the RTC Date Month (in BCD format).
                         This parameter can be a value of @ref RTC_Month_Date_Definitions */
 
-    uint8_t RTC_Date;     /*!< Specifies the RTC Date.
+        uint8_t RTC_Date;     /*!< Specifies the RTC Date.
                         This parameter must be set to a value in the 1-31 range. */
 
-    uint8_t RTC_Year;     /*!< Specifies the RTC Date Year.
+        uint8_t RTC_Year;     /*!< Specifies the RTC Date Year.
                         This parameter must be set to a value in the 0-99 range. */
 } RTC_DateTypeDef;
 
@@ -101,15 +101,15 @@ typedef struct {
   * @brief  RTC Alarm structure definition
   */
 typedef struct {
-    RTC_TimeTypeDef RTC_AlarmTime;     /*!< Specifies the RTC Alarm Time members. */
+        RTC_TimeTypeDef RTC_AlarmTime;     /*!< Specifies the RTC Alarm Time members. */
 
-    uint32_t RTC_AlarmMask;            /*!< Specifies the RTC Alarm Masks.
+        uint32_t RTC_AlarmMask;            /*!< Specifies the RTC Alarm Masks.
                                      This parameter can be a value of @ref RTC_AlarmMask_Definitions */
 
-    uint32_t RTC_AlarmDateWeekDaySel;  /*!< Specifies the RTC Alarm is on Date or WeekDay.
+        uint32_t RTC_AlarmDateWeekDaySel;  /*!< Specifies the RTC Alarm is on Date or WeekDay.
                                      This parameter can be a value of @ref RTC_AlarmDateWeekDay_Definitions */
 
-    uint8_t RTC_AlarmDateWeekDay;      /*!< Specifies the RTC Alarm Date/WeekDay.
+        uint8_t RTC_AlarmDateWeekDay;      /*!< Specifies the RTC Alarm Date/WeekDay.
                                      If the Alarm Date is selected, this parameter
                                      must be set to a value in the 1-31 range.
                                      If the Alarm WeekDay is selected, this

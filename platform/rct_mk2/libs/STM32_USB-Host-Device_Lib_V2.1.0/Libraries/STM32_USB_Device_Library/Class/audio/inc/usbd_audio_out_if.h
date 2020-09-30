@@ -53,9 +53,9 @@
   */
 /* Audio Commands enmueration */
 typedef enum {
-    AUDIO_CMD_PLAY = 1,
-    AUDIO_CMD_PAUSE,
-    AUDIO_CMD_STOP,
+        AUDIO_CMD_PLAY = 1,
+        AUDIO_CMD_PAUSE,
+        AUDIO_CMD_STOP,
 } AUDIO_CMD_TypeDef;
 
 /* Mute commands */

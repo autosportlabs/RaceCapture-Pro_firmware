@@ -82,7 +82,7 @@ struct led_data* find_led_data(const enum led l)
 
 bool led_device_available(const enum led l)
 {
-    return find_led_data(l) != NULL;
+        return find_led_data(l) != NULL;
 }
 
 bool led_device_set(const enum led l, const bool on)
@@ -127,6 +127,6 @@ bool led_device_init(void)
                 GPIO_Init(GPIO_PORT, &gpio_conf);
         }
 
-	led_device_set_all(false);
+        led_device_set_all(false);
         return true;
 }

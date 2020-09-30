@@ -24,10 +24,10 @@
 
 void disk_init_hardware(void)
 {
-	SD_Init();
+        SD_Init();
 }
 
 bool sdcard_device_card_present(void)
 {
-    return true;
+        return true;
 }

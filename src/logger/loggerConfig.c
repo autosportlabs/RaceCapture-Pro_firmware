@@ -193,7 +193,7 @@ static void resetImuConfig(ImuConfig cfg[], ChannelConfig * imu_gsum_config, Cha
         static const ChannelConfig default_imu_gsummax = IMU_GSUMMAX_CONFIG_DEFAULT;
         memcpy(imu_gsummax_config, &default_imu_gsummax, sizeof(ChannelConfig));
         static const ChannelConfig default_imu_gsumpct = IMU_GSUMPCT_CONFIG_DEFAULT;
-        memcpy(imu_gsumpct_config, &default_imu_gsumpct, sizeof(ChannelConfig)); 
+        memcpy(imu_gsumpct_config, &default_imu_gsumpct, sizeof(ChannelConfig));
 #endif
 }
 #endif
@@ -449,7 +449,8 @@ int filterImuMode(int mode)
         }
 }
 
-void update_calculated_imu_channel_configs(void){
+void update_calculated_imu_channel_configs(void)
+{
         /* synchronize any calculated IMU channels to the
          * max sample rate of the IMU sensor channels
          */
@@ -844,19 +845,19 @@ LoggerConfig * getWorkingLoggerConfig()
 
 bool should_sample(const int sample_rate, const int max_rate)
 {
-	if (sample_rate == SAMPLE_DISABLED) return false;
+        if (sample_rate == SAMPLE_DISABLED) return false;
 
         if (sample_rate % max_rate == 0 ) return true;
 
-	/* this clause is to make 10Hz samples trigger when running at max_rate 
-	 * 25Hz.  Without this, 10Hz samples are only output at 5Hz, due to 25 not
-	 * being divisible by 10.  This is not an issue for any other combo of available 
-	 * sample rates.
-	 */
-	if (max_rate == SAMPLE_25Hz )
-		return sample_rate % SAMPLE_10Hz == 0;
+        /* this clause is to make 10Hz samples trigger when running at max_rate
+         * 25Hz.  Without this, 10Hz samples are only output at 5Hz, due to 25 not
+         * being divisible by 10.  This is not an issue for any other combo of available
+         * sample rates.
+         */
+        if (max_rate == SAMPLE_25Hz )
+                return sample_rate % SAMPLE_10Hz == 0;
 
-	return false;
+        return false;
 }
 
 

@@ -52,34 +52,34 @@ static void init_cpu_id()
 
 int cpu_device_init(void)
 {
-	NVIC_SetVectorTable(NVIC_VectTab_FLASH, (uint32_t)&_flash_start);
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-	init_cpu_id();
-	return 1;
+        NVIC_SetVectorTable(NVIC_VectTab_FLASH, (uint32_t)&_flash_start);
+        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+        init_cpu_id();
+        return 1;
 }
 
 void cpu_device_reset(int bootloader)
 {
-	struct app_handshake_block *handshake =
-		(struct app_handshake_block *)HANDSHAKE_ADDR;
+        struct app_handshake_block *handshake =
+                (struct app_handshake_block *)HANDSHAKE_ADDR;
 
-	/* Clear any reset flags that might be present (i.e. watchdog) */
-	RCC_ClearFlag();
+        /* Clear any reset flags that might be present (i.e. watchdog) */
+        RCC_ClearFlag();
 
-	/*
-	 * If bootloader mode is requested, Set the flag in the
-	 * handshake area
-	 */
-	if (bootloader == 1) {
-		handshake->loader_magic = LOADER_KEY;
-	}
+        /*
+         * If bootloader mode is requested, Set the flag in the
+         * handshake area
+         */
+        if (bootloader == 1) {
+                handshake->loader_magic = LOADER_KEY;
+        }
 
-	NVIC_SystemReset();
+        NVIC_SystemReset();
 }
 
 const char *cpu_device_get_serialnumber(void)
 {
-    return cpu_id;
+        return cpu_id;
 }
 
 /**
@@ -90,7 +90,7 @@ const char *cpu_device_get_serialnumber(void)
  */
 void cpu_device_spin(uint32_t ms)
 {
-	const uint32_t iterations = 5200;
-	while(ms-- > 0)
-		for (volatile size_t i = 0; i < iterations; ++i);
+        const uint32_t iterations = 5200;
+        while(ms-- > 0)
+                for (volatile size_t i = 0; i < iterations; ++i);
 }

@@ -67,8 +67,8 @@
 #define UART_WIRELESS_IRQ_PRIORITY	7
 
 typedef enum {
-    UART_RX_IRQ = 1,
-    UART_TX_IRQ = 2
+        UART_RX_IRQ = 1,
+        UART_TX_IRQ = 2
 } uart_irq_type_t;
 
 struct dma_info {
@@ -730,7 +730,7 @@ static void setup_debug_tools()
         const size_t timer_ticks = msToTicks(CHAR_CHECK_PERIOD_MS);
         const signed char* timer_name = (signed char*) "Dropped Char Check Timer";
         xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
-                                                 true, NULL, dropped_char_timer_cb);
+                                    true, NULL, dropped_char_timer_cb);
         xTimerStart(timer_handle, timer_ticks);
 }
 

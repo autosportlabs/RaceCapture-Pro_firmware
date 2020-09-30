@@ -92,61 +92,61 @@
   */
 ErrorStatus HASH_MD5(uint8_t *Input, uint32_t Ilen, uint8_t Output[16])
 {
-    HASH_InitTypeDef MD5_HASH_InitStructure;
-    HASH_MsgDigest MD5_MessageDigest;
-    __IO uint16_t nbvalidbitsdata = 0;
-    uint32_t i = 0;
-    __IO uint32_t counter = 0;
-    uint32_t busystatus = 0;
-    ErrorStatus status = SUCCESS;
-    uint32_t inputaddr  = (uint32_t)Input;
-    uint32_t outputaddr = (uint32_t)Output;
+        HASH_InitTypeDef MD5_HASH_InitStructure;
+        HASH_MsgDigest MD5_MessageDigest;
+        __IO uint16_t nbvalidbitsdata = 0;
+        uint32_t i = 0;
+        __IO uint32_t counter = 0;
+        uint32_t busystatus = 0;
+        ErrorStatus status = SUCCESS;
+        uint32_t inputaddr  = (uint32_t)Input;
+        uint32_t outputaddr = (uint32_t)Output;
 
 
-    /* Number of valid bits in last word of the Input data */
-    nbvalidbitsdata = 8 * (Ilen % 4);
+        /* Number of valid bits in last word of the Input data */
+        nbvalidbitsdata = 8 * (Ilen % 4);
 
-    /* HASH peripheral initialization */
-    HASH_DeInit();
+        /* HASH peripheral initialization */
+        HASH_DeInit();
 
-    /* HASH Configuration */
-    MD5_HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_MD5;
-    MD5_HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HASH;
-    MD5_HASH_InitStructure.HASH_DataType = HASH_DataType_8b;
-    HASH_Init(&MD5_HASH_InitStructure);
+        /* HASH Configuration */
+        MD5_HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_MD5;
+        MD5_HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HASH;
+        MD5_HASH_InitStructure.HASH_DataType = HASH_DataType_8b;
+        HASH_Init(&MD5_HASH_InitStructure);
 
-    /* Configure the number of valid bits in last word of the data */
-    HASH_SetLastWordValidBitsNbr(nbvalidbitsdata);
+        /* Configure the number of valid bits in last word of the data */
+        HASH_SetLastWordValidBitsNbr(nbvalidbitsdata);
 
-    /* Write the Input block in the IN FIFO */
-    for(i=0; i<Ilen; i+=4) {
-        HASH_DataIn(*(uint32_t*)inputaddr);
-        inputaddr+=4;
-    }
+        /* Write the Input block in the IN FIFO */
+        for(i=0; i<Ilen; i+=4) {
+                HASH_DataIn(*(uint32_t*)inputaddr);
+                inputaddr+=4;
+        }
 
-    /* Start the HASH processor */
-    HASH_StartDigest();
+        /* Start the HASH processor */
+        HASH_StartDigest();
 
-    /* wait until the Busy flag is RESET */
-    do {
-        busystatus = HASH_GetFlagStatus(HASH_FLAG_BUSY);
-        counter++;
-    } while ((counter != MD5BUSY_TIMEOUT) && (busystatus != RESET));
+        /* wait until the Busy flag is RESET */
+        do {
+                busystatus = HASH_GetFlagStatus(HASH_FLAG_BUSY);
+                counter++;
+        } while ((counter != MD5BUSY_TIMEOUT) && (busystatus != RESET));
 
-    if (busystatus != RESET) {
-        status = ERROR;
-    } else {
-        /* Read the message digest */
-        HASH_GetDigest(&MD5_MessageDigest);
-        *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[0]);
-        outputaddr+=4;
-        *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[1]);
-        outputaddr+=4;
-        *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[2]);
-        outputaddr+=4;
-        *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[3]);
-    }
-    return status;
+        if (busystatus != RESET) {
+                status = ERROR;
+        } else {
+                /* Read the message digest */
+                HASH_GetDigest(&MD5_MessageDigest);
+                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[0]);
+                outputaddr+=4;
+                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[1]);
+                outputaddr+=4;
+                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[2]);
+                outputaddr+=4;
+                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[3]);
+        }
+        return status;
 }
 
 /**
@@ -163,119 +163,119 @@ ErrorStatus HASH_MD5(uint8_t *Input, uint32_t Ilen, uint8_t Output[16])
 ErrorStatus HMAC_MD5(uint8_t *Key, uint32_t Keylen, uint8_t *Input,
                      uint32_t Ilen, uint8_t Output[16])
 {
-    HASH_InitTypeDef MD5_HASH_InitStructure;
-    HASH_MsgDigest MD5_MessageDigest;
-    __IO uint16_t nbvalidbitsdata = 0;
-    __IO uint16_t nbvalidbitskey = 0;
-    uint32_t i = 0;
-    __IO uint32_t counter = 0;
-    uint32_t busystatus = 0;
-    ErrorStatus status = SUCCESS;
-    uint32_t keyaddr    = (uint32_t)Key;
-    uint32_t inputaddr  = (uint32_t)Input;
-    uint32_t outputaddr = (uint32_t)Output;
+        HASH_InitTypeDef MD5_HASH_InitStructure;
+        HASH_MsgDigest MD5_MessageDigest;
+        __IO uint16_t nbvalidbitsdata = 0;
+        __IO uint16_t nbvalidbitskey = 0;
+        uint32_t i = 0;
+        __IO uint32_t counter = 0;
+        uint32_t busystatus = 0;
+        ErrorStatus status = SUCCESS;
+        uint32_t keyaddr    = (uint32_t)Key;
+        uint32_t inputaddr  = (uint32_t)Input;
+        uint32_t outputaddr = (uint32_t)Output;
 
-    /* Number of valid bits in last word of the Input data */
-    nbvalidbitsdata = 8 * (Ilen % 4);
+        /* Number of valid bits in last word of the Input data */
+        nbvalidbitsdata = 8 * (Ilen % 4);
 
-    /* Number of valid bits in last word of the Key */
-    nbvalidbitskey = 8 * (Keylen % 4);
+        /* Number of valid bits in last word of the Key */
+        nbvalidbitskey = 8 * (Keylen % 4);
 
-    /* HASH peripheral initialization */
-    HASH_DeInit();
+        /* HASH peripheral initialization */
+        HASH_DeInit();
 
-    /* HASH Configuration */
-    MD5_HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_MD5;
-    MD5_HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HMAC;
-    MD5_HASH_InitStructure.HASH_DataType = HASH_DataType_8b;
-    if(Keylen > 64) {
-        /* HMAC long Key */
-        MD5_HASH_InitStructure.HASH_HMACKeyType = HASH_HMACKeyType_LongKey;
-    } else {
-        /* HMAC short Key */
-        MD5_HASH_InitStructure.HASH_HMACKeyType = HASH_HMACKeyType_ShortKey;
-    }
-    HASH_Init(&MD5_HASH_InitStructure);
+        /* HASH Configuration */
+        MD5_HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_MD5;
+        MD5_HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HMAC;
+        MD5_HASH_InitStructure.HASH_DataType = HASH_DataType_8b;
+        if(Keylen > 64) {
+                /* HMAC long Key */
+                MD5_HASH_InitStructure.HASH_HMACKeyType = HASH_HMACKeyType_LongKey;
+        } else {
+                /* HMAC short Key */
+                MD5_HASH_InitStructure.HASH_HMACKeyType = HASH_HMACKeyType_ShortKey;
+        }
+        HASH_Init(&MD5_HASH_InitStructure);
 
-    /* Configure the number of valid bits in last word of the Key */
-    HASH_SetLastWordValidBitsNbr(nbvalidbitskey);
+        /* Configure the number of valid bits in last word of the Key */
+        HASH_SetLastWordValidBitsNbr(nbvalidbitskey);
 
-    /* Write the Key */
-    for(i=0; i<Keylen; i+=4) {
-        HASH_DataIn(*(uint32_t*)keyaddr);
-        keyaddr+=4;
-    }
-
-    /* Start the HASH processor */
-    HASH_StartDigest();
-
-    /* wait until the Busy flag is RESET */
-    do {
-        busystatus = HASH_GetFlagStatus(HASH_FLAG_BUSY);
-        counter++;
-    } while ((counter != MD5BUSY_TIMEOUT) && (busystatus != RESET));
-
-    if (busystatus != RESET) {
-        status = ERROR;
-    } else {
-        /* Configure the number of valid bits in last word of the Input data */
-        HASH_SetLastWordValidBitsNbr(nbvalidbitsdata);
-
-        /* Write the Input block in the IN FIFO */
-        for(i=0; i<Ilen; i+=4) {
-            HASH_DataIn(*(uint32_t*)inputaddr);
-            inputaddr+=4;
+        /* Write the Key */
+        for(i=0; i<Keylen; i+=4) {
+                HASH_DataIn(*(uint32_t*)keyaddr);
+                keyaddr+=4;
         }
 
         /* Start the HASH processor */
         HASH_StartDigest();
 
         /* wait until the Busy flag is RESET */
-        counter =0;
         do {
-            busystatus = HASH_GetFlagStatus(HASH_FLAG_BUSY);
-            counter++;
+                busystatus = HASH_GetFlagStatus(HASH_FLAG_BUSY);
+                counter++;
         } while ((counter != MD5BUSY_TIMEOUT) && (busystatus != RESET));
 
         if (busystatus != RESET) {
-            status = ERROR;
-        } else {
-            /* Configure the number of valid bits in last word of the Key */
-            HASH_SetLastWordValidBitsNbr(nbvalidbitskey);
-
-            /* Write the Key */
-            keyaddr = (uint32_t)Key;
-            for(i=0; i<Keylen; i+=4) {
-                HASH_DataIn(*(uint32_t*)keyaddr);
-                keyaddr+=4;
-            }
-
-            /* Start the HASH processor */
-            HASH_StartDigest();
-
-            /* wait until the Busy flag is RESET */
-            counter =0;
-            do {
-                busystatus = HASH_GetFlagStatus(HASH_FLAG_BUSY);
-                counter++;
-            } while ((counter != MD5BUSY_TIMEOUT) && (busystatus != RESET));
-
-            if (busystatus != RESET) {
                 status = ERROR;
-            } else {
-                /* Read the message digest */
-                HASH_GetDigest(&MD5_MessageDigest);
-                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[0]);
-                outputaddr+=4;
-                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[1]);
-                outputaddr+=4;
-                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[2]);
-                outputaddr+=4;
-                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[3]);
-            }
+        } else {
+                /* Configure the number of valid bits in last word of the Input data */
+                HASH_SetLastWordValidBitsNbr(nbvalidbitsdata);
+
+                /* Write the Input block in the IN FIFO */
+                for(i=0; i<Ilen; i+=4) {
+                        HASH_DataIn(*(uint32_t*)inputaddr);
+                        inputaddr+=4;
+                }
+
+                /* Start the HASH processor */
+                HASH_StartDigest();
+
+                /* wait until the Busy flag is RESET */
+                counter =0;
+                do {
+                        busystatus = HASH_GetFlagStatus(HASH_FLAG_BUSY);
+                        counter++;
+                } while ((counter != MD5BUSY_TIMEOUT) && (busystatus != RESET));
+
+                if (busystatus != RESET) {
+                        status = ERROR;
+                } else {
+                        /* Configure the number of valid bits in last word of the Key */
+                        HASH_SetLastWordValidBitsNbr(nbvalidbitskey);
+
+                        /* Write the Key */
+                        keyaddr = (uint32_t)Key;
+                        for(i=0; i<Keylen; i+=4) {
+                                HASH_DataIn(*(uint32_t*)keyaddr);
+                                keyaddr+=4;
+                        }
+
+                        /* Start the HASH processor */
+                        HASH_StartDigest();
+
+                        /* wait until the Busy flag is RESET */
+                        counter =0;
+                        do {
+                                busystatus = HASH_GetFlagStatus(HASH_FLAG_BUSY);
+                                counter++;
+                        } while ((counter != MD5BUSY_TIMEOUT) && (busystatus != RESET));
+
+                        if (busystatus != RESET) {
+                                status = ERROR;
+                        } else {
+                                /* Read the message digest */
+                                HASH_GetDigest(&MD5_MessageDigest);
+                                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[0]);
+                                outputaddr+=4;
+                                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[1]);
+                                outputaddr+=4;
+                                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[2]);
+                                outputaddr+=4;
+                                *(uint32_t*)(outputaddr)  = __REV(MD5_MessageDigest.Data[3]);
+                        }
+                }
         }
-    }
-    return status;
+        return status;
 }
 /**
   * @}

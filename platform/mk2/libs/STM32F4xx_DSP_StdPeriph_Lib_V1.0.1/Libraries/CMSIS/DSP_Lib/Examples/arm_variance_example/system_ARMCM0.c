@@ -44,7 +44,7 @@ uint32_t SystemCoreClock = __SYSTEM_CLOCK;/*!< System Clock Frequency (Core Cloc
  *----------------------------------------------------------------------------*/
 void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
 {
-    SystemCoreClock = __SYSTEM_CLOCK;
+        SystemCoreClock = __SYSTEM_CLOCK;
 }
 
 /**
@@ -58,19 +58,19 @@ void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
  */
 void SystemInit (void)
 {
-    SystemCoreClock = __SYSTEM_CLOCK;
+        SystemCoreClock = __SYSTEM_CLOCK;
 
 #ifdef __USE_GPIO
-    ARM_GPIO0->DATA[0].WORD = 0;
-    ARM_GPIO0->IE = 0;
-    ARM_GPIO0->DIR = 0xff83;
+        ARM_GPIO0->DATA[0].WORD = 0;
+        ARM_GPIO0->IE = 0;
+        ARM_GPIO0->DIR = 0xff83;
 
-    ARM_GPIO1->DATA[0].WORD = 0;
-    ARM_GPIO1->IE = 0;
-    ARM_GPIO1->DIR = 0;
+        ARM_GPIO1->DATA[0].WORD = 0;
+        ARM_GPIO1->IE = 0;
+        ARM_GPIO1->DIR = 0;
 
-    ARM_GPIO2->DATA[0].WORD = 0;
-    ARM_GPIO2->IE = 0;
-    ARM_GPIO2->DIR = 0;
+        ARM_GPIO2->DATA[0].WORD = 0;
+        ARM_GPIO2->IE = 0;
+        ARM_GPIO2->DIR = 0;
 #endif
 }

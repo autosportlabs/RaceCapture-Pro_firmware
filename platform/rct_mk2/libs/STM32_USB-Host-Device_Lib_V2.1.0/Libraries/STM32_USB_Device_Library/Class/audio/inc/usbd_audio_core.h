@@ -110,13 +110,13 @@
   * @{
   */
 typedef struct _Audio_Fops {
-    uint8_t  (*Init)         (uint32_t  AudioFreq, uint32_t Volume, uint32_t options);
-    uint8_t  (*DeInit)       (uint32_t options);
-    uint8_t  (*AudioCmd)     (uint8_t* pbuf, uint32_t size, uint8_t cmd);
-    uint8_t  (*VolumeCtl)    (uint8_t vol);
-    uint8_t  (*MuteCtl)      (uint8_t cmd);
-    uint8_t  (*PeriodicTC)   (uint8_t cmd);
-    uint8_t  (*GetState)     (void);
+        uint8_t  (*Init)         (uint32_t  AudioFreq, uint32_t Volume, uint32_t options);
+        uint8_t  (*DeInit)       (uint32_t options);
+        uint8_t  (*AudioCmd)     (uint8_t* pbuf, uint32_t size, uint8_t cmd);
+        uint8_t  (*VolumeCtl)    (uint8_t vol);
+        uint8_t  (*MuteCtl)      (uint8_t cmd);
+        uint8_t  (*PeriodicTC)   (uint8_t cmd);
+        uint8_t  (*GetState)     (void);
 } AUDIO_FOPS_TypeDef;
 /**
   * @}

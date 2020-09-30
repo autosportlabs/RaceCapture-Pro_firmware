@@ -17,8 +17,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -31,7 +31,7 @@
 #define __STM32F30x_I2C_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -51,30 +51,29 @@
   * @brief  I2C Init structure definition
   */
 
-typedef struct
-{
-  uint32_t I2C_Timing;              /*!< Specifies the I2C_TIMINGR_register value.
-                                         This parameter calculated by referring to I2C initialization 
+typedef struct {
+        uint32_t I2C_Timing;              /*!< Specifies the I2C_TIMINGR_register value.
+                                         This parameter calculated by referring to I2C initialization
                                          section in Reference manual*/
 
-  uint32_t I2C_AnalogFilter;        /*!< Enables or disables analog noise filter.
+        uint32_t I2C_AnalogFilter;        /*!< Enables or disables analog noise filter.
                                          This parameter can be a value of @ref I2C_Analog_Filter */
 
-  uint32_t I2C_DigitalFilter;       /*!< Configures the digital noise filter.
+        uint32_t I2C_DigitalFilter;       /*!< Configures the digital noise filter.
                                          This parameter can be a number between 0x00 and 0x0F */
 
-  uint32_t I2C_Mode;                /*!< Specifies the I2C mode.
+        uint32_t I2C_Mode;                /*!< Specifies the I2C mode.
                                          This parameter can be a value of @ref I2C_mode */
 
-  uint32_t I2C_OwnAddress1;         /*!< Specifies the device own address 1.
+        uint32_t I2C_OwnAddress1;         /*!< Specifies the device own address 1.
                                          This parameter can be a 7-bit or 10-bit address */
 
-  uint32_t I2C_Ack;                 /*!< Enables or disables the acknowledgement.
+        uint32_t I2C_Ack;                 /*!< Enables or disables the acknowledgement.
                                          This parameter can be a value of @ref I2C_acknowledgement */
 
-  uint32_t I2C_AcknowledgedAddress; /*!< Specifies if 7-bit or 10-bit address is acknowledged.
+        uint32_t I2C_AcknowledgedAddress; /*!< Specifies if 7-bit or 10-bit address is acknowledged.
                                          This parameter can be a value of @ref I2C_acknowledged_address */
-}I2C_InitTypeDef;
+} I2C_InitTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
 
@@ -86,7 +85,7 @@ typedef struct
 #define IS_I2C_ALL_PERIPH(PERIPH)       (((PERIPH) == I2C1) || \
                                          ((PERIPH) == I2C2))
 
-/** @defgroup I2C_Analog_Filter 
+/** @defgroup I2C_Analog_Filter
   * @{
   */
 
@@ -98,7 +97,7 @@ typedef struct
 /**
   * @}
   */
-     
+
 /** @defgroup I2C_Digital_Filter
   * @{
   */
@@ -108,7 +107,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup I2C_mode 
+/** @defgroup I2C_mode
   * @{
   */
 
@@ -147,7 +146,7 @@ typedef struct
                                              ((ADDRESS) == I2C_AcknowledgedAddress_10bit))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup I2C_own_address1
   * @{
@@ -158,7 +157,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup I2C_transfer_direction 
+/** @defgroup I2C_transfer_direction
   * @{
   */
 
@@ -171,7 +170,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup I2C_DMA_transfer_requests 
+/** @defgroup I2C_DMA_transfer_requests
   * @{
   */
 
@@ -223,7 +222,7 @@ typedef struct
                                          ((MASK) == I2C_OA2_Mask04) || \
                                          ((MASK) == I2C_OA2_Mask05) || \
                                          ((MASK) == I2C_OA2_Mask06) || \
-                                         ((MASK) == I2C_OA2_Mask07))  
+                                         ((MASK) == I2C_OA2_Mask07))
 
 /**
   * @}
@@ -239,7 +238,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup I2C_registers 
+/** @defgroup I2C_registers
   * @{
   */
 
@@ -270,7 +269,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup I2C_interrupts_definition 
+/** @defgroup I2C_interrupts_definition
   * @{
   */
 
@@ -288,7 +287,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup I2C_flags_definition 
+/** @defgroup I2C_flags_definition
   * @{
   */
 
@@ -324,7 +323,7 @@ typedef struct
   */
 
 
-/** @defgroup I2C_interrupts_definition 
+/** @defgroup I2C_interrupts_definition
   * @{
   */
 
@@ -343,7 +342,7 @@ typedef struct
 #define  I2C_IT_ALERT                   I2C_ISR_ALERT
 
 #define IS_I2C_CLEAR_IT(IT)             ((((IT) & (uint32_t)0xFFFFC001) == 0x00) && ((IT) != 0x00))
-                               
+
 #define IS_I2C_GET_IT(IT)               (((IT) == I2C_IT_TXIS) || ((IT) == I2C_IT_RXNE) || \
                                          ((IT) == I2C_IT_ADDR) || ((IT) == I2C_IT_NACKF) || \
                                          ((IT) == I2C_IT_STOPF) || ((IT) == I2C_IT_TC) || \
@@ -351,13 +350,13 @@ typedef struct
                                          ((IT) == I2C_IT_ARLO) || ((IT) == I2C_IT_OVR) || \
                                          ((IT) == I2C_IT_PECERR) || ((IT) == I2C_IT_TIMEOUT) || \
                                          ((IT) == I2C_IT_ALERT))
-                               
+
 
 /**
   * @}
   */
 
-/** @defgroup I2C_ReloadEndMode_definition 
+/** @defgroup I2C_ReloadEndMode_definition
   * @{
   */
 
@@ -365,17 +364,17 @@ typedef struct
 #define  I2C_AutoEnd_Mode               I2C_CR2_AUTOEND
 #define  I2C_SoftEnd_Mode               ((uint32_t)0x00000000)
 
-                              
+
 #define IS_RELOAD_END_MODE(MODE)        (((MODE) == I2C_Reload_Mode) || \
                                          ((MODE) == I2C_AutoEnd_Mode) || \
                                          ((MODE) == I2C_SoftEnd_Mode))
-                               
+
 
 /**
   * @}
   */
 
-/** @defgroup I2C_StartStopMode_definition 
+/** @defgroup I2C_StartStopMode_definition
   * @{
   */
 
@@ -384,12 +383,12 @@ typedef struct
 #define  I2C_Generate_Start_Read          (uint32_t)(I2C_CR2_START | I2C_CR2_RD_WRN)
 #define  I2C_Generate_Start_Write         I2C_CR2_START
 
-                              
+
 #define IS_START_STOP_MODE(MODE)        (((MODE) == I2C_Generate_Stop) || \
                                          ((MODE) == I2C_Generate_Start_Read) || \
                                          ((MODE) == I2C_Generate_Start_Write) || \
                                          ((MODE) == I2C_No_StartStop))
-                               
+
 
 /**
   * @}

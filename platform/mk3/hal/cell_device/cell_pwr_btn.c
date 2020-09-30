@@ -69,14 +69,14 @@ static void cell_pwr_btn_init()
         configured = true;
 }
 
-void cell_enable_vreg(const bool enabled){
+void cell_enable_vreg(const bool enabled)
+{
 
         cell_pwr_btn_init();
 
         if (enabled) {
                 GPIO_SetBits(EXT_VREG_CONTROL_PORT, EXT_VREG_CONTROL_PIN);
-        }
-        else {
+        } else {
                 GPIO_ResetBits(EXT_VREG_CONTROL_PORT, EXT_VREG_CONTROL_PIN);
         }
 }

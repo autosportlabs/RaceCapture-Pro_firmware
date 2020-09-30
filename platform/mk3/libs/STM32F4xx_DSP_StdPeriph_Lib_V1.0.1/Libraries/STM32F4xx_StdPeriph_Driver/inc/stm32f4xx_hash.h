@@ -51,14 +51,14 @@ extern "C" {
   * @brief   HASH Init structure definition
   */
 typedef struct {
-    uint32_t HASH_AlgoSelection; /*!< SHA-1 or MD5. This parameter can be a value
+        uint32_t HASH_AlgoSelection; /*!< SHA-1 or MD5. This parameter can be a value
                                     of @ref HASH_Algo_Selection */
-    uint32_t HASH_AlgoMode;      /*!< HASH or HMAC. This parameter can be a value
+        uint32_t HASH_AlgoMode;      /*!< HASH or HMAC. This parameter can be a value
                                     of @ref HASH_processor_Algorithm_Mode */
-    uint32_t HASH_DataType;      /*!< 32-bit data, 16-bit data, 8-bit data or
+        uint32_t HASH_DataType;      /*!< 32-bit data, 16-bit data, 8-bit data or
                                     bit-string. This parameter can be a value of
                                     @ref HASH_Data_Type */
-    uint32_t HASH_HMACKeyType;   /*!< HMAC Short key or HMAC Long Key. This parameter
+        uint32_t HASH_HMACKeyType;   /*!< HMAC Short key or HMAC Long Key. This parameter
                                     can be a value of @ref HASH_HMAC_Long_key_only_for_HMAC_mode */
 } HASH_InitTypeDef;
 
@@ -66,7 +66,7 @@ typedef struct {
   * @brief  HASH message digest result structure definition
   */
 typedef struct {
-    uint32_t Data[5];      /*!< Message digest result : 5x 32bit words for SHA1 or
+        uint32_t Data[5];      /*!< Message digest result : 5x 32bit words for SHA1 or
                                                       4x 32bit words for MD5  */
 } HASH_MsgDigest;
 
@@ -74,10 +74,10 @@ typedef struct {
   * @brief  HASH context swapping structure definition
   */
 typedef struct {
-    uint32_t HASH_IMR;
-    uint32_t HASH_STR;
-    uint32_t HASH_CR;
-    uint32_t HASH_CSR[51];
+        uint32_t HASH_IMR;
+        uint32_t HASH_STR;
+        uint32_t HASH_CR;
+        uint32_t HASH_CSR[51];
 } HASH_Context;
 
 /* Exported constants --------------------------------------------------------*/

@@ -51,10 +51,9 @@ extern "C" {
   * @brief  EXTI mode enumeration
   */
 
-typedef enum
-{
-    EXTI_Mode_Interrupt = 0x00,
-    EXTI_Mode_Event = 0x04
+typedef enum {
+        EXTI_Mode_Interrupt = 0x00,
+        EXTI_Mode_Event = 0x04
 }
 EXTIMode_TypeDef;
 
@@ -65,9 +64,9 @@ EXTIMode_TypeDef;
   */
 
 typedef enum {
-    EXTI_Trigger_Rising = 0x08,
-    EXTI_Trigger_Falling = 0x0C,
-    EXTI_Trigger_Rising_Falling = 0x10
+        EXTI_Trigger_Rising = 0x08,
+        EXTI_Trigger_Falling = 0x0C,
+        EXTI_Trigger_Rising_Falling = 0x10
 } EXTITrigger_TypeDef;
 
 #define IS_EXTI_TRIGGER(TRIGGER) (((TRIGGER) == EXTI_Trigger_Rising) || \
@@ -78,16 +77,16 @@ typedef enum {
   */
 
 typedef struct {
-    uint32_t EXTI_Line;               /*!< Specifies the EXTI lines to be enabled or disabled.
+        uint32_t EXTI_Line;               /*!< Specifies the EXTI lines to be enabled or disabled.
                                          This parameter can be any combination value of @ref EXTI_Lines */
 
-    EXTIMode_TypeDef EXTI_Mode;       /*!< Specifies the mode for the EXTI lines.
+        EXTIMode_TypeDef EXTI_Mode;       /*!< Specifies the mode for the EXTI lines.
                                          This parameter can be a value of @ref EXTIMode_TypeDef */
 
-    EXTITrigger_TypeDef EXTI_Trigger; /*!< Specifies the trigger signal active edge for the EXTI lines.
+        EXTITrigger_TypeDef EXTI_Trigger; /*!< Specifies the trigger signal active edge for the EXTI lines.
                                          This parameter can be a value of @ref EXTITrigger_TypeDef */
 
-    FunctionalState EXTI_LineCmd;     /*!< Specifies the new state of the selected EXTI lines.
+        FunctionalState EXTI_LineCmd;     /*!< Specifies the new state of the selected EXTI lines.
                                          This parameter can be set either to ENABLE or DISABLE */
 } EXTI_InitTypeDef;
 

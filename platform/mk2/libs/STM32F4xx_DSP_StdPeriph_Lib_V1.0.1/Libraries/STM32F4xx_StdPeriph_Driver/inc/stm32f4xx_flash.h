@@ -49,16 +49,15 @@ extern "C" {
 /**
   * @brief FLASH Status
   */
-typedef enum
-{
-    FLASH_BUSY = 1,
-    FLASH_ERROR_PGS,
-    FLASH_ERROR_PGP,
-    FLASH_ERROR_PGA,
-    FLASH_ERROR_WRP,
-    FLASH_ERROR_PROGRAM,
-    FLASH_ERROR_OPERATION,
-    FLASH_COMPLETE
+typedef enum {
+        FLASH_BUSY = 1,
+        FLASH_ERROR_PGS,
+        FLASH_ERROR_PGP,
+        FLASH_ERROR_PGA,
+        FLASH_ERROR_WRP,
+        FLASH_ERROR_PROGRAM,
+        FLASH_ERROR_OPERATION,
+        FLASH_COMPLETE
 }
 FLASH_Status;
 

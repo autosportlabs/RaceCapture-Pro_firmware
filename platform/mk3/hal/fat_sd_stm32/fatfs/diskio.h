@@ -17,11 +17,11 @@ typedef BYTE DSTATUS;
 
 /* Results of Disk Functions */
 typedef enum {
-	RES_OK = 0,		/* 0: Successful */
-	RES_ERROR,		/* 1: R/W Error */
-	RES_WRPRT,		/* 2: Write Protected */
-	RES_NOTRDY,		/* 3: Not Ready */
-	RES_PARERR		/* 4: Invalid Parameter */
+        RES_OK = 0,		/* 0: Successful */
+        RES_ERROR,		/* 1: R/W Error */
+        RES_WRPRT,		/* 2: Write Protected */
+        RES_NOTRDY,		/* 3: Not Ready */
+        RES_PARERR		/* 4: Invalid Parameter */
 } DRESULT;
 
 //#define FATFS_DEBUG_SEND_USART(x)	TM_USART_Puts(USART6, x); TM_USART_Puts(USART6, "\n");
@@ -39,19 +39,19 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff);
 
 /* Driver related functions */
 typedef struct {
-	DSTATUS (*disk_initialize)(void);
-	DSTATUS (*disk_status)(void);
-	DRESULT (*disk_ioctl)(BYTE, void *);
-	DRESULT (*disk_write)(const BYTE *, DWORD, UINT);
-	DRESULT (*disk_read)(BYTE *, DWORD, UINT);
+        DSTATUS (*disk_initialize)(void);
+        DSTATUS (*disk_status)(void);
+        DRESULT (*disk_ioctl)(BYTE, void *);
+        DRESULT (*disk_write)(const BYTE *, DWORD, UINT);
+        DRESULT (*disk_read)(BYTE *, DWORD, UINT);
 } DISKIO_LowLevelDriver_t;
 
 /**
  * @brief  Custom drivers for fatfs
  */
 typedef enum {
-	TM_FATFS_Driver_USER1 = 0x07, /*!< Use USER1: when mounting and other stuff to access to this driver. USER1 is a logical string name of your drive */
-	TM_FATFS_Driver_USER2 = 0x08  /*!< User USER2: when mounting and other stuff to access to this driver. USER2 is a logical string name of your drive */
+        TM_FATFS_Driver_USER1 = 0x07, /*!< Use USER1: when mounting and other stuff to access to this driver. USER1 is a logical string name of your drive */
+        TM_FATFS_Driver_USER2 = 0x08  /*!< User USER2: when mounting and other stuff to access to this driver. USER2 is a logical string name of your drive */
 } TM_FATFS_Driver_t;
 
 /* Disk Status Bits (DSTATUS) */

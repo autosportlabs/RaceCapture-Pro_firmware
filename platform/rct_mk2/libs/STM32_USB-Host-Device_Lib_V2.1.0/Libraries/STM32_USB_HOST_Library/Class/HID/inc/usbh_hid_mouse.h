@@ -55,10 +55,10 @@
   * @{
   */
 typedef struct _HID_MOUSE_Data {
-    uint8_t              x;
-    uint8_t              y;
-    uint8_t              z;               /* Not Supported */
-    uint8_t              button;
+        uint8_t              x;
+        uint8_t              y;
+        uint8_t              z;               /* Not Supported */
+        uint8_t              button;
 }
 HID_MOUSE_Data_TypeDef;
 

@@ -59,8 +59,8 @@ void free_sample_buffer(struct sample *s)
 
 bool get_channel_value_by_name(const char * name, double *value, char ** units)
 {
-	struct sample * s = get_current_sample();
-	return get_sample_value_by_name( s, name, value, units );
+        struct sample * s = get_current_sample();
+        return get_sample_value_by_name( s, name, value, units );
 }
 
 bool get_sample_value_by_name(const struct sample *s, const char * name, double *value, char ** units)
@@ -71,27 +71,27 @@ bool get_sample_value_by_name(const struct sample *s, const char * name, double 
                 ChannelSample *sam = (s->channel_samples + i);
                 if (!STR_EQ(name, sam->cfg->label)) continue;
 
-		int channelIndex = sam->channelIndex;
-		*units = sam->cfg->units;
-	        switch(sam->sampleData) {
+                int channelIndex = sam->channelIndex;
+                *units = sam->cfg->units;
+                switch(sam->sampleData) {
                 case SampleData_Float:
-			*value = (double) sam->get_float_sample(channelIndex);
-			return true;
+                        *value = (double) sam->get_float_sample(channelIndex);
+                        return true;
                 case SampleData_Float_Noarg:
-			*value = (double) sam->get_float_sample_noarg();
-			return true;
+                        *value = (double) sam->get_float_sample_noarg();
+                        return true;
                 case SampleData_Int:
-			*value = (double) sam->get_int_sample(channelIndex);
-			return true;
+                        *value = (double) sam->get_int_sample(channelIndex);
+                        return true;
                 case SampleData_Int_Noarg:
-			*value = (double) sam->get_int_sample_noarg();
-			return true;
+                        *value = (double) sam->get_int_sample_noarg();
+                        return true;
                 case SampleData_Double:
-			*value = sam->get_double_sample(channelIndex);
-			return true;
+                        *value = sam->get_double_sample(channelIndex);
+                        return true;
                 case SampleData_Double_Noarg:
-			*value = sam->get_double_sample_noarg();
-			return true;
+                        *value = sam->get_double_sample_noarg();
+                        return true;
                 case SampleData_LongLong:
                 case SampleData_LongLong_Noarg:
                         /* risk of overflow here - specifically pertains to the UTC milliseconds channel */

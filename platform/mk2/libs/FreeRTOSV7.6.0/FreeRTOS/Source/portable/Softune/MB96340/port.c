@@ -300,138 +300,138 @@ extern volatile tskTCB * volatile pxCurrentTCB;
                               */
                              portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-    /* Place a few bytes of known values on the bottom of the stack.
-    This is just useful for debugging. */
-    *pxTopOfStack = 0x1111;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x2222;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x3333;
-    pxTopOfStack--;
+        /* Place a few bytes of known values on the bottom of the stack.
+        This is just useful for debugging. */
+        *pxTopOfStack = 0x1111;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x2222;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x3333;
+        pxTopOfStack--;
 
-    /* Once the task is called the task  would  push  the  pointer to the
-    parameter onto the stack. Hence here the pointer would be copied to the stack
-    first.  When using the COMPACT or LARGE memory model the pointer would be 24
-    bits, and when using the SMALL or MEDIUM memory model the pointer would be 16
-    bits. */
+        /* Once the task is called the task  would  push  the  pointer to the
+        parameter onto the stack. Hence here the pointer would be copied to the stack
+        first.  When using the COMPACT or LARGE memory model the pointer would be 24
+        bits, and when using the SMALL or MEDIUM memory model the pointer would be 16
+        bits. */
 #if( ( configMEMMODEL == portCOMPACT ) || ( configMEMMODEL == portLARGE ) )
-    {
-        *pxTopOfStack = ( portSTACK_TYPE ) ( ( unsigned long ) ( pvParameters ) >> 16 );
-        pxTopOfStack--;
-    }
+        {
+                *pxTopOfStack = ( portSTACK_TYPE ) ( ( unsigned long ) ( pvParameters ) >> 16 );
+                pxTopOfStack--;
+        }
 #endif
 
-    *pxTopOfStack = ( portSTACK_TYPE ) ( pvParameters );
-    pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) ( pvParameters );
+        pxTopOfStack--;
 
-    /* This is redundant push to the stack. This is required in order to introduce
-    an offset so that the task accesses a parameter correctly that is passed on to
-    the task stack. */
+        /* This is redundant push to the stack. This is required in order to introduce
+        an offset so that the task accesses a parameter correctly that is passed on to
+        the task stack. */
 #if( ( configMEMMODEL == portMEDIUM ) || ( configMEMMODEL == portLARGE ) )
-    {
-        *pxTopOfStack = ( xGet_DTB_PCB_bank() & 0xff00 ) | ( ( ( long ) ( pxCode ) >> 16 ) & 0xff );
-        pxTopOfStack--;
-    }
+        {
+                *pxTopOfStack = ( xGet_DTB_PCB_bank() & 0xff00 ) | ( ( ( long ) ( pxCode ) >> 16 ) & 0xff );
+                pxTopOfStack--;
+        }
 #endif
 
-    /* This is redundant push to the stack. This is required in order to introduce
-    an offset so the task correctly accesses the parameter passed on the task stack. */
-    *pxTopOfStack = ( portSTACK_TYPE ) ( pxCode );
-    pxTopOfStack--;
+        /* This is redundant push to the stack. This is required in order to introduce
+        an offset so the task correctly accesses the parameter passed on the task stack. */
+        *pxTopOfStack = ( portSTACK_TYPE ) ( pxCode );
+        pxTopOfStack--;
 
-    /* PS - User Mode, ILM=7, RB=0, Interrupts enabled,USP */
-    *pxTopOfStack = 0xE0C0;
-    pxTopOfStack--;
+        /* PS - User Mode, ILM=7, RB=0, Interrupts enabled,USP */
+        *pxTopOfStack = 0xE0C0;
+        pxTopOfStack--;
 
-    /* PC */
-    *pxTopOfStack = ( portSTACK_TYPE ) ( pxCode );
-    pxTopOfStack--;
+        /* PC */
+        *pxTopOfStack = ( portSTACK_TYPE ) ( pxCode );
+        pxTopOfStack--;
 
-    /* DTB | PCB */
+        /* DTB | PCB */
 #if configMEMMODEL == portSMALL || configMEMMODEL == portCOMPACT
-    {
-        *pxTopOfStack = xGet_DTB_PCB_bank();
-        pxTopOfStack--;
-    }
+        {
+                *pxTopOfStack = xGet_DTB_PCB_bank();
+                pxTopOfStack--;
+        }
 #endif
 
-    /* DTB | PCB, in case of MEDIUM and LARGE memory models, PCB would be used
-    along with PC to indicate the start address of the function. */
+        /* DTB | PCB, in case of MEDIUM and LARGE memory models, PCB would be used
+        along with PC to indicate the start address of the function. */
 #if( ( configMEMMODEL == portMEDIUM ) || ( configMEMMODEL == portLARGE ) )
-    {
-        *pxTopOfStack = ( xGet_DTB_PCB_bank() & 0xff00 ) | ( ( ( long ) ( pxCode ) >> 16 ) & 0xff );
-        pxTopOfStack--;
-    }
+        {
+                *pxTopOfStack = ( xGet_DTB_PCB_bank() & 0xff00 ) | ( ( ( long ) ( pxCode ) >> 16 ) & 0xff );
+                pxTopOfStack--;
+        }
 #endif
 
-    /* DPR | ADB  */
-    *pxTopOfStack = xGet_DPR_ADB_bank();
-    pxTopOfStack--;
+        /* DPR | ADB  */
+        *pxTopOfStack = xGet_DPR_ADB_bank();
+        pxTopOfStack--;
 
-    /* AL */
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x9999;
-    pxTopOfStack--;
+        /* AL */
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x9999;
+        pxTopOfStack--;
 
-    /* AH */
-    *pxTopOfStack = ( portSTACK_TYPE ) 0xAAAA;
-    pxTopOfStack--;
+        /* AH */
+        *pxTopOfStack = ( portSTACK_TYPE ) 0xAAAA;
+        pxTopOfStack--;
 
-    /* Next the general purpose registers. */
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x7777;	/* RW7 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x6666;	/* RW6 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x5555;	/* RW5 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x4444;	/* RW4 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x3333;	/* RW3 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x2222;	/* RW2 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x1111;	/* RW1 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x8888;	/* RW0 */
+        /* Next the general purpose registers. */
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x7777;	/* RW7 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x6666;	/* RW6 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x5555;	/* RW5 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x4444;	/* RW4 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x3333;	/* RW3 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x2222;	/* RW2 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x1111;	/* RW1 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x8888;	/* RW0 */
 
-    return pxTopOfStack;
+        return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 static void prvSetupRLT0Interrupt( void )
 {
-    /* The peripheral clock divided by 16 is used by the timer. */
-    const unsigned short usReloadValue = ( unsigned short ) ( ( ( configCLKP1_CLOCK_HZ / configTICK_RATE_HZ ) / 16UL ) - 1UL );
+        /* The peripheral clock divided by 16 is used by the timer. */
+        const unsigned short usReloadValue = ( unsigned short ) ( ( ( configCLKP1_CLOCK_HZ / configTICK_RATE_HZ ) / 16UL ) - 1UL );
 
-    /* set reload value = 34999+1, TICK Interrupt after 10 ms @ 56MHz of CLKP1 */
-    TMRLR0 = usReloadValue;
+        /* set reload value = 34999+1, TICK Interrupt after 10 ms @ 56MHz of CLKP1 */
+        TMRLR0 = usReloadValue;
 
-    /* prescaler 1:16, reload, interrupt enable, count enable, trigger */
-    TMCSR0 = 0x041B;
+        /* prescaler 1:16, reload, interrupt enable, count enable, trigger */
+        TMCSR0 = 0x041B;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-    /* Setup the hardware to generate the tick. */
-    prvSetupRLT0Interrupt();
+        /* Setup the hardware to generate the tick. */
+        prvSetupRLT0Interrupt();
 
-    /* Restore the context of the first task that is going to run. */
-    portRESTORE_CONTEXT();
+        /* Restore the context of the first task that is going to run. */
+        portRESTORE_CONTEXT();
 
-    /* Simulate a function call end as generated by the compiler.  We will now
-    jump to the start of the task the context of which we have just restored. */
-    __asm(" reti ");
+        /* Simulate a function call end as generated by the compiler.  We will now
+        jump to the start of the task the context of which we have just restored. */
+        __asm(" reti ");
 
 
-    /* Should not get here. */
-    return pdTRUE;
+        /* Should not get here. */
+        return pdTRUE;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-    /* Not implemented - unlikely to ever be required as there is nothing to
-    return to. */
+        /* Not implemented - unlikely to ever be required as there is nothing to
+        return to. */
 }
 
 /*-----------------------------------------------------------*/
@@ -451,32 +451,32 @@ void vPortEndScheduler( void )
  */
 __nosavereg __interrupt void prvRLT0_TICKISR( void )
 {
-    /* Disable interrupts so that portSAVE_CONTEXT() is not interrupted */
-    __DI();
+        /* Disable interrupts so that portSAVE_CONTEXT() is not interrupted */
+        __DI();
 
-    /* Save the context of the interrupted task. */
-    portSAVE_CONTEXT();
+        /* Save the context of the interrupted task. */
+        portSAVE_CONTEXT();
 
-    /* Enable interrupts */
-    __EI();
+        /* Enable interrupts */
+        __EI();
 
-    /* Clear RLT0 interrupt flag */
-    TMCSR0_UF = 0;
+        /* Clear RLT0 interrupt flag */
+        TMCSR0_UF = 0;
 
-    /* Increment the tick count then switch to the highest priority task
-    that is ready to run. */
-    if( xTaskIncrementTick() != pdFALSE ) {
-        vTaskSwitchContext();
-    }
+        /* Increment the tick count then switch to the highest priority task
+        that is ready to run. */
+        if( xTaskIncrementTick() != pdFALSE ) {
+                vTaskSwitchContext();
+        }
 
-    /* Disable interrupts so that portRESTORE_CONTEXT() is not interrupted */
-    __DI();
+        /* Disable interrupts so that portRESTORE_CONTEXT() is not interrupted */
+        __DI();
 
-    /* Restore the context of the new task. */
-    portRESTORE_CONTEXT();
+        /* Restore the context of the new task. */
+        portRESTORE_CONTEXT();
 
-    /* Enable interrupts */
-    __EI();
+        /* Enable interrupts */
+        __EI();
 }
 
 #else
@@ -488,10 +488,10 @@ __nosavereg __interrupt void prvRLT0_TICKISR( void )
  */
 __interrupt void prvRLT0_TICKISR( void )
 {
-    /* Clear RLT0 interrupt flag */
-    TMCSR0_UF = 0;
+        /* Clear RLT0 interrupt flag */
+        TMCSR0_UF = 0;
 
-    xTaskIncrementTick();
+        xTaskIncrementTick();
 }
 
 #endif
@@ -505,42 +505,42 @@ __interrupt void prvRLT0_TICKISR( void )
  */
 __nosavereg __interrupt void vPortYield( void )
 {
-    /* Save the context of the interrupted task. */
-    portSAVE_CONTEXT();
+        /* Save the context of the interrupted task. */
+        portSAVE_CONTEXT();
 
-    /* Switch to the highest priority task that is ready to run. */
-    vTaskSwitchContext();
+        /* Switch to the highest priority task that is ready to run. */
+        vTaskSwitchContext();
 
-    /* Restore the context of the new task. */
-    portRESTORE_CONTEXT();
+        /* Restore the context of the new task. */
+        portRESTORE_CONTEXT();
 }
 /*-----------------------------------------------------------*/
 
 __nosavereg __interrupt void vPortYieldDelayed( void )
 {
-    /* Disable interrupts so that portSAVE_CONTEXT() is not interrupted */
-    __DI();
+        /* Disable interrupts so that portSAVE_CONTEXT() is not interrupted */
+        __DI();
 
-    /* Save the context of the interrupted task. */
-    portSAVE_CONTEXT();
+        /* Save the context of the interrupted task. */
+        portSAVE_CONTEXT();
 
-    /* Enable interrupts */
-    __EI();
+        /* Enable interrupts */
+        __EI();
 
-    /* Clear delayed interrupt flag */
-    __asm (" CLRB  03A4H:0 ");
+        /* Clear delayed interrupt flag */
+        __asm (" CLRB  03A4H:0 ");
 
-    /* Switch to the highest priority task that is ready to run. */
-    vTaskSwitchContext();
+        /* Switch to the highest priority task that is ready to run. */
+        vTaskSwitchContext();
 
-    /* Disable interrupts so that portSAVE_CONTEXT() is not interrupted */
-    __DI();
+        /* Disable interrupts so that portSAVE_CONTEXT() is not interrupted */
+        __DI();
 
-    /* Restore the context of the new task. */
-    portRESTORE_CONTEXT();
+        /* Restore the context of the new task. */
+        portRESTORE_CONTEXT();
 
-    /* Enable interrupts */
-    __EI();
+        /* Enable interrupts */
+        __EI();
 }
 /*-----------------------------------------------------------*/
 

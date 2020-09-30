@@ -56,56 +56,56 @@
   */
 
 typedef union _USBH_CBW_Block {
-    struct __CBW {
-        uint32_t CBWSignature;
-        uint32_t CBWTag;
-        uint32_t CBWTransferLength;
-        uint8_t CBWFlags;
-        uint8_t CBWLUN;
-        uint8_t CBWLength;
-        uint8_t CBWCB[16];
-    } field;
-    uint8_t CBWArray[31];
+        struct __CBW {
+                uint32_t CBWSignature;
+                uint32_t CBWTag;
+                uint32_t CBWTransferLength;
+                uint8_t CBWFlags;
+                uint8_t CBWLUN;
+                uint8_t CBWLength;
+                uint8_t CBWCB[16];
+        } field;
+        uint8_t CBWArray[31];
 } HostCBWPkt_TypeDef;
 
 typedef enum {
-    USBH_MSC_BOT_INIT_STATE = 0,
-    USBH_MSC_BOT_RESET,
-    USBH_MSC_GET_MAX_LUN,
-    USBH_MSC_TEST_UNIT_READY,
-    USBH_MSC_READ_CAPACITY10,
-    USBH_MSC_MODE_SENSE6,
-    USBH_MSC_REQUEST_SENSE,
-    USBH_MSC_BOT_USB_TRANSFERS,
-    USBH_MSC_DEFAULT_APPLI_STATE,
-    USBH_MSC_CTRL_ERROR_STATE,
-    USBH_MSC_UNRECOVERED_STATE
+        USBH_MSC_BOT_INIT_STATE = 0,
+        USBH_MSC_BOT_RESET,
+        USBH_MSC_GET_MAX_LUN,
+        USBH_MSC_TEST_UNIT_READY,
+        USBH_MSC_READ_CAPACITY10,
+        USBH_MSC_MODE_SENSE6,
+        USBH_MSC_REQUEST_SENSE,
+        USBH_MSC_BOT_USB_TRANSFERS,
+        USBH_MSC_DEFAULT_APPLI_STATE,
+        USBH_MSC_CTRL_ERROR_STATE,
+        USBH_MSC_UNRECOVERED_STATE
 }
 MSCState;
 
 
 typedef struct _BOTXfer {
-    uint8_t MSCState;
-    uint8_t MSCStateBkp;
-    uint8_t MSCStateCurrent;
-    uint8_t CmdStateMachine;
-    uint8_t BOTState;
-    uint8_t BOTStateBkp;
-    uint8_t* pRxTxBuff;
-    uint16_t DataLength;
-    uint8_t BOTXferErrorCount;
-    uint8_t BOTXferStatus;
+        uint8_t MSCState;
+        uint8_t MSCStateBkp;
+        uint8_t MSCStateCurrent;
+        uint8_t CmdStateMachine;
+        uint8_t BOTState;
+        uint8_t BOTStateBkp;
+        uint8_t* pRxTxBuff;
+        uint16_t DataLength;
+        uint8_t BOTXferErrorCount;
+        uint8_t BOTXferStatus;
 } USBH_BOTXfer_TypeDef;
 
 
 typedef union _USBH_CSW_Block {
-    struct __CSW {
-        uint32_t CSWSignature;
-        uint32_t CSWTag;
-        uint32_t CSWDataResidue;
-        uint8_t  CSWStatus;
-    } field;
-    uint8_t CSWArray[13];
+        struct __CSW {
+                uint32_t CSWSignature;
+                uint32_t CSWTag;
+                uint32_t CSWDataResidue;
+                uint8_t  CSWStatus;
+        } field;
+        uint8_t CSWArray[13];
 } HostCSWPkt_TypeDef;
 
 /**

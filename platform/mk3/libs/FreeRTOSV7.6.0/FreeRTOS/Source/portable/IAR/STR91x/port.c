@@ -155,90 +155,90 @@ static u16 s_nPulseLength;
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-    portSTACK_TYPE *pxOriginalTOS;
+        portSTACK_TYPE *pxOriginalTOS;
 
-    pxOriginalTOS = pxTopOfStack;
+        pxOriginalTOS = pxTopOfStack;
 
-    /* To ensure asserts in tasks.c don't fail, although in this case the assert
-    is not really required. */
-    pxTopOfStack--;
+        /* To ensure asserts in tasks.c don't fail, although in this case the assert
+        is not really required. */
+        pxTopOfStack--;
 
-    /* Setup the initial stack of the task.  The stack is set exactly as
-    expected by the portRESTORE_CONTEXT() macro. */
+        /* Setup the initial stack of the task.  The stack is set exactly as
+        expected by the portRESTORE_CONTEXT() macro. */
 
-    /* First on the stack is the return address - which in this case is the
-    start of the task.  The offset is added to make the return address appear
-    as it would within an IRQ ISR. */
-    *pxTopOfStack = ( portSTACK_TYPE ) pxCode + portINSTRUCTION_SIZE;
-    pxTopOfStack--;
+        /* First on the stack is the return address - which in this case is the
+        start of the task.  The offset is added to make the return address appear
+        as it would within an IRQ ISR. */
+        *pxTopOfStack = ( portSTACK_TYPE ) pxCode + portINSTRUCTION_SIZE;
+        pxTopOfStack--;
 
-    *pxTopOfStack = ( portSTACK_TYPE ) 0xaaaaaaaa;	/* R14 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) pxOriginalTOS; /* Stack used when task starts goes in R13. */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x12121212;	/* R12 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x11111111;	/* R11 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x10101010;	/* R10 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x09090909;	/* R9 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x08080808;	/* R8 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x07070707;	/* R7 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x06060606;	/* R6 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x05050505;	/* R5 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x04040404;	/* R4 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x03030303;	/* R3 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x02020202;	/* R2 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x01010101;	/* R1 */
-    pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0xaaaaaaaa;	/* R14 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) pxOriginalTOS; /* Stack used when task starts goes in R13. */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x12121212;	/* R12 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x11111111;	/* R11 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x10101010;	/* R10 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x09090909;	/* R9 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x08080808;	/* R8 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x07070707;	/* R7 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x06060606;	/* R6 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x05050505;	/* R5 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x04040404;	/* R4 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x03030303;	/* R3 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x02020202;	/* R2 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x01010101;	/* R1 */
+        pxTopOfStack--;
 
-    /* When the task starts is will expect to find the function parameter in
-    R0. */
-    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters; /* R0 */
-    pxTopOfStack--;
+        /* When the task starts is will expect to find the function parameter in
+        R0. */
+        *pxTopOfStack = ( portSTACK_TYPE ) pvParameters; /* R0 */
+        pxTopOfStack--;
 
-    /* The status register is set for system mode, with interrupts enabled. */
-    *pxTopOfStack = ( portSTACK_TYPE ) portINITIAL_SPSR;
-    pxTopOfStack--;
+        /* The status register is set for system mode, with interrupts enabled. */
+        *pxTopOfStack = ( portSTACK_TYPE ) portINITIAL_SPSR;
+        pxTopOfStack--;
 
-    /* Interrupt flags cannot always be stored on the stack and will
-    instead be stored in a variable, which is then saved as part of the
-    tasks context. */
-    *pxTopOfStack = portNO_CRITICAL_NESTING;
+        /* Interrupt flags cannot always be stored on the stack and will
+        instead be stored in a variable, which is then saved as part of the
+        tasks context. */
+        *pxTopOfStack = portNO_CRITICAL_NESTING;
 
-    return pxTopOfStack;
+        return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-    extern void vPortStartFirstTask( void );
+        extern void vPortStartFirstTask( void );
 
-    /* Start the timer that generates the tick ISR.  Interrupts are disabled
-    here already. */
-    prvSetupTimerInterrupt();
+        /* Start the timer that generates the tick ISR.  Interrupts are disabled
+        here already. */
+        prvSetupTimerInterrupt();
 
-    /* Start the first task. */
-    vPortStartFirstTask();
+        /* Start the first task. */
+        vPortStartFirstTask();
 
-    /* Should not get here! */
-    return 0;
+        /* Should not get here! */
+        return 0;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-    /* It is unlikely that the ARM port will require this function as there
-    is nothing to return to.  */
+        /* It is unlikely that the ARM port will require this function as there
+        is nothing to return to.  */
 }
 /*-----------------------------------------------------------*/
 
@@ -248,164 +248,164 @@ keyword. */
 
 static void prvFindFactors(u32 n, u16 *a, u32 *b)
 {
-    /* This function is copied from the ST STR7 library and is
-    copyright STMicroelectronics.  Reproduced with permission. */
+        /* This function is copied from the ST STR7 library and is
+        copyright STMicroelectronics.  Reproduced with permission. */
 
-    u32 b0;
-    u16 a0;
-    long err, err_min=n;
+        u32 b0;
+        u16 a0;
+        long err, err_min=n;
 
-    *a = a0 = ((n-1)/65536ul) + 1;
-    *b = b0 = n / *a;
+        *a = a0 = ((n-1)/65536ul) + 1;
+        *b = b0 = n / *a;
 
-    for (; *a <= 256; (*a)++) {
-        *b = n / *a;
-        err = (long)*a * (long)*b - (long)n;
-        if (abs(err) > (*a / 2)) {
-            (*b)++;
-            err = (long)*a * (long)*b - (long)n;
+        for (; *a <= 256; (*a)++) {
+                *b = n / *a;
+                err = (long)*a * (long)*b - (long)n;
+                if (abs(err) > (*a / 2)) {
+                        (*b)++;
+                        err = (long)*a * (long)*b - (long)n;
+                }
+                if (abs(err) < abs(err_min)) {
+                        err_min = err;
+                        a0 = *a;
+                        b0 = *b;
+                        if (err == 0) break;
+                }
         }
-        if (abs(err) < abs(err_min)) {
-            err_min = err;
-            a0 = *a;
-            b0 = *b;
-            if (err == 0) break;
-        }
-    }
 
-    *a = a0;
-    *b = b0;
+        *a = a0;
+        *b = b0;
 }
 /*-----------------------------------------------------------*/
 
 static void prvSetupTimerInterrupt( void )
 {
-    WDG_InitTypeDef xWdg;
-    unsigned short a;
-    unsigned long n = configCPU_PERIPH_HZ / configTICK_RATE_HZ, b;
+        WDG_InitTypeDef xWdg;
+        unsigned short a;
+        unsigned long n = configCPU_PERIPH_HZ / configTICK_RATE_HZ, b;
 
-    /* Configure the watchdog as a free running timer that generates a
-    periodic interrupt. */
+        /* Configure the watchdog as a free running timer that generates a
+        periodic interrupt. */
 
-    SCU_APBPeriphClockConfig( __WDG, ENABLE );
-    WDG_DeInit();
-    WDG_StructInit(&xWdg);
-    prvFindFactors( n, &a, &b );
-    xWdg.WDG_Prescaler = a - 1;
-    xWdg.WDG_Preload = b - 1;
-    WDG_Init( &xWdg );
-    WDG_ITConfig(ENABLE);
+        SCU_APBPeriphClockConfig( __WDG, ENABLE );
+        WDG_DeInit();
+        WDG_StructInit(&xWdg);
+        prvFindFactors( n, &a, &b );
+        xWdg.WDG_Prescaler = a - 1;
+        xWdg.WDG_Preload = b - 1;
+        WDG_Init( &xWdg );
+        WDG_ITConfig(ENABLE);
 
-    /* Configure the VIC for the WDG interrupt. */
-    VIC_Config( WDG_ITLine, VIC_IRQ, 10 );
-    VIC_ITCmd( WDG_ITLine, ENABLE );
+        /* Configure the VIC for the WDG interrupt. */
+        VIC_Config( WDG_ITLine, VIC_IRQ, 10 );
+        VIC_ITCmd( WDG_ITLine, ENABLE );
 
-    /* Install the default handlers for both VIC's. */
-    VIC0->DVAR = ( unsigned long ) prvDefaultHandler;
-    VIC1->DVAR = ( unsigned long ) prvDefaultHandler;
+        /* Install the default handlers for both VIC's. */
+        VIC0->DVAR = ( unsigned long ) prvDefaultHandler;
+        VIC1->DVAR = ( unsigned long ) prvDefaultHandler;
 
-    WDG_Cmd(ENABLE);
+        WDG_Cmd(ENABLE);
 }
 /*-----------------------------------------------------------*/
 
 void WDG_IRQHandler( void )
 {
-    {
-        /* Increment the tick counter. */
-        if( xTaskIncrementTick() != pdFALSE ) {
-            /* Select a new task to execute. */
-            vTaskSwitchContext();
-        }
+        {
+                /* Increment the tick counter. */
+                if( xTaskIncrementTick() != pdFALSE ) {
+                        /* Select a new task to execute. */
+                        vTaskSwitchContext();
+                }
 
-        /* Clear the interrupt in the watchdog. */
-        WDG->SR &= ~0x0001;
-    }
+                /* Clear the interrupt in the watchdog. */
+                WDG->SR &= ~0x0001;
+        }
 }
 
 #else
 
 static void prvFindFactors(u32 n, u8 *a, u16 *b)
 {
-    /* This function is copied from the ST STR7 library and is
-    copyright STMicroelectronics.  Reproduced with permission. */
+        /* This function is copied from the ST STR7 library and is
+        copyright STMicroelectronics.  Reproduced with permission. */
 
-    u16 b0;
-    u8 a0;
-    long err, err_min=n;
+        u16 b0;
+        u8 a0;
+        long err, err_min=n;
 
 
-    *a = a0 = ((n-1)/256) + 1;
-    *b = b0 = n / *a;
+        *a = a0 = ((n-1)/256) + 1;
+        *b = b0 = n / *a;
 
-    for (; *a <= 256; (*a)++) {
-        *b = n / *a;
-        err = (long)*a * (long)*b - (long)n;
-        if (abs(err) > (*a / 2)) {
-            (*b)++;
-            err = (long)*a * (long)*b - (long)n;
+        for (; *a <= 256; (*a)++) {
+                *b = n / *a;
+                err = (long)*a * (long)*b - (long)n;
+                if (abs(err) > (*a / 2)) {
+                        (*b)++;
+                        err = (long)*a * (long)*b - (long)n;
+                }
+                if (abs(err) < abs(err_min)) {
+                        err_min = err;
+                        a0 = *a;
+                        b0 = *b;
+                        if (err == 0) break;
+                }
         }
-        if (abs(err) < abs(err_min)) {
-            err_min = err;
-            a0 = *a;
-            b0 = *b;
-            if (err == 0) break;
-        }
-    }
 
-    *a = a0;
-    *b = b0;
+        *a = a0;
+        *b = b0;
 }
 /*-----------------------------------------------------------*/
 
 static void prvSetupTimerInterrupt( void )
 {
-    unsigned char a;
-    unsigned short b;
-    unsigned long n = configCPU_PERIPH_HZ / configTICK_RATE_HZ;
+        unsigned char a;
+        unsigned short b;
+        unsigned long n = configCPU_PERIPH_HZ / configTICK_RATE_HZ;
 
-    TIM_InitTypeDef timer;
+        TIM_InitTypeDef timer;
 
-    SCU_APBPeriphClockConfig( __TIM23, ENABLE );
-    TIM_DeInit(TIM2);
-    TIM_StructInit(&timer);
-    prvFindFactors( n, &a, &b );
+        SCU_APBPeriphClockConfig( __TIM23, ENABLE );
+        TIM_DeInit(TIM2);
+        TIM_StructInit(&timer);
+        prvFindFactors( n, &a, &b );
 
-    timer.TIM_Mode           = TIM_OCM_CHANNEL_1;
-    timer.TIM_OC1_Modes      = TIM_TIMING;
-    timer.TIM_Clock_Source   = TIM_CLK_APB;
-    timer.TIM_Clock_Edge     = TIM_CLK_EDGE_RISING;
-    timer.TIM_Prescaler      = a-1;
-    timer.TIM_Pulse_Level_1  = TIM_HIGH;
-    timer.TIM_Pulse_Length_1 = s_nPulseLength  = b-1;
+        timer.TIM_Mode           = TIM_OCM_CHANNEL_1;
+        timer.TIM_OC1_Modes      = TIM_TIMING;
+        timer.TIM_Clock_Source   = TIM_CLK_APB;
+        timer.TIM_Clock_Edge     = TIM_CLK_EDGE_RISING;
+        timer.TIM_Prescaler      = a-1;
+        timer.TIM_Pulse_Level_1  = TIM_HIGH;
+        timer.TIM_Pulse_Length_1 = s_nPulseLength  = b-1;
 
-    TIM_Init (TIM2, &timer);
-    TIM_ITConfig(TIM2, TIM_IT_OC1, ENABLE);
-    /* Configure the VIC for the WDG interrupt. */
-    VIC_Config( TIM2_ITLine, VIC_IRQ, 10 );
-    VIC_ITCmd( TIM2_ITLine, ENABLE );
+        TIM_Init (TIM2, &timer);
+        TIM_ITConfig(TIM2, TIM_IT_OC1, ENABLE);
+        /* Configure the VIC for the WDG interrupt. */
+        VIC_Config( TIM2_ITLine, VIC_IRQ, 10 );
+        VIC_ITCmd( TIM2_ITLine, ENABLE );
 
-    /* Install the default handlers for both VIC's. */
-    VIC0->DVAR = ( unsigned long ) prvDefaultHandler;
-    VIC1->DVAR = ( unsigned long ) prvDefaultHandler;
+        /* Install the default handlers for both VIC's. */
+        VIC0->DVAR = ( unsigned long ) prvDefaultHandler;
+        VIC1->DVAR = ( unsigned long ) prvDefaultHandler;
 
-    TIM_CounterCmd(TIM2, TIM_CLEAR);
-    TIM_CounterCmd(TIM2, TIM_START);
+        TIM_CounterCmd(TIM2, TIM_CLEAR);
+        TIM_CounterCmd(TIM2, TIM_START);
 }
 /*-----------------------------------------------------------*/
 
 void TIM2_IRQHandler( void )
 {
-    /* Reset the timer counter to avioid overflow. */
-    TIM2->OC1R += s_nPulseLength;
+        /* Reset the timer counter to avioid overflow. */
+        TIM2->OC1R += s_nPulseLength;
 
-    /* Increment the tick counter. */
-    if( xTaskIncrementTick() != pdFALSE ) {
-        /* Select a new task to run. */
-        vTaskSwitchContext();
-    }
+        /* Increment the tick counter. */
+        if( xTaskIncrementTick() != pdFALSE ) {
+                /* Select a new task to run. */
+                vTaskSwitchContext();
+        }
 
-    /* Clear the interrupt in the watchdog. */
-    TIM2->SR &= ~TIM_FLAG_OC1;
+        /* Clear the interrupt in the watchdog. */
+        TIM2->SR &= ~TIM_FLAG_OC1;
 }
 
 #endif /* USE_WATCHDOG_TICK */
@@ -414,28 +414,28 @@ void TIM2_IRQHandler( void )
 
 __arm __interwork void vPortEnterCritical( void )
 {
-    /* Disable interrupts first! */
-    portDISABLE_INTERRUPTS();
+        /* Disable interrupts first! */
+        portDISABLE_INTERRUPTS();
 
-    /* Now interrupts are disabled ulCriticalNesting can be accessed
-    directly.  Increment ulCriticalNesting to keep a count of how many times
-    portENTER_CRITICAL() has been called. */
-    ulCriticalNesting++;
+        /* Now interrupts are disabled ulCriticalNesting can be accessed
+        directly.  Increment ulCriticalNesting to keep a count of how many times
+        portENTER_CRITICAL() has been called. */
+        ulCriticalNesting++;
 }
 /*-----------------------------------------------------------*/
 
 __arm __interwork void vPortExitCritical( void )
 {
-    if( ulCriticalNesting > portNO_CRITICAL_NESTING ) {
-        /* Decrement the nesting count as we are leaving a critical section. */
-        ulCriticalNesting--;
+        if( ulCriticalNesting > portNO_CRITICAL_NESTING ) {
+                /* Decrement the nesting count as we are leaving a critical section. */
+                ulCriticalNesting--;
 
-        /* If the nesting level has reached zero then interrupts should be
-        re-enabled. */
-        if( ulCriticalNesting == portNO_CRITICAL_NESTING ) {
-            portENABLE_INTERRUPTS();
+                /* If the nesting level has reached zero then interrupts should be
+                re-enabled. */
+                if( ulCriticalNesting == portNO_CRITICAL_NESTING ) {
+                        portENABLE_INTERRUPTS();
+                }
         }
-    }
 }
 /*-----------------------------------------------------------*/
 

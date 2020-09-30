@@ -55,64 +55,64 @@
  */
 
 void arm_negate_q7(
-    q7_t * pSrc,
-    q7_t * pDst,
-    uint32_t blockSize)
+        q7_t * pSrc,
+        q7_t * pDst,
+        uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* loop counter */
+        uint32_t blkCnt;                               /* loop counter */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    q7_t in1;                                      /* Input value1 */
-    q7_t in2;                                      /* Input value2 */
-    q7_t in3;                                      /* Input value3 */
-    q7_t in4;                                      /* Input value4 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        q7_t in1;                                      /* Input value1 */
+        q7_t in2;                                      /* Input value2 */
+        q7_t in3;                                      /* Input value3 */
+        q7_t in4;                                      /* Input value4 */
 
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = -A */
-        /* Read four inputs */
-        in1 = *pSrc++;
-        in2 = *pSrc++;
-        in3 = *pSrc++;
-        in4 = *pSrc++;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = -A */
+                /* Read four inputs */
+                in1 = *pSrc++;
+                in2 = *pSrc++;
+                in3 = *pSrc++;
+                in4 = *pSrc++;
 
-        /* Store the Negated results in the destination buffer in a single cycle by packing the results */
-        *__SIMD32(pDst)++ =
-            __PACKq7(__SSAT(-in1, 8), __SSAT(-in2, 8), __SSAT(-in3, 8),
-                     __SSAT(-in4, 8));
+                /* Store the Negated results in the destination buffer in a single cycle by packing the results */
+                *__SIMD32(pDst)++ =
+                        __PACKq7(__SSAT(-in1, 8), __SSAT(-in2, 8), __SSAT(-in3, 8),
+                                 __SSAT(-in4, 8));
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    while(blkCnt > 0u) {
-        /* C = -A */
-        /* Negate and then store the results in the destination buffer. */
-        *pDst++ = __SSAT(-*pSrc++, 8);
+        while(blkCnt > 0u) {
+                /* C = -A */
+                /* Negate and then store the results in the destination buffer. */
+                *pDst++ = __SSAT(-*pSrc++, 8);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 }
 
 /**

@@ -73,78 +73,78 @@
  */
 
 arm_status arm_mat_scale_f32(
-    const arm_matrix_instance_f32 * pSrc,
-    float32_t scale,
-    arm_matrix_instance_f32 * pDst)
+        const arm_matrix_instance_f32 * pSrc,
+        float32_t scale,
+        arm_matrix_instance_f32 * pDst)
 {
-    float32_t *pIn = pSrc->pData;                  /* input data matrix pointer */
-    float32_t *pOut = pDst->pData;                 /* output data matrix pointer */
-    uint32_t numSamples;                           /* total number of elements in the matrix */
-    uint32_t blkCnt;                               /* loop counters */
-    arm_status status;                             /* status of matrix scaling     */
+        float32_t *pIn = pSrc->pData;                  /* input data matrix pointer */
+        float32_t *pOut = pDst->pData;                 /* output data matrix pointer */
+        uint32_t numSamples;                           /* total number of elements in the matrix */
+        uint32_t blkCnt;                               /* loop counters */
+        arm_status status;                             /* status of matrix scaling     */
 
 #ifdef ARM_MATH_MATRIX_CHECK
 
 
-    /* Check for matrix mismatch condition */
-    if((pSrc->numRows != pDst->numRows) || (pSrc->numCols != pDst->numCols)) {
-        /* Set status as ARM_MATH_SIZE_MISMATCH */
-        status = ARM_MATH_SIZE_MISMATCH;
-    } else
+        /* Check for matrix mismatch condition */
+        if((pSrc->numRows != pDst->numRows) || (pSrc->numCols != pDst->numCols)) {
+                /* Set status as ARM_MATH_SIZE_MISMATCH */
+                status = ARM_MATH_SIZE_MISMATCH;
+        } else
 #endif /*    #ifdef ARM_MATH_MATRIX_CHECK    */
 
-    {
-        /* Total number of samples in the input matrix */
-        numSamples = (uint32_t) pSrc->numRows * pSrc->numCols;
+        {
+                /* Total number of samples in the input matrix */
+                numSamples = (uint32_t) pSrc->numRows * pSrc->numCols;
 
 #ifndef ARM_MATH_CM0
 
-        /* Run the below code for Cortex-M4 and Cortex-M3 */
+                /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-        /* Loop Unrolling */
-        blkCnt = numSamples >> 2;
+                /* Loop Unrolling */
+                blkCnt = numSamples >> 2;
 
-        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-         ** a second loop below computes the remaining 1 to 3 samples. */
-        while(blkCnt > 0u) {
-            /* C(m,n) = A(m,n) * scale */
-            /* Scaling and results are stored in the destination buffer. */
-            *pOut++ = (*pIn++) * scale;
-            *pOut++ = (*pIn++) * scale;
-            *pOut++ = (*pIn++) * scale;
-            *pOut++ = (*pIn++) * scale;
+                /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+                 ** a second loop below computes the remaining 1 to 3 samples. */
+                while(blkCnt > 0u) {
+                        /* C(m,n) = A(m,n) * scale */
+                        /* Scaling and results are stored in the destination buffer. */
+                        *pOut++ = (*pIn++) * scale;
+                        *pOut++ = (*pIn++) * scale;
+                        *pOut++ = (*pIn++) * scale;
+                        *pOut++ = (*pIn++) * scale;
 
-            /* Decrement the numSamples loop counter */
-            blkCnt--;
-        }
+                        /* Decrement the numSamples loop counter */
+                        blkCnt--;
+                }
 
-        /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
-         ** No loop unrolling is used. */
-        blkCnt = numSamples % 0x4u;
+                /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
+                 ** No loop unrolling is used. */
+                blkCnt = numSamples % 0x4u;
 
 #else
 
-        /* Run the below code for Cortex-M0 */
+                /* Run the below code for Cortex-M0 */
 
-        /* Initialize blkCnt with number of samples */
-        blkCnt = numSamples;
+                /* Initialize blkCnt with number of samples */
+                blkCnt = numSamples;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-        while(blkCnt > 0u) {
-            /* C(m,n) = A(m,n) * scale */
-            /* The results are stored in the destination buffer. */
-            *pOut++ = (*pIn++) * scale;
+                while(blkCnt > 0u) {
+                        /* C(m,n) = A(m,n) * scale */
+                        /* The results are stored in the destination buffer. */
+                        *pOut++ = (*pIn++) * scale;
 
-            /* Decrement the loop counter */
-            blkCnt--;
+                        /* Decrement the loop counter */
+                        blkCnt--;
+                }
+                /* Set status as ARM_MATH_SUCCESS */
+                status = ARM_MATH_SUCCESS;
         }
-        /* Set status as ARM_MATH_SUCCESS */
-        status = ARM_MATH_SUCCESS;
-    }
 
-    /* Return to application */
-    return (status);
+        /* Return to application */
+        return (status);
 }
 
 /**

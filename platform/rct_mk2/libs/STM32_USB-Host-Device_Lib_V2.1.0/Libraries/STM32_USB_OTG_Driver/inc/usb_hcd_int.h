@@ -56,9 +56,9 @@
   */
 
 typedef struct _USBH_HCD_INT {
-    uint8_t (* SOF) (USB_OTG_CORE_HANDLE *pdev);
-    uint8_t (* DevConnected) (USB_OTG_CORE_HANDLE *pdev);
-    uint8_t (* DevDisconnected) (USB_OTG_CORE_HANDLE *pdev);
+        uint8_t (* SOF) (USB_OTG_CORE_HANDLE *pdev);
+        uint8_t (* DevConnected) (USB_OTG_CORE_HANDLE *pdev);
+        uint8_t (* DevDisconnected) (USB_OTG_CORE_HANDLE *pdev);
 
 } USBH_HCD_INT_cb_TypeDef;
 
@@ -79,7 +79,7 @@ extern USBH_HCD_INT_cb_TypeDef *USBH_HCD_INT_fops;
   hcint_clear.b.intr = 1; \
   USB_OTG_WRITE_REG32(&((HC_REGS)->HCINT), hcint_clear.d32);\
   }\
- 
+
 #define MASK_HOST_INT_CHH(hc_num) { USB_OTG_HCINTMSK_TypeDef  INTMSK; \
     INTMSK.d32 = USB_OTG_READ_REG32(&pdev->regs.HC_REGS[hc_num]->HCINTMSK); \
     INTMSK.b.chhltd = 0; \

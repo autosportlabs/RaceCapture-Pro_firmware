@@ -61,40 +61,40 @@
 */
 
 void arm_lms_norm_init_q31(
-    arm_lms_norm_instance_q31 * S,
-    uint16_t numTaps,
-    q31_t * pCoeffs,
-    q31_t * pState,
-    q31_t mu,
-    uint32_t blockSize,
-    uint8_t postShift)
+        arm_lms_norm_instance_q31 * S,
+        uint16_t numTaps,
+        q31_t * pCoeffs,
+        q31_t * pState,
+        q31_t mu,
+        uint32_t blockSize,
+        uint8_t postShift)
 {
-    /* Assign filter taps */
-    S->numTaps = numTaps;
+        /* Assign filter taps */
+        S->numTaps = numTaps;
 
-    /* Assign coefficient pointer */
-    S->pCoeffs = pCoeffs;
+        /* Assign coefficient pointer */
+        S->pCoeffs = pCoeffs;
 
-    /* Clear state buffer and size is always blockSize + numTaps - 1  */
-    memset(pState, 0, (numTaps + (blockSize - 1u)) * sizeof(q31_t));
+        /* Clear state buffer and size is always blockSize + numTaps - 1  */
+        memset(pState, 0, (numTaps + (blockSize - 1u)) * sizeof(q31_t));
 
-    /* Assign post Shift value applied to coefficients */
-    S->postShift = postShift;
+        /* Assign post Shift value applied to coefficients */
+        S->postShift = postShift;
 
-    /* Assign state pointer */
-    S->pState = pState;
+        /* Assign state pointer */
+        S->pState = pState;
 
-    /* Assign Step size value */
-    S->mu = mu;
+        /* Assign Step size value */
+        S->mu = mu;
 
-    /* Initialize reciprocal pointer table */
-    S->recipTable = armRecipTableQ31;
+        /* Initialize reciprocal pointer table */
+        S->recipTable = armRecipTableQ31;
 
-    /* Initialise Energy to zero */
-    S->energy = 0;
+        /* Initialise Energy to zero */
+        S->energy = 0;
 
-    /* Initialise x0 to zero */
-    S->x0 = 0;
+        /* Initialise x0 to zero */
+        S->x0 = 0;
 
 }
 

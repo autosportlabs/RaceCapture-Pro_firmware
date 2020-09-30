@@ -53,27 +53,27 @@
  */
 
 void arm_iir_lattice_init_q31(
-    arm_iir_lattice_instance_q31 * S,
-    uint16_t numStages,
-    q31_t * pkCoeffs,
-    q31_t * pvCoeffs,
-    q31_t * pState,
-    uint32_t blockSize)
+        arm_iir_lattice_instance_q31 * S,
+        uint16_t numStages,
+        q31_t * pkCoeffs,
+        q31_t * pvCoeffs,
+        q31_t * pState,
+        uint32_t blockSize)
 {
-    /* Assign filter taps */
-    S->numStages = numStages;
+        /* Assign filter taps */
+        S->numStages = numStages;
 
-    /* Assign reflection coefficient pointer */
-    S->pkCoeffs = pkCoeffs;
+        /* Assign reflection coefficient pointer */
+        S->pkCoeffs = pkCoeffs;
 
-    /* Assign ladder coefficient pointer */
-    S->pvCoeffs = pvCoeffs;
+        /* Assign ladder coefficient pointer */
+        S->pvCoeffs = pvCoeffs;
 
-    /* Clear state buffer and size is always blockSize + numStages */
-    memset(pState, 0, (numStages + blockSize) * sizeof(q31_t));
+        /* Clear state buffer and size is always blockSize + numStages */
+        memset(pState, 0, (numStages + blockSize) * sizeof(q31_t));
 
-    /* Assign state pointer */
-    S->pState = pState;
+        /* Assign state pointer */
+        S->pState = pState;
 
 
 }

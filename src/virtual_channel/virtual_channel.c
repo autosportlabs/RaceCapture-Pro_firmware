@@ -76,8 +76,7 @@ int create_virtual_channel(const ChannelConfig chCfg)
                 channel->currentValue = 0;
                 configChanged();
                 new_channel_id = g_virtualChannelCount++;
-        }
-        else {
+        } else {
                 pr_error_int_msg("[vchan] Limit reached: ", g_virtualChannelCount);
         }
         xSemaphoreGive(vchan_mutex);

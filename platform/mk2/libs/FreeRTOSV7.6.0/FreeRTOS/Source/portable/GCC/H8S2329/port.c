@@ -103,154 +103,154 @@ void vPortYield( void ) __attribute__ ( ( saveall, interrupt_handler ) );
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-    unsigned long ulValue;
+        unsigned long ulValue;
 
-    /* This requires an even address. */
-    ulValue = ( unsigned long ) pxTopOfStack;
-    if( ulValue & 1UL ) {
-        pxTopOfStack = pxTopOfStack - 1;
-    }
+        /* This requires an even address. */
+        ulValue = ( unsigned long ) pxTopOfStack;
+        if( ulValue & 1UL ) {
+                pxTopOfStack = pxTopOfStack - 1;
+        }
 
-    /* Place a few bytes of known values on the bottom of the stack.
-    This is just useful for debugging. */
-    pxTopOfStack--;
-    *pxTopOfStack = 0xaa;
-    pxTopOfStack--;
-    *pxTopOfStack = 0xbb;
-    pxTopOfStack--;
-    *pxTopOfStack = 0xcc;
-    pxTopOfStack--;
-    *pxTopOfStack = 0xdd;
+        /* Place a few bytes of known values on the bottom of the stack.
+        This is just useful for debugging. */
+        pxTopOfStack--;
+        *pxTopOfStack = 0xaa;
+        pxTopOfStack--;
+        *pxTopOfStack = 0xbb;
+        pxTopOfStack--;
+        *pxTopOfStack = 0xcc;
+        pxTopOfStack--;
+        *pxTopOfStack = 0xdd;
 
-    /* The initial stack mimics an interrupt stack.  First there is the program
-    counter (24 bits). */
-    ulValue = ( unsigned long ) pxCode;
+        /* The initial stack mimics an interrupt stack.  First there is the program
+        counter (24 bits). */
+        ulValue = ( unsigned long ) pxCode;
 
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
-    pxTopOfStack--;
-    ulValue >>= 8UL;
-    *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
-    pxTopOfStack--;
-    ulValue >>= 8UL;
-    *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
+        pxTopOfStack--;
+        ulValue >>= 8UL;
+        *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
+        pxTopOfStack--;
+        ulValue >>= 8UL;
+        *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
 
-    /* Followed by the CCR. */
-    pxTopOfStack--;
-    *pxTopOfStack = portINITIAL_CCR;
+        /* Followed by the CCR. */
+        pxTopOfStack--;
+        *pxTopOfStack = portINITIAL_CCR;
 
-    /* Next all the general purpose registers - with the parameters being passed
-    in ER0.  The parameter order must match that used by the compiler when the
-    "saveall" function attribute is used. */
+        /* Next all the general purpose registers - with the parameters being passed
+        in ER0.  The parameter order must match that used by the compiler when the
+        "saveall" function attribute is used. */
 
-    /* ER6 */
-    pxTopOfStack--;
-    *pxTopOfStack = 0x66;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x66;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x66;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x66;
+        /* ER6 */
+        pxTopOfStack--;
+        *pxTopOfStack = 0x66;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x66;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x66;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x66;
 
-    /* ER0 */
-    ulValue = ( unsigned long ) pvParameters;
+        /* ER0 */
+        ulValue = ( unsigned long ) pvParameters;
 
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
-    pxTopOfStack--;
-    ulValue >>= 8UL;
-    *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
-    pxTopOfStack--;
-    ulValue >>= 8UL;
-    *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
-    pxTopOfStack--;
-    ulValue >>= 8UL;
-    *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
+        pxTopOfStack--;
+        ulValue >>= 8UL;
+        *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
+        pxTopOfStack--;
+        ulValue >>= 8UL;
+        *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
+        pxTopOfStack--;
+        ulValue >>= 8UL;
+        *pxTopOfStack = ( portSTACK_TYPE ) ( ulValue & 0xff );
 
-    /* ER1 */
-    pxTopOfStack--;
-    *pxTopOfStack = 0x11;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x11;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x11;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x11;
+        /* ER1 */
+        pxTopOfStack--;
+        *pxTopOfStack = 0x11;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x11;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x11;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x11;
 
-    /* ER2 */
-    pxTopOfStack--;
-    *pxTopOfStack = 0x22;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x22;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x22;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x22;
+        /* ER2 */
+        pxTopOfStack--;
+        *pxTopOfStack = 0x22;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x22;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x22;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x22;
 
-    /* ER3 */
-    pxTopOfStack--;
-    *pxTopOfStack = 0x33;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x33;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x33;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x33;
+        /* ER3 */
+        pxTopOfStack--;
+        *pxTopOfStack = 0x33;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x33;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x33;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x33;
 
-    /* ER4 */
-    pxTopOfStack--;
-    *pxTopOfStack = 0x44;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x44;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x44;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x44;
+        /* ER4 */
+        pxTopOfStack--;
+        *pxTopOfStack = 0x44;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x44;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x44;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x44;
 
-    /* ER5 */
-    pxTopOfStack--;
-    *pxTopOfStack = 0x55;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x55;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x55;
-    pxTopOfStack--;
-    *pxTopOfStack = 0x55;
+        /* ER5 */
+        pxTopOfStack--;
+        *pxTopOfStack = 0x55;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x55;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x55;
+        pxTopOfStack--;
+        *pxTopOfStack = 0x55;
 
-    return pxTopOfStack;
+        return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-    extern void * pxCurrentTCB;
+        extern void * pxCurrentTCB;
 
-    /* Setup the hardware to generate the tick. */
-    prvSetupTimerInterrupt();
+        /* Setup the hardware to generate the tick. */
+        prvSetupTimerInterrupt();
 
-    /* Restore the context of the first task that is going to run.  This
-    mirrors the function epilogue code generated by the compiler when the
-    "saveall" function attribute is used. */
-    asm volatile (
-        "MOV.L		@_pxCurrentTCB, ER6			\n\t"
-        "MOV.L		@ER6, ER7					\n\t"
-        "LDM.L     	@SP+, (ER4-ER5)				\n\t"
-        "LDM.L     	@SP+, (ER0-ER3)				\n\t"
-        "MOV.L     	@ER7+, ER6					\n\t"
-        "RTE									\n\t"
-    );
+        /* Restore the context of the first task that is going to run.  This
+        mirrors the function epilogue code generated by the compiler when the
+        "saveall" function attribute is used. */
+        asm volatile (
+                "MOV.L		@_pxCurrentTCB, ER6			\n\t"
+                "MOV.L		@ER6, ER7					\n\t"
+                "LDM.L     	@SP+, (ER4-ER5)				\n\t"
+                "LDM.L     	@SP+, (ER0-ER3)				\n\t"
+                "MOV.L     	@ER7+, ER6					\n\t"
+                "RTE									\n\t"
+        );
 
-    ( void ) pxCurrentTCB;
+        ( void ) pxCurrentTCB;
 
-    /* Should not get here. */
-    return pdTRUE;
+        /* Should not get here. */
+        return pdTRUE;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-    /* It is unlikely that the h8 port will get stopped. */
+        /* It is unlikely that the h8 port will get stopped. */
 }
 /*-----------------------------------------------------------*/
 
@@ -261,9 +261,9 @@ void vPortEndScheduler( void )
  */
 void vPortYield( void )
 {
-    portSAVE_STACK_POINTER();
-    vTaskSwitchContext();
-    portRESTORE_STACK_POINTER();
+        portSAVE_STACK_POINTER();
+        vTaskSwitchContext();
+        portRESTORE_STACK_POINTER();
 }
 /*-----------------------------------------------------------*/
 
@@ -281,16 +281,16 @@ void vPortYield( void )
 void vTickISR( void ) __attribute__ ( ( saveall, interrupt_handler ) );
 void vTickISR( void )
 {
-    portSAVE_STACK_POINTER();
+        portSAVE_STACK_POINTER();
 
-    if( xTaskIncrementTick() != pdFALSE ) {
-        vTaskSwitchContext();
-    }
+        if( xTaskIncrementTick() != pdFALSE ) {
+                vTaskSwitchContext();
+        }
 
-    /* Clear the interrupt. */
-    TSR1 &= ~0x01;
+        /* Clear the interrupt. */
+        TSR1 &= ~0x01;
 
-    portRESTORE_STACK_POINTER();
+        portRESTORE_STACK_POINTER();
 }
 
 #else
@@ -303,10 +303,10 @@ void vTickISR( void )
 void vTickISR( void ) __attribute__ ( ( interrupt_handler ) );
 void vTickISR( void )
 {
-    xTaskIncrementTick();
+        xTaskIncrementTick();
 
-    /* Clear the interrupt. */
-    TSR1 &= ~0x01;
+        /* Clear the interrupt. */
+        TSR1 &= ~0x01;
 }
 
 #endif
@@ -317,21 +317,21 @@ void vTickISR( void )
  */
 static void prvSetupTimerInterrupt( void )
 {
-    const unsigned long ulCompareMatch = ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ) / portCLOCK_DIV;
+        const unsigned long ulCompareMatch = ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ) / portCLOCK_DIV;
 
-    /* Turn the module on. */
-    MSTPCR &= ~portMSTP13;
+        /* Turn the module on. */
+        MSTPCR &= ~portMSTP13;
 
-    /* Configure timer 1. */
-    TCR1 = portCLEAR_ON_TGRA_COMPARE_MATCH | portCLOCK_DIV_64;
+        /* Configure timer 1. */
+        TCR1 = portCLEAR_ON_TGRA_COMPARE_MATCH | portCLOCK_DIV_64;
 
-    /* Configure the compare match value for a tick of configTICK_RATE_HZ. */
-    TGR1A = ulCompareMatch;
+        /* Configure the compare match value for a tick of configTICK_RATE_HZ. */
+        TGR1A = ulCompareMatch;
 
-    /* Start the timer and enable the interrupt - we can do this here as
-    interrupts are globally disabled when this function is called. */
-    TIER1 |= portTGRA_INTERRUPT_ENABLE;
-    TSTR |= portTIMER_CHANNEL;
+        /* Start the timer and enable the interrupt - we can do this here as
+        interrupts are globally disabled when this function is called. */
+        TIER1 |= portTGRA_INTERRUPT_ENABLE;
+        TSTR |= portTIMER_CHANNEL;
 }
 /*-----------------------------------------------------------*/
 

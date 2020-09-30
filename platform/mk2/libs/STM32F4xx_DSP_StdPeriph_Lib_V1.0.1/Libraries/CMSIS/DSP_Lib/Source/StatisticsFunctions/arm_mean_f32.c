@@ -62,57 +62,57 @@
 
 
 void arm_mean_f32(
-    float32_t * pSrc,
-    uint32_t blockSize,
-    float32_t * pResult)
+        float32_t * pSrc,
+        uint32_t blockSize,
+        float32_t * pResult)
 {
-    float32_t sum = 0.0f;                          /* Temporary result storage */
-    uint32_t blkCnt;                               /* loop counter */
+        float32_t sum = 0.0f;                          /* Temporary result storage */
+        uint32_t blkCnt;                               /* loop counter */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
-        sum += *pSrc++;
-        sum += *pSrc++;
-        sum += *pSrc++;
-        sum += *pSrc++;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
+                sum += *pSrc++;
+                sum += *pSrc++;
+                sum += *pSrc++;
+                sum += *pSrc++;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Loop over blockSize number of values */
-    blkCnt = blockSize;
+        /* Loop over blockSize number of values */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    while(blkCnt > 0u) {
-        /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
-        sum += *pSrc++;
+        while(blkCnt > 0u) {
+                /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
+                sum += *pSrc++;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) / blockSize  */
-    /* Store the result to the destination */
-    *pResult = sum / (float32_t) blockSize;
+        /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) / blockSize  */
+        /* Store the result to the destination */
+        *pResult = sum / (float32_t) blockSize;
 }
 
 /**

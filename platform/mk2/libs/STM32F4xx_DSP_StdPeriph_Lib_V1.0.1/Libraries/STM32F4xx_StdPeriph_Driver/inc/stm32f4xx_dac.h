@@ -52,18 +52,18 @@ extern "C" {
   */
 
 typedef struct {
-    uint32_t DAC_Trigger;                      /*!< Specifies the external trigger for the selected DAC channel.
+        uint32_t DAC_Trigger;                      /*!< Specifies the external trigger for the selected DAC channel.
                                                   This parameter can be a value of @ref DAC_trigger_selection */
 
-    uint32_t DAC_WaveGeneration;               /*!< Specifies whether DAC channel noise waves or triangle waves
+        uint32_t DAC_WaveGeneration;               /*!< Specifies whether DAC channel noise waves or triangle waves
                                                   are generated, or whether no wave is generated.
                                                   This parameter can be a value of @ref DAC_wave_generation */
 
-    uint32_t DAC_LFSRUnmask_TriangleAmplitude; /*!< Specifies the LFSR mask for noise wave generation or
+        uint32_t DAC_LFSRUnmask_TriangleAmplitude; /*!< Specifies the LFSR mask for noise wave generation or
                                                   the maximum amplitude triangle generation for the DAC channel.
                                                   This parameter can be a value of @ref DAC_lfsrunmask_triangleamplitude */
 
-    uint32_t DAC_OutputBuffer;                 /*!< Specifies whether the DAC channel output buffer is enabled or disabled.
+        uint32_t DAC_OutputBuffer;                 /*!< Specifies whether the DAC channel output buffer is enabled or disabled.
                                                   This parameter can be a value of @ref DAC_output_buffer */
 } DAC_InitTypeDef;
 

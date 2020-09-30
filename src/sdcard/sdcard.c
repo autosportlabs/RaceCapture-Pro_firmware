@@ -52,11 +52,13 @@ void InitFSHardware(void)
         fs_mutex = xSemaphoreCreateMutex();
 }
 
-void fs_lock(void){
+void fs_lock(void)
+{
         xSemaphoreTake(fs_mutex, portMAX_DELAY);
 }
 
-void fs_unlock(void){
+void fs_unlock(void)
+{
         xSemaphoreGive(fs_mutex);
 }
 
@@ -100,7 +102,8 @@ int UnmountFS()
         return f_mount(NULL, "0", 1);
 }
 
-bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
+bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet)
+{
         int res = 0;
         FIL *fatFile = NULL;
         char buffer[strlen(SD_TEST_PATTERN) + 2];
@@ -138,7 +141,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
                 put_crlf(serial);
         }
 
-        if (!fs_good){
+        if (!fs_good) {
                 res = -1;
                 goto exit;
         }
@@ -166,7 +169,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
                         serial_write_s(serial, i % 2 == 0 ? "O" : "o");
                 }
                 if (res == EOF) {
-                        if (!quiet){
+                        if (!quiet) {
                                 serial_write_s(serial, "failed writing at line ");
 
                                 put_int(serial, i);
@@ -203,7 +206,7 @@ bool test_sd(struct Serial *serial, int lines, int doFlush, int quiet) {
         char * buffer_result = NULL;
         bool validate_success = true;
         startTicks = xTaskGetTickCount();
-        for (size_t i = 0; i < lines; i++){
+        for (size_t i = 0; i < lines; i++) {
                 buffer_result = f_gets(buffer, sizeof(buffer), fatFile);
                 if (strstr(SD_TEST_PATTERN, buffer_result) != 0) {
                         validate_success = false;
@@ -268,7 +271,7 @@ void test_sd_interactive(struct Serial *serial, int lines, int doFlush, int quie
 #define MAX_BITMAPS 10
 
 static void fs_write_sample_meta(FIL *buffer_file, const struct sample *sample,
-                              int sampleRateLimit, char * buf, bool more)
+                                 int sampleRateLimit, char * buf, bool more)
 {
         f_puts("\"meta\":[", buffer_file);
         ChannelSample *channel_sample = sample->channel_samples;

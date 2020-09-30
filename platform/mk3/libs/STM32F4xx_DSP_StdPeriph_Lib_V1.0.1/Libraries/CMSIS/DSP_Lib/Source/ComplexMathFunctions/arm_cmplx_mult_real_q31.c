@@ -54,90 +54,90 @@
  */
 
 void arm_cmplx_mult_real_q31(
-    q31_t * pSrcCmplx,
-    q31_t * pSrcReal,
-    q31_t * pCmplxDst,
-    uint32_t numSamples)
+        q31_t * pSrcCmplx,
+        q31_t * pSrcReal,
+        q31_t * pCmplxDst,
+        uint32_t numSamples)
 {
-    q31_t in;                                      /* Temporary variable to store input value */
+        q31_t in;                                      /* Temporary variable to store input value */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    uint32_t blkCnt;                               /* loop counters */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        uint32_t blkCnt;                               /* loop counters */
 
-    /* loop Unrolling */
-    blkCnt = numSamples >> 2u;
+        /* loop Unrolling */
+        blkCnt = numSamples >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C[2 * i] = A[2 * i] * B[i].            */
-        /* C[2 * i + 1] = A[2 * i + 1] * B[i].        */
-        in = *pSrcReal++;
-        /* store the result in the destination buffer. */
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C[2 * i] = A[2 * i] * B[i].            */
+                /* C[2 * i + 1] = A[2 * i + 1] * B[i].        */
+                in = *pSrcReal++;
+                /* store the result in the destination buffer. */
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
 
-        in = *pSrcReal++;
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                in = *pSrcReal++;
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
 
-        in = *pSrcReal++;
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                in = *pSrcReal++;
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
 
-        in = *pSrcReal++;
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                in = *pSrcReal++;
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
 
-        /* Decrement the numSamples loop counter */
-        blkCnt--;
-    }
+                /* Decrement the numSamples loop counter */
+                blkCnt--;
+        }
 
-    /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = numSamples % 0x4u;
+        /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = numSamples % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* C[2 * i] = A[2 * i] * B[i].            */
-        /* C[2 * i + 1] = A[2 * i + 1] * B[i].        */
-        in = *pSrcReal++;
-        /* store the result in the destination buffer. */
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+        while(blkCnt > 0u) {
+                /* C[2 * i] = A[2 * i] * B[i].            */
+                /* C[2 * i + 1] = A[2 * i + 1] * B[i].        */
+                in = *pSrcReal++;
+                /* store the result in the destination buffer. */
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
 
-        /* Decrement the numSamples loop counter */
-        blkCnt--;
-    }
+                /* Decrement the numSamples loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    while(numSamples > 0u) {
-        /* realOut = realA * realB.            */
-        /* imagReal = imagA * realB.               */
-        in = *pSrcReal++;
-        /* store the result in the destination buffer. */
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
-        *pCmplxDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+        while(numSamples > 0u) {
+                /* realOut = realA * realB.            */
+                /* imagReal = imagA * realB.               */
+                in = *pSrcReal++;
+                /* store the result in the destination buffer. */
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
+                *pCmplxDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) * pSrcCmplx++ * in) >> 31);
 
-        /* Decrement the numSamples loop counter */
-        numSamples--;
-    }
+                /* Decrement the numSamples loop counter */
+                numSamples--;
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 

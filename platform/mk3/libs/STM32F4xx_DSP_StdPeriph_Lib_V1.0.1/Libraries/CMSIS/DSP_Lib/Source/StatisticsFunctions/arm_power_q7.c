@@ -60,74 +60,74 @@
  */
 
 void arm_power_q7(
-    q7_t * pSrc,
-    uint32_t blockSize,
-    q31_t * pResult)
+        q7_t * pSrc,
+        uint32_t blockSize,
+        q31_t * pResult)
 {
-    q31_t sum = 0;                                 /* Temporary result storage */
-    q7_t in;                                       /* Temporary variable to store input */
-    uint32_t blkCnt;                               /* loop counter */
+        q31_t sum = 0;                                 /* Temporary result storage */
+        q7_t in;                                       /* Temporary variable to store input */
+        uint32_t blkCnt;                               /* loop counter */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    q31_t input1;                                  /* Temporary variable to store packed input */
-    q15_t in1, in2;                                /* Temporary variables to store input */
+        q31_t input1;                                  /* Temporary variable to store packed input */
+        q15_t in1, in2;                                /* Temporary variables to store input */
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* Reading two inputs of pSrc vector and packing */
-        in1 = (q15_t) * pSrc++;
-        in2 = (q15_t) * pSrc++;
-        input1 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* Reading two inputs of pSrc vector and packing */
+                in1 = (q15_t) * pSrc++;
+                in2 = (q15_t) * pSrc++;
+                input1 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
 
-        /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
-        /* Compute Power and then store the result in a temporary variable, sum. */
-        sum = __SMLAD(input1, input1, sum);
+                /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
+                /* Compute Power and then store the result in a temporary variable, sum. */
+                sum = __SMLAD(input1, input1, sum);
 
-        /* Reading two inputs of pSrc vector and packing */
-        in1 = (q15_t) * pSrc++;
-        in2 = (q15_t) * pSrc++;
-        input1 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
+                /* Reading two inputs of pSrc vector and packing */
+                in1 = (q15_t) * pSrc++;
+                in2 = (q15_t) * pSrc++;
+                input1 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
 
-        /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
-        /* Compute Power and then store the result in a temporary variable, sum. */
-        sum = __SMLAD(input1, input1, sum);
+                /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
+                /* Compute Power and then store the result in a temporary variable, sum. */
+                sum = __SMLAD(input1, input1, sum);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Loop over blockSize number of values */
-    blkCnt = blockSize;
+        /* Loop over blockSize number of values */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    while(blkCnt > 0u) {
-        /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
-        /* Compute Power and then store the result in a temporary variable, sum. */
-        in = *pSrc++;
-        sum += ((q15_t) in * in);
+        while(blkCnt > 0u) {
+                /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
+                /* Compute Power and then store the result in a temporary variable, sum. */
+                in = *pSrc++;
+                sum += ((q15_t) in * in);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* Store the result in 18.14 format  */
-    *pResult = sum;
+        /* Store the result in 18.14 format  */
+        *pResult = sum;
 }
 
 /**

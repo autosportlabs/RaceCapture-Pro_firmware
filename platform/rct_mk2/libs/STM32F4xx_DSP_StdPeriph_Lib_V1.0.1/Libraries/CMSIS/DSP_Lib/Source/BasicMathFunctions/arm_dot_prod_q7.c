@@ -59,100 +59,100 @@
  */
 
 void arm_dot_prod_q7(
-    q7_t * pSrcA,
-    q7_t * pSrcB,
-    uint32_t blockSize,
-    q31_t * result)
+        q7_t * pSrcA,
+        q7_t * pSrcB,
+        uint32_t blockSize,
+        q31_t * result)
 {
-    uint32_t blkCnt;                               /* loop counter */
+        uint32_t blkCnt;                               /* loop counter */
 
-    q31_t sum = 0;                                 /* Temporary variables to store output */
+        q31_t sum = 0;                                 /* Temporary variables to store output */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    q31_t input1, input2;                          /* Temporary variables to store input */
-    q15_t in1, in2;                                /* Temporary variables to store input */
-
-
-
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
-
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* Reading two inputs of SrcA buffer and packing */
-        in1 = (q15_t) * pSrcA++;
-        in2 = (q15_t) * pSrcA++;
-        input1 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
-
-        /* Reading two inputs of SrcB buffer and packing */
-        in1 = (q15_t) * pSrcB++;
-        in2 = (q15_t) * pSrcB++;
-        input2 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
-
-        /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
-        /* Perform Dot product of 2 packed inputs using SMLALD and store the result in a temporary variable. */
-        sum = __SMLAD(input1, input2, sum);
-
-        /* Reading two inputs of SrcA buffer and packing */
-        in1 = (q15_t) * pSrcA++;
-        in2 = (q15_t) * pSrcA++;
-        input1 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
-
-        /* Reading two inputs of SrcB buffer and packing */
-        in1 = (q15_t) * pSrcB++;
-        in2 = (q15_t) * pSrcB++;
-        input2 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
-
-        /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
-        /* Perform Dot product of 2 packed inputs using SMLALD and store the result in a temporary variable. */
-        sum = __SMLAD(input1, input2, sum);
+        q31_t input1, input2;                          /* Temporary variables to store input */
+        q15_t in1, in2;                                /* Temporary variables to store input */
 
 
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* Reading two inputs of SrcA buffer and packing */
+                in1 = (q15_t) * pSrcA++;
+                in2 = (q15_t) * pSrcA++;
+                input1 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
 
-    while(blkCnt > 0u) {
-        /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
-        /* Dot product and then store the results in a temporary buffer. */
-        sum = __SMLAD(*pSrcA++, *pSrcB++, sum);
+                /* Reading two inputs of SrcB buffer and packing */
+                in1 = (q15_t) * pSrcB++;
+                in2 = (q15_t) * pSrcB++;
+                input2 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
+                /* Perform Dot product of 2 packed inputs using SMLALD and store the result in a temporary variable. */
+                sum = __SMLAD(input1, input2, sum);
+
+                /* Reading two inputs of SrcA buffer and packing */
+                in1 = (q15_t) * pSrcA++;
+                in2 = (q15_t) * pSrcA++;
+                input1 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
+
+                /* Reading two inputs of SrcB buffer and packing */
+                in1 = (q15_t) * pSrcB++;
+                in2 = (q15_t) * pSrcB++;
+                input2 = ((q31_t) in1 & 0x0000FFFF) | ((q31_t) in2 << 16);
+
+                /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
+                /* Perform Dot product of 2 packed inputs using SMLALD and store the result in a temporary variable. */
+                sum = __SMLAD(input1, input2, sum);
+
+
+
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
+
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
+
+        while(blkCnt > 0u) {
+                /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
+                /* Dot product and then store the results in a temporary buffer. */
+                sum = __SMLAD(*pSrcA++, *pSrcB++, sum);
+
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
 
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
-    while(blkCnt > 0u) {
-        /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
-        /* Dot product and then store the results in a temporary buffer. */
-        sum += (q31_t) ((q15_t) * pSrcA++ **pSrcB++);
+        while(blkCnt > 0u) {
+                /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
+                /* Dot product and then store the results in a temporary buffer. */
+                sum += (q31_t) ((q15_t) * pSrcA++ **pSrcB++);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
 
-    /* Store the result in the destination buffer in 18.14 format */
-    *result = sum;
+        /* Store the result in the destination buffer in 18.14 format */
+        *result = sum;
 }
 
 /**

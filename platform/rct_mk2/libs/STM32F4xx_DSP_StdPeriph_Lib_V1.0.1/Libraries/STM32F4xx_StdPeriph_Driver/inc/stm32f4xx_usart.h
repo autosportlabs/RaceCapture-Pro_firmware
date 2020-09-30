@@ -52,29 +52,29 @@ extern "C" {
   */
 
 typedef struct {
-    uint32_t USART_BaudRate;            /*!< This member configures the USART communication baud rate.
+        uint32_t USART_BaudRate;            /*!< This member configures the USART communication baud rate.
                                            The baud rate is computed using the following formula:
                                             - IntegerDivider = ((PCLKx) / (8 * (OVR8+1) * (USART_InitStruct->USART_BaudRate)))
                                             - FractionalDivider = ((IntegerDivider - ((u32) IntegerDivider)) * 8 * (OVR8+1)) + 0.5
                                            Where OVR8 is the "oversampling by 8 mode" configuration bit in the CR1 register. */
 
-    uint16_t USART_WordLength;          /*!< Specifies the number of data bits transmitted or received in a frame.
+        uint16_t USART_WordLength;          /*!< Specifies the number of data bits transmitted or received in a frame.
                                            This parameter can be a value of @ref USART_Word_Length */
 
-    uint16_t USART_StopBits;            /*!< Specifies the number of stop bits transmitted.
+        uint16_t USART_StopBits;            /*!< Specifies the number of stop bits transmitted.
                                            This parameter can be a value of @ref USART_Stop_Bits */
 
-    uint16_t USART_Parity;              /*!< Specifies the parity mode.
+        uint16_t USART_Parity;              /*!< Specifies the parity mode.
                                            This parameter can be a value of @ref USART_Parity
                                            @note When parity is enabled, the computed parity is inserted
                                                  at the MSB position of the transmitted data (9th bit when
                                                  the word length is set to 9 data bits; 8th bit when the
                                                  word length is set to 8 data bits). */
 
-    uint16_t USART_Mode;                /*!< Specifies wether the Receive or Transmit mode is enabled or disabled.
+        uint16_t USART_Mode;                /*!< Specifies wether the Receive or Transmit mode is enabled or disabled.
                                            This parameter can be a value of @ref USART_Mode */
 
-    uint16_t USART_HardwareFlowControl; /*!< Specifies wether the hardware flow control mode is enabled
+        uint16_t USART_HardwareFlowControl; /*!< Specifies wether the hardware flow control mode is enabled
                                            or disabled.
                                            This parameter can be a value of @ref USART_Hardware_Flow_Control */
 } USART_InitTypeDef;
@@ -85,16 +85,16 @@ typedef struct {
 
 typedef struct {
 
-    uint16_t USART_Clock;   /*!< Specifies whether the USART clock is enabled or disabled.
+        uint16_t USART_Clock;   /*!< Specifies whether the USART clock is enabled or disabled.
                                This parameter can be a value of @ref USART_Clock */
 
-    uint16_t USART_CPOL;    /*!< Specifies the steady state of the serial clock.
+        uint16_t USART_CPOL;    /*!< Specifies the steady state of the serial clock.
                                This parameter can be a value of @ref USART_Clock_Polarity */
 
-    uint16_t USART_CPHA;    /*!< Specifies the clock transition on which the bit capture is made.
+        uint16_t USART_CPHA;    /*!< Specifies the clock transition on which the bit capture is made.
                                This parameter can be a value of @ref USART_Clock_Phase */
 
-    uint16_t USART_LastBit; /*!< Specifies whether the clock pulse corresponding to the last transmitted
+        uint16_t USART_LastBit; /*!< Specifies whether the clock pulse corresponding to the last transmitted
                                data bit (MSB) has to be output on the SCLK pin in synchronous mode.
                                This parameter can be a value of @ref USART_Last_Bit */
 } USART_ClockInitTypeDef;

@@ -52,7 +52,7 @@ void alertmsg_can_send_message(const struct alertmessage *alertmsg)
         msg.dataLength = 8;
 
         /* Send the first 1/2 of the alert message */
-        for (size_t i = 0; i < 8; i++){
+        for (size_t i = 0; i < 8; i++) {
                 msg.data[i] = message_text[i];
         }
         msg.addressValue = address;

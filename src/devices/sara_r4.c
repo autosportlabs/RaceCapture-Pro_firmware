@@ -62,13 +62,13 @@ static bool sara_r4_get_subscriber_number(struct serial_buffer *sb,
 }
 
 static bool sara_r4_get_signal_strength(struct serial_buffer *sb,
-                struct cellular_info *ci)
+                                        struct cellular_info *ci)
 {
         return gsm_get_signal_strength(sb, ci);
 }
 
 static bool sara_r4_get_imei(struct serial_buffer *sb,
-                               struct cellular_info *ci)
+                             struct cellular_info *ci)
 {
         return gsm_get_imei(sb, ci);
 }
@@ -134,10 +134,10 @@ static bool sara_r4_is_gprs_attached(struct serial_buffer *sb)
 }
 
 static bool sara_r4_set_apn_config(struct serial_buffer *sb,
-                                     const int pdp_id,
-                                     const char *host,
-                                     const char* user,
-                                     const char* password)
+                                   const int pdp_id,
+                                   const char *host,
+                                   const char* user,
+                                   const char* password)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -157,8 +157,8 @@ static bool sara_r4_set_apn_config(struct serial_buffer *sb,
 }
 
 static bool sara_r4_put_dns_config(struct serial_buffer *sb,
-                                     const char* dns1,
-                                     const char *dns2)
+                                   const char* dns1,
+                                   const char *dns2)
 {
         /* DNS configuration not currently supported
          * Placeholder for future DNS configuration
@@ -197,9 +197,9 @@ static int sara_r4_create_tcp_socket(struct serial_buffer *sb)
 }
 
 static bool sara_r4_connect_tcp_socket(struct serial_buffer *sb,
-                const int socket_id,
-                const char* host,
-                const int port)
+                                       const int socket_id,
+                                       const char* host,
+                                       const int port)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -213,7 +213,7 @@ static bool sara_r4_connect_tcp_socket(struct serial_buffer *sb,
 }
 
 static bool sara_r4_close_tcp_socket(struct serial_buffer *sb,
-                                       const int socket_id)
+                                     const int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -226,7 +226,7 @@ static bool sara_r4_close_tcp_socket(struct serial_buffer *sb,
 }
 
 static bool sara_r4_start_direct_mode(struct serial_buffer *sb,
-                                        const int socket_id)
+                                      const int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -306,19 +306,19 @@ static bool sara_r4_set_baud_rate(struct serial_buffer *sb)
 }
 
 static bool sara_r4_init(struct serial_buffer *sb,
-                           struct cellular_info *ci,
-                           CellularConfig *cc)
+                         struct cellular_info *ci,
+                         CellularConfig *cc)
 {
 
         pr_info("[sara_r4] Initializing\r\n");
         return (sara_r4_set_baud_rate(sb) &&
-                        sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) &&
-                        sara_r4_set_profile(sb) &&
-                        sara_r4_set_error_reporting(sb));
+                sara_r4_set_apn_config(sb, 0, cc->apnHost, cc->apnUser, cc->apnPass) &&
+                sara_r4_set_profile(sb) &&
+                sara_r4_set_error_reporting(sb));
 }
 
 static bool sara_r4_get_sim_info(struct serial_buffer *sb,
-                                   struct cellular_info *ci)
+                                 struct cellular_info *ci)
 {
         bool status = false;
         status = sara_r4_get_subscriber_number(sb, ci);
@@ -327,7 +327,7 @@ static bool sara_r4_get_sim_info(struct serial_buffer *sb,
 }
 
 static bool sara_r4_register_on_network(struct serial_buffer *sb,
-                struct cellular_info *ci)
+                                        struct cellular_info *ci)
 {
         size_t errors = 0;
         /* Check our status on the network */
@@ -351,8 +351,8 @@ out:
 }
 
 static bool sara_r4_setup_pdp(struct serial_buffer *sb,
-                                struct cellular_info *ci,
-                                const CellularConfig *cc)
+                              struct cellular_info *ci,
+                              const CellularConfig *cc)
 {
         /* Check GPRS attached */
         bool gprs_attached;
@@ -371,14 +371,14 @@ static bool sara_r4_setup_pdp(struct serial_buffer *sb,
         if (!gprs_attached)
                 return false;
 
-        if (!sara_r4_put_dns_config(sb, cc->dns1, cc->dns2)){
+        if (!sara_r4_put_dns_config(sb, cc->dns1, cc->dns2)) {
                 pr_info("[sara_r4] Using default DNS\r\n");
         }
         return true;
 }
 
 static bool sara_r1_configure_tcp_socket_character_trigger(struct serial_buffer *sb,
-                                                int socket_id)
+                int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -393,7 +393,7 @@ static bool sara_r1_configure_tcp_socket_character_trigger(struct serial_buffer 
 }
 
 static bool sara_r1_configure_tcp_socket_nodelay(struct serial_buffer *sb,
-                                         int socket_id)
+                int socket_id)
 {
         const char *msgs[1];
         const size_t msgs_len = ARRAY_LEN(msgs);
@@ -408,16 +408,16 @@ static bool sara_r1_configure_tcp_socket_nodelay(struct serial_buffer *sb,
 }
 
 static bool sara_r1_configure_tcp_socket(struct serial_buffer *sb,
-                                         int socket_id)
+                int socket_id)
 {
         return sara_r1_configure_tcp_socket_character_trigger(sb, socket_id) &&
-                        sara_r1_configure_tcp_socket_nodelay(sb, socket_id);
+               sara_r1_configure_tcp_socket_nodelay(sb, socket_id);
 }
 
 static bool sara_r4_connect_rcl_telem(struct serial_buffer *sb,
-                                        struct cellular_info *ci,
-                                        struct telemetry_info *ti,
-                                        const TelemetryConfig *tc)
+                                      struct cellular_info *ci,
+                                      struct telemetry_info *ti,
+                                      const TelemetryConfig *tc)
 {
         ti->socket = sara_r4_create_tcp_socket(sb);
         if (ti->socket < 0) {
@@ -426,8 +426,8 @@ static bool sara_r4_connect_rcl_telem(struct serial_buffer *sb,
         }
 
         if (!sara_r4_connect_tcp_socket(sb, ti->socket,
-                                          tc->telemetryServerHost,
-                                          tc->telemetry_port)) {
+                                        tc->telemetryServerHost,
+                                        tc->telemetry_port)) {
                 pr_warning("[sara_r4] Failed to connect to ");
                 pr_warning(tc->telemetryServerHost);
                 pr_warning_int_msg(":", tc->telemetry_port);
@@ -436,16 +436,16 @@ static bool sara_r4_connect_rcl_telem(struct serial_buffer *sb,
         }
 
         if (!sara_r1_configure_tcp_socket(sb, ti->socket)) {
-                        pr_error("[SARA-R1] Failed to configure socket\r\n");
-                        return false;
+                pr_error("[SARA-R1] Failed to configure socket\r\n");
+                return false;
         }
 
         return sara_r4_start_direct_mode(sb, ti->socket);
 }
 
 static bool sara_r4_disconnect(struct serial_buffer *sb,
-                                 struct cellular_info *ci,
-                                 struct telemetry_info *ti)
+                               struct cellular_info *ci,
+                               struct telemetry_info *ti)
 {
         if (!sara_r4_stop_direct_mode(sb)) {
                 /* Then we don't know if can issue commands */

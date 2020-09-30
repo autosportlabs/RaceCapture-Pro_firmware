@@ -60,79 +60,79 @@
  */
 
 void arm_rms_q31(
-    q31_t * pSrc,
-    uint32_t blockSize,
-    q31_t * pResult)
+        q31_t * pSrc,
+        uint32_t blockSize,
+        q31_t * pResult)
 {
-    q63_t sum = 0;                                 /* accumulator */
-    q31_t in;                                      /* Temporary variable to store the input */
-    uint32_t blkCnt;                               /* loop counter */
+        q63_t sum = 0;                                 /* accumulator */
+        q31_t in;                                      /* Temporary variable to store the input */
+        uint32_t blkCnt;                               /* loop counter */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    q31_t *pIn1 = pSrc;                            /* SrcA pointer */
+        q31_t *pIn1 = pSrc;                            /* SrcA pointer */
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
-        /* Compute sum of the squares and then store the result in a temporary variable, sum */
-        in = *pIn1++;
-        sum += (q63_t) in *in;
-        in = *pIn1++;
-        sum += (q63_t) in *in;
-        in = *pIn1++;
-        sum += (q63_t) in *in;
-        in = *pIn1++;
-        sum += (q63_t) in *in;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
+                /* Compute sum of the squares and then store the result in a temporary variable, sum */
+                in = *pIn1++;
+                sum += (q63_t) in *in;
+                in = *pIn1++;
+                sum += (q63_t) in *in;
+                in = *pIn1++;
+                sum += (q63_t) in *in;
+                in = *pIn1++;
+                sum += (q63_t) in *in;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
-        /* Compute sum of the squares and then store the results in a temporary variable, sum */
-        in = *pIn1++;
-        sum += (q63_t) in *in;
+        while(blkCnt > 0u) {
+                /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
+                /* Compute sum of the squares and then store the results in a temporary variable, sum */
+                in = *pIn1++;
+                sum += (q63_t) in *in;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Loop over blockSize number of values */
-    blkCnt = blockSize;
+        /* Loop over blockSize number of values */
+        blkCnt = blockSize;
 
-    while(blkCnt > 0u) {
-        /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
-        /* Compute sum of the squares and then store the results in a temporary variable, sum */
-        in = *pSrc++;
-        sum += (q63_t) in *in;
+        while(blkCnt > 0u) {
+                /* C = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] + ... + A[blockSize-1] * A[blockSize-1] */
+                /* Compute sum of the squares and then store the results in a temporary variable, sum */
+                in = *pSrc++;
+                sum += (q63_t) in *in;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    /* Convert data in 2.62 to 1.31 by 31 right shifts */
-    sum = sum >> 31;
+        /* Convert data in 2.62 to 1.31 by 31 right shifts */
+        sum = sum >> 31;
 
-    /* Compute Rms and store the result in the destination vector */
-    arm_sqrt_q31((q31_t) (sum / (int32_t) blockSize), pResult);
+        /* Compute Rms and store the result in the destination vector */
+        arm_sqrt_q31((q31_t) (sum / (int32_t) blockSize), pResult);
 }
 
 /**

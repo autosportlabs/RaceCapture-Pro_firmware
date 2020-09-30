@@ -4,34 +4,34 @@
   * @author  MCD Application Team
   * @version V1.0.1
   * @date    23-October-2012
-  * @brief   This file provides firmware functions to manage the following 
+  * @brief   This file provides firmware functions to manage the following
   *          functionalities of CRC computation unit peripheral:
   *            + Configuration of the CRC computation unit
   *            + CRC computation of one/many 32-bit data
   *            + CRC Independent register (IDR) access
   *
   @verbatim
-    
+
  ===============================================================================
                       ##### How to use this driver #####
  ===============================================================================
-    [..] 
+    [..]
     (#) Enable CRC AHB clock using RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE)
         function.
     (#) Select the polynomial size: 7-bit, 8-bit, 16-bit or 32-bit.
-    (#) Set the polynomial coefficients using CRC_SetPolynomial();  
-    (#) If required, select the reverse operation on input data 
-        using CRC_ReverseInputDataSelect();  
+    (#) Set the polynomial coefficients using CRC_SetPolynomial();
+    (#) If required, select the reverse operation on input data
+        using CRC_ReverseInputDataSelect();
     (#) If required, enable the reverse operation on output data
         using CRC_ReverseOutputDataCmd(Enable);
     (#) If required, set the initialization remainder value using
         CRC_SetInitRegister();
     (#) use CRC_CalcCRC() function to compute the CRC of a 32-bit data
-        or use CRC_CalcBlockCRC() function to compute the CRC if a 32-bit 
+        or use CRC_CalcBlockCRC() function to compute the CRC if a 32-bit
         data buffer.
 
   @endverbatim
-  
+
   ******************************************************************************
   * @attention
   *
@@ -43,8 +43,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -59,7 +59,7 @@
   * @{
   */
 
-/** @defgroup CRC 
+/** @defgroup CRC
   * @brief CRC driver modules
   * @{
   */
@@ -76,7 +76,7 @@
   */
 
 /** @defgroup CRC_Group1 Configuration of the CRC computation unit functions
- *  @brief   Configuration of the CRC computation unit functions 
+ *  @brief   Configuration of the CRC computation unit functions
  *
 @verbatim
  ===============================================================================
@@ -94,16 +94,16 @@
   */
 void CRC_DeInit(void)
 {
-  /* Set DR register to reset value */
-  CRC->DR = 0xFFFFFFFF;
-  /* Set the POL register to the reset value: 0x04C11DB7 */
-  CRC->POL = 0x04C11DB7;
-  /* Reset IDR register */
-  CRC->IDR = 0x00;
-  /* Set INIT register to reset value */
-  CRC->INIT = 0xFFFFFFFF;
-  /* Reset the CRC calculation unit */
-  CRC->CR = CRC_CR_RESET;
+        /* Set DR register to reset value */
+        CRC->DR = 0xFFFFFFFF;
+        /* Set the POL register to the reset value: 0x04C11DB7 */
+        CRC->POL = 0x04C11DB7;
+        /* Reset IDR register */
+        CRC->IDR = 0x00;
+        /* Set INIT register to reset value */
+        CRC->INIT = 0xFFFFFFFF;
+        /* Reset the CRC calculation unit */
+        CRC->CR = CRC_CR_RESET;
 }
 
 /**
@@ -113,8 +113,8 @@ void CRC_DeInit(void)
   */
 void CRC_ResetDR(void)
 {
-  /* Reset CRC generator */
-  CRC->CR |= CRC_CR_RESET;
+        /* Reset CRC generator */
+        CRC->CR |= CRC_CR_RESET;
 }
 
 /**
@@ -129,21 +129,21 @@ void CRC_ResetDR(void)
   */
 void CRC_PolynomialSizeSelect(uint32_t CRC_PolSize)
 {
-  uint32_t tmpcr = 0;
+        uint32_t tmpcr = 0;
 
-  /* Check the parameter */
-  assert_param(IS_CRC_POL_SIZE(CRC_PolSize));
+        /* Check the parameter */
+        assert_param(IS_CRC_POL_SIZE(CRC_PolSize));
 
-  /* Get CR register value */
-  tmpcr = CRC->CR;
+        /* Get CR register value */
+        tmpcr = CRC->CR;
 
-  /* Reset POL_SIZE bits */
-  tmpcr &= (uint32_t)~((uint32_t)CRC_CR_POLSIZE);
-  /* Set the polynomial size */
-  tmpcr |= (uint32_t)CRC_PolSize;
+        /* Reset POL_SIZE bits */
+        tmpcr &= (uint32_t)~((uint32_t)CRC_CR_POLSIZE);
+        /* Set the polynomial size */
+        tmpcr |= (uint32_t)CRC_PolSize;
 
-  /* Write to CR register */
-  CRC->CR = (uint32_t)tmpcr;
+        /* Write to CR register */
+        CRC->CR = (uint32_t)tmpcr;
 }
 
 /**
@@ -158,21 +158,21 @@ void CRC_PolynomialSizeSelect(uint32_t CRC_PolSize)
   */
 void CRC_ReverseInputDataSelect(uint32_t CRC_ReverseInputData)
 {
-  uint32_t tmpcr = 0;
+        uint32_t tmpcr = 0;
 
-  /* Check the parameter */
-  assert_param(IS_CRC_REVERSE_INPUT_DATA(CRC_ReverseInputData));
+        /* Check the parameter */
+        assert_param(IS_CRC_REVERSE_INPUT_DATA(CRC_ReverseInputData));
 
-  /* Get CR register value */
-  tmpcr = CRC->CR;
+        /* Get CR register value */
+        tmpcr = CRC->CR;
 
-  /* Reset REV_IN bits */
-  tmpcr &= (uint32_t)~((uint32_t)CRC_CR_REV_IN);
-  /* Set the reverse operation */
-  tmpcr |= (uint32_t)CRC_ReverseInputData;
+        /* Reset REV_IN bits */
+        tmpcr &= (uint32_t)~((uint32_t)CRC_CR_REV_IN);
+        /* Set the reverse operation */
+        tmpcr |= (uint32_t)CRC_ReverseInputData;
 
-  /* Write to CR register */
-  CRC->CR = (uint32_t)tmpcr;
+        /* Write to CR register */
+        CRC->CR = (uint32_t)tmpcr;
 }
 
 /**
@@ -184,19 +184,16 @@ void CRC_ReverseInputDataSelect(uint32_t CRC_ReverseInputData)
   */
 void CRC_ReverseOutputDataCmd(FunctionalState NewState)
 {
-  /* Check the parameters */
-  assert_param(IS_FUNCTIONAL_STATE(NewState));
+        /* Check the parameters */
+        assert_param(IS_FUNCTIONAL_STATE(NewState));
 
-  if (NewState != DISABLE)
-  {
-    /* Enable reverse operation on output data */
-    CRC->CR |= CRC_CR_REV_OUT;
-  }
-  else
-  {
-    /* Disable reverse operation on output data */
-    CRC->CR &= (uint32_t)~((uint32_t)CRC_CR_REV_OUT);
-  }
+        if (NewState != DISABLE) {
+                /* Enable reverse operation on output data */
+                CRC->CR |= CRC_CR_REV_OUT;
+        } else {
+                /* Disable reverse operation on output data */
+                CRC->CR &= (uint32_t)~((uint32_t)CRC_CR_REV_OUT);
+        }
 }
 
 /**
@@ -207,7 +204,7 @@ void CRC_ReverseOutputDataCmd(FunctionalState NewState)
   */
 void CRC_SetInitRegister(uint32_t CRC_InitValue)
 {
-  CRC->INIT = CRC_InitValue;
+        CRC->INIT = CRC_InitValue;
 }
 
 /**
@@ -217,7 +214,7 @@ void CRC_SetInitRegister(uint32_t CRC_InitValue)
   */
 void CRC_SetPolynomial(uint32_t CRC_Pol)
 {
-  CRC->POL = CRC_Pol;
+        CRC->POL = CRC_Pol;
 }
 
 /**
@@ -243,9 +240,9 @@ void CRC_SetPolynomial(uint32_t CRC_Pol)
   */
 uint32_t CRC_CalcCRC(uint32_t CRC_Data)
 {
-  CRC->DR = CRC_Data;
-  
-  return (CRC->DR);
+        CRC->DR = CRC_Data;
+
+        return (CRC->DR);
 }
 
 /**
@@ -255,9 +252,9 @@ uint32_t CRC_CalcCRC(uint32_t CRC_Data)
   */
 uint32_t CRC_CalcCRC16bits(uint16_t CRC_Data)
 {
-  *(uint16_t*)(CRC_BASE) = (uint16_t) CRC_Data;
-  
-  return (CRC->DR);
+        *(uint16_t*)(CRC_BASE) = (uint16_t) CRC_Data;
+
+        return (CRC->DR);
 }
 
 /**
@@ -267,9 +264,9 @@ uint32_t CRC_CalcCRC16bits(uint16_t CRC_Data)
   */
 uint32_t CRC_CalcCRC8bits(uint8_t CRC_Data)
 {
-  *(uint8_t*)(CRC_BASE) = (uint8_t) CRC_Data;
+        *(uint8_t*)(CRC_BASE) = (uint8_t) CRC_Data;
 
-  return (CRC->DR);
+        return (CRC->DR);
 }
 
 /**
@@ -280,13 +277,12 @@ uint32_t CRC_CalcCRC8bits(uint8_t CRC_Data)
   */
 uint32_t CRC_CalcBlockCRC(uint32_t pBuffer[], uint32_t BufferLength)
 {
-  uint32_t index = 0;
-  
-  for(index = 0; index < BufferLength; index++)
-  {
-    CRC->DR = pBuffer[index];
-  }
-  return (CRC->DR);
+        uint32_t index = 0;
+
+        for(index = 0; index < BufferLength; index++) {
+                CRC->DR = pBuffer[index];
+        }
+        return (CRC->DR);
 }
 
 /**
@@ -296,7 +292,7 @@ uint32_t CRC_CalcBlockCRC(uint32_t pBuffer[], uint32_t BufferLength)
   */
 uint32_t CRC_GetCRC(void)
 {
-  return (CRC->DR);
+        return (CRC->DR);
 }
 
 /**
@@ -317,22 +313,22 @@ uint32_t CRC_GetCRC(void)
 
 /**
   * @brief  Stores an 8-bit data in the Independent Data(ID) register.
-  * @param  CRC_IDValue: 8-bit value to be stored in the ID register 					
+  * @param  CRC_IDValue: 8-bit value to be stored in the ID register
   * @retval None
   */
 void CRC_SetIDRegister(uint8_t CRC_IDValue)
 {
-  CRC->IDR = CRC_IDValue;
+        CRC->IDR = CRC_IDValue;
 }
 
 /**
   * @brief  Returns the 8-bit data stored in the Independent Data(ID) register
   * @param  None
-  * @retval 8-bit value of the ID register 
+  * @retval 8-bit value of the ID register
   */
 uint8_t CRC_GetIDRegister(void)
 {
-  return (CRC->IDR);
+        return (CRC->IDR);
 }
 
 /**

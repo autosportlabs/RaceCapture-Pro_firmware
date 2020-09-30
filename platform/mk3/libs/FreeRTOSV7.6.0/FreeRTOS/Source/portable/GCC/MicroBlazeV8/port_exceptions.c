@@ -128,181 +128,181 @@ implementation will be called instead. */
 extern void vApplicationExceptionRegisterDump( xPortRegisterDump *xRegisterDump ) __attribute__((weak));
 void vApplicationExceptionRegisterDump( xPortRegisterDump *xRegisterDump )
 {
-    ( void ) xRegisterDump;
+        ( void ) xRegisterDump;
 
-    for( ;; ) {
-        portNOP();
-    }
+        for( ;; ) {
+                portNOP();
+        }
 }
 /*-----------------------------------------------------------*/
 
 void vPortExceptionHandler( void *pvExceptionID )
 {
-    extern void *pxCurrentTCB;
+        extern void *pxCurrentTCB;
 
-    /* Fill an xPortRegisterDump structure with the MicroBlaze context as it
-    was immediately before the exception occurrence. */
+        /* Fill an xPortRegisterDump structure with the MicroBlaze context as it
+        was immediately before the exception occurrence. */
 
-    /* First fill in the name and handle of the task that was in the Running
-    state when the exception occurred. */
-    xRegisterDump.xCurrentTaskHandle = pxCurrentTCB;
-    xRegisterDump.pcCurrentTaskName = pcTaskGetTaskName( NULL );
+        /* First fill in the name and handle of the task that was in the Running
+        state when the exception occurred. */
+        xRegisterDump.xCurrentTaskHandle = pxCurrentTCB;
+        xRegisterDump.pcCurrentTaskName = pcTaskGetTaskName( NULL );
 
-    configASSERT( pulStackPointerOnFunctionEntry );
+        configASSERT( pulStackPointerOnFunctionEntry );
 
-    /* Obtain the values of registers that were stacked prior to this function
-    being called, and may have changed since they were stacked. */
-    xRegisterDump.ulR3 = pulStackPointerOnFunctionEntry[ portexR3_STACK_OFFSET ];
-    xRegisterDump.ulR4 = pulStackPointerOnFunctionEntry[ portexR4_STACK_OFFSET ];
-    xRegisterDump.ulR5 = pulStackPointerOnFunctionEntry[ portexR5_STACK_OFFSET ];
-    xRegisterDump.ulR6 = pulStackPointerOnFunctionEntry[ portexR6_STACK_OFFSET ];
-    xRegisterDump.ulR7 = pulStackPointerOnFunctionEntry[ portexR7_STACK_OFFSET ];
-    xRegisterDump.ulR8 = pulStackPointerOnFunctionEntry[ portexR8_STACK_OFFSET ];
-    xRegisterDump.ulR9 = pulStackPointerOnFunctionEntry[ portexR9_STACK_OFFSET ];
-    xRegisterDump.ulR10 = pulStackPointerOnFunctionEntry[ portexR10_STACK_OFFSET ];
-    xRegisterDump.ulR11 = pulStackPointerOnFunctionEntry[ portexR11_STACK_OFFSET ];
-    xRegisterDump.ulR12 = pulStackPointerOnFunctionEntry[ portexR12_STACK_OFFSET ];
-    xRegisterDump.ulR15_return_address_from_subroutine = pulStackPointerOnFunctionEntry[ portexR15_STACK_OFFSET ];
-    xRegisterDump.ulR18 = pulStackPointerOnFunctionEntry[ portexR18_STACK_OFFSET ];
-    xRegisterDump.ulR19 = pulStackPointerOnFunctionEntry[ portexR19_STACK_OFFSET ];
-    xRegisterDump.ulMSR = pulStackPointerOnFunctionEntry[ portexMSR_STACK_OFFSET ];
+        /* Obtain the values of registers that were stacked prior to this function
+        being called, and may have changed since they were stacked. */
+        xRegisterDump.ulR3 = pulStackPointerOnFunctionEntry[ portexR3_STACK_OFFSET ];
+        xRegisterDump.ulR4 = pulStackPointerOnFunctionEntry[ portexR4_STACK_OFFSET ];
+        xRegisterDump.ulR5 = pulStackPointerOnFunctionEntry[ portexR5_STACK_OFFSET ];
+        xRegisterDump.ulR6 = pulStackPointerOnFunctionEntry[ portexR6_STACK_OFFSET ];
+        xRegisterDump.ulR7 = pulStackPointerOnFunctionEntry[ portexR7_STACK_OFFSET ];
+        xRegisterDump.ulR8 = pulStackPointerOnFunctionEntry[ portexR8_STACK_OFFSET ];
+        xRegisterDump.ulR9 = pulStackPointerOnFunctionEntry[ portexR9_STACK_OFFSET ];
+        xRegisterDump.ulR10 = pulStackPointerOnFunctionEntry[ portexR10_STACK_OFFSET ];
+        xRegisterDump.ulR11 = pulStackPointerOnFunctionEntry[ portexR11_STACK_OFFSET ];
+        xRegisterDump.ulR12 = pulStackPointerOnFunctionEntry[ portexR12_STACK_OFFSET ];
+        xRegisterDump.ulR15_return_address_from_subroutine = pulStackPointerOnFunctionEntry[ portexR15_STACK_OFFSET ];
+        xRegisterDump.ulR18 = pulStackPointerOnFunctionEntry[ portexR18_STACK_OFFSET ];
+        xRegisterDump.ulR19 = pulStackPointerOnFunctionEntry[ portexR19_STACK_OFFSET ];
+        xRegisterDump.ulMSR = pulStackPointerOnFunctionEntry[ portexMSR_STACK_OFFSET ];
 
-    /* Obtain the value of all other registers. */
-    xRegisterDump.ulR2_small_data_area = mfgpr( R2 );
-    xRegisterDump.ulR13_read_write_small_data_area = mfgpr( R13 );
-    xRegisterDump.ulR14_return_address_from_interrupt = mfgpr( R14 );
-    xRegisterDump.ulR16_return_address_from_trap = mfgpr( R16 );
-    xRegisterDump.ulR17_return_address_from_exceptions = mfgpr( R17 );
-    xRegisterDump.ulR20 = mfgpr( R20 );
-    xRegisterDump.ulR21 = mfgpr( R21 );
-    xRegisterDump.ulR22 = mfgpr( R22 );
-    xRegisterDump.ulR23 = mfgpr( R23 );
-    xRegisterDump.ulR24 = mfgpr( R24 );
-    xRegisterDump.ulR25 = mfgpr( R25 );
-    xRegisterDump.ulR26 = mfgpr( R26 );
-    xRegisterDump.ulR27 = mfgpr( R27 );
-    xRegisterDump.ulR28 = mfgpr( R28 );
-    xRegisterDump.ulR29 = mfgpr( R29 );
-    xRegisterDump.ulR30 = mfgpr( R30 );
-    xRegisterDump.ulR31 = mfgpr( R31 );
-    xRegisterDump.ulR1_SP = ( ( unsigned long ) pulStackPointerOnFunctionEntry ) + portexASM_HANDLER_STACK_FRAME_SIZE;
-    xRegisterDump.ulEAR = mfear();
-    xRegisterDump.ulESR = mfesr();
-    xRegisterDump.ulEDR = mfedr();
+        /* Obtain the value of all other registers. */
+        xRegisterDump.ulR2_small_data_area = mfgpr( R2 );
+        xRegisterDump.ulR13_read_write_small_data_area = mfgpr( R13 );
+        xRegisterDump.ulR14_return_address_from_interrupt = mfgpr( R14 );
+        xRegisterDump.ulR16_return_address_from_trap = mfgpr( R16 );
+        xRegisterDump.ulR17_return_address_from_exceptions = mfgpr( R17 );
+        xRegisterDump.ulR20 = mfgpr( R20 );
+        xRegisterDump.ulR21 = mfgpr( R21 );
+        xRegisterDump.ulR22 = mfgpr( R22 );
+        xRegisterDump.ulR23 = mfgpr( R23 );
+        xRegisterDump.ulR24 = mfgpr( R24 );
+        xRegisterDump.ulR25 = mfgpr( R25 );
+        xRegisterDump.ulR26 = mfgpr( R26 );
+        xRegisterDump.ulR27 = mfgpr( R27 );
+        xRegisterDump.ulR28 = mfgpr( R28 );
+        xRegisterDump.ulR29 = mfgpr( R29 );
+        xRegisterDump.ulR30 = mfgpr( R30 );
+        xRegisterDump.ulR31 = mfgpr( R31 );
+        xRegisterDump.ulR1_SP = ( ( unsigned long ) pulStackPointerOnFunctionEntry ) + portexASM_HANDLER_STACK_FRAME_SIZE;
+        xRegisterDump.ulEAR = mfear();
+        xRegisterDump.ulESR = mfesr();
+        xRegisterDump.ulEDR = mfedr();
 
-    /* Move the saved program counter back to the instruction that was executed
-    when the exception occurred.  This is only valid for certain types of
-    exception. */
-    xRegisterDump.ulPC = xRegisterDump.ulR17_return_address_from_exceptions - portexINSTRUCTION_SIZE;
+        /* Move the saved program counter back to the instruction that was executed
+        when the exception occurred.  This is only valid for certain types of
+        exception. */
+        xRegisterDump.ulPC = xRegisterDump.ulR17_return_address_from_exceptions - portexINSTRUCTION_SIZE;
 
 #if XPAR_MICROBLAZE_0_USE_FPU == 1
-    {
-        xRegisterDump.ulFSR = mffsr();
-    }
+        {
+                xRegisterDump.ulFSR = mffsr();
+        }
 #else
-    {
-        xRegisterDump.ulFSR = 0UL;
-    }
+        {
+                xRegisterDump.ulFSR = 0UL;
+        }
 #endif
 
-    /* Also fill in a string that describes what type of exception this is.
-    The string uses the same ID names as defined in the MicroBlaze standard
-    library exception header files. */
-    switch( ( unsigned long ) pvExceptionID ) {
-    case XEXC_ID_FSL :
-        xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_FSL";
-        break;
+        /* Also fill in a string that describes what type of exception this is.
+        The string uses the same ID names as defined in the MicroBlaze standard
+        library exception header files. */
+        switch( ( unsigned long ) pvExceptionID ) {
+        case XEXC_ID_FSL :
+                xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_FSL";
+                break;
 
-    case XEXC_ID_UNALIGNED_ACCESS :
-        xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_UNALIGNED_ACCESS";
-        break;
+        case XEXC_ID_UNALIGNED_ACCESS :
+                xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_UNALIGNED_ACCESS";
+                break;
 
-    case XEXC_ID_ILLEGAL_OPCODE :
-        xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_ILLEGAL_OPCODE";
-        break;
+        case XEXC_ID_ILLEGAL_OPCODE :
+                xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_ILLEGAL_OPCODE";
+                break;
 
-    case XEXC_ID_M_AXI_I_EXCEPTION :
-        xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_M_AXI_I_EXCEPTION or XEXC_ID_IPLB_EXCEPTION";
-        break;
+        case XEXC_ID_M_AXI_I_EXCEPTION :
+                xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_M_AXI_I_EXCEPTION or XEXC_ID_IPLB_EXCEPTION";
+                break;
 
-    case XEXC_ID_M_AXI_D_EXCEPTION :
-        xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_M_AXI_D_EXCEPTION or XEXC_ID_DPLB_EXCEPTION";
-        break;
+        case XEXC_ID_M_AXI_D_EXCEPTION :
+                xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_M_AXI_D_EXCEPTION or XEXC_ID_DPLB_EXCEPTION";
+                break;
 
-    case XEXC_ID_DIV_BY_ZERO :
-        xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_DIV_BY_ZERO";
-        break;
+        case XEXC_ID_DIV_BY_ZERO :
+                xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_DIV_BY_ZERO";
+                break;
 
-    case XEXC_ID_STACK_VIOLATION :
-        xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_STACK_VIOLATION or XEXC_ID_MMU";
-        break;
+        case XEXC_ID_STACK_VIOLATION :
+                xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_STACK_VIOLATION or XEXC_ID_MMU";
+                break;
 
 #if XPAR_MICROBLAZE_0_USE_FPU == 1
 
-    case XEXC_ID_FPU :
-        xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_FPU see ulFSR value";
-        break;
+        case XEXC_ID_FPU :
+                xRegisterDump.pcExceptionCause = ( signed char * const ) "XEXC_ID_FPU see ulFSR value";
+                break;
 
 #endif /* XPAR_MICROBLAZE_0_USE_FPU */
-    }
+        }
 
-    /* vApplicationExceptionRegisterDump() is a callback function that the
-    application can optionally define to receive the populated xPortRegisterDump
-    structure.  If the application chooses not to define a version of
-    vApplicationExceptionRegisterDump() then the weekly defined default
-    implementation within this file will be called instead. */
-    vApplicationExceptionRegisterDump( &xRegisterDump );
+        /* vApplicationExceptionRegisterDump() is a callback function that the
+        application can optionally define to receive the populated xPortRegisterDump
+        structure.  If the application chooses not to define a version of
+        vApplicationExceptionRegisterDump() then the weekly defined default
+        implementation within this file will be called instead. */
+        vApplicationExceptionRegisterDump( &xRegisterDump );
 
-    /* Must not attempt to leave this function! */
-    for( ;; ) {
-        portNOP();
-    }
+        /* Must not attempt to leave this function! */
+        for( ;; ) {
+                portNOP();
+        }
 }
 /*-----------------------------------------------------------*/
 
 void vPortExceptionsInstallHandlers( void )
 {
-    static unsigned long ulHandlersAlreadyInstalled = pdFALSE;
+        static unsigned long ulHandlersAlreadyInstalled = pdFALSE;
 
-    if( ulHandlersAlreadyInstalled == pdFALSE ) {
-        ulHandlersAlreadyInstalled = pdTRUE;
+        if( ulHandlersAlreadyInstalled == pdFALSE ) {
+                ulHandlersAlreadyInstalled = pdTRUE;
 
 #if XPAR_MICROBLAZE_0_UNALIGNED_EXCEPTIONS == 1
-        microblaze_register_exception_handler( XEXC_ID_UNALIGNED_ACCESS, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_UNALIGNED_ACCESS );
+                microblaze_register_exception_handler( XEXC_ID_UNALIGNED_ACCESS, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_UNALIGNED_ACCESS );
 #endif /* XPAR_MICROBLAZE_0_UNALIGNED_EXCEPTIONS*/
 
 #if XPAR_MICROBLAZE_0_ILL_OPCODE_EXCEPTION == 1
-        microblaze_register_exception_handler( XEXC_ID_ILLEGAL_OPCODE, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_ILLEGAL_OPCODE );
+                microblaze_register_exception_handler( XEXC_ID_ILLEGAL_OPCODE, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_ILLEGAL_OPCODE );
 #endif /* XPAR_MICROBLAZE_0_ILL_OPCODE_EXCEPTION*/
 
 #if XPAR_MICROBLAZE_0_M_AXI_I_BUS_EXCEPTION == 1
-        microblaze_register_exception_handler( XEXC_ID_M_AXI_I_EXCEPTION, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_M_AXI_I_EXCEPTION );
+                microblaze_register_exception_handler( XEXC_ID_M_AXI_I_EXCEPTION, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_M_AXI_I_EXCEPTION );
 #endif /* XPAR_MICROBLAZE_0_M_AXI_I_BUS_EXCEPTION*/
 
 #if XPAR_MICROBLAZE_0_M_AXI_D_BUS_EXCEPTION == 1
-        microblaze_register_exception_handler( XEXC_ID_M_AXI_D_EXCEPTION, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_M_AXI_D_EXCEPTION );
+                microblaze_register_exception_handler( XEXC_ID_M_AXI_D_EXCEPTION, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_M_AXI_D_EXCEPTION );
 #endif /* XPAR_MICROBLAZE_0_M_AXI_D_BUS_EXCEPTION*/
 
 #if XPAR_MICROBLAZE_0_IPLB_BUS_EXCEPTION == 1
-        microblaze_register_exception_handler( XEXC_ID_IPLB_EXCEPTION, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_IPLB_EXCEPTION );
+                microblaze_register_exception_handler( XEXC_ID_IPLB_EXCEPTION, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_IPLB_EXCEPTION );
 #endif /* XPAR_MICROBLAZE_0_IPLB_BUS_EXCEPTION*/
 
 #if XPAR_MICROBLAZE_0_DPLB_BUS_EXCEPTION == 1
-        microblaze_register_exception_handler( XEXC_ID_DPLB_EXCEPTION, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_DPLB_EXCEPTION );
+                microblaze_register_exception_handler( XEXC_ID_DPLB_EXCEPTION, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_DPLB_EXCEPTION );
 #endif /* XPAR_MICROBLAZE_0_DPLB_BUS_EXCEPTION*/
 
 #if XPAR_MICROBLAZE_0_DIV_ZERO_EXCEPTION == 1
-        microblaze_register_exception_handler( XEXC_ID_DIV_BY_ZERO, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_DIV_BY_ZERO );
+                microblaze_register_exception_handler( XEXC_ID_DIV_BY_ZERO, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_DIV_BY_ZERO );
 #endif /* XPAR_MICROBLAZE_0_DIV_ZERO_EXCEPTION*/
 
 #if XPAR_MICROBLAZE_0_FPU_EXCEPTION == 1
-        microblaze_register_exception_handler( XEXC_ID_FPU, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_FPU );
+                microblaze_register_exception_handler( XEXC_ID_FPU, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_FPU );
 #endif /* XPAR_MICROBLAZE_0_FPU_EXCEPTION*/
 
 #if XPAR_MICROBLAZE_0_FSL_EXCEPTION == 1
-        microblaze_register_exception_handler( XEXC_ID_FSL, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_FSL );
+                microblaze_register_exception_handler( XEXC_ID_FSL, vPortExceptionHandlerEntry, ( void * ) XEXC_ID_FSL );
 #endif /* XPAR_MICROBLAZE_0_FSL_EXCEPTION*/
-    }
+        }
 }
 
 /* Exclude the entire file if the MicroBlaze is not configured to handle

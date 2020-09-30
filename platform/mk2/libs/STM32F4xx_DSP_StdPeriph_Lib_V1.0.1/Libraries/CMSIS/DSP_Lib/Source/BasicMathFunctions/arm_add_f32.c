@@ -63,55 +63,55 @@
  */
 
 void arm_add_f32(
-    float32_t * pSrcA,
-    float32_t * pSrcB,
-    float32_t * pDst,
-    uint32_t blockSize)
+        float32_t * pSrcA,
+        float32_t * pSrcB,
+        float32_t * pDst,
+        uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* loop counter */
+        uint32_t blkCnt;                               /* loop counter */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = A + B */
-        /* Add and then store the results in the destination buffer. */
-        *pDst++ = (*pSrcA++) + (*pSrcB++);
-        *pDst++ = (*pSrcA++) + (*pSrcB++);
-        *pDst++ = (*pSrcA++) + (*pSrcB++);
-        *pDst++ = (*pSrcA++) + (*pSrcB++);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = A + B */
+                /* Add and then store the results in the destination buffer. */
+                *pDst++ = (*pSrcA++) + (*pSrcB++);
+                *pDst++ = (*pSrcA++) + (*pSrcB++);
+                *pDst++ = (*pSrcA++) + (*pSrcB++);
+                *pDst++ = (*pSrcA++) + (*pSrcB++);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    while(blkCnt > 0u) {
-        /* C = A + B */
-        /* Add and then store the results in the destination buffer. */
-        *pDst++ = (*pSrcA++) + (*pSrcB++);
+        while(blkCnt > 0u) {
+                /* C = A + B */
+                /* Add and then store the results in the destination buffer. */
+                *pDst++ = (*pSrcA++) + (*pSrcB++);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 }
 
 /**

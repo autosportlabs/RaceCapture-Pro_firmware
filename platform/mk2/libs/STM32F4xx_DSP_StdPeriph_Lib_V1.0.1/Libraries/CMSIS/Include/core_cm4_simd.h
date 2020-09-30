@@ -193,308 +193,308 @@ extern "C" {
 /*------ CM4 SIMD Intrinsics -----------------------------------------------------*/
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SADD8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("sadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("sadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __QADD8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("qadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("qadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SHADD8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("shadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("shadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UADD8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UQADD8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uqadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uqadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UHADD8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uhadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uhadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SSUB8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("ssub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("ssub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __QSUB8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("qsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("qsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SHSUB8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("shsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("shsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __USUB8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("usub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("usub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uqsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uqsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UHSUB8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uhsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uhsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SADD16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("sadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("sadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __QADD16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("qadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("qadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SHADD16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("shadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("shadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UADD16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UQADD16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uqadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uqadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UHADD16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uhadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uhadd16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SSUB16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("ssub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("ssub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __QSUB16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("qsub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("qsub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SHSUB16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("shsub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("shsub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __USUB16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("usub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("usub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UQSUB16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uqsub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uqsub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UHSUB16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uhsub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uhsub16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SASX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("sasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("sasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __QASX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("qasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("qasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SHASX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("shasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("shasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UASX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UQASX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uqasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uqasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UHASX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uhasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uhasx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SSAX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("ssax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("ssax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __QSAX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("qsax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("qsax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SHSAX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("shsax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("shsax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __USAX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("usax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("usax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UQSAX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uqsax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uqsax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UHSAX(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uhsax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uhsax %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __USAD8(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("usad8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("usad8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __USADA8(uint32_t op1, uint32_t op2, uint32_t op3)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("usada8 %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
-    return(result);
+        __ASM volatile ("usada8 %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
+        return(result);
 }
 
 #define __SSAT16(ARG1,ARG2) \
@@ -513,66 +513,66 @@ __ASM volatile ("usada8 %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), 
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UXTB16(uint32_t op1)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uxtb16 %0, %1" : "=r" (result) : "r" (op1));
-    return(result);
+        __ASM volatile ("uxtb16 %0, %1" : "=r" (result) : "r" (op1));
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __UXTAB16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("uxtab16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("uxtab16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SXTB16(uint32_t op1)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("sxtb16 %0, %1" : "=r" (result) : "r" (op1));
-    return(result);
+        __ASM volatile ("sxtb16 %0, %1" : "=r" (result) : "r" (op1));
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SXTAB16(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("sxtab16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("sxtab16 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SMUAD  (uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("smuad %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("smuad %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SMUADX (uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("smuadx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("smuadx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SMLAD (uint32_t op1, uint32_t op2, uint32_t op3)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("smlad %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
-    return(result);
+        __ASM volatile ("smlad %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SMLADX (uint32_t op1, uint32_t op2, uint32_t op3)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("smladx %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
-    return(result);
+        __ASM volatile ("smladx %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
+        return(result);
 }
 
 #define __SMLALD(ARG1,ARG2,ARG3) \
@@ -591,34 +591,34 @@ __ASM volatile ("smladx %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), 
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SMUSD  (uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("smusd %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("smusd %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SMUSDX (uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("smusdx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("smusdx %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SMLSD (uint32_t op1, uint32_t op2, uint32_t op3)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("smlsd %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
-    return(result);
+        __ASM volatile ("smlsd %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SMLSDX (uint32_t op1, uint32_t op2, uint32_t op3)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("smlsdx %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
-    return(result);
+        __ASM volatile ("smlsdx %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), "r" (op3) );
+        return(result);
 }
 
 #define __SMLSLD(ARG1,ARG2,ARG3) \
@@ -637,26 +637,26 @@ __ASM volatile ("smlsdx %0, %1, %2, %3" : "=r" (result) : "r" (op1), "r" (op2), 
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __SEL  (uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("sel %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("sel %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __QADD(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("qadd %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("qadd %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 __attribute__( ( always_inline ) ) static __INLINE uint32_t __QSUB(uint32_t op1, uint32_t op2)
 {
-    uint32_t result;
+        uint32_t result;
 
-__ASM volatile ("qsub %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-    return(result);
+        __ASM volatile ("qsub %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
+        return(result);
 }
 
 #define __PKHBT(ARG1,ARG2,ARG3) \

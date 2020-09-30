@@ -49,9 +49,9 @@
   */
 
 typedef enum {
-    USBD_OK   = 0,
-    USBD_BUSY,
-    USBD_FAIL,
+        USBD_OK   = 0,
+        USBD_BUSY,
+        USBD_FAIL,
 } USBD_Status;
 /**
   * @}

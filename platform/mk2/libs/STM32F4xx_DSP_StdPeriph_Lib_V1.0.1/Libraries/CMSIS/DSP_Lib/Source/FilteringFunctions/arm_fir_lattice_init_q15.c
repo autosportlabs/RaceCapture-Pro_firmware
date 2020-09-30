@@ -51,22 +51,22 @@
  */
 
 void arm_fir_lattice_init_q15(
-    arm_fir_lattice_instance_q15 * S,
-    uint16_t numStages,
-    q15_t * pCoeffs,
-    q15_t * pState)
+        arm_fir_lattice_instance_q15 * S,
+        uint16_t numStages,
+        q15_t * pCoeffs,
+        q15_t * pState)
 {
-    /* Assign filter taps */
-    S->numStages = numStages;
+        /* Assign filter taps */
+        S->numStages = numStages;
 
-    /* Assign coefficient pointer */
-    S->pCoeffs = pCoeffs;
+        /* Assign coefficient pointer */
+        S->pCoeffs = pCoeffs;
 
-    /* Clear state buffer and size is always numStages */
-    memset(pState, 0, (numStages) * sizeof(q15_t));
+        /* Clear state buffer and size is always numStages */
+        memset(pState, 0, (numStages) * sizeof(q15_t));
 
-    /* Assign state pointer */
-    S->pState = pState;
+        /* Assign state pointer */
+        S->pState = pState;
 
 }
 

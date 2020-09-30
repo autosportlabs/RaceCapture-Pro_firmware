@@ -110,11 +110,11 @@ typedef unsigned portLONG portTickType;
 #define portENTER_CRITICAL()	\
 	__asm(" ST PS,@-R15 ");		\
 	__asm(" ANDCCR #0xef ");	\
- 
+
 
 #define portEXIT_CRITICAL()		\
 	__asm(" LD @R15+,PS ");		\
- 
+
 /*-----------------------------------------------------------*/
 
 /* Architecture specifics. */

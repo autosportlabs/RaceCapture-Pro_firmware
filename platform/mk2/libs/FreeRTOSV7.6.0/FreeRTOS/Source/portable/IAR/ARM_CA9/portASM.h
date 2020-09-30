@@ -71,18 +71,18 @@ PUSH	{R0-R12, R14}
 ;
 Push the critical nesting count
 LDR		R2, =ulCriticalNesting
-             LDR		R1, [R2]
-             PUSH	{R1}
+                     LDR		R1, [R2]
+                     PUSH	{R1}
 
-             ;
+                     ;
 Does the task have a floating point context that needs saving?  If
 ;
 ulPortTaskHasFPUContext is 0 then no.
 LDR		R2, =ulPortTaskHasFPUContext
-             LDR		R3, [R2]
-             CMP		R3, #0
+                     LDR		R3, [R2]
+                     CMP		R3, #0
 
-             ;
+                     ;
 Save the floating point context, if any
 FMRXNE  R1,  FPSCR
 VPUSHNE {D0-D15}
@@ -96,12 +96,12 @@ PUSH	{R3}
 ;
 Save the stack pointer in the TCB
 LDR		R0, =pxCurrentTCB
-             LDR		R1, [R0]
-             STR		SP, [R1]
+                     LDR		R1, [R0]
+                     STR		SP, [R1]
 
-             endm
+                     endm
 
-             ; /**********************************************************************/
+                     ; /**********************************************************************/
 
 portRESTORE_CONTEXT macro
 
@@ -112,19 +112,19 @@ CPS		#SYS_MODE
 ;
 Set the SP to point to the stack of the task being restored.
 LDR		R0, =pxCurrentTCB
-             LDR		R1, [R0]
-             LDR		SP, [R1]
+                     LDR		R1, [R0]
+                     LDR		SP, [R1]
 
-             ;
+                     ;
 Is there a floating point context to restore?  If the restored
 ;
 ulPortTaskHasFPUContext is zero then no.
 LDR		R0, =ulPortTaskHasFPUContext
-             POP		{R1}
-             STR		R1, [R0]
-             CMP		R1, #0
+                     POP		{R1}
+                     STR		R1, [R0]
+                     CMP		R1, #0
 
-             ;
+                     ;
 Restore the floating point context, if any
 LDMFDNE SP!, {R0}
 VPOPNE	{D16-D31}
@@ -134,20 +134,20 @@ VMSRNE  FPSCR, R0
 ;
 Restore the critical section nesting depth
 LDR		R0, =ulCriticalNesting
-             POP		{R1}
-             STR		R1, [R0]
+                     POP		{R1}
+                     STR		R1, [R0]
 
-             ;
+                     ;
 Ensure the priority mask is correct for the critical nesting depth
 LDR		R2, =portICCPMR_PRIORITY_MASK_REGISTER_ADDRESS
-             CMP		R1, #0
-             MOVEQ	R4, #255
-             LDRNE	R4, =( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT )
-                              STR		R4, [r2]
+                     CMP		R1, #0
+                     MOVEQ	R4, #255
+                     LDRNE	R4, =( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT )
+                                          STR		R4, [r2]
 
-                              ;
+                                          ;
 Restore all system mode registers other than the SP (which is already
-        ; being used)
+                ; being used)
 POP		{R0-R12, R14}
 
 ;

@@ -46,15 +46,15 @@ uint16_t MEM_If_CheckAdd(uint32_t Add);
 
 /* Private variables ---------------------------------------------------------*/
 DFU_MAL_Prop_TypeDef DFU_Mem_cb = {
-    MEM_IF_STRING,
-    MEM_If_Init,
-    MEM_If_DeInit,
-    MEM_If_Erase,
-    MEM_If_Write,
-    MEM_If_Read,
-    MEM_If_CheckAdd,
-    10, /* Erase Time in ms */
-    10  /* Programming Time in ms */
+        MEM_IF_STRING,
+        MEM_If_Init,
+        MEM_If_DeInit,
+        MEM_If_Erase,
+        MEM_If_Write,
+        MEM_If_Read,
+        MEM_If_CheckAdd,
+        10, /* Erase Time in ms */
+        10  /* Programming Time in ms */
 };
 
 /* Private functions ---------------------------------------------------------*/
@@ -67,7 +67,7 @@ DFU_MAL_Prop_TypeDef DFU_Mem_cb = {
   */
 uint16_t MEM_If_Init(void)
 {
-    return MAL_OK;
+        return MAL_OK;
 }
 
 /**
@@ -78,7 +78,7 @@ uint16_t MEM_If_Init(void)
   */
 uint16_t MEM_If_DeInit(void)
 {
-    return MAL_OK;
+        return MAL_OK;
 }
 
 /**
@@ -89,7 +89,7 @@ uint16_t MEM_If_DeInit(void)
   */
 uint16_t MEM_If_Erase(uint32_t Add)
 {
-    return MAL_OK;
+        return MAL_OK;
 }
 
 /**
@@ -101,7 +101,7 @@ uint16_t MEM_If_Erase(uint32_t Add)
   */
 uint16_t MEM_If_Write(uint32_t Add, uint32_t Len)
 {
-    return MAL_OK;
+        return MAL_OK;
 }
 
 /**
@@ -113,8 +113,8 @@ uint16_t MEM_If_Write(uint32_t Add, uint32_t Len)
   */
 uint8_t *MEM_If_Read (uint32_t Add, uint32_t Len)
 {
-    /* Return a valid address to avoid HardFault */
-    return  (uint8_t*)(MAL_Buffer);
+        /* Return a valid address to avoid HardFault */
+        return  (uint8_t*)(MAL_Buffer);
 }
 
 /**
@@ -126,10 +126,10 @@ uint8_t *MEM_If_Read (uint32_t Add, uint32_t Len)
   */
 uint16_t MEM_If_CheckAdd(uint32_t Add)
 {
-    if ((Add >= MEM_START_ADD) && (Add < MEM_END_ADD)) {
-        return MAL_OK;
-    } else {
-        return MAL_FAIL;
-    }
+        if ((Add >= MEM_START_ADD) && (Add < MEM_END_ADD)) {
+                return MAL_OK;
+        } else {
+                return MAL_FAIL;
+        }
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

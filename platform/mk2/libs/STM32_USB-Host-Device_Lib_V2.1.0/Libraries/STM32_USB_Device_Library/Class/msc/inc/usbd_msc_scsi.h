@@ -131,15 +131,15 @@ extern  uint8_t ReadFormatCapacity_Data [];
   */
 
 typedef struct _SENSE_ITEM {
-    char Skey;
-    union {
-        struct _ASCs {
-            char ASC;
-            char ASCQ;
-        } b;
-        unsigned int	ASC;
-        char *pData;
-    } w;
+        char Skey;
+        union {
+                struct _ASCs {
+                        char ASC;
+                        char ASCQ;
+                } b;
+                unsigned int	ASC;
+                char *pData;
+        } w;
 } SCSI_Sense_TypeDef;
 /**
   * @}

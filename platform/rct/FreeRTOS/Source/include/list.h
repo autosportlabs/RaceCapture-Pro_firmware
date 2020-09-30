@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -115,8 +115,8 @@
  * complete and obvious failure of the scheduler.  If this is ever experienced
  * then the volatile qualifier can be inserted in the relevant places within the
  * list structures by simply defining configLIST_VOLATILE to volatile in
- * FreeRTOSConfig.h (as per the example at the bottom of this comment block).  
- * If configLIST_VOLATILE is not defined then the preprocessor directives below 
+ * FreeRTOSConfig.h (as per the example at the bottom of this comment block).
+ * If configLIST_VOLATILE is not defined then the preprocessor directives below
  * will simply #define configLIST_VOLATILE away completely.
  *
  * To use volatile list structure members then add the following line to
@@ -124,7 +124,7 @@
  * "#define configLIST_VOLATILE volatile"
  */
 #ifndef configLIST_VOLATILE
-	#define configLIST_VOLATILE
+#define configLIST_VOLATILE
 #endif /* configSUPPORT_CROSS_MODULE_OPTIMISATION */
 
 #ifdef __cplusplus
@@ -133,32 +133,29 @@ extern "C" {
 /*
  * Definition of the only type of object that a list can contain.
  */
-struct xLIST_ITEM
-{
-	configLIST_VOLATILE portTickType xItemValue;	/*< The value being listed.  In most cases this is used to sort the list in descending order. */
-	struct xLIST_ITEM * configLIST_VOLATILE pxNext;	/*< Pointer to the next xListItem in the list. */
-	struct xLIST_ITEM * configLIST_VOLATILE pxPrevious;/*< Pointer to the previous xListItem in the list. */
-	void * pvOwner;									/*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
-	void * configLIST_VOLATILE pvContainer;			/*< Pointer to the list in which this list item is placed (if any). */
+struct xLIST_ITEM {
+        configLIST_VOLATILE portTickType xItemValue;	/*< The value being listed.  In most cases this is used to sort the list in descending order. */
+        struct xLIST_ITEM * configLIST_VOLATILE pxNext;	/*< Pointer to the next xListItem in the list. */
+        struct xLIST_ITEM * configLIST_VOLATILE pxPrevious;/*< Pointer to the previous xListItem in the list. */
+        void * pvOwner;									/*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
+        void * configLIST_VOLATILE pvContainer;			/*< Pointer to the list in which this list item is placed (if any). */
 };
 typedef struct xLIST_ITEM xListItem;				/* For some reason lint wants this as two separate definitions. */
 
-struct xMINI_LIST_ITEM
-{
-	configLIST_VOLATILE portTickType xItemValue;
-	struct xLIST_ITEM * configLIST_VOLATILE pxNext;
-	struct xLIST_ITEM * configLIST_VOLATILE pxPrevious;
+struct xMINI_LIST_ITEM {
+        configLIST_VOLATILE portTickType xItemValue;
+        struct xLIST_ITEM * configLIST_VOLATILE pxNext;
+        struct xLIST_ITEM * configLIST_VOLATILE pxPrevious;
 };
 typedef struct xMINI_LIST_ITEM xMiniListItem;
 
 /*
  * Definition of the type of queue used by the scheduler.
  */
-typedef struct xLIST
-{
-	configLIST_VOLATILE unsigned portBASE_TYPE uxNumberOfItems;
-	xListItem * configLIST_VOLATILE pxIndex;		/*< Used to walk through the list.  Points to the last item returned by a call to pvListGetOwnerOfNextEntry (). */
-	xMiniListItem xListEnd;							/*< List item that contains the maximum possible item value meaning it is always at the end of the list and is therefore used as a marker. */
+typedef struct xLIST {
+        configLIST_VOLATILE unsigned portBASE_TYPE uxNumberOfItems;
+        xListItem * configLIST_VOLATILE pxIndex;		/*< Used to walk through the list.  Points to the last item returned by a call to pvListGetOwnerOfNextEntry (). */
+        xMiniListItem xListEnd;							/*< List item that contains the maximum possible item value meaning it is always at the end of the list and is therefore used as a marker. */
 } xList;
 
 /*

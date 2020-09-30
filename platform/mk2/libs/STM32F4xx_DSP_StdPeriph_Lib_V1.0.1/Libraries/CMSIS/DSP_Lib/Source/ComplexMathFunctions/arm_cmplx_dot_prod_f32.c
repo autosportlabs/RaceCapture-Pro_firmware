@@ -75,78 +75,78 @@
  */
 
 void arm_cmplx_dot_prod_f32(
-    float32_t * pSrcA,
-    float32_t * pSrcB,
-    uint32_t numSamples,
-    float32_t * realResult,
-    float32_t * imagResult)
+        float32_t * pSrcA,
+        float32_t * pSrcB,
+        uint32_t numSamples,
+        float32_t * realResult,
+        float32_t * imagResult)
 {
-    float32_t real_sum = 0.0f, imag_sum = 0.0f;    /* Temporary result storage */
+        float32_t real_sum = 0.0f, imag_sum = 0.0f;    /* Temporary result storage */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    uint32_t blkCnt;                               /* loop counter */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        uint32_t blkCnt;                               /* loop counter */
 
-    /*loop Unrolling */
-    blkCnt = numSamples >> 2u;
+        /*loop Unrolling */
+        blkCnt = numSamples >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
-        real_sum += (*pSrcA++) * (*pSrcB++);
-        /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
-        imag_sum += (*pSrcA++) * (*pSrcB++);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
+                real_sum += (*pSrcA++) * (*pSrcB++);
+                /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
+                imag_sum += (*pSrcA++) * (*pSrcB++);
 
-        real_sum += (*pSrcA++) * (*pSrcB++);
-        imag_sum += (*pSrcA++) * (*pSrcB++);
+                real_sum += (*pSrcA++) * (*pSrcB++);
+                imag_sum += (*pSrcA++) * (*pSrcB++);
 
-        real_sum += (*pSrcA++) * (*pSrcB++);
-        imag_sum += (*pSrcA++) * (*pSrcB++);
+                real_sum += (*pSrcA++) * (*pSrcB++);
+                imag_sum += (*pSrcA++) * (*pSrcB++);
 
-        real_sum += (*pSrcA++) * (*pSrcB++);
-        imag_sum += (*pSrcA++) * (*pSrcB++);
+                real_sum += (*pSrcA++) * (*pSrcB++);
+                imag_sum += (*pSrcA++) * (*pSrcB++);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = numSamples % 0x4u;
+        /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = numSamples % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
-        real_sum += (*pSrcA++) * (*pSrcB++);
-        /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
-        imag_sum += (*pSrcA++) * (*pSrcB++);
+        while(blkCnt > 0u) {
+                /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
+                real_sum += (*pSrcA++) * (*pSrcB++);
+                /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
+                imag_sum += (*pSrcA++) * (*pSrcB++);
 
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    while(numSamples > 0u) {
-        /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
-        real_sum += (*pSrcA++) * (*pSrcB++);
-        /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
-        imag_sum += (*pSrcA++) * (*pSrcB++);
+        while(numSamples > 0u) {
+                /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
+                real_sum += (*pSrcA++) * (*pSrcB++);
+                /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
+                imag_sum += (*pSrcA++) * (*pSrcB++);
 
 
-        /* Decrement the loop counter */
-        numSamples--;
-    }
+                /* Decrement the loop counter */
+                numSamples--;
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    /* Store the real and imaginary results in the destination buffers */
-    *realResult = real_sum;
-    *imagResult = imag_sum;
+        /* Store the real and imaginary results in the destination buffers */
+        *realResult = real_sum;
+        *imagResult = imag_sum;
 }
 
 /**

@@ -220,11 +220,11 @@
   */
 void CRYP_DeInit(void)
 {
-    /* Enable CRYP reset state */
-    RCC_AHB2PeriphResetCmd(RCC_AHB2Periph_CRYP, ENABLE);
+        /* Enable CRYP reset state */
+        RCC_AHB2PeriphResetCmd(RCC_AHB2Periph_CRYP, ENABLE);
 
-    /* Release CRYP from reset state */
-    RCC_AHB2PeriphResetCmd(RCC_AHB2Periph_CRYP, DISABLE);
+        /* Release CRYP from reset state */
+        RCC_AHB2PeriphResetCmd(RCC_AHB2Periph_CRYP, DISABLE);
 }
 
 /**
@@ -236,34 +236,34 @@ void CRYP_DeInit(void)
   */
 void CRYP_Init(CRYP_InitTypeDef* CRYP_InitStruct)
 {
-    /* Check the parameters */
-    assert_param(IS_CRYP_ALGOMODE(CRYP_InitStruct->CRYP_AlgoMode));
-    assert_param(IS_CRYP_DATATYPE(CRYP_InitStruct->CRYP_DataType));
-    assert_param(IS_CRYP_ALGODIR(CRYP_InitStruct->CRYP_AlgoDir));
+        /* Check the parameters */
+        assert_param(IS_CRYP_ALGOMODE(CRYP_InitStruct->CRYP_AlgoMode));
+        assert_param(IS_CRYP_DATATYPE(CRYP_InitStruct->CRYP_DataType));
+        assert_param(IS_CRYP_ALGODIR(CRYP_InitStruct->CRYP_AlgoDir));
 
-    /* Select Algorithm mode*/
-    CRYP->CR &= ~CRYP_CR_ALGOMODE;
-    CRYP->CR |= CRYP_InitStruct->CRYP_AlgoMode;
+        /* Select Algorithm mode*/
+        CRYP->CR &= ~CRYP_CR_ALGOMODE;
+        CRYP->CR |= CRYP_InitStruct->CRYP_AlgoMode;
 
-    /* Select dataType */
-    CRYP->CR &= ~CRYP_CR_DATATYPE;
-    CRYP->CR |= CRYP_InitStruct->CRYP_DataType;
+        /* Select dataType */
+        CRYP->CR &= ~CRYP_CR_DATATYPE;
+        CRYP->CR |= CRYP_InitStruct->CRYP_DataType;
 
-    /* select Key size (used only with AES algorithm) */
-    if ((CRYP_InitStruct->CRYP_AlgoMode == CRYP_AlgoMode_AES_ECB) ||
-        (CRYP_InitStruct->CRYP_AlgoMode == CRYP_AlgoMode_AES_CBC) ||
-        (CRYP_InitStruct->CRYP_AlgoMode == CRYP_AlgoMode_AES_CTR) ||
-        (CRYP_InitStruct->CRYP_AlgoMode == CRYP_AlgoMode_AES_Key)) {
-        assert_param(IS_CRYP_KEYSIZE(CRYP_InitStruct->CRYP_KeySize));
-        CRYP->CR &= ~CRYP_CR_KEYSIZE;
-        CRYP->CR |= CRYP_InitStruct->CRYP_KeySize; /* Key size and value must be
+        /* select Key size (used only with AES algorithm) */
+        if ((CRYP_InitStruct->CRYP_AlgoMode == CRYP_AlgoMode_AES_ECB) ||
+            (CRYP_InitStruct->CRYP_AlgoMode == CRYP_AlgoMode_AES_CBC) ||
+            (CRYP_InitStruct->CRYP_AlgoMode == CRYP_AlgoMode_AES_CTR) ||
+            (CRYP_InitStruct->CRYP_AlgoMode == CRYP_AlgoMode_AES_Key)) {
+                assert_param(IS_CRYP_KEYSIZE(CRYP_InitStruct->CRYP_KeySize));
+                CRYP->CR &= ~CRYP_CR_KEYSIZE;
+                CRYP->CR |= CRYP_InitStruct->CRYP_KeySize; /* Key size and value must be
                                                   configured once the key has
                                                   been prepared */
-    }
+        }
 
-    /* Select data Direction */
-    CRYP->CR &= ~CRYP_CR_ALGODIR;
-    CRYP->CR |= CRYP_InitStruct->CRYP_AlgoDir;
+        /* Select data Direction */
+        CRYP->CR &= ~CRYP_CR_ALGODIR;
+        CRYP->CR |= CRYP_InitStruct->CRYP_AlgoDir;
 }
 
 /**
@@ -274,17 +274,17 @@ void CRYP_Init(CRYP_InitTypeDef* CRYP_InitStruct)
   */
 void CRYP_StructInit(CRYP_InitTypeDef* CRYP_InitStruct)
 {
-    /* Initialize the CRYP_AlgoDir member */
-    CRYP_InitStruct->CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+        /* Initialize the CRYP_AlgoDir member */
+        CRYP_InitStruct->CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
 
-    /* initialize the CRYP_AlgoMode member */
-    CRYP_InitStruct->CRYP_AlgoMode = CRYP_AlgoMode_TDES_ECB;
+        /* initialize the CRYP_AlgoMode member */
+        CRYP_InitStruct->CRYP_AlgoMode = CRYP_AlgoMode_TDES_ECB;
 
-    /* initialize the CRYP_DataType member */
-    CRYP_InitStruct->CRYP_DataType = CRYP_DataType_32b;
+        /* initialize the CRYP_DataType member */
+        CRYP_InitStruct->CRYP_DataType = CRYP_DataType_32b;
 
-    /* Initialize the CRYP_KeySize member */
-    CRYP_InitStruct->CRYP_KeySize = CRYP_KeySize_128b;
+        /* Initialize the CRYP_KeySize member */
+        CRYP_InitStruct->CRYP_KeySize = CRYP_KeySize_128b;
 }
 
 /**
@@ -296,15 +296,15 @@ void CRYP_StructInit(CRYP_InitTypeDef* CRYP_InitStruct)
   */
 void CRYP_KeyInit(CRYP_KeyInitTypeDef* CRYP_KeyInitStruct)
 {
-    /* Key Initialisation */
-    CRYP->K0LR = CRYP_KeyInitStruct->CRYP_Key0Left;
-    CRYP->K0RR = CRYP_KeyInitStruct->CRYP_Key0Right;
-    CRYP->K1LR = CRYP_KeyInitStruct->CRYP_Key1Left;
-    CRYP->K1RR = CRYP_KeyInitStruct->CRYP_Key1Right;
-    CRYP->K2LR = CRYP_KeyInitStruct->CRYP_Key2Left;
-    CRYP->K2RR = CRYP_KeyInitStruct->CRYP_Key2Right;
-    CRYP->K3LR = CRYP_KeyInitStruct->CRYP_Key3Left;
-    CRYP->K3RR = CRYP_KeyInitStruct->CRYP_Key3Right;
+        /* Key Initialisation */
+        CRYP->K0LR = CRYP_KeyInitStruct->CRYP_Key0Left;
+        CRYP->K0RR = CRYP_KeyInitStruct->CRYP_Key0Right;
+        CRYP->K1LR = CRYP_KeyInitStruct->CRYP_Key1Left;
+        CRYP->K1RR = CRYP_KeyInitStruct->CRYP_Key1Right;
+        CRYP->K2LR = CRYP_KeyInitStruct->CRYP_Key2Left;
+        CRYP->K2RR = CRYP_KeyInitStruct->CRYP_Key2Right;
+        CRYP->K3LR = CRYP_KeyInitStruct->CRYP_Key3Left;
+        CRYP->K3RR = CRYP_KeyInitStruct->CRYP_Key3Right;
 }
 
 /**
@@ -315,14 +315,14 @@ void CRYP_KeyInit(CRYP_KeyInitTypeDef* CRYP_KeyInitStruct)
   */
 void CRYP_KeyStructInit(CRYP_KeyInitTypeDef* CRYP_KeyInitStruct)
 {
-    CRYP_KeyInitStruct->CRYP_Key0Left  = 0;
-    CRYP_KeyInitStruct->CRYP_Key0Right = 0;
-    CRYP_KeyInitStruct->CRYP_Key1Left  = 0;
-    CRYP_KeyInitStruct->CRYP_Key1Right = 0;
-    CRYP_KeyInitStruct->CRYP_Key2Left  = 0;
-    CRYP_KeyInitStruct->CRYP_Key2Right = 0;
-    CRYP_KeyInitStruct->CRYP_Key3Left  = 0;
-    CRYP_KeyInitStruct->CRYP_Key3Right = 0;
+        CRYP_KeyInitStruct->CRYP_Key0Left  = 0;
+        CRYP_KeyInitStruct->CRYP_Key0Right = 0;
+        CRYP_KeyInitStruct->CRYP_Key1Left  = 0;
+        CRYP_KeyInitStruct->CRYP_Key1Right = 0;
+        CRYP_KeyInitStruct->CRYP_Key2Left  = 0;
+        CRYP_KeyInitStruct->CRYP_Key2Right = 0;
+        CRYP_KeyInitStruct->CRYP_Key3Left  = 0;
+        CRYP_KeyInitStruct->CRYP_Key3Right = 0;
 }
 /**
   * @brief  Initializes the CRYP Initialization Vectors(IV) according to the
@@ -333,10 +333,10 @@ void CRYP_KeyStructInit(CRYP_KeyInitTypeDef* CRYP_KeyInitStruct)
   */
 void CRYP_IVInit(CRYP_IVInitTypeDef* CRYP_IVInitStruct)
 {
-    CRYP->IV0LR = CRYP_IVInitStruct->CRYP_IV0Left;
-    CRYP->IV0RR = CRYP_IVInitStruct->CRYP_IV0Right;
-    CRYP->IV1LR = CRYP_IVInitStruct->CRYP_IV1Left;
-    CRYP->IV1RR = CRYP_IVInitStruct->CRYP_IV1Right;
+        CRYP->IV0LR = CRYP_IVInitStruct->CRYP_IV0Left;
+        CRYP->IV0RR = CRYP_IVInitStruct->CRYP_IV0Right;
+        CRYP->IV1LR = CRYP_IVInitStruct->CRYP_IV1Left;
+        CRYP->IV1RR = CRYP_IVInitStruct->CRYP_IV1Right;
 }
 
 /**
@@ -347,10 +347,10 @@ void CRYP_IVInit(CRYP_IVInitTypeDef* CRYP_IVInitStruct)
   */
 void CRYP_IVStructInit(CRYP_IVInitTypeDef* CRYP_IVInitStruct)
 {
-    CRYP_IVInitStruct->CRYP_IV0Left  = 0;
-    CRYP_IVInitStruct->CRYP_IV0Right = 0;
-    CRYP_IVInitStruct->CRYP_IV1Left  = 0;
-    CRYP_IVInitStruct->CRYP_IV1Right = 0;
+        CRYP_IVInitStruct->CRYP_IV0Left  = 0;
+        CRYP_IVInitStruct->CRYP_IV0Right = 0;
+        CRYP_IVInitStruct->CRYP_IV1Left  = 0;
+        CRYP_IVInitStruct->CRYP_IV1Right = 0;
 }
 
 /**
@@ -362,8 +362,8 @@ void CRYP_IVStructInit(CRYP_IVInitTypeDef* CRYP_IVInitStruct)
   */
 void CRYP_FIFOFlush(void)
 {
-    /* Reset the read and write pointers of the FIFOs */
-    CRYP->CR |= CRYP_CR_FFLUSH;
+        /* Reset the read and write pointers of the FIFOs */
+        CRYP->CR |= CRYP_CR_FFLUSH;
 }
 
 /**
@@ -374,16 +374,16 @@ void CRYP_FIFOFlush(void)
   */
 void CRYP_Cmd(FunctionalState NewState)
 {
-    /* Check the parameters */
-    assert_param(IS_FUNCTIONAL_STATE(NewState));
+        /* Check the parameters */
+        assert_param(IS_FUNCTIONAL_STATE(NewState));
 
-    if (NewState != DISABLE) {
-        /* Enable the Cryptographic processor */
-        CRYP->CR |= CRYP_CR_CRYPEN;
-    } else {
-        /* Disable the Cryptographic processor */
-        CRYP->CR &= ~CRYP_CR_CRYPEN;
-    }
+        if (NewState != DISABLE) {
+                /* Enable the Cryptographic processor */
+                CRYP->CR |= CRYP_CR_CRYPEN;
+        } else {
+                /* Disable the Cryptographic processor */
+                CRYP->CR &= ~CRYP_CR_CRYPEN;
+        }
 }
 /**
   * @}
@@ -414,7 +414,7 @@ void CRYP_Cmd(FunctionalState NewState)
   */
 void CRYP_DataIn(uint32_t Data)
 {
-    CRYP->DR = Data;
+        CRYP->DR = Data;
 }
 
 /**
@@ -424,7 +424,7 @@ void CRYP_DataIn(uint32_t Data)
   */
 uint32_t CRYP_DataOut(void)
 {
-    return CRYP->DOUT;
+        return CRYP->DOUT;
 }
 /**
   * @}
@@ -468,67 +468,67 @@ uint32_t CRYP_DataOut(void)
 ErrorStatus CRYP_SaveContext(CRYP_Context* CRYP_ContextSave,
                              CRYP_KeyInitTypeDef* CRYP_KeyInitStruct)
 {
-    __IO uint32_t timeout = 0;
-    uint32_t ckeckmask = 0, bitstatus;
-    ErrorStatus status = ERROR;
+        __IO uint32_t timeout = 0;
+        uint32_t ckeckmask = 0, bitstatus;
+        ErrorStatus status = ERROR;
 
-    /* Stop DMA transfers on the IN FIFO by clearing the DIEN bit in the CRYP_DMACR */
-    CRYP->DMACR &= ~(uint32_t)CRYP_DMACR_DIEN;
+        /* Stop DMA transfers on the IN FIFO by clearing the DIEN bit in the CRYP_DMACR */
+        CRYP->DMACR &= ~(uint32_t)CRYP_DMACR_DIEN;
 
-    /* Wait until both the IN and OUT FIFOs are empty
-      (IFEM=1 and OFNE=0 in the CRYP_SR register) and the
-       BUSY bit is cleared. */
+        /* Wait until both the IN and OUT FIFOs are empty
+          (IFEM=1 and OFNE=0 in the CRYP_SR register) and the
+           BUSY bit is cleared. */
 
-    if ((CRYP->CR & (uint32_t)(CRYP_CR_ALGOMODE_TDES_ECB | CRYP_CR_ALGOMODE_TDES_CBC)) != (uint32_t)0 ) { /* TDES */
-        ckeckmask =  CRYP_SR_IFEM | CRYP_SR_BUSY ;
-    } else { /* AES or DES */
-        ckeckmask =  CRYP_SR_IFEM | CRYP_SR_BUSY | CRYP_SR_OFNE;
-    }
+        if ((CRYP->CR & (uint32_t)(CRYP_CR_ALGOMODE_TDES_ECB | CRYP_CR_ALGOMODE_TDES_CBC)) != (uint32_t)0 ) { /* TDES */
+                ckeckmask =  CRYP_SR_IFEM | CRYP_SR_BUSY ;
+        } else { /* AES or DES */
+                ckeckmask =  CRYP_SR_IFEM | CRYP_SR_BUSY | CRYP_SR_OFNE;
+        }
 
-    do {
-        bitstatus = CRYP->SR & ckeckmask;
-        timeout++;
-    } while ((timeout != MAX_TIMEOUT) && (bitstatus != CRYP_SR_IFEM));
+        do {
+                bitstatus = CRYP->SR & ckeckmask;
+                timeout++;
+        } while ((timeout != MAX_TIMEOUT) && (bitstatus != CRYP_SR_IFEM));
 
-    if ((CRYP->SR & ckeckmask) != CRYP_SR_IFEM) {
-        status = ERROR;
-    } else {
-        /* Stop DMA transfers on the OUT FIFO by
-           - writing the DOEN bit to 0 in the CRYP_DMACR register
-           - and clear the CRYPEN bit. */
+        if ((CRYP->SR & ckeckmask) != CRYP_SR_IFEM) {
+                status = ERROR;
+        } else {
+                /* Stop DMA transfers on the OUT FIFO by
+                   - writing the DOEN bit to 0 in the CRYP_DMACR register
+                   - and clear the CRYPEN bit. */
 
-        CRYP->DMACR &= ~(uint32_t)CRYP_DMACR_DOEN;
-        CRYP->CR &= ~(uint32_t)CRYP_CR_CRYPEN;
+                CRYP->DMACR &= ~(uint32_t)CRYP_DMACR_DOEN;
+                CRYP->CR &= ~(uint32_t)CRYP_CR_CRYPEN;
 
-        /* Save the current configuration (bits [9:2] in the CRYP_CR register) */
-        CRYP_ContextSave->CR_bits9to2  = CRYP->CR & (CRYP_CR_KEYSIZE  |
-                                         CRYP_CR_DATATYPE |
-                                         CRYP_CR_ALGOMODE |
-                                         CRYP_CR_ALGODIR);
+                /* Save the current configuration (bits [9:2] in the CRYP_CR register) */
+                CRYP_ContextSave->CR_bits9to2  = CRYP->CR & (CRYP_CR_KEYSIZE  |
+                                                 CRYP_CR_DATATYPE |
+                                                 CRYP_CR_ALGOMODE |
+                                                 CRYP_CR_ALGODIR);
 
-        /* and, if not in ECB mode, the initialization vectors. */
-        CRYP_ContextSave->CRYP_IV0LR = CRYP->IV0LR;
-        CRYP_ContextSave->CRYP_IV0RR = CRYP->IV0RR;
-        CRYP_ContextSave->CRYP_IV1LR = CRYP->IV1LR;
-        CRYP_ContextSave->CRYP_IV1RR = CRYP->IV1RR;
+                /* and, if not in ECB mode, the initialization vectors. */
+                CRYP_ContextSave->CRYP_IV0LR = CRYP->IV0LR;
+                CRYP_ContextSave->CRYP_IV0RR = CRYP->IV0RR;
+                CRYP_ContextSave->CRYP_IV1LR = CRYP->IV1LR;
+                CRYP_ContextSave->CRYP_IV1RR = CRYP->IV1RR;
 
-        /* save The key value */
-        CRYP_ContextSave->CRYP_K0LR = CRYP_KeyInitStruct->CRYP_Key0Left;
-        CRYP_ContextSave->CRYP_K0RR = CRYP_KeyInitStruct->CRYP_Key0Right;
-        CRYP_ContextSave->CRYP_K1LR = CRYP_KeyInitStruct->CRYP_Key1Left;
-        CRYP_ContextSave->CRYP_K1RR = CRYP_KeyInitStruct->CRYP_Key1Right;
-        CRYP_ContextSave->CRYP_K2LR = CRYP_KeyInitStruct->CRYP_Key2Left;
-        CRYP_ContextSave->CRYP_K2RR = CRYP_KeyInitStruct->CRYP_Key2Right;
-        CRYP_ContextSave->CRYP_K3LR = CRYP_KeyInitStruct->CRYP_Key3Left;
-        CRYP_ContextSave->CRYP_K3RR = CRYP_KeyInitStruct->CRYP_Key3Right;
+                /* save The key value */
+                CRYP_ContextSave->CRYP_K0LR = CRYP_KeyInitStruct->CRYP_Key0Left;
+                CRYP_ContextSave->CRYP_K0RR = CRYP_KeyInitStruct->CRYP_Key0Right;
+                CRYP_ContextSave->CRYP_K1LR = CRYP_KeyInitStruct->CRYP_Key1Left;
+                CRYP_ContextSave->CRYP_K1RR = CRYP_KeyInitStruct->CRYP_Key1Right;
+                CRYP_ContextSave->CRYP_K2LR = CRYP_KeyInitStruct->CRYP_Key2Left;
+                CRYP_ContextSave->CRYP_K2RR = CRYP_KeyInitStruct->CRYP_Key2Right;
+                CRYP_ContextSave->CRYP_K3LR = CRYP_KeyInitStruct->CRYP_Key3Left;
+                CRYP_ContextSave->CRYP_K3RR = CRYP_KeyInitStruct->CRYP_Key3Right;
 
-        /* When needed, save the DMA status (pointers for IN and OUT messages,
-           number of remaining bytes, etc.) */
+                /* When needed, save the DMA status (pointers for IN and OUT messages,
+                   number of remaining bytes, etc.) */
 
-        status = SUCCESS;
-    }
+                status = SUCCESS;
+        }
 
-    return status;
+        return status;
 }
 
 /**
@@ -545,27 +545,27 @@ ErrorStatus CRYP_SaveContext(CRYP_Context* CRYP_ContextSave,
 void CRYP_RestoreContext(CRYP_Context* CRYP_ContextRestore)
 {
 
-    /* Configure the processor with the saved configuration */
-    CRYP->CR = CRYP_ContextRestore->CR_bits9to2;
+        /* Configure the processor with the saved configuration */
+        CRYP->CR = CRYP_ContextRestore->CR_bits9to2;
 
-    /* restore The key value */
-    CRYP->K0LR = CRYP_ContextRestore->CRYP_K0LR;
-    CRYP->K0RR = CRYP_ContextRestore->CRYP_K0RR;
-    CRYP->K1LR = CRYP_ContextRestore->CRYP_K1LR;
-    CRYP->K1RR = CRYP_ContextRestore->CRYP_K1RR;
-    CRYP->K2LR = CRYP_ContextRestore->CRYP_K2LR;
-    CRYP->K2RR = CRYP_ContextRestore->CRYP_K2RR;
-    CRYP->K3LR = CRYP_ContextRestore->CRYP_K3LR;
-    CRYP->K3RR = CRYP_ContextRestore->CRYP_K3RR;
+        /* restore The key value */
+        CRYP->K0LR = CRYP_ContextRestore->CRYP_K0LR;
+        CRYP->K0RR = CRYP_ContextRestore->CRYP_K0RR;
+        CRYP->K1LR = CRYP_ContextRestore->CRYP_K1LR;
+        CRYP->K1RR = CRYP_ContextRestore->CRYP_K1RR;
+        CRYP->K2LR = CRYP_ContextRestore->CRYP_K2LR;
+        CRYP->K2RR = CRYP_ContextRestore->CRYP_K2RR;
+        CRYP->K3LR = CRYP_ContextRestore->CRYP_K3LR;
+        CRYP->K3RR = CRYP_ContextRestore->CRYP_K3RR;
 
-    /* and the initialization vectors. */
-    CRYP->IV0LR = CRYP_ContextRestore->CRYP_IV0LR;
-    CRYP->IV0RR = CRYP_ContextRestore->CRYP_IV0RR;
-    CRYP->IV1LR = CRYP_ContextRestore->CRYP_IV1LR;
-    CRYP->IV1RR = CRYP_ContextRestore->CRYP_IV1RR;
+        /* and the initialization vectors. */
+        CRYP->IV0LR = CRYP_ContextRestore->CRYP_IV0LR;
+        CRYP->IV0RR = CRYP_ContextRestore->CRYP_IV0RR;
+        CRYP->IV1LR = CRYP_ContextRestore->CRYP_IV1LR;
+        CRYP->IV1RR = CRYP_ContextRestore->CRYP_IV1RR;
 
-    /* Enable the cryptographic processor */
-    CRYP->CR |= CRYP_CR_CRYPEN;
+        /* Enable the cryptographic processor */
+        CRYP->CR |= CRYP_CR_CRYPEN;
 }
 /**
   * @}
@@ -605,17 +605,17 @@ void CRYP_RestoreContext(CRYP_Context* CRYP_ContextRestore)
   */
 void CRYP_DMACmd(uint8_t CRYP_DMAReq, FunctionalState NewState)
 {
-    /* Check the parameters */
-    assert_param(IS_CRYP_DMAREQ(CRYP_DMAReq));
-    assert_param(IS_FUNCTIONAL_STATE(NewState));
+        /* Check the parameters */
+        assert_param(IS_CRYP_DMAREQ(CRYP_DMAReq));
+        assert_param(IS_FUNCTIONAL_STATE(NewState));
 
-    if (NewState != DISABLE) {
-        /* Enable the selected CRYP DMA request */
-        CRYP->DMACR |= CRYP_DMAReq;
-    } else {
-        /* Disable the selected CRYP DMA request */
-        CRYP->DMACR &= (uint8_t)~CRYP_DMAReq;
-    }
+        if (NewState != DISABLE) {
+                /* Enable the selected CRYP DMA request */
+                CRYP->DMACR |= CRYP_DMAReq;
+        } else {
+                /* Disable the selected CRYP DMA request */
+                CRYP->DMACR &= (uint8_t)~CRYP_DMAReq;
+        }
 }
 /**
   * @}
@@ -727,17 +727,17 @@ void CRYP_DMACmd(uint8_t CRYP_DMAReq, FunctionalState NewState)
   */
 void CRYP_ITConfig(uint8_t CRYP_IT, FunctionalState NewState)
 {
-    /* Check the parameters */
-    assert_param(IS_CRYP_CONFIG_IT(CRYP_IT));
-    assert_param(IS_FUNCTIONAL_STATE(NewState));
+        /* Check the parameters */
+        assert_param(IS_CRYP_CONFIG_IT(CRYP_IT));
+        assert_param(IS_FUNCTIONAL_STATE(NewState));
 
-    if (NewState != DISABLE) {
-        /* Enable the selected CRYP interrupt */
-        CRYP->IMSCR |= CRYP_IT;
-    } else {
-        /* Disable the selected CRYP interrupt */
-        CRYP->IMSCR &= (uint8_t)~CRYP_IT;
-    }
+        if (NewState != DISABLE) {
+                /* Enable the selected CRYP interrupt */
+                CRYP->IMSCR |= CRYP_IT;
+        } else {
+                /* Disable the selected CRYP interrupt */
+                CRYP->IMSCR &= (uint8_t)~CRYP_IT;
+        }
 }
 
 /**
@@ -752,20 +752,20 @@ void CRYP_ITConfig(uint8_t CRYP_IT, FunctionalState NewState)
   */
 ITStatus CRYP_GetITStatus(uint8_t CRYP_IT)
 {
-    ITStatus bitstatus = RESET;
-    /* Check the parameters */
-    assert_param(IS_CRYP_GET_IT(CRYP_IT));
+        ITStatus bitstatus = RESET;
+        /* Check the parameters */
+        assert_param(IS_CRYP_GET_IT(CRYP_IT));
 
-    /* Check the status of the specified CRYP interrupt */
-    if ((CRYP->MISR &  CRYP_IT) != (uint8_t)RESET) {
-        /* CRYP_IT is set */
-        bitstatus = SET;
-    } else {
-        /* CRYP_IT is reset */
-        bitstatus = RESET;
-    }
-    /* Return the CRYP_IT status */
-    return bitstatus;
+        /* Check the status of the specified CRYP interrupt */
+        if ((CRYP->MISR &  CRYP_IT) != (uint8_t)RESET) {
+                /* CRYP_IT is set */
+                bitstatus = SET;
+        } else {
+                /* CRYP_IT is reset */
+                bitstatus = RESET;
+        }
+        /* Return the CRYP_IT status */
+        return bitstatus;
 }
 
 /**
@@ -783,31 +783,31 @@ ITStatus CRYP_GetITStatus(uint8_t CRYP_IT)
   */
 FlagStatus CRYP_GetFlagStatus(uint8_t CRYP_FLAG)
 {
-    FlagStatus bitstatus = RESET;
-    uint32_t tempreg = 0;
+        FlagStatus bitstatus = RESET;
+        uint32_t tempreg = 0;
 
-    /* Check the parameters */
-    assert_param(IS_CRYP_GET_FLAG(CRYP_FLAG));
+        /* Check the parameters */
+        assert_param(IS_CRYP_GET_FLAG(CRYP_FLAG));
 
-    /* check if the FLAG is in RISR register */
-    if ((CRYP_FLAG & FLAG_MASK) != 0x00) {
-        tempreg = CRYP->RISR;
-    } else { /* The FLAG is in SR register */
-        tempreg = CRYP->SR;
-    }
+        /* check if the FLAG is in RISR register */
+        if ((CRYP_FLAG & FLAG_MASK) != 0x00) {
+                tempreg = CRYP->RISR;
+        } else { /* The FLAG is in SR register */
+                tempreg = CRYP->SR;
+        }
 
 
-    /* Check the status of the specified CRYP flag */
-    if ((tempreg & CRYP_FLAG ) != (uint8_t)RESET) {
-        /* CRYP_FLAG is set */
-        bitstatus = SET;
-    } else {
-        /* CRYP_FLAG is reset */
-        bitstatus = RESET;
-    }
+        /* Check the status of the specified CRYP flag */
+        if ((tempreg & CRYP_FLAG ) != (uint8_t)RESET) {
+                /* CRYP_FLAG is set */
+                bitstatus = SET;
+        } else {
+                /* CRYP_FLAG is reset */
+                bitstatus = RESET;
+        }
 
-    /* Return the CRYP_FLAG status */
-    return  bitstatus;
+        /* Return the CRYP_FLAG status */
+        return  bitstatus;
 }
 
 /**

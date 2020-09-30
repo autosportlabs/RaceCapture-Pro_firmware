@@ -110,15 +110,15 @@ static void init_CAN(CAN_TypeDef * CANx, uint32_t baud)
 
         /* Select baud rate up to requested rate, except for below min, where min is selected */
         if (baud >= can_baud_rate[CAN_BAUD_COUNT - 1]) {
-            /* round down to peak rate if >= peak rate */
-            baud_index = CAN_BAUD_COUNT - 1;
+                /* round down to peak rate if >= peak rate */
+                baud_index = CAN_BAUD_COUNT - 1;
         } else {
-            for (baud_index = 0; baud_index < CAN_BAUD_COUNT - 1; baud_index++) {
-                if (baud < can_baud_rate[baud_index + 1]) {
-                    /* take current idx if next is too large */
-                    break;
+                for (baud_index = 0; baud_index < CAN_BAUD_COUNT - 1; baud_index++) {
+                        if (baud < can_baud_rate[baud_index + 1]) {
+                                /* take current idx if next is too large */
+                                break;
+                        }
                 }
-            }
         }
         CAN_InitStructure.CAN_SJW = can_baud_sjw[baud_index];
         CAN_InitStructure.CAN_BS1 = can_baud_bs1[baud_index];
@@ -165,10 +165,9 @@ static void CAN_device_init_1(int baud, bool termination_enabled)
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
         init_GPIO_port(GPIOB, GPIO_Pin_0);
         if (termination_enabled) {
-            GPIO_SetBits(GPIOB, GPIO_Pin_0);
-        }
-        else {
-            GPIO_ResetBits(GPIOB, GPIO_Pin_0);
+                GPIO_SetBits(GPIOB, GPIO_Pin_0);
+        } else {
+                GPIO_ResetBits(GPIOB, GPIO_Pin_0);
         }
 }
 
@@ -200,10 +199,9 @@ static void CAN_device_init_2(int baud, bool termination_enabled)
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
         init_GPIO_port(GPIOC, GPIO_Pin_4);
         if (termination_enabled) {
-            GPIO_SetBits(GPIOC, GPIO_Pin_4);
-        }
-        else {
-            GPIO_ResetBits(GPIOC, GPIO_Pin_4);
+                GPIO_SetBits(GPIOC, GPIO_Pin_4);
+        } else {
+                GPIO_ResetBits(GPIOC, GPIO_Pin_4);
         }
 }
 
@@ -214,39 +212,39 @@ int CAN_device_init(const uint8_t channel, const uint32_t baud, const bool termi
         pr_info_int_msg(" with baud rate ", baud);
 
         if (!init_queue()) {
-            pr_info(_LOG_PFX "CAN init queue failed\r\n");
-            return 0;
+                pr_info(_LOG_PFX "CAN init queue failed\r\n");
+                return 0;
         }
 
         switch (channel) {
         case 0:
-            CAN_device_init_1(baud, termination_enabled);
-            break;
+                CAN_device_init_1(baud, termination_enabled);
+                break;
         case 1:
-            CAN_device_init_2(baud, termination_enabled);
-            break;
+                CAN_device_init_2(baud, termination_enabled);
+                break;
         default:
-            pr_info(_LOG_PFX "CAN init device failed\r\n");
-            return 0;
+                pr_info(_LOG_PFX "CAN init device failed\r\n");
+                return 0;
         }
 
         /* Clear out all filter values except 0.  It accepts all. */
         CAN_device_set_filter(channel, 0, 1, 0, 0, true);
         for (size_t i = 1; i < CAN_FILTER_COUNT; ++i)
-            CAN_device_set_filter(channel, i, 0, 0, 0, false);
+                CAN_device_set_filter(channel, i, 0, 0, 0, false);
 
         pr_info(_LOG_PFX "CAN init success!\r\n");
         return 1;
 }
 
 int CAN_device_set_filter(const uint8_t channel, const uint8_t id, const uint8_t extended,
-     const uint32_t filter, const uint32_t mask, const bool enabled)
+                          const uint32_t filter, const uint32_t mask, const bool enabled)
 {
         if (channel > 1)
-            return 0;
+                return 0;
 
         if (id > 13)
-            return 0;
+                return 0;
 
         /*
          * The mapping for these filters/masks is wonkey.  See page
@@ -261,9 +259,9 @@ int CAN_device_set_filter(const uint8_t channel, const uint8_t id, const uint8_t
         CAN_filter_init_structure.CAN_FilterMode = CAN_FilterMode_IdMask;
         CAN_filter_init_structure.CAN_FilterScale = CAN_FilterScale_32bit;
         CAN_filter_init_structure.CAN_FilterFIFOAssignment =
-            (channel == 0 ? CAN_FIFO0 : CAN_FIFO1);
+                (channel == 0 ? CAN_FIFO0 : CAN_FIFO1);
         CAN_filter_init_structure.CAN_FilterActivation =
-            enabled ? ENABLE : DISABLE;
+                enabled ? ENABLE : DISABLE;
 
         const size_t shift = extended ? 3 : 21;
         CAN_filter_init_structure.CAN_FilterIdHigh = (filter << shift) >> 16;
@@ -332,10 +330,10 @@ int CAN_device_tx_msg(const uint8_t channel, const CAN_msg * msg, const unsigned
 int CAN_device_rx_msg(CAN_msg * msg, const unsigned int timeout_ms)
 {
         if (pdTRUE == xQueueReceive(can_rx_queue, msg, msToTicks(timeout_ms))) {
-            return 1;
+                return 1;
         } else {
-            pr_debug(_LOG_PFX "timeout rx CAN msg\r\n");
-            return 0;
+                pr_debug(_LOG_PFX "timeout rx CAN msg\r\n");
+                return 0;
         }
 }
 

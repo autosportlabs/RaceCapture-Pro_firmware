@@ -102,7 +102,7 @@ USBD_Status  USBD_CtlSendStatus (USB_OTG_CORE_HANDLE  *pdev);
 
 USBD_Status  USBD_CtlReceiveStatus (USB_OTG_CORE_HANDLE  *pdev);
 
-uint16_t  USBD_GetRxCount (USB_OTG_CORE_HANDLE  *pdev ,
+uint16_t  USBD_GetRxCount (USB_OTG_CORE_HANDLE  *pdev,
                            uint8_t epnum);
 
 /**

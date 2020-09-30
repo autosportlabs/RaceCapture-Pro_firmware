@@ -144,57 +144,57 @@ static jmp_buf xJumpBuf;
 /*-----------------------------------------------------------*/
 portBASE_TYPE xPortStartScheduler( void )
 {
-    pxISR pxOriginalTickISR;
+        pxISR pxOriginalTickISR;
 
-    /* This is called with interrupts already disabled. */
+        /* This is called with interrupts already disabled. */
 
-    /* Remember what was on the interrupts we are going to use
-    so we can put them back later if required. */
-    pxOldSwitchISR = _dos_getvect( portSWITCH_INT_NUMBER );
-    pxOriginalTickISR = _dos_getvect( portTIMER_INT_NUMBER );
-    pxOldSwitchISRPlus1 = _dos_getvect( portSWITCH_INT_NUMBER + 1 );
+        /* Remember what was on the interrupts we are going to use
+        so we can put them back later if required. */
+        pxOldSwitchISR = _dos_getvect( portSWITCH_INT_NUMBER );
+        pxOriginalTickISR = _dos_getvect( portTIMER_INT_NUMBER );
+        pxOldSwitchISRPlus1 = _dos_getvect( portSWITCH_INT_NUMBER + 1 );
 
-    prvSetTickFrequency( configTICK_RATE_HZ );
+        prvSetTickFrequency( configTICK_RATE_HZ );
 
-    /* Put our manual switch (yield) function on a known
-    vector. */
-    _dos_setvect( portSWITCH_INT_NUMBER, prvYieldProcessor );
+        /* Put our manual switch (yield) function on a known
+        vector. */
+        _dos_setvect( portSWITCH_INT_NUMBER, prvYieldProcessor );
 
-    /* Put the old tick on a different interrupt number so we can
-    call it when we want. */
-    _dos_setvect( portSWITCH_INT_NUMBER + 1, pxOriginalTickISR );
+        /* Put the old tick on a different interrupt number so we can
+        call it when we want. */
+        _dos_setvect( portSWITCH_INT_NUMBER + 1, pxOriginalTickISR );
 
-    /* The ISR used depends on whether the preemptive or cooperative
-    scheduler is being used. */
+        /* The ISR used depends on whether the preemptive or cooperative
+        scheduler is being used. */
 #if( configUSE_PREEMPTION == 1 )
-    {
-        /* Put our tick switch function on the timer interrupt. */
-        _dos_setvect( portTIMER_INT_NUMBER, prvPreemptiveTick );
-    }
+        {
+                /* Put our tick switch function on the timer interrupt. */
+                _dos_setvect( portTIMER_INT_NUMBER, prvPreemptiveTick );
+        }
 #else
-    {
-        /* We want the timer interrupt to just increment the tick count. */
-        _dos_setvect( portTIMER_INT_NUMBER, prvNonPreemptiveTick );
-    }
+        {
+                /* We want the timer interrupt to just increment the tick count. */
+                _dos_setvect( portTIMER_INT_NUMBER, prvNonPreemptiveTick );
+        }
 #endif
 
-    /* Setup a counter that is used to call the DOS interrupt as close
-    to it's original frequency as can be achieved given our chosen tick
-    frequency. */
-    sDOSTickCounter = portTICKS_PER_DOS_TICK;
+        /* Setup a counter that is used to call the DOS interrupt as close
+        to it's original frequency as can be achieved given our chosen tick
+        frequency. */
+        sDOSTickCounter = portTICKS_PER_DOS_TICK;
 
-    /* Clean up function if we want to return to DOS. */
-    if( setjmp( xJumpBuf ) != 0 ) {
-        prvExitFunction();
-        xSchedulerRunning = pdFALSE;
-    } else {
-        xSchedulerRunning = pdTRUE;
+        /* Clean up function if we want to return to DOS. */
+        if( setjmp( xJumpBuf ) != 0 ) {
+                prvExitFunction();
+                xSchedulerRunning = pdFALSE;
+        } else {
+                xSchedulerRunning = pdTRUE;
 
-        /* Kick off the scheduler by setting up the context of the first task. */
-        portFIRST_CONTEXT();
-    }
+                /* Kick off the scheduler by setting up the context of the first task. */
+                portFIRST_CONTEXT();
+        }
 
-    return xSchedulerRunning;
+        return xSchedulerRunning;
 }
 /*-----------------------------------------------------------*/
 
@@ -203,113 +203,113 @@ scheduler is being used. */
 #if( configUSE_PREEMPTION == 1 )
 static void __interrupt __far prvPreemptiveTick( void )
 {
-    /* Get the scheduler to update the task states following the tick. */
-    if( xTaskIncrementTick() != pdFALSE ) {
-        /* Switch in the context of the next task to be run. */
-        portSWITCH_CONTEXT();
-    }
+        /* Get the scheduler to update the task states following the tick. */
+        if( xTaskIncrementTick() != pdFALSE ) {
+                /* Switch in the context of the next task to be run. */
+                portSWITCH_CONTEXT();
+        }
 
-    /* Reset the PIC ready for the next time. */
-    prvPortResetPIC();
+        /* Reset the PIC ready for the next time. */
+        prvPortResetPIC();
 }
 #else
 static void __interrupt __far prvNonPreemptiveTick( void )
 {
-    /* Same as preemptive tick, but the cooperative scheduler is being used
-    so we don't have to switch in the context of the next task. */
-    xTaskIncrementTick();
-    prvPortResetPIC();
+        /* Same as preemptive tick, but the cooperative scheduler is being used
+        so we don't have to switch in the context of the next task. */
+        xTaskIncrementTick();
+        prvPortResetPIC();
 }
 #endif
 /*-----------------------------------------------------------*/
 
 static void __interrupt __far prvYieldProcessor( void )
 {
-    /* Switch in the context of the next task to be run. */
-    portSWITCH_CONTEXT();
+        /* Switch in the context of the next task to be run. */
+        portSWITCH_CONTEXT();
 }
 /*-----------------------------------------------------------*/
 
 static void prvPortResetPIC( void )
 {
-    /* We are going to call the DOS tick interrupt at as close a
-    frequency to the normal DOS tick as possible. */
+        /* We are going to call the DOS tick interrupt at as close a
+        frequency to the normal DOS tick as possible. */
 
-    /* WE SHOULD NOT DO THIS IF YIELD WAS CALLED. */
-    --sDOSTickCounter;
-    if( sDOSTickCounter <= 0 ) {
-        sDOSTickCounter = ( short ) portTICKS_PER_DOS_TICK;
-        __asm { int	portSWITCH_INT_NUMBER + 1 };
-    } else {
-        /* Reset the PIC as the DOS tick is not being called to
-        do it. */
-        __asm {
-            mov	al, 20H
-            out 20H, al
-        };
-    }
+        /* WE SHOULD NOT DO THIS IF YIELD WAS CALLED. */
+        --sDOSTickCounter;
+        if( sDOSTickCounter <= 0 ) {
+                sDOSTickCounter = ( short ) portTICKS_PER_DOS_TICK;
+                __asm { int	portSWITCH_INT_NUMBER + 1 };
+        } else {
+                /* Reset the PIC as the DOS tick is not being called to
+                do it. */
+                __asm {
+                        mov	al, 20H
+                        out 20H, al
+                };
+        }
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-    /* Jump back to the processor state prior to starting the
-    scheduler.  This means we are not going to be using a
-    task stack frame so the task can be deleted. */
-    longjmp( xJumpBuf, 1 );
+        /* Jump back to the processor state prior to starting the
+        scheduler.  This means we are not going to be using a
+        task stack frame so the task can be deleted. */
+        longjmp( xJumpBuf, 1 );
 }
 /*-----------------------------------------------------------*/
 
 static void prvExitFunction( void )
 {
-    void ( __interrupt __far *pxOriginalTickISR )();
+        void ( __interrupt __far *pxOriginalTickISR )();
 
-    /* Interrupts should be disabled here anyway - but no
-    harm in making sure. */
-    portDISABLE_INTERRUPTS();
-    if( xSchedulerRunning == pdTRUE ) {
-        /* Set the DOS tick back onto the timer ticker. */
-        pxOriginalTickISR = _dos_getvect( portSWITCH_INT_NUMBER + 1 );
-        _dos_setvect( portTIMER_INT_NUMBER, pxOriginalTickISR );
-        prvSetTickFrequencyDefault();
+        /* Interrupts should be disabled here anyway - but no
+        harm in making sure. */
+        portDISABLE_INTERRUPTS();
+        if( xSchedulerRunning == pdTRUE ) {
+                /* Set the DOS tick back onto the timer ticker. */
+                pxOriginalTickISR = _dos_getvect( portSWITCH_INT_NUMBER + 1 );
+                _dos_setvect( portTIMER_INT_NUMBER, pxOriginalTickISR );
+                prvSetTickFrequencyDefault();
 
-        /* Put back the switch interrupt routines that was in place
-        before the scheduler started. */
-        _dos_setvect( portSWITCH_INT_NUMBER, pxOldSwitchISR );
-        _dos_setvect( portSWITCH_INT_NUMBER + 1, pxOldSwitchISRPlus1 );
-    }
-    /* The tick timer is back how DOS wants it.  We can re-enable
-    interrupts without the scheduler being called. */
-    portENABLE_INTERRUPTS();
+                /* Put back the switch interrupt routines that was in place
+                before the scheduler started. */
+                _dos_setvect( portSWITCH_INT_NUMBER, pxOldSwitchISR );
+                _dos_setvect( portSWITCH_INT_NUMBER + 1, pxOldSwitchISRPlus1 );
+        }
+        /* The tick timer is back how DOS wants it.  We can re-enable
+        interrupts without the scheduler being called. */
+        portENABLE_INTERRUPTS();
 }
 /*-----------------------------------------------------------*/
 
 static void prvSetTickFrequency( unsigned long ulTickRateHz )
 {
-    const unsigned short usPIT_MODE = ( unsigned short ) 0x43;
-    const unsigned short usPIT0 = ( unsigned short ) 0x40;
-    const unsigned long ulPIT_CONST = ( unsigned long ) 1193180UL;
-    const unsigned short us8254_CTR0_MODE3 = ( unsigned short ) 0x36;
-    unsigned long ulOutput;
+        const unsigned short usPIT_MODE = ( unsigned short ) 0x43;
+        const unsigned short usPIT0 = ( unsigned short ) 0x40;
+        const unsigned long ulPIT_CONST = ( unsigned long ) 1193180UL;
+        const unsigned short us8254_CTR0_MODE3 = ( unsigned short ) 0x36;
+        unsigned long ulOutput;
 
-    /* Setup the 8245 to tick at the wanted frequency. */
-    portOUTPUT_BYTE( usPIT_MODE, us8254_CTR0_MODE3 );
-    ulOutput = ulPIT_CONST / ulTickRateHz;
-    portOUTPUT_BYTE( usPIT0, ( unsigned short )( ulOutput & ( unsigned long ) 0xff ) );
-    ulOutput >>= 8;
-    portOUTPUT_BYTE( usPIT0, ( unsigned short ) ( ulOutput & ( unsigned long ) 0xff ) );
+        /* Setup the 8245 to tick at the wanted frequency. */
+        portOUTPUT_BYTE( usPIT_MODE, us8254_CTR0_MODE3 );
+        ulOutput = ulPIT_CONST / ulTickRateHz;
+        portOUTPUT_BYTE( usPIT0, ( unsigned short )( ulOutput & ( unsigned long ) 0xff ) );
+        ulOutput >>= 8;
+        portOUTPUT_BYTE( usPIT0, ( unsigned short ) ( ulOutput & ( unsigned long ) 0xff ) );
 }
 /*-----------------------------------------------------------*/
 
 static void prvSetTickFrequencyDefault( void )
 {
-    const unsigned short usPIT_MODE = ( unsigned short ) 0x43;
-    const unsigned short usPIT0 = ( unsigned short ) 0x40;
-    const unsigned short us8254_CTR0_MODE3 = ( unsigned short ) 0x36;
+        const unsigned short usPIT_MODE = ( unsigned short ) 0x43;
+        const unsigned short usPIT0 = ( unsigned short ) 0x40;
+        const unsigned short us8254_CTR0_MODE3 = ( unsigned short ) 0x36;
 
-    portOUTPUT_BYTE( usPIT_MODE, us8254_CTR0_MODE3 );
-    portOUTPUT_BYTE( usPIT0,0 );
-    portOUTPUT_BYTE( usPIT0,0 );
+        portOUTPUT_BYTE( usPIT_MODE, us8254_CTR0_MODE3 );
+        portOUTPUT_BYTE( usPIT0,0 );
+        portOUTPUT_BYTE( usPIT0,0 );
 }
 
 

@@ -194,7 +194,7 @@ static bool channel_in_bounds(const size_t channel)
 int ADC_device_sample(const size_t channel)
 {
         return channel_in_bounds(channel) ?
-                ADCConvertedValues[channel] : -1;
+               ADCConvertedValues[channel] : -1;
 }
 
 float ADC_device_get_voltage_range(const size_t channel)

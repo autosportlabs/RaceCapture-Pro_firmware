@@ -55,81 +55,81 @@
  */
 
 void arm_negate_q15(
-    q15_t * pSrc,
-    q15_t * pDst,
-    uint32_t blockSize)
+        q15_t * pSrc,
+        q15_t * pDst,
+        uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* loop counter */
+        uint32_t blkCnt;                               /* loop counter */
 
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    q15_t in1, in2;                                /* Temporary variables */
+        q15_t in1, in2;                                /* Temporary variables */
 
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = -A */
-        /* Read two inputs */
-        in1 = *pSrc++;
-        in2 = *pSrc++;
-        /* Negate and then store the results in the destination buffer by packing. */
-
-#ifndef  ARM_MATH_BIG_ENDIAN
-
-        *__SIMD32(pDst)++ = __PKHBT(__SSAT(-in1, 16), __SSAT(-in2, 16), 16);
-
-#else
-
-        *__SIMD32(pDst)++ = __PKHBT(__SSAT(-in2, 16), __SSAT(-in1, 16), 16);
-
-#endif /* #ifndef  ARM_MATH_BIG_ENDIAN    */
-
-        in1 = *pSrc++;
-        in2 = *pSrc++;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = -A */
+                /* Read two inputs */
+                in1 = *pSrc++;
+                in2 = *pSrc++;
+                /* Negate and then store the results in the destination buffer by packing. */
 
 #ifndef  ARM_MATH_BIG_ENDIAN
 
-        *__SIMD32(pDst)++ = __PKHBT(__SSAT(-in1, 16), __SSAT(-in2, 16), 16);
+                *__SIMD32(pDst)++ = __PKHBT(__SSAT(-in1, 16), __SSAT(-in2, 16), 16);
 
 #else
 
-
-        *__SIMD32(pDst)++ = __PKHBT(__SSAT(-in2, 16), __SSAT(-in1, 16), 16);
+                *__SIMD32(pDst)++ = __PKHBT(__SSAT(-in2, 16), __SSAT(-in1, 16), 16);
 
 #endif /* #ifndef  ARM_MATH_BIG_ENDIAN    */
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                in1 = *pSrc++;
+                in2 = *pSrc++;
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+#ifndef  ARM_MATH_BIG_ENDIAN
+
+                *__SIMD32(pDst)++ = __PKHBT(__SSAT(-in1, 16), __SSAT(-in2, 16), 16);
 
 #else
 
-    /* Run the below code for Cortex-M0 */
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+                *__SIMD32(pDst)++ = __PKHBT(__SSAT(-in2, 16), __SSAT(-in1, 16), 16);
+
+#endif /* #ifndef  ARM_MATH_BIG_ENDIAN    */
+
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
+
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
+
+#else
+
+        /* Run the below code for Cortex-M0 */
+
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    while(blkCnt > 0u) {
-        /* C = -A */
-        /* Negate and then store the result in the destination buffer. */
-        *pDst++ = __SSAT(-*pSrc++, 16);
+        while(blkCnt > 0u) {
+                /* C = -A */
+                /* Negate and then store the result in the destination buffer. */
+                *pDst++ = __SSAT(-*pSrc++, 16);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 }
 

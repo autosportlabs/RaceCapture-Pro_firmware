@@ -97,7 +97,7 @@ typedef unsigned portLONG portTickType;
 /* Critical section management. */
 #define portENTER_CRITICAL()			__asm{ pushf }  \
 										__asm{ cli 	 }	\
- 
+
 #define portEXIT_CRITICAL()				__asm{ popf }
 
 #define portDISABLE_INTERRUPTS()		__asm{ cli }

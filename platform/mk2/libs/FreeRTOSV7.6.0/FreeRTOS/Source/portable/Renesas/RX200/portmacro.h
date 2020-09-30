@@ -112,17 +112,17 @@ typedef unsigned portLONG portTickType;
 #pragma inline_asm vPortYield
 static void vPortYield( void )
 {
-    /* Save clobbered register - may not actually be necessary if inline asm
-    functions are considered to use the same rules as function calls by the
-    compiler. */
-    PUSH.L R5
-    /* Set ITU SWINTR. */
-    MOV.L #553696, R5
-    MOV.B #1, [R5]
-    /* Read back to ensure the value is taken before proceeding. */
-    MOV.L [R5], R5
-    /* Restore clobbered register to its previous value. */
-    POP R5
+        /* Save clobbered register - may not actually be necessary if inline asm
+        functions are considered to use the same rules as function calls by the
+        compiler. */
+        PUSH.L R5
+        /* Set ITU SWINTR. */
+        MOV.L #553696, R5
+        MOV.B #1, [R5]
+        /* Read back to ensure the value is taken before proceeding. */
+        MOV.L [R5], R5
+        /* Restore clobbered register to its previous value. */
+        POP R5
 }
 #define portYIELD()	vPortYield()
 #define portYIELD_FROM_ISR( x )	if( x != pdFALSE ) portYIELD()

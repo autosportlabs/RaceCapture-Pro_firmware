@@ -54,147 +54,147 @@
  */
 
 void arm_cmplx_mult_cmplx_q31(
-    q31_t * pSrcA,
-    q31_t * pSrcB,
-    q31_t * pDst,
-    uint32_t numSamples)
+        q31_t * pSrcA,
+        q31_t * pSrcB,
+        q31_t * pDst,
+        uint32_t numSamples)
 {
-    q31_t a, b, c, d;                              /* Temporary variables to store real and imaginary values */
-    uint32_t blkCnt;                               /* loop counters */
+        q31_t a, b, c, d;                              /* Temporary variables to store real and imaginary values */
+        uint32_t blkCnt;                               /* loop counters */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /* loop Unrolling */
-    blkCnt = numSamples >> 2u;
+        /* loop Unrolling */
+        blkCnt = numSamples >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C[2 * i] = A[2 * i] * B[2 * i] - A[2 * i + 1] * B[2 * i + 1].  */
-        /* C[2 * i + 1] = A[2 * i] * B[2 * i + 1] + A[2 * i + 1] * B[2 * i].  */
-        a = *pSrcA++;
-        b = *pSrcA++;
-        c = *pSrcB++;
-        d = *pSrcB++;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C[2 * i] = A[2 * i] * B[2 * i] - A[2 * i + 1] * B[2 * i + 1].  */
+                /* C[2 * i + 1] = A[2 * i] * B[2 * i + 1] + A[2 * i + 1] * B[2 * i].  */
+                a = *pSrcA++;
+                b = *pSrcA++;
+                c = *pSrcB++;
+                d = *pSrcB++;
 
-        /* store the real result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
-        /* store the imag result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
+                /* store the real result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
+                /* store the imag result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
 
-        a = *pSrcA++;
-        b = *pSrcA++;
-        c = *pSrcB++;
-        d = *pSrcB++;
+                a = *pSrcA++;
+                b = *pSrcA++;
+                c = *pSrcB++;
+                d = *pSrcB++;
 
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
 
-        a = *pSrcA++;
-        b = *pSrcA++;
-        c = *pSrcB++;
-        d = *pSrcB++;
+                a = *pSrcA++;
+                b = *pSrcA++;
+                c = *pSrcB++;
+                d = *pSrcB++;
 
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
 
-        a = *pSrcA++;
-        b = *pSrcA++;
-        c = *pSrcB++;
-        d = *pSrcB++;
+                a = *pSrcA++;
+                b = *pSrcA++;
+                c = *pSrcB++;
+                d = *pSrcB++;
 
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
 
-        /* Decrement the blockSize loop counter */
-        blkCnt--;
-    }
+                /* Decrement the blockSize loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = numSamples % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = numSamples % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* C[2 * i] = A[2 * i] * B[2 * i] - A[2 * i + 1] * B[2 * i + 1].  */
-        /* C[2 * i + 1] = A[2 * i] * B[2 * i + 1] + A[2 * i + 1] * B[2 * i].  */
-        a = *pSrcA++;
-        b = *pSrcA++;
-        c = *pSrcB++;
-        d = *pSrcB++;
+        while(blkCnt > 0u) {
+                /* C[2 * i] = A[2 * i] * B[2 * i] - A[2 * i + 1] * B[2 * i + 1].  */
+                /* C[2 * i + 1] = A[2 * i] * B[2 * i + 1] + A[2 * i + 1] * B[2 * i].  */
+                a = *pSrcA++;
+                b = *pSrcA++;
+                c = *pSrcB++;
+                d = *pSrcB++;
 
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
 
-        /* Decrement the blockSize loop counter */
-        blkCnt--;
-    }
+                /* Decrement the blockSize loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* loop Unrolling */
-    blkCnt = numSamples >> 1u;
+        /* loop Unrolling */
+        blkCnt = numSamples >> 1u;
 
-    /* First part of the processing with loop unrolling.  Compute 2 outputs at a time.
-     ** a second loop below computes the remaining 1 sample. */
-    while(blkCnt > 0u) {
-        /* C[2 * i] = A[2 * i] * B[2 * i] - A[2 * i + 1] * B[2 * i + 1].  */
-        /* C[2 * i + 1] = A[2 * i] * B[2 * i + 1] + A[2 * i + 1] * B[2 * i].  */
-        a = *pSrcA++;
-        b = *pSrcA++;
-        c = *pSrcB++;
-        d = *pSrcB++;
+        /* First part of the processing with loop unrolling.  Compute 2 outputs at a time.
+         ** a second loop below computes the remaining 1 sample. */
+        while(blkCnt > 0u) {
+                /* C[2 * i] = A[2 * i] * B[2 * i] - A[2 * i + 1] * B[2 * i + 1].  */
+                /* C[2 * i + 1] = A[2 * i] * B[2 * i + 1] + A[2 * i + 1] * B[2 * i].  */
+                a = *pSrcA++;
+                b = *pSrcA++;
+                c = *pSrcB++;
+                d = *pSrcB++;
 
-        /* store the real result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
-        /* store the imag result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
+                /* store the real result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
+                /* store the imag result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
 
-        a = *pSrcA++;
-        b = *pSrcA++;
-        c = *pSrcB++;
-        d = *pSrcB++;
+                a = *pSrcA++;
+                b = *pSrcA++;
+                c = *pSrcB++;
+                d = *pSrcB++;
 
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
 
-        /* Decrement the blockSize loop counter */
-        blkCnt--;
-    }
+                /* Decrement the blockSize loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 2, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = numSamples % 0x2u;
+        /* If the blockSize is not a multiple of 2, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = numSamples % 0x2u;
 
-    while(blkCnt > 0u) {
-        /* C[2 * i] = A[2 * i] * B[2 * i] - A[2 * i + 1] * B[2 * i + 1].  */
-        /* C[2 * i + 1] = A[2 * i] * B[2 * i + 1] + A[2 * i + 1] * B[2 * i].  */
-        a = *pSrcA++;
-        b = *pSrcA++;
-        c = *pSrcB++;
-        d = *pSrcB++;
+        while(blkCnt > 0u) {
+                /* C[2 * i] = A[2 * i] * B[2 * i] - A[2 * i + 1] * B[2 * i + 1].  */
+                /* C[2 * i + 1] = A[2 * i] * B[2 * i + 1] + A[2 * i + 1] * B[2 * i].  */
+                a = *pSrcA++;
+                b = *pSrcA++;
+                c = *pSrcB++;
+                d = *pSrcB++;
 
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
-        /* store the result in 3.29 format in the destination buffer. */
-        *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * c) >> 33) - (((q63_t) b * d) >> 33));
+                /* store the result in 3.29 format in the destination buffer. */
+                *pDst++ = (q31_t) ((((q63_t) a * d) >> 33) + (((q63_t) b * c) >> 33));
 
-        /* Decrement the blockSize loop counter */
-        blkCnt--;
-    }
+                /* Decrement the blockSize loop counter */
+                blkCnt--;
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 

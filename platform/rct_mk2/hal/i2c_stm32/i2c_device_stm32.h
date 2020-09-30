@@ -12,19 +12,19 @@
 #include <stddef.h>
 
 struct i2c_dev {
-    /* This is just a convenient public handle for the opaque
-     * driver internals...Nothing to see here. Move along. */
-    void *priv;
+        /* This is just a convenient public handle for the opaque
+         * driver internals...Nothing to see here. Move along. */
+        void *priv;
 };
 
 enum i2c_bus {
-    I2C_1,
-    I2C_2,
+        I2C_1,
+        I2C_2,
 };
 
 enum i2c_direction {
-    I2C_DIR_RX,
-    I2C_DIR_TX,
+        I2C_DIR_RX,
+        I2C_DIR_TX,
 };
 
 struct i2c_dev *i2c_get_device(enum i2c_bus device);

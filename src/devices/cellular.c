@@ -253,12 +253,10 @@ enum cellular_modem probe_cellular_manuf(struct serial_buffer *sb)
                 pr_info_str_msg("[cell] model is ", msgs[0]);
                 if (strstr(msgs[0], "SARA-R4")) {
                         return CELLULAR_MODEM_UBLOX_SARA_R4;
-                }
-                else { /* Default to GSM u-blox module */
+                } else { /* Default to GSM u-blox module */
                         return CELLULAR_MODEM_UBLOX_SARA_U2;
                 }
-        }
-        else if (strstr(msgs[0], "SIMCOM_Ltd"))
+        } else if (strstr(msgs[0], "SIMCOM_Ltd"))
                 return CELLULAR_MODEM_SIM900;
         else
                 return CELLULAR_MODEM_UNKNOWN;

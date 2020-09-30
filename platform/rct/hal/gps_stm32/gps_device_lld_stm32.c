@@ -28,7 +28,7 @@
  */
 bool gps_device_lld_reset()
 {
-    return true;
+        return true;
 }
 
 /**

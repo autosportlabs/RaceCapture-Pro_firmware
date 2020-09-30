@@ -137,7 +137,7 @@ USBH_Status USBH_Issue_ClrFeature(USB_OTG_CORE_HANDLE *pdev,
                                   uint8_t ep_num);
 
 USBH_DescHeader_t      *USBH_GetNextDesc (uint8_t   *pbuf,
-        uint16_t  *ptr);
+                uint16_t  *ptr);
 /**
   * @}
   */

@@ -7,21 +7,21 @@
  * @ide     Keil uVision
  * @license GNU GPL v3
  * @brief   Pretty accurate delay functions with SysTick or any other timer
- *	
+ *
 @verbatim
    ----------------------------------------------------------------------
     Copyright (C) Tilen Majerle, 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     any later version.
-     
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
    ----------------------------------------------------------------------
@@ -96,7 +96,7 @@ Another way is to use ARM compiler.
  *
  * \par Custom timers
  *
- * Custom timers are a way to make some tasks in a periodic value. 
+ * Custom timers are a way to make some tasks in a periodic value.
  * As of version 2.4, delay library allows you to create custom timer which count DOWN and when it reaches zero, callback is called.
  *
  * You can use variable settings for count, reload value and auto reload feature.
@@ -111,13 +111,13 @@ Another way is to use ARM compiler.
  Version 2.3
   - April 18, 2015
   - Fixed support for internal RC clock
-  
+
  Version 2.2
   - January 12, 2015
   - Added support for custom function call each time 1ms interrupt happen
   - Function is called TM_DELAY_1msHandler(void), with __weak parameter
   - attributes.h file needed
-  
+
  Version 2.1
   - GCC compiler fixes
   - Still prefer that you use TIM for delay if you are working with ARM-GCC compiler
@@ -167,12 +167,12 @@ Another way is to use ARM compiler.
  * @brief  Custom timer structure
  */
 typedef struct {
-	uint32_t ARR;             /*!< Auto reload value */
-	uint32_t AutoReload;      /*!< Set to 1 if timer should be auto reloaded when it reaches zero */
-	uint32_t CNT;             /*!< Counter value, counter counts down */
-	uint8_t Enabled;          /*!< Set to 1 when timer is enabled */
-	void (*Callback)(void *); /*!< Callback which will be called when timer reaches zero */
-	void* UserParameters;     /*!< Pointer to user parameters used for callback function */
+        uint32_t ARR;             /*!< Auto reload value */
+        uint32_t AutoReload;      /*!< Set to 1 if timer should be auto reloaded when it reaches zero */
+        uint32_t CNT;             /*!< Counter value, counter counts down */
+        uint8_t Enabled;          /*!< Set to 1 when timer is enabled */
+        void (*Callback)(void *); /*!< Callback which will be called when timer reaches zero */
+        void* UserParameters;     /*!< Pointer to user parameters used for callback function */
 } TM_DELAY_Timer_t;
 
 /**
@@ -237,39 +237,40 @@ extern __IO uint32_t mult;
  * @retval None
  * @note   Declared as static inline
  */
-static __INLINE void Delay(uint32_t micros) {
+static __INLINE void Delay(uint32_t micros)
+{
 #if defined(TM_DELAY_TIM)
-	volatile uint32_t timer = TM_DELAY_TIM->CNT;
+        volatile uint32_t timer = TM_DELAY_TIM->CNT;
 
-	do {
-		/* Count timer ticks */
-		while ((TM_DELAY_TIM->CNT - timer) == 0);
+        do {
+                /* Count timer ticks */
+                while ((TM_DELAY_TIM->CNT - timer) == 0);
 
-		/* Increase timer */
-		timer = TM_DELAY_TIM->CNT;
+                /* Increase timer */
+                timer = TM_DELAY_TIM->CNT;
 
-		/* Decrease microseconds */
-	} while (--micros);
+                /* Decrease microseconds */
+        } while (--micros);
 #else
-	uint32_t amicros;
+        uint32_t amicros;
 
-	/* Multiply micro seconds */
-	amicros = (micros) * (mult);
+        /* Multiply micro seconds */
+        amicros = (micros) * (mult);
 
-	#ifdef __GNUC__
-		if (SystemCoreClock == 180000000 || SystemCoreClock == 100000000) {
-			amicros -= mult;
-		}
-	#endif
+#ifdef __GNUC__
+        if (SystemCoreClock == 180000000 || SystemCoreClock == 100000000) {
+                amicros -= mult;
+        }
+#endif
 
-	/* If clock is 100MHz, then add additional multiplier */
-	/* 100/3 = 33.3 = 33 and delay wouldn't be so accurate */
-	#if defined(STM32F411xE)
-	amicros += mult;
-	#endif
+        /* If clock is 100MHz, then add additional multiplier */
+        /* 100/3 = 33.3 = 33 and delay wouldn't be so accurate */
+#if defined(STM32F411xE)
+        amicros += mult;
+#endif
 
-	/* While loop */
-	while (amicros--);
+        /* While loop */
+        while (amicros--);
 #endif /* TM_DELAY_TIM */
 }
 
@@ -279,26 +280,27 @@ static __INLINE void Delay(uint32_t micros) {
  * @retval None
  * @note   Declared as static inline
  */
-static __INLINE void Delayms(uint32_t millis) {
-	volatile uint32_t timer = TM_Time;
+static __INLINE void Delayms(uint32_t millis)
+{
+        volatile uint32_t timer = TM_Time;
 
-	/* Called from thread */
-	if (!__get_IPSR()) {
-		/* Wait for timer to count milliseconds */
-		while ((TM_Time - timer) < millis) {
+        /* Called from thread */
+        if (!__get_IPSR()) {
+                /* Wait for timer to count milliseconds */
+                while ((TM_Time - timer) < millis) {
 #ifdef DELAY_SLEEP
-			/* Go sleep, wait systick interrupt */
-			__WFI();
+                        /* Go sleep, wait systick interrupt */
+                        __WFI();
 #endif
-		}
-	} else {
-		/* Called from interrupt */
-		while (millis) {
-			if (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) {
-				millis--;
-			}
-		}
-	}
+                }
+        } else {
+                /* Called from interrupt */
+                while (millis) {
+                        if (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) {
+                                millis--;
+                        }
+                }
+        }
 }
 
 /**
@@ -426,11 +428,11 @@ __weak void TM_DELAY_1msHandler(void);
 /**
  * @}
  */
- 
+
 /**
  * @}
  */
- 
+
 /**
  * @}
  */

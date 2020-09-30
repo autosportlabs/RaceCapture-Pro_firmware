@@ -18,12 +18,12 @@
 */
 
 int ff_cre_syncobj (	/* !=0:Function succeeded, ==0:Could not create due to any error */
-	BYTE vol,			/* Corresponding logical drive being processed */
-	_SYNC_t *sobj		/* Pointer to return the created sync object */
+        BYTE vol,			/* Corresponding logical drive being processed */
+        _SYNC_t *sobj		/* Pointer to return the created sync object */
 )
 {
-	*sobj = xSemaphoreCreateMutex();	/* FreeRTOS */
-	return (int) *sobj != NULL;
+        *sobj = xSemaphoreCreateMutex();	/* FreeRTOS */
+        return (int) *sobj != NULL;
 }
 
 
@@ -37,11 +37,11 @@ int ff_cre_syncobj (	/* !=0:Function succeeded, ==0:Could not create due to any 
 */
 
 int ff_del_syncobj (	/* !=0:Function succeeded, ==0:Could not delete due to any error */
-	_SYNC_t sobj		/* Sync object tied to the logical drive to be deleted */
+        _SYNC_t sobj		/* Sync object tied to the logical drive to be deleted */
 )
 {
-	vSemaphoreDelete(sobj);		/* FreeRTOS */
-	return 1;
+        vSemaphoreDelete(sobj);		/* FreeRTOS */
+        return 1;
 }
 
 
@@ -54,12 +54,12 @@ int ff_del_syncobj (	/* !=0:Function succeeded, ==0:Could not delete due to any 
 */
 
 int ff_req_grant (	/* 1:Got a grant to access the volume, 0:Could not get a grant */
-	_SYNC_t sobj	/* Sync object to wait */
+        _SYNC_t sobj	/* Sync object to wait */
 )
 {
-	int ret;
+        int ret;
 
-	ret = (int)(WaitForSingleObject(sobj, _FS_TIMEOUT) == WAIT_OBJECT_0);	/* Win32 */
+        ret = (int)(WaitForSingleObject(sobj, _FS_TIMEOUT) == WAIT_OBJECT_0);	/* Win32 */
 
 //	ret = (int)(wai_sem(sobj) == E_OK);			/* uITRON */
 
@@ -68,7 +68,7 @@ int ff_req_grant (	/* 1:Got a grant to access the volume, 0:Could not get a gran
 
 //	ret = (int)(xSemaphoreTake(sobj, _FS_TIMEOUT) == pdTRUE);	/* FreeRTOS */
 
-	return ret;
+        return ret;
 }
 
 
@@ -80,10 +80,10 @@ int ff_req_grant (	/* 1:Got a grant to access the volume, 0:Could not get a gran
 */
 
 void ff_rel_grant (
-	_SYNC_t sobj	/* Sync object to be signaled */
+        _SYNC_t sobj	/* Sync object to be signaled */
 )
 {
-	ReleaseMutex(sobj);		/* Win32 */
+        ReleaseMutex(sobj);		/* Win32 */
 
 //	sig_sem(sobj);			/* uITRON */
 
@@ -105,10 +105,10 @@ void ff_rel_grant (
 */
 
 void* ff_memalloc (	/* Returns pointer to the allocated memory block */
-	UINT msize		/* Number of bytes to allocate */
+        UINT msize		/* Number of bytes to allocate */
 )
 {
-	return malloc(msize);	/* Allocate a new memory block with POSIX API */
+        return malloc(msize);	/* Allocate a new memory block with POSIX API */
 }
 
 
@@ -117,10 +117,10 @@ void* ff_memalloc (	/* Returns pointer to the allocated memory block */
 /*------------------------------------------------------------------------*/
 
 void ff_memfree (
-	void* mblock	/* Pointer to the memory block to free */
+        void* mblock	/* Pointer to the memory block to free */
 )
 {
-	free(mblock);	/* Discard the memory block with POSIX API */
+        free(mblock);	/* Discard the memory block with POSIX API */
 }
 
 #endif

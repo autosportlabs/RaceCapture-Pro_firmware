@@ -54,8 +54,8 @@
 #define WIFI_DMA_TX_BUFF_SIZE		16
 
 typedef enum {
-    UART_RX_IRQ = 1,
-    UART_TX_IRQ = 2
+        UART_RX_IRQ = 1,
+        UART_TX_IRQ = 2
 } uart_irq_type_t;
 
 struct dma_info {
@@ -276,7 +276,7 @@ void usart_device_init_2(size_t bits, size_t parity,
 {
         volatile struct usart_info* ui = usart_data + UART_GPS;
 
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+        RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
         initGPIO(GPIOB, (GPIO_Pin_4 | GPIO_Pin_3));
         GPIO_PinAFConfig(GPIOB, GPIO_PinSource4, GPIO_AF_7);
         GPIO_PinAFConfig(GPIOB, GPIO_PinSource3, GPIO_AF_7);
@@ -296,16 +296,16 @@ void usart_device_init_2(size_t bits, size_t parity,
 void usart_device_init_3(size_t bits, size_t parity,
                          size_t stopBits, size_t baud)
 {
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
-    initGPIO(GPIOB, (GPIO_Pin_10 | GPIO_Pin_11));
-    GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_7);
-    GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_7);
+        RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+        initGPIO(GPIOB, (GPIO_Pin_10 | GPIO_Pin_11));
+        GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_7);
+        GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_7);
 
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
-    init_usart(UART4, bits, parity, stopBits, baud);
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+        init_usart(UART4, bits, parity, stopBits, baud);
 
-    enableRxTxIrq(USART3, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
-                  (UART_RX_IRQ | UART_TX_IRQ));
+        enableRxTxIrq(USART3, UART4_IRQn, UART_TELEMETRY_IRQ_PRIORITY,
+                      (UART_RX_IRQ | UART_TX_IRQ));
 
 }
 #endif
@@ -648,7 +648,7 @@ static void setup_debug_tools()
         const size_t timer_ticks = msToTicks(CHAR_CHECK_PERIOD_MS);
         const signed char* timer_name = (signed char*) "Dropped Char Check Timer";
         xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
-                                                 true, NULL, dropped_char_timer_cb);
+                                    true, NULL, dropped_char_timer_cb);
         xTimerStart(timer_handle, timer_ticks);
 }
 

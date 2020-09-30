@@ -62,145 +62,145 @@
 
 
 void arm_var_q15(
-    q15_t * pSrc,
-    uint32_t blockSize,
-    q31_t * pResult)
+        q15_t * pSrc,
+        uint32_t blockSize,
+        q31_t * pResult)
 {
-    q63_t sum = 0;                                 /* Accumulator */
-    q31_t meanOfSquares, squareOfMean;             /* Mean of square and square of mean */
-    q15_t mean;                                    /* mean */
-    uint32_t blkCnt;                               /* loop counter */
-    q15_t t;                                       /* Temporary variable */
+        q63_t sum = 0;                                 /* Accumulator */
+        q31_t meanOfSquares, squareOfMean;             /* Mean of square and square of mean */
+        q15_t mean;                                    /* mean */
+        uint32_t blkCnt;                               /* loop counter */
+        q15_t t;                                       /* Temporary variable */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    q31_t in;                                      /* Input variable */
-    q15_t in1;                                     /* Temporary variable */
-    q15_t *pIn;                                    /* Temporary pointer */
+        q31_t in;                                      /* Input variable */
+        q15_t in1;                                     /* Temporary variable */
+        q15_t *pIn;                                    /* Temporary pointer */
 
-    pIn = pSrc;
+        pIn = pSrc;
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = (A[0] * A[0] + A[1] * A[1] + ... + A[blockSize-1] * A[blockSize-1])  */
-        /* Compute Sum of squares of the input samples
-         * and then store the result in a temporary variable, sum. */
-        in = *__SIMD32(pSrc)++;
-        sum = __SMLALD(in, in, sum);
-        in = *__SIMD32(pSrc)++;
-        sum = __SMLALD(in, in, sum);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = (A[0] * A[0] + A[1] * A[1] + ... + A[blockSize-1] * A[blockSize-1])  */
+                /* Compute Sum of squares of the input samples
+                 * and then store the result in a temporary variable, sum. */
+                in = *__SIMD32(pSrc)++;
+                sum = __SMLALD(in, in, sum);
+                in = *__SIMD32(pSrc)++;
+                sum = __SMLALD(in, in, sum);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* C = (A[0] * A[0] + A[1] * A[1] + ... + A[blockSize-1] * A[blockSize-1]) */
-        /* Compute Sum of squares of the input samples
-         * and then store the result in a temporary variable, sum. */
-        in1 = *pSrc++;
-        sum = __SMLALD(in1, in1, sum);
+        while(blkCnt > 0u) {
+                /* C = (A[0] * A[0] + A[1] * A[1] + ... + A[blockSize-1] * A[blockSize-1]) */
+                /* Compute Sum of squares of the input samples
+                 * and then store the result in a temporary variable, sum. */
+                in1 = *pSrc++;
+                sum = __SMLALD(in1, in1, sum);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* Compute Mean of squares of the input samples
-     * and then store the result in a temporary variable, meanOfSquares. */
-    t = (q15_t) ((1.0f / (float32_t) (blockSize - 1u)) * 16384);
-    sum = __SSAT((sum >> 15u), 16u);
+        /* Compute Mean of squares of the input samples
+         * and then store the result in a temporary variable, meanOfSquares. */
+        t = (q15_t) ((1.0f / (float32_t) (blockSize - 1u)) * 16384);
+        sum = __SSAT((sum >> 15u), 16u);
 
-    meanOfSquares = (q31_t) ((sum * t) >> 14u);
+        meanOfSquares = (q31_t) ((sum * t) >> 14u);
 
-    /* Reset the accumulator */
-    sum = 0;
+        /* Reset the accumulator */
+        sum = 0;
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* Reset the input working pointer */
-    pSrc = pIn;
+        /* Reset the input working pointer */
+        pSrc = pIn;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
-        /* Compute sum of all input values and then store the result in a temporary variable, sum. */
-        sum += *pSrc++;
-        sum += *pSrc++;
-        sum += *pSrc++;
-        sum += *pSrc++;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
+                /* Compute sum of all input values and then store the result in a temporary variable, sum. */
+                sum += *pSrc++;
+                sum += *pSrc++;
+                sum += *pSrc++;
+                sum += *pSrc++;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
-        /* Compute sum of all input values and then store the result in a temporary variable, sum. */
-        sum += *pSrc++;
+        while(blkCnt > 0u) {
+                /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
+                /* Compute sum of all input values and then store the result in a temporary variable, sum. */
+                sum += *pSrc++;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    q63_t sumOfSquares = 0;                        /* Accumulator */
-    q15_t in;                                      /* Temporary variable */
-    /* Loop over blockSize number of values */
-    blkCnt = blockSize;
+        q63_t sumOfSquares = 0;                        /* Accumulator */
+        q15_t in;                                      /* Temporary variable */
+        /* Loop over blockSize number of values */
+        blkCnt = blockSize;
 
-    while(blkCnt > 0u) {
-        /* C = (A[0] * A[0] + A[1] * A[1] + ... + A[blockSize-1] * A[blockSize-1]) */
-        /* Compute Sum of squares of the input samples
-         * and then store the result in a temporary variable, sumOfSquares. */
-        in = *pSrc++;
-        sumOfSquares += (in * in);
+        while(blkCnt > 0u) {
+                /* C = (A[0] * A[0] + A[1] * A[1] + ... + A[blockSize-1] * A[blockSize-1]) */
+                /* Compute Sum of squares of the input samples
+                 * and then store the result in a temporary variable, sumOfSquares. */
+                in = *pSrc++;
+                sumOfSquares += (in * in);
 
-        /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
-        /* Compute sum of all input values and then store the result in a temporary variable, sum. */
-        sum += in;
+                /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
+                /* Compute sum of all input values and then store the result in a temporary variable, sum. */
+                sum += in;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* Compute Mean of squares of the input samples
-     * and then store the result in a temporary variable, meanOfSquares. */
-    t = (q15_t) ((1.0f / (float32_t) (blockSize - 1u)) * 16384);
-    sumOfSquares = __SSAT((sumOfSquares >> 15u), 16u);
-    meanOfSquares = (q31_t) ((sumOfSquares * t) >> 14u);
+        /* Compute Mean of squares of the input samples
+         * and then store the result in a temporary variable, meanOfSquares. */
+        t = (q15_t) ((1.0f / (float32_t) (blockSize - 1u)) * 16384);
+        sumOfSquares = __SSAT((sumOfSquares >> 15u), 16u);
+        meanOfSquares = (q31_t) ((sumOfSquares * t) >> 14u);
 
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    /* Compute mean of all input values */
-    t = (q15_t) ((1.0f / (float32_t) (blockSize * (blockSize - 1u))) * 32768);
-    mean = __SSAT(sum, 16u);
+        /* Compute mean of all input values */
+        t = (q15_t) ((1.0f / (float32_t) (blockSize * (blockSize - 1u))) * 32768);
+        mean = __SSAT(sum, 16u);
 
-    /* Compute square of mean */
-    squareOfMean = ((q31_t) mean * mean) >> 15;
-    squareOfMean = (q31_t) (((q63_t) squareOfMean * t) >> 15);
+        /* Compute square of mean */
+        squareOfMean = ((q31_t) mean * mean) >> 15;
+        squareOfMean = (q31_t) (((q63_t) squareOfMean * t) >> 15);
 
-    /* Compute variance and then store the result to the destination */
-    *pResult = (meanOfSquares - squareOfMean);
+        /* Compute variance and then store the result to the destination */
+        *pResult = (meanOfSquares - squareOfMean);
 
 }
 

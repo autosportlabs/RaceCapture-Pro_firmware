@@ -14,10 +14,10 @@ static  _heep_t      _heep[ROUNDUP(configTOTAL_HEAP_SIZE)/sizeof(_heep_t)];
 */
 extern  char  *sbrk(int  size)
 {
-    if  (brk_siz  +  size  >  _heep_size  ||  brk_siz  +  size  <  0)
+        if  (brk_siz  +  size  >  _heep_size  ||  brk_siz  +  size  <  0)
 
-        return((char*)-1);
-    brk_siz  +=  size;
-    return(  (char*)_heep  +  brk_siz  -  size);
+                return((char*)-1);
+        brk_siz  +=  size;
+        return(  (char*)_heep  +  brk_siz  -  size);
 }
 

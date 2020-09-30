@@ -42,8 +42,8 @@
 #define USB_BUF_ELTS(in, out, bufsize) ((in - out + bufsize) % bufsize)
 
 static struct {
-	uint8_t USB_Rx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
-	uint8_t USB_Tx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
+        uint8_t USB_Rx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
+        uint8_t USB_Tx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
         struct Serial *serial;
         usb_device_data_rx_isr_cb_t* rx_isr_cb;
 } usb_state;
@@ -60,43 +60,43 @@ static struct {
  */
 static int USB_CDC_force_reenumeration(void)
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_InitTypeDef GPIO_InitStructure;
 
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+        RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
 
- 	GPIO_ResetBits(GPIOA, GPIO_Pin_12);
+        GPIO_ResetBits(GPIOA, GPIO_Pin_12);
 
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
         return 0;
 }
 
 /* Public API */
 int USB_CDC_device_init(const int priority, usb_device_data_rx_isr_cb_t* cb)
 {
-	/* Perform a full USB reset */
-	USB_CDC_force_reenumeration();
+        /* Perform a full USB reset */
+        USB_CDC_force_reenumeration();
 
-	/* Create read/write mutexes */
+        /* Create read/write mutexes */
         usb_state.serial = serial_create("USB", USB_TX_BUF_CAP, USB_RX_BUF_CAP,
                                          NULL, NULL, NULL, NULL);
-	if (NULL == usb_state.serial)
-		return -1;
+        if (NULL == usb_state.serial)
+                return -1;
         usb_state.rx_isr_cb = cb;
 
-	Set_System();
-	Set_USBClock();
+        Set_System();
+        Set_USBClock();
 
-	USB_Interrupts_Config();
-	USB_Init();
+        USB_Interrupts_Config();
+        USB_Init();
 
-	return 0;
+        return 0;
 }
 
 struct Serial* USB_CDC_get_serial()
@@ -128,7 +128,7 @@ static void usb_handle_transfer(void)
                         break;
 
         /* Check if we actually have something to send */
-	if (len) {
+        if (len) {
                 UserToPMABufferCopy(usb_state.USB_Tx_Buffer,
                                     ENDP1_TXADDR, len);
                 SetEPTxCount(ENDP1, len);
@@ -140,7 +140,7 @@ static void usb_handle_transfer(void)
 
 void EP1_IN_Callback (void)
 {
-	usb_handle_transfer();
+        usb_handle_transfer();
 }
 
 void EP3_OUT_Callback(void)
@@ -149,17 +149,17 @@ void EP3_OUT_Callback(void)
         xQueueHandle queue = serial_get_rx_queue(usb_state.serial);
         uint8_t *buff = usb_state.USB_Rx_Buffer;
 
-	/* Get the received data buffer and clear the counter */
-	const size_t len = USB_SIL_Read(EP3_OUT, buff);
+        /* Get the received data buffer and clear the counter */
+        const size_t len = USB_SIL_Read(EP3_OUT, buff);
 
         for (size_t i = 0; i < len; ++i)
                 xQueueSendFromISR(queue, buff + i, &hpta);
 
-	/*
+        /*
          * STIEG HACK
          * For now just assume that all the data made it into the queue.  This
          * is what we do in MK2.  Probably shouldn't go out the door like this.
-	 */
+         */
         SetEPRxValid(ENDP3);
 
         if (usb_state.rx_isr_cb)
@@ -170,15 +170,15 @@ void EP3_OUT_Callback(void)
 
 void SOF_Callback(void)
 {
-	static uint32_t FrameCount = 0;
+        static uint32_t FrameCount = 0;
 
-	if(bDeviceState == CONFIGURED) {
-		if (VIRTUAL_COM_PORT_IN_FRAME_INTERVAL == FrameCount++) {
-			/* Reset the frame counter */
-			FrameCount = 0;
+        if(bDeviceState == CONFIGURED) {
+                if (VIRTUAL_COM_PORT_IN_FRAME_INTERVAL == FrameCount++) {
+                        /* Reset the frame counter */
+                        FrameCount = 0;
 
-			/* Check the data to be sent through IN pipe */
-			usb_handle_transfer();
-		}
-         }
+                        /* Check the data to be sent through IN pipe */
+                        usb_handle_transfer();
+                }
+        }
 }

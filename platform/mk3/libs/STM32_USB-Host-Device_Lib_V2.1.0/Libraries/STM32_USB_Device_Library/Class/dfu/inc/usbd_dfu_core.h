@@ -130,13 +130,13 @@
 /**************************************************/
 
 typedef enum _DFU_REQUESTS {
-    DFU_DETACH = 0,
-    DFU_DNLOAD = 1,
-    DFU_UPLOAD,
-    DFU_GETSTATUS,
-    DFU_CLRSTATUS,
-    DFU_GETSTATE,
-    DFU_ABORT
+        DFU_DETACH = 0,
+        DFU_DNLOAD = 1,
+        DFU_UPLOAD,
+        DFU_GETSTATUS,
+        DFU_CLRSTATUS,
+        DFU_GETSTATE,
+        DFU_ABORT
 } DFU_REQUESTS;
 
 typedef  void (*pFunction)(void);

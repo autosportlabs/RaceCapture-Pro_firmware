@@ -106,42 +106,42 @@ uint32_t refIndex = 213, testIndex = 0;
 int32_t main(void)
 {
 
-    arm_status status;
-    arm_cfft_radix4_instance_f32 S;
-    float32_t maxValue;
+        arm_status status;
+        arm_cfft_radix4_instance_f32 S;
+        float32_t maxValue;
 
-    status = ARM_MATH_SUCCESS;
+        status = ARM_MATH_SUCCESS;
 
-    /* Initialize the CFFT/CIFFT module */
-    status = arm_cfft_radix4_init_f32(&S, fftSize,
-                                      ifftFlag, doBitReverse);
+        /* Initialize the CFFT/CIFFT module */
+        status = arm_cfft_radix4_init_f32(&S, fftSize,
+                                          ifftFlag, doBitReverse);
 
-    /* Process the data through the CFFT/CIFFT module */
-    arm_cfft_radix4_f32(&S, testInput_f32_10khz);
+        /* Process the data through the CFFT/CIFFT module */
+        arm_cfft_radix4_f32(&S, testInput_f32_10khz);
 
 
-    /* Process the data through the Complex Magnitude Module for
-    calculating the magnitude at each bin */
-    arm_cmplx_mag_f32(testInput_f32_10khz, testOutput,
-                      fftSize);
+        /* Process the data through the Complex Magnitude Module for
+        calculating the magnitude at each bin */
+        arm_cmplx_mag_f32(testInput_f32_10khz, testOutput,
+                          fftSize);
 
-    /* Calculates maxValue and returns corresponding BIN value */
-    arm_max_f32(testOutput, fftSize, &maxValue, &testIndex);
+        /* Calculates maxValue and returns corresponding BIN value */
+        arm_max_f32(testOutput, fftSize, &maxValue, &testIndex);
 
-    if(testIndex !=  refIndex) {
-        status = ARM_MATH_TEST_FAILURE;
-    }
+        if(testIndex !=  refIndex) {
+                status = ARM_MATH_TEST_FAILURE;
+        }
 
-    /* ----------------------------------------------------------------------
-    ** Loop here if the signals fail the PASS check.
-    ** This denotes a test failure
-    ** ------------------------------------------------------------------- */
+        /* ----------------------------------------------------------------------
+        ** Loop here if the signals fail the PASS check.
+        ** This denotes a test failure
+        ** ------------------------------------------------------------------- */
 
-    if( status != ARM_MATH_SUCCESS) {
-        while(1);
-    }
+        if( status != ARM_MATH_SUCCESS) {
+                while(1);
+        }
 
-    while(1);                             /* main function does not return */
+        while(1);                             /* main function does not return */
 }
 
 /** \endlink */

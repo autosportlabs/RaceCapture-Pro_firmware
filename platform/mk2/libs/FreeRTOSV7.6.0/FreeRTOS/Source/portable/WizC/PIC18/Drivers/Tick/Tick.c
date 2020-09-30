@@ -116,61 +116,61 @@ Changes from V3.0.1
  */
 void portSetupTick( void )
 {
-    /*
-     * Interrupts are disabled when this function is called.
-     */
+        /*
+         * Interrupts are disabled when this function is called.
+         */
 
-    /*
-     * Setup CCP1
-     * Provide the tick interrupt using a compare match on timer1.
-     */
+        /*
+         * Setup CCP1
+         * Provide the tick interrupt using a compare match on timer1.
+         */
 
-    /*
-     * Set the compare match value.
-     */
-    CCPR1H = ( unsigned char ) ( ( portTIMER_COMPARE_VALUE >> 8 ) & 0xff );
-    CCPR1L = ( unsigned char )   ( portTIMER_COMPARE_VALUE & 0xff );
+        /*
+         * Set the compare match value.
+         */
+        CCPR1H = ( unsigned char ) ( ( portTIMER_COMPARE_VALUE >> 8 ) & 0xff );
+        CCPR1L = ( unsigned char )   ( portTIMER_COMPARE_VALUE & 0xff );
 
-    /*
-     * Set Compare Special Event Trigger Mode
-     */
-    bCCP1M3 	= portBIT_SET;
-    bCCP1M2 	= portBIT_CLEAR;
-    bCCP1M1 	= portBIT_SET;
-    bCCP1M0		= portBIT_SET;
+        /*
+         * Set Compare Special Event Trigger Mode
+         */
+        bCCP1M3 	= portBIT_SET;
+        bCCP1M2 	= portBIT_CLEAR;
+        bCCP1M1 	= portBIT_SET;
+        bCCP1M0		= portBIT_SET;
 
-    /*
-     * Enable CCP1 interrupt
-     */
-    bCCP1IE 	= portBIT_SET;
+        /*
+         * Enable CCP1 interrupt
+         */
+        bCCP1IE 	= portBIT_SET;
 
-    /*
-     * We are only going to use the global interrupt bit, so disable
-     * interruptpriorities and enable peripheral interrupts.
-     */
-    bIPEN		= portBIT_CLEAR;
-    bPEIE		= portBIT_SET;
+        /*
+         * We are only going to use the global interrupt bit, so disable
+         * interruptpriorities and enable peripheral interrupts.
+         */
+        bIPEN		= portBIT_CLEAR;
+        bPEIE		= portBIT_SET;
 
-    /*
-     * Set up timer1
-     * It will produce the system tick.
-     */
+        /*
+         * Set up timer1
+         * It will produce the system tick.
+         */
 
-    /*
-     * Clear the time count
-     */
-    TMR1H = ( unsigned char ) 0x00;
-    TMR1L = ( unsigned char ) 0x00;
+        /*
+         * Clear the time count
+         */
+        TMR1H = ( unsigned char ) 0x00;
+        TMR1L = ( unsigned char ) 0x00;
 
-    /*
-     * Setup the timer
-     */
-    bRD16		= portBIT_SET;				// 16-bit
-    bT1CKPS1	= portTIMER_COMPARE_PS1;	// prescaler
-    bT1CKPS0	= portTIMER_COMPARE_PS0;	// prescaler
-    bT1OSCEN	= portBIT_SET;				// Oscillator enable
-    bT1SYNC		= portBIT_SET;				// No external clock sync
-    bTMR1CS		= portBIT_CLEAR;			// Internal clock
+        /*
+         * Setup the timer
+         */
+        bRD16		= portBIT_SET;				// 16-bit
+        bT1CKPS1	= portTIMER_COMPARE_PS1;	// prescaler
+        bT1CKPS0	= portTIMER_COMPARE_PS0;	// prescaler
+        bT1OSCEN	= portBIT_SET;				// Oscillator enable
+        bT1SYNC		= portBIT_SET;				// No external clock sync
+        bTMR1CS		= portBIT_CLEAR;			// Internal clock
 
-    bTMR1ON		= portBIT_SET;				// Start timer1
+        bTMR1ON		= portBIT_SET;				// Start timer1
 }

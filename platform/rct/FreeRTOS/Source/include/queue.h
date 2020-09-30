@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -68,7 +68,7 @@
 #define QUEUE_H
 
 #ifndef INC_FREERTOS_H
-	#error "include FreeRTOS.h" must appear in source files before "include queue.h"
+#error "include FreeRTOS.h" must appear in source files before "include queue.h"
 #endif
 
 #ifdef __cplusplus
@@ -1137,7 +1137,7 @@ void vQueueDelete( xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
    <pre>
 
  xQueueHandle xQueue;
- 
+
  void vFunction( void *pvParameters )
  {
  	// Create a queue to hold one unsigned long value.  It is strongly
@@ -1166,7 +1166,7 @@ unsigned long ulVarToSend, ulValReceived;
 	// Reading from the queue will now return 100.
 
 	// ...
-	
+
 	if( xHigherPrioritytaskWoken == pdTRUE )
 	{
 		// Writing to the queue caused a task to unblock and the unblocked task
@@ -1512,7 +1512,7 @@ portBASE_TYPE xQueueGiveMutexRecursive( xQueueHandle pxMutex ) PRIVILEGED_FUNCTI
  * name that the kernel aware debugger will display.
  */
 #if configQUEUE_REGISTRY_SIZE > 0
-	void vQueueAddToRegistry( xQueueHandle xQueue, signed char *pcName ) PRIVILEGED_FUNCTION;
+void vQueueAddToRegistry( xQueueHandle xQueue, signed char *pcName ) PRIVILEGED_FUNCTION;
 #endif
 
 /*
@@ -1526,7 +1526,7 @@ portBASE_TYPE xQueueGiveMutexRecursive( xQueueHandle pxMutex ) PRIVILEGED_FUNCTI
  * @param xQueue The handle of the queue being removed from the registry.
  */
 #if configQUEUE_REGISTRY_SIZE > 0
-	void vQueueUnregisterQueue( xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+void vQueueUnregisterQueue( xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
 #endif
 
 /*

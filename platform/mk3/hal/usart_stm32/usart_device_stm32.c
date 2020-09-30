@@ -68,8 +68,8 @@
 #define UART_WIRELESS_IRQ_PRIORITY	7
 
 typedef enum {
-    UART_RX_IRQ = 1,
-    UART_TX_IRQ = 2
+        UART_RX_IRQ = 1,
+        UART_TX_IRQ = 2
 } uart_irq_type_t;
 
 struct dma_info {
@@ -625,9 +625,9 @@ void DMA2_Stream5_IRQHandler(void)
 
 void DMA2_Stream1_IRQHandler(void)
 {
-    DMA_ClearITPendingBit(DMA2_Stream1, DMA_IT_HTIF1);
-    DMA_ClearITPendingBit(DMA2_Stream1, DMA_IT_TCIF1);
-    portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_AUX2));
+        DMA_ClearITPendingBit(DMA2_Stream1, DMA_IT_HTIF1);
+        DMA_ClearITPendingBit(DMA2_Stream1, DMA_IT_TCIF1);
+        portEND_SWITCHING_ISR(dma_rx_isr(usart_data + UART_AUX2));
 }
 
 static bool dma_tx_isr(volatile struct usart_info* ui,
@@ -770,7 +770,7 @@ static void setup_debug_tools()
         const size_t timer_ticks = msToTicks(CHAR_CHECK_PERIOD_MS);
         const signed char* timer_name = (signed char*) "Dropped Char Check Timer";
         xTimerHandle timer_handle = xTimerCreate(timer_name, timer_ticks,
-                                                 true, NULL, dropped_char_timer_cb);
+                                    true, NULL, dropped_char_timer_cb);
         xTimerStart(timer_handle, timer_ticks);
 }
 
@@ -799,10 +799,10 @@ int usart_device_init()
                                   DMA_RX_BUFF_SIZE, DMA1_Stream1,
                                   DMA_Channel_4, DMA_TX_BUFF_SIZE,
                                   DMA1_Stream3, DMA_Channel_4);
-                init_usart_serial(UART_AUX2, USART6, SERIAL_AUX2, "Aux2",
-                                  DMA_RX_BUFF_SIZE, DMA2_Stream1,
-                                  DMA_Channel_5, DMA_TX_BUFF_SIZE,
-                                  DMA2_Stream6, DMA_Channel_5);
+        init_usart_serial(UART_AUX2, USART6, SERIAL_AUX2, "Aux2",
+                          DMA_RX_BUFF_SIZE, DMA2_Stream1,
+                          DMA_Channel_5, DMA_TX_BUFF_SIZE,
+                          DMA2_Stream6, DMA_Channel_5);
 
         if (!mem_alloc_success) {
                 pr_error(LOG_PFX "Failed to init\r\n");

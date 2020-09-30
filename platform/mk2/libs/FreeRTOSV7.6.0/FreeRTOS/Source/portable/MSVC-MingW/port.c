@@ -112,8 +112,8 @@ although the task stack is still used to hold an xThreadState structure this is
 the only thing it will ever hold.  The structure indirectly maps the task handle
 to a thread handle. */
 typedef struct {
-    /* Handle of the thread that executes the task. */
-    void *pvThread;
+        /* Handle of the thread that executes the task. */
+        void *pvThread;
 
 } xThreadState;
 
@@ -151,347 +151,347 @@ extern void *pxCurrentTCB;
 
 static DWORD WINAPI prvSimulatedPeripheralTimer( LPVOID lpParameter )
 {
-    portTickType xMinimumWindowsBlockTime;
-    TIMECAPS xTimeCaps;
+        portTickType xMinimumWindowsBlockTime;
+        TIMECAPS xTimeCaps;
 
-    /* Set the timer resolution to the maximum possible. */
-    if( timeGetDevCaps( &xTimeCaps, sizeof( xTimeCaps ) ) == MMSYSERR_NOERROR ) {
-        xMinimumWindowsBlockTime = ( portTickType ) xTimeCaps.wPeriodMin;
-        timeBeginPeriod( xTimeCaps.wPeriodMin );
+        /* Set the timer resolution to the maximum possible. */
+        if( timeGetDevCaps( &xTimeCaps, sizeof( xTimeCaps ) ) == MMSYSERR_NOERROR ) {
+                xMinimumWindowsBlockTime = ( portTickType ) xTimeCaps.wPeriodMin;
+                timeBeginPeriod( xTimeCaps.wPeriodMin );
 
-        /* Register an exit handler so the timeBeginPeriod() function can be
-        matched with a timeEndPeriod() when the application exits. */
-        SetConsoleCtrlHandler( prvEndProcess, TRUE );
-    } else {
-        xMinimumWindowsBlockTime = ( portTickType ) 20;
-    }
-
-    /* Just to prevent compiler warnings. */
-    ( void ) lpParameter;
-
-    for(;;) {
-        /* Wait until the timer expires and we can access the simulated interrupt
-        variables.  *NOTE* this is not a 'real time' way of generating tick
-        events as the next wake time should be relative to the previous wake
-        time, not the time that Sleep() is called.  It is done this way to
-        prevent overruns in this very non real time simulated/emulated
-        environment. */
-        if( portTICK_RATE_MS < xMinimumWindowsBlockTime ) {
-            Sleep( xMinimumWindowsBlockTime );
+                /* Register an exit handler so the timeBeginPeriod() function can be
+                matched with a timeEndPeriod() when the application exits. */
+                SetConsoleCtrlHandler( prvEndProcess, TRUE );
         } else {
-            Sleep( portTICK_RATE_MS );
+                xMinimumWindowsBlockTime = ( portTickType ) 20;
         }
 
-        WaitForSingleObject( pvInterruptEventMutex, INFINITE );
+        /* Just to prevent compiler warnings. */
+        ( void ) lpParameter;
 
-        /* The timer has expired, generate the simulated tick event. */
-        ulPendingInterrupts |= ( 1 << portINTERRUPT_TICK );
+        for(;;) {
+                /* Wait until the timer expires and we can access the simulated interrupt
+                variables.  *NOTE* this is not a 'real time' way of generating tick
+                events as the next wake time should be relative to the previous wake
+                time, not the time that Sleep() is called.  It is done this way to
+                prevent overruns in this very non real time simulated/emulated
+                environment. */
+                if( portTICK_RATE_MS < xMinimumWindowsBlockTime ) {
+                        Sleep( xMinimumWindowsBlockTime );
+                } else {
+                        Sleep( portTICK_RATE_MS );
+                }
 
-        /* The interrupt is now pending - notify the simulated interrupt
-        handler thread. */
-        SetEvent( pvInterruptEvent );
+                WaitForSingleObject( pvInterruptEventMutex, INFINITE );
 
-        /* Give back the mutex so the simulated interrupt handler unblocks
-        and can	access the interrupt handler variables. */
-        ReleaseMutex( pvInterruptEventMutex );
-    }
+                /* The timer has expired, generate the simulated tick event. */
+                ulPendingInterrupts |= ( 1 << portINTERRUPT_TICK );
+
+                /* The interrupt is now pending - notify the simulated interrupt
+                handler thread. */
+                SetEvent( pvInterruptEvent );
+
+                /* Give back the mutex so the simulated interrupt handler unblocks
+                and can	access the interrupt handler variables. */
+                ReleaseMutex( pvInterruptEventMutex );
+        }
 
 #ifdef __GNUC__
-    /* Should never reach here - MingW complains if you leave this line out,
-    MSVC complains if you put it in. */
-    return 0;
+        /* Should never reach here - MingW complains if you leave this line out,
+        MSVC complains if you put it in. */
+        return 0;
 #endif
 }
 /*-----------------------------------------------------------*/
 
 static BOOL WINAPI prvEndProcess( DWORD dwCtrlType )
 {
-    TIMECAPS xTimeCaps;
+        TIMECAPS xTimeCaps;
 
-    ( void ) dwCtrlType;
+        ( void ) dwCtrlType;
 
-    if( timeGetDevCaps( &xTimeCaps, sizeof( xTimeCaps ) ) == MMSYSERR_NOERROR ) {
-        /* Match the call to timeBeginPeriod( xTimeCaps.wPeriodMin ) made when
-        the process started with a timeEndPeriod() as the process exits. */
-        timeEndPeriod( xTimeCaps.wPeriodMin );
-    }
+        if( timeGetDevCaps( &xTimeCaps, sizeof( xTimeCaps ) ) == MMSYSERR_NOERROR ) {
+                /* Match the call to timeBeginPeriod( xTimeCaps.wPeriodMin ) made when
+                the process started with a timeEndPeriod() as the process exits. */
+                timeEndPeriod( xTimeCaps.wPeriodMin );
+        }
 
-    return pdPASS;
+        return pdPASS;
 }
 /*-----------------------------------------------------------*/
 
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-    xThreadState *pxThreadState = NULL;
-    char *pcTopOfStack = ( char * ) pxTopOfStack;
+        xThreadState *pxThreadState = NULL;
+        char *pcTopOfStack = ( char * ) pxTopOfStack;
 
-    /* In this simulated case a stack is not initialised, but instead a thread
-    is created that will execute the task being created.  The thread handles
-    the context switching itself.  The xThreadState object is placed onto
-    the stack that was created for the task - so the stack buffer is still
-    used, just not in the conventional way.  It will not be used for anything
-    other than holding this structure. */
-    pxThreadState = ( xThreadState * ) ( pcTopOfStack - sizeof( xThreadState ) );
+        /* In this simulated case a stack is not initialised, but instead a thread
+        is created that will execute the task being created.  The thread handles
+        the context switching itself.  The xThreadState object is placed onto
+        the stack that was created for the task - so the stack buffer is still
+        used, just not in the conventional way.  It will not be used for anything
+        other than holding this structure. */
+        pxThreadState = ( xThreadState * ) ( pcTopOfStack - sizeof( xThreadState ) );
 
-    /* Create the thread itself. */
-    pxThreadState->pvThread = CreateThread( NULL, 0, ( LPTHREAD_START_ROUTINE ) pxCode, pvParameters, CREATE_SUSPENDED, NULL );
-    SetThreadAffinityMask( pxThreadState->pvThread, 0x01 );
-    SetThreadPriorityBoost( pxThreadState->pvThread, TRUE );
-    SetThreadPriority( pxThreadState->pvThread, THREAD_PRIORITY_IDLE );
+        /* Create the thread itself. */
+        pxThreadState->pvThread = CreateThread( NULL, 0, ( LPTHREAD_START_ROUTINE ) pxCode, pvParameters, CREATE_SUSPENDED, NULL );
+        SetThreadAffinityMask( pxThreadState->pvThread, 0x01 );
+        SetThreadPriorityBoost( pxThreadState->pvThread, TRUE );
+        SetThreadPriority( pxThreadState->pvThread, THREAD_PRIORITY_IDLE );
 
-    return ( portSTACK_TYPE * ) pxThreadState;
+        return ( portSTACK_TYPE * ) pxThreadState;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-    void *pvHandle;
-    long lSuccess = pdPASS;
-    xThreadState *pxThreadState;
+        void *pvHandle;
+        long lSuccess = pdPASS;
+        xThreadState *pxThreadState;
 
-    /* Install the interrupt handlers used by the scheduler itself. */
-    vPortSetInterruptHandler( portINTERRUPT_YIELD, prvProcessYieldInterrupt );
-    vPortSetInterruptHandler( portINTERRUPT_TICK, prvProcessTickInterrupt );
+        /* Install the interrupt handlers used by the scheduler itself. */
+        vPortSetInterruptHandler( portINTERRUPT_YIELD, prvProcessYieldInterrupt );
+        vPortSetInterruptHandler( portINTERRUPT_TICK, prvProcessTickInterrupt );
 
-    /* Create the events and mutexes that are used to synchronise all the
-    threads. */
-    pvInterruptEventMutex = CreateMutex( NULL, FALSE, NULL );
-    pvInterruptEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+        /* Create the events and mutexes that are used to synchronise all the
+        threads. */
+        pvInterruptEventMutex = CreateMutex( NULL, FALSE, NULL );
+        pvInterruptEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
-    if( ( pvInterruptEventMutex == NULL ) || ( pvInterruptEvent == NULL ) ) {
-        lSuccess = pdFAIL;
-    }
-
-    /* Set the priority of this thread such that it is above the priority of
-    the threads that run tasks.  This higher priority is required to ensure
-    simulated interrupts take priority over tasks. */
-    pvHandle = GetCurrentThread();
-    if( pvHandle == NULL ) {
-        lSuccess = pdFAIL;
-    }
-
-    if( lSuccess == pdPASS ) {
-        if( SetThreadPriority( pvHandle, THREAD_PRIORITY_NORMAL ) == 0 ) {
-            lSuccess = pdFAIL;
-        }
-        SetThreadPriorityBoost( pvHandle, TRUE );
-        SetThreadAffinityMask( pvHandle, 0x01 );
-    }
-
-    if( lSuccess == pdPASS ) {
-        /* Start the thread that simulates the timer peripheral to generate
-        tick interrupts.  The priority is set below that of the simulated
-        interrupt handler so the interrupt event mutex is used for the
-        handshake / overrun protection. */
-        pvHandle = CreateThread( NULL, 0, prvSimulatedPeripheralTimer, NULL, 0, NULL );
-        if( pvHandle != NULL ) {
-            SetThreadPriority( pvHandle, THREAD_PRIORITY_BELOW_NORMAL );
-            SetThreadPriorityBoost( pvHandle, TRUE );
-            SetThreadAffinityMask( pvHandle, 0x01 );
+        if( ( pvInterruptEventMutex == NULL ) || ( pvInterruptEvent == NULL ) ) {
+                lSuccess = pdFAIL;
         }
 
-        /* Start the highest priority task by obtaining its associated thread
-        state structure, in which is stored the thread handle. */
-        pxThreadState = ( xThreadState * ) *( ( unsigned long * ) pxCurrentTCB );
-        ulCriticalNesting = portNO_CRITICAL_NESTING;
+        /* Set the priority of this thread such that it is above the priority of
+        the threads that run tasks.  This higher priority is required to ensure
+        simulated interrupts take priority over tasks. */
+        pvHandle = GetCurrentThread();
+        if( pvHandle == NULL ) {
+                lSuccess = pdFAIL;
+        }
 
-        /* Bump up the priority of the thread that is going to run, in the
-        hope that this will asist in getting the Windows thread scheduler to
-        behave as an embedded engineer might expect. */
-        ResumeThread( pxThreadState->pvThread );
+        if( lSuccess == pdPASS ) {
+                if( SetThreadPriority( pvHandle, THREAD_PRIORITY_NORMAL ) == 0 ) {
+                        lSuccess = pdFAIL;
+                }
+                SetThreadPriorityBoost( pvHandle, TRUE );
+                SetThreadAffinityMask( pvHandle, 0x01 );
+        }
 
-        /* Handle all simulated interrupts - including yield requests and
-        simulated ticks. */
-        prvProcessSimulatedInterrupts();
-    }
+        if( lSuccess == pdPASS ) {
+                /* Start the thread that simulates the timer peripheral to generate
+                tick interrupts.  The priority is set below that of the simulated
+                interrupt handler so the interrupt event mutex is used for the
+                handshake / overrun protection. */
+                pvHandle = CreateThread( NULL, 0, prvSimulatedPeripheralTimer, NULL, 0, NULL );
+                if( pvHandle != NULL ) {
+                        SetThreadPriority( pvHandle, THREAD_PRIORITY_BELOW_NORMAL );
+                        SetThreadPriorityBoost( pvHandle, TRUE );
+                        SetThreadAffinityMask( pvHandle, 0x01 );
+                }
 
-    /* Would not expect to return from prvProcessSimulatedInterrupts(), so should
-    not get here. */
-    return 0;
+                /* Start the highest priority task by obtaining its associated thread
+                state structure, in which is stored the thread handle. */
+                pxThreadState = ( xThreadState * ) *( ( unsigned long * ) pxCurrentTCB );
+                ulCriticalNesting = portNO_CRITICAL_NESTING;
+
+                /* Bump up the priority of the thread that is going to run, in the
+                hope that this will asist in getting the Windows thread scheduler to
+                behave as an embedded engineer might expect. */
+                ResumeThread( pxThreadState->pvThread );
+
+                /* Handle all simulated interrupts - including yield requests and
+                simulated ticks. */
+                prvProcessSimulatedInterrupts();
+        }
+
+        /* Would not expect to return from prvProcessSimulatedInterrupts(), so should
+        not get here. */
+        return 0;
 }
 /*-----------------------------------------------------------*/
 
 static unsigned long prvProcessYieldInterrupt( void )
 {
-    return pdTRUE;
+        return pdTRUE;
 }
 /*-----------------------------------------------------------*/
 
 static unsigned long prvProcessTickInterrupt( void )
 {
-    unsigned long ulSwitchRequired;
+        unsigned long ulSwitchRequired;
 
-    /* Process the tick itself. */
-    ulSwitchRequired = ( unsigned long ) xTaskIncrementTick();
+        /* Process the tick itself. */
+        ulSwitchRequired = ( unsigned long ) xTaskIncrementTick();
 
-    return ulSwitchRequired;
+        return ulSwitchRequired;
 }
 /*-----------------------------------------------------------*/
 
 static void prvProcessSimulatedInterrupts( void )
 {
-    unsigned long ulSwitchRequired, i;
-    xThreadState *pxThreadState;
-    void *pvObjectList[ 2 ];
+        unsigned long ulSwitchRequired, i;
+        xThreadState *pxThreadState;
+        void *pvObjectList[ 2 ];
 
-    /* Going to block on the mutex that ensured exclusive access to the simulated
-    interrupt objects, and the event that signals that a simulated interrupt
-    should be processed. */
-    pvObjectList[ 0 ] = pvInterruptEventMutex;
-    pvObjectList[ 1 ] = pvInterruptEvent;
+        /* Going to block on the mutex that ensured exclusive access to the simulated
+        interrupt objects, and the event that signals that a simulated interrupt
+        should be processed. */
+        pvObjectList[ 0 ] = pvInterruptEventMutex;
+        pvObjectList[ 1 ] = pvInterruptEvent;
 
-    for(;;) {
-        WaitForMultipleObjects( sizeof( pvObjectList ) / sizeof( void * ), pvObjectList, TRUE, INFINITE );
+        for(;;) {
+                WaitForMultipleObjects( sizeof( pvObjectList ) / sizeof( void * ), pvObjectList, TRUE, INFINITE );
 
-        /* Used to indicate whether the simulated interrupt processing has
-        necessitated a context switch to another task/thread. */
-        ulSwitchRequired = pdFALSE;
+                /* Used to indicate whether the simulated interrupt processing has
+                necessitated a context switch to another task/thread. */
+                ulSwitchRequired = pdFALSE;
 
-        /* For each interrupt we are interested in processing, each of which is
-        represented by a bit in the 32bit ulPendingInterrupts variable. */
-        for( i = 0; i < portMAX_INTERRUPTS; i++ ) {
-            /* Is the simulated interrupt pending? */
-            if( ulPendingInterrupts & ( 1UL << i ) ) {
-                /* Is a handler installed? */
-                if( ulIsrHandler[ i ] != NULL ) {
-                    /* Run the actual handler. */
-                    if( ulIsrHandler[ i ]() != pdFALSE ) {
-                        ulSwitchRequired |= ( 1 << i );
-                    }
+                /* For each interrupt we are interested in processing, each of which is
+                represented by a bit in the 32bit ulPendingInterrupts variable. */
+                for( i = 0; i < portMAX_INTERRUPTS; i++ ) {
+                        /* Is the simulated interrupt pending? */
+                        if( ulPendingInterrupts & ( 1UL << i ) ) {
+                                /* Is a handler installed? */
+                                if( ulIsrHandler[ i ] != NULL ) {
+                                        /* Run the actual handler. */
+                                        if( ulIsrHandler[ i ]() != pdFALSE ) {
+                                                ulSwitchRequired |= ( 1 << i );
+                                        }
+                                }
+
+                                /* Clear the interrupt pending bit. */
+                                ulPendingInterrupts &= ~( 1UL << i );
+                        }
                 }
 
-                /* Clear the interrupt pending bit. */
-                ulPendingInterrupts &= ~( 1UL << i );
-            }
+                if( ulSwitchRequired != pdFALSE ) {
+                        void *pvOldCurrentTCB;
+
+                        pvOldCurrentTCB = pxCurrentTCB;
+
+                        /* Select the next task to run. */
+                        vTaskSwitchContext();
+
+                        /* If the task selected to enter the running state is not the task
+                        that is already in the running state. */
+                        if( pvOldCurrentTCB != pxCurrentTCB ) {
+                                /* Suspend the old thread. */
+                                pxThreadState = ( xThreadState *) *( ( unsigned long * ) pvOldCurrentTCB );
+                                SuspendThread( pxThreadState->pvThread );
+
+                                /* Obtain the state of the task now selected to enter the
+                                Running state. */
+                                pxThreadState = ( xThreadState * ) ( *( unsigned long *) pxCurrentTCB );
+                                ResumeThread( pxThreadState->pvThread );
+                        }
+                }
+
+                ReleaseMutex( pvInterruptEventMutex );
         }
-
-        if( ulSwitchRequired != pdFALSE ) {
-            void *pvOldCurrentTCB;
-
-            pvOldCurrentTCB = pxCurrentTCB;
-
-            /* Select the next task to run. */
-            vTaskSwitchContext();
-
-            /* If the task selected to enter the running state is not the task
-            that is already in the running state. */
-            if( pvOldCurrentTCB != pxCurrentTCB ) {
-                /* Suspend the old thread. */
-                pxThreadState = ( xThreadState *) *( ( unsigned long * ) pvOldCurrentTCB );
-                SuspendThread( pxThreadState->pvThread );
-
-                /* Obtain the state of the task now selected to enter the
-                Running state. */
-                pxThreadState = ( xThreadState * ) ( *( unsigned long *) pxCurrentTCB );
-                ResumeThread( pxThreadState->pvThread );
-            }
-        }
-
-        ReleaseMutex( pvInterruptEventMutex );
-    }
 }
 /*-----------------------------------------------------------*/
 
 void vPortDeleteThread( void *pvTaskToDelete )
 {
-    xThreadState *pxThreadState;
+        xThreadState *pxThreadState;
 
-    WaitForSingleObject( pvInterruptEventMutex, INFINITE );
+        WaitForSingleObject( pvInterruptEventMutex, INFINITE );
 
-    /* Find the handle of the thread being deleted. */
-    pxThreadState = ( xThreadState * ) ( *( unsigned long *) pvTaskToDelete );
-    TerminateThread( pxThreadState->pvThread, 0 );
+        /* Find the handle of the thread being deleted. */
+        pxThreadState = ( xThreadState * ) ( *( unsigned long *) pvTaskToDelete );
+        TerminateThread( pxThreadState->pvThread, 0 );
 
-    ReleaseMutex( pvInterruptEventMutex );
+        ReleaseMutex( pvInterruptEventMutex );
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-    /* This function IS NOT TESTED! */
-    TerminateProcess( GetCurrentProcess(), 0 );
+        /* This function IS NOT TESTED! */
+        TerminateProcess( GetCurrentProcess(), 0 );
 }
 /*-----------------------------------------------------------*/
 
 void vPortGenerateSimulatedInterrupt( unsigned long ulInterruptNumber )
 {
-    if( ( ulInterruptNumber < portMAX_INTERRUPTS ) && ( pvInterruptEventMutex != NULL ) ) {
-        /* Yield interrupts are processed even when critical nesting is non-zero. */
-        WaitForSingleObject( pvInterruptEventMutex, INFINITE );
-        ulPendingInterrupts |= ( 1 << ulInterruptNumber );
+        if( ( ulInterruptNumber < portMAX_INTERRUPTS ) && ( pvInterruptEventMutex != NULL ) ) {
+                /* Yield interrupts are processed even when critical nesting is non-zero. */
+                WaitForSingleObject( pvInterruptEventMutex, INFINITE );
+                ulPendingInterrupts |= ( 1 << ulInterruptNumber );
 
-        /* The simulated interrupt is now held pending, but don't actually process it
-        yet if this call is within a critical section.  It is possible for this to
-        be in a critical section as calls to wait for mutexes are accumulative. */
-        if( ulCriticalNesting == 0 ) {
-            SetEvent( pvInterruptEvent );
+                /* The simulated interrupt is now held pending, but don't actually process it
+                yet if this call is within a critical section.  It is possible for this to
+                be in a critical section as calls to wait for mutexes are accumulative. */
+                if( ulCriticalNesting == 0 ) {
+                        SetEvent( pvInterruptEvent );
+                }
+
+                ReleaseMutex( pvInterruptEventMutex );
         }
-
-        ReleaseMutex( pvInterruptEventMutex );
-    }
 }
 /*-----------------------------------------------------------*/
 
 void vPortSetInterruptHandler( unsigned long ulInterruptNumber, unsigned long (*pvHandler)( void ) )
 {
-    if( ulInterruptNumber < portMAX_INTERRUPTS ) {
-        if( pvInterruptEventMutex != NULL ) {
-            WaitForSingleObject( pvInterruptEventMutex, INFINITE );
-            ulIsrHandler[ ulInterruptNumber ] = pvHandler;
-            ReleaseMutex( pvInterruptEventMutex );
-        } else {
-            ulIsrHandler[ ulInterruptNumber ] = pvHandler;
+        if( ulInterruptNumber < portMAX_INTERRUPTS ) {
+                if( pvInterruptEventMutex != NULL ) {
+                        WaitForSingleObject( pvInterruptEventMutex, INFINITE );
+                        ulIsrHandler[ ulInterruptNumber ] = pvHandler;
+                        ReleaseMutex( pvInterruptEventMutex );
+                } else {
+                        ulIsrHandler[ ulInterruptNumber ] = pvHandler;
+                }
         }
-    }
 }
 /*-----------------------------------------------------------*/
 
 void vPortEnterCritical( void )
 {
-    if( xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED ) {
-        /* The interrupt event mutex is held for the entire critical section,
-        effectively disabling (simulated) interrupts. */
-        WaitForSingleObject( pvInterruptEventMutex, INFINITE );
-        ulCriticalNesting++;
-    } else {
-        ulCriticalNesting++;
-    }
+        if( xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED ) {
+                /* The interrupt event mutex is held for the entire critical section,
+                effectively disabling (simulated) interrupts. */
+                WaitForSingleObject( pvInterruptEventMutex, INFINITE );
+                ulCriticalNesting++;
+        } else {
+                ulCriticalNesting++;
+        }
 }
 /*-----------------------------------------------------------*/
 
 void vPortExitCritical( void )
 {
-    long lMutexNeedsReleasing;
+        long lMutexNeedsReleasing;
 
-    /* The interrupt event mutex should already be held by this thread as it was
-    obtained on entry to the critical section. */
+        /* The interrupt event mutex should already be held by this thread as it was
+        obtained on entry to the critical section. */
 
-    lMutexNeedsReleasing = pdTRUE;
+        lMutexNeedsReleasing = pdTRUE;
 
-    if( ulCriticalNesting > portNO_CRITICAL_NESTING ) {
-        if( ulCriticalNesting == ( portNO_CRITICAL_NESTING + 1 ) ) {
-            ulCriticalNesting--;
+        if( ulCriticalNesting > portNO_CRITICAL_NESTING ) {
+                if( ulCriticalNesting == ( portNO_CRITICAL_NESTING + 1 ) ) {
+                        ulCriticalNesting--;
 
-            /* Were any interrupts set to pending while interrupts were
-            (simulated) disabled? */
-            if( ulPendingInterrupts != 0UL ) {
-                SetEvent( pvInterruptEvent );
+                        /* Were any interrupts set to pending while interrupts were
+                        (simulated) disabled? */
+                        if( ulPendingInterrupts != 0UL ) {
+                                SetEvent( pvInterruptEvent );
 
-                /* Mutex will be released now, so does not require releasing
-                on function exit. */
-                lMutexNeedsReleasing = pdFALSE;
-                ReleaseMutex( pvInterruptEventMutex );
-            }
-        } else {
-            /* Tick interrupts will still not be processed as the critical
-            nesting depth will not be zero. */
-            ulCriticalNesting--;
+                                /* Mutex will be released now, so does not require releasing
+                                on function exit. */
+                                lMutexNeedsReleasing = pdFALSE;
+                                ReleaseMutex( pvInterruptEventMutex );
+                        }
+                } else {
+                        /* Tick interrupts will still not be processed as the critical
+                        nesting depth will not be zero. */
+                        ulCriticalNesting--;
+                }
         }
-    }
 
-    if( lMutexNeedsReleasing == pdTRUE ) {
-        ReleaseMutex( pvInterruptEventMutex );
-    }
+        if( lMutexNeedsReleasing == pdTRUE ) {
+                ReleaseMutex( pvInterruptEventMutex );
+        }
 }
 /*-----------------------------------------------------------*/
 

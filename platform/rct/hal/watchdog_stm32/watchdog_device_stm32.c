@@ -61,7 +61,8 @@ enum rcc_flag {
         POWERON_FLAG
 };
 
-static int read_flags(enum rcc_flag flag) {
+static int read_flags(enum rcc_flag flag)
+{
         if (flags || STATUS_FLAG == flag)
                 return flags & 1 << STATUS_FLAG;
 

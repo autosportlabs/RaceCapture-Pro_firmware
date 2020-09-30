@@ -119,366 +119,366 @@
  */
 
 void arm_fir_lattice_f32(
-    const arm_fir_lattice_instance_f32 * S,
-    float32_t * pSrc,
-    float32_t * pDst,
-    uint32_t blockSize)
+        const arm_fir_lattice_instance_f32 * S,
+        float32_t * pSrc,
+        float32_t * pDst,
+        uint32_t blockSize)
 {
-    float32_t *pState;                             /* State pointer */
-    float32_t *pCoeffs = S->pCoeffs;               /* Coefficient pointer */
-    float32_t *px;                                 /* temporary state pointer */
-    float32_t *pk;                                 /* temporary coefficient pointer */
+        float32_t *pState;                             /* State pointer */
+        float32_t *pCoeffs = S->pCoeffs;               /* Coefficient pointer */
+        float32_t *px;                                 /* temporary state pointer */
+        float32_t *pk;                                 /* temporary coefficient pointer */
 
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    float32_t fcurr1, fnext1, gcurr1, gnext1;      /* temporary variables for first sample in loop unrolling */
-    float32_t fcurr2, fnext2, gnext2;              /* temporary variables for second sample in loop unrolling */
-    float32_t fcurr3, fnext3, gnext3;              /* temporary variables for third sample in loop unrolling */
-    float32_t fcurr4, fnext4, gnext4;              /* temporary variables for fourth sample in loop unrolling */
-    uint32_t numStages = S->numStages;             /* Number of stages in the filter */
-    uint32_t blkCnt, stageCnt;                     /* temporary variables for counts */
+        float32_t fcurr1, fnext1, gcurr1, gnext1;      /* temporary variables for first sample in loop unrolling */
+        float32_t fcurr2, fnext2, gnext2;              /* temporary variables for second sample in loop unrolling */
+        float32_t fcurr3, fnext3, gnext3;              /* temporary variables for third sample in loop unrolling */
+        float32_t fcurr4, fnext4, gnext4;              /* temporary variables for fourth sample in loop unrolling */
+        uint32_t numStages = S->numStages;             /* Number of stages in the filter */
+        uint32_t blkCnt, stageCnt;                     /* temporary variables for counts */
 
-    gcurr1 = 0.0f;
-    pState = &S->pState[0];
+        gcurr1 = 0.0f;
+        pState = &S->pState[0];
 
-    blkCnt = blockSize >> 2;
+        blkCnt = blockSize >> 2;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-       a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+           a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
 
-        /* Read two samples from input buffer */
-        /* f0(n) = x(n) */
-        fcurr1 = *pSrc++;
-        fcurr2 = *pSrc++;
+                /* Read two samples from input buffer */
+                /* f0(n) = x(n) */
+                fcurr1 = *pSrc++;
+                fcurr2 = *pSrc++;
 
-        /* Initialize coeff pointer */
-        pk = (pCoeffs);
+                /* Initialize coeff pointer */
+                pk = (pCoeffs);
 
-        /* Initialize state pointer */
-        px = pState;
+                /* Initialize state pointer */
+                px = pState;
 
-        /* Read g0(n-1) from state */
-        gcurr1 = *px;
+                /* Read g0(n-1) from state */
+                gcurr1 = *px;
 
-        /* Process first sample for first tap */
-        /* f1(n) = f0(n) +  K1 * g0(n-1) */
-        fnext1 = fcurr1 + ((*pk) * gcurr1);
-        /* g1(n) = f0(n) * K1  +  g0(n-1) */
-        gnext1 = (fcurr1 * (*pk)) + gcurr1;
+                /* Process first sample for first tap */
+                /* f1(n) = f0(n) +  K1 * g0(n-1) */
+                fnext1 = fcurr1 + ((*pk) * gcurr1);
+                /* g1(n) = f0(n) * K1  +  g0(n-1) */
+                gnext1 = (fcurr1 * (*pk)) + gcurr1;
 
-        /* Process second sample for first tap */
-        /* for sample 2 processing */
-        fnext2 = fcurr2 + ((*pk) * fcurr1);
-        gnext2 = (fcurr2 * (*pk)) + fcurr1;
+                /* Process second sample for first tap */
+                /* for sample 2 processing */
+                fnext2 = fcurr2 + ((*pk) * fcurr1);
+                gnext2 = (fcurr2 * (*pk)) + fcurr1;
 
-        /* Read next two samples from input buffer */
-        /* f0(n+2) = x(n+2) */
-        fcurr3 = *pSrc++;
-        fcurr4 = *pSrc++;
+                /* Read next two samples from input buffer */
+                /* f0(n+2) = x(n+2) */
+                fcurr3 = *pSrc++;
+                fcurr4 = *pSrc++;
 
-        /* Copy only last input samples into the state buffer
-           which will be used for next four samples processing */
-        *px++ = fcurr4;
+                /* Copy only last input samples into the state buffer
+                   which will be used for next four samples processing */
+                *px++ = fcurr4;
 
-        /* Process third sample for first tap */
-        fnext3 = fcurr3 + ((*pk) * fcurr2);
-        gnext3 = (fcurr3 * (*pk)) + fcurr2;
+                /* Process third sample for first tap */
+                fnext3 = fcurr3 + ((*pk) * fcurr2);
+                gnext3 = (fcurr3 * (*pk)) + fcurr2;
 
-        /* Process fourth sample for first tap */
-        fnext4 = fcurr4 + ((*pk) * fcurr3);
-        gnext4 = (fcurr4 * (*pk++)) + fcurr3;
+                /* Process fourth sample for first tap */
+                fnext4 = fcurr4 + ((*pk) * fcurr3);
+                gnext4 = (fcurr4 * (*pk++)) + fcurr3;
 
-        /* Update of f values for next coefficient set processing */
-        fcurr1 = fnext1;
-        fcurr2 = fnext2;
-        fcurr3 = fnext3;
-        fcurr4 = fnext4;
+                /* Update of f values for next coefficient set processing */
+                fcurr1 = fnext1;
+                fcurr2 = fnext2;
+                fcurr3 = fnext3;
+                fcurr4 = fnext4;
 
-        /* Loop unrolling.  Process 4 taps at a time . */
-        stageCnt = (numStages - 1u) >> 2u;
+                /* Loop unrolling.  Process 4 taps at a time . */
+                stageCnt = (numStages - 1u) >> 2u;
 
-        /* Loop over the number of taps.  Unroll by a factor of 4.
-         ** Repeat until we've computed numStages-3 coefficients. */
+                /* Loop over the number of taps.  Unroll by a factor of 4.
+                 ** Repeat until we've computed numStages-3 coefficients. */
 
-        /* Process 2nd, 3rd, 4th and 5th taps ... here */
-        while(stageCnt > 0u) {
-            /* Read g1(n-1), g3(n-1) .... from state */
-            gcurr1 = *px;
+                /* Process 2nd, 3rd, 4th and 5th taps ... here */
+                while(stageCnt > 0u) {
+                        /* Read g1(n-1), g3(n-1) .... from state */
+                        gcurr1 = *px;
 
-            /* save g1(n) in state buffer */
-            *px++ = gnext4;
+                        /* save g1(n) in state buffer */
+                        *px++ = gnext4;
 
-            /* Process first sample for 2nd, 6th .. tap */
-            /* Sample processing for K2, K6.... */
-            /* f2(n) = f1(n) +  K2 * g1(n-1) */
-            fnext1 = fcurr1 + ((*pk) * gcurr1);
-            /* Process second sample for 2nd, 6th .. tap */
-            /* for sample 2 processing */
-            fnext2 = fcurr2 + ((*pk) * gnext1);
-            /* Process third sample for 2nd, 6th .. tap */
-            fnext3 = fcurr3 + ((*pk) * gnext2);
-            /* Process fourth sample for 2nd, 6th .. tap */
-            fnext4 = fcurr4 + ((*pk) * gnext3);
+                        /* Process first sample for 2nd, 6th .. tap */
+                        /* Sample processing for K2, K6.... */
+                        /* f2(n) = f1(n) +  K2 * g1(n-1) */
+                        fnext1 = fcurr1 + ((*pk) * gcurr1);
+                        /* Process second sample for 2nd, 6th .. tap */
+                        /* for sample 2 processing */
+                        fnext2 = fcurr2 + ((*pk) * gnext1);
+                        /* Process third sample for 2nd, 6th .. tap */
+                        fnext3 = fcurr3 + ((*pk) * gnext2);
+                        /* Process fourth sample for 2nd, 6th .. tap */
+                        fnext4 = fcurr4 + ((*pk) * gnext3);
 
-            /* g2(n) = f1(n) * K2  +  g1(n-1) */
-            /* Calculation of state values for next stage */
-            gnext4 = (fcurr4 * (*pk)) + gnext3;
-            gnext3 = (fcurr3 * (*pk)) + gnext2;
-            gnext2 = (fcurr2 * (*pk)) + gnext1;
-            gnext1 = (fcurr1 * (*pk++)) + gcurr1;
-
-
-            /* Read g2(n-1), g4(n-1) .... from state */
-            gcurr1 = *px;
-
-            /* save g2(n) in state buffer */
-            *px++ = gnext4;
-
-            /* Sample processing for K3, K7.... */
-            /* Process first sample for 3rd, 7th .. tap */
-            /* f3(n) = f2(n) +  K3 * g2(n-1) */
-            fcurr1 = fnext1 + ((*pk) * gcurr1);
-            /* Process second sample for 3rd, 7th .. tap */
-            fcurr2 = fnext2 + ((*pk) * gnext1);
-            /* Process third sample for 3rd, 7th .. tap */
-            fcurr3 = fnext3 + ((*pk) * gnext2);
-            /* Process fourth sample for 3rd, 7th .. tap */
-            fcurr4 = fnext4 + ((*pk) * gnext3);
-
-            /* Calculation of state values for next stage */
-            /* g3(n) = f2(n) * K3  +  g2(n-1) */
-            gnext4 = (fnext4 * (*pk)) + gnext3;
-            gnext3 = (fnext3 * (*pk)) + gnext2;
-            gnext2 = (fnext2 * (*pk)) + gnext1;
-            gnext1 = (fnext1 * (*pk++)) + gcurr1;
+                        /* g2(n) = f1(n) * K2  +  g1(n-1) */
+                        /* Calculation of state values for next stage */
+                        gnext4 = (fcurr4 * (*pk)) + gnext3;
+                        gnext3 = (fcurr3 * (*pk)) + gnext2;
+                        gnext2 = (fcurr2 * (*pk)) + gnext1;
+                        gnext1 = (fcurr1 * (*pk++)) + gcurr1;
 
 
-            /* Read g1(n-1), g3(n-1) .... from state */
-            gcurr1 = *px;
+                        /* Read g2(n-1), g4(n-1) .... from state */
+                        gcurr1 = *px;
 
-            /* save g3(n) in state buffer */
-            *px++ = gnext4;
+                        /* save g2(n) in state buffer */
+                        *px++ = gnext4;
 
-            /* Sample processing for K4, K8.... */
-            /* Process first sample for 4th, 8th .. tap */
-            /* f4(n) = f3(n) +  K4 * g3(n-1) */
-            fnext1 = fcurr1 + ((*pk) * gcurr1);
-            /* Process second sample for 4th, 8th .. tap */
-            /* for sample 2 processing */
-            fnext2 = fcurr2 + ((*pk) * gnext1);
-            /* Process third sample for 4th, 8th .. tap */
-            fnext3 = fcurr3 + ((*pk) * gnext2);
-            /* Process fourth sample for 4th, 8th .. tap */
-            fnext4 = fcurr4 + ((*pk) * gnext3);
+                        /* Sample processing for K3, K7.... */
+                        /* Process first sample for 3rd, 7th .. tap */
+                        /* f3(n) = f2(n) +  K3 * g2(n-1) */
+                        fcurr1 = fnext1 + ((*pk) * gcurr1);
+                        /* Process second sample for 3rd, 7th .. tap */
+                        fcurr2 = fnext2 + ((*pk) * gnext1);
+                        /* Process third sample for 3rd, 7th .. tap */
+                        fcurr3 = fnext3 + ((*pk) * gnext2);
+                        /* Process fourth sample for 3rd, 7th .. tap */
+                        fcurr4 = fnext4 + ((*pk) * gnext3);
 
-            /* g4(n) = f3(n) * K4  +  g3(n-1) */
-            /* Calculation of state values for next stage */
-            gnext4 = (fcurr4 * (*pk)) + gnext3;
-            gnext3 = (fcurr3 * (*pk)) + gnext2;
-            gnext2 = (fcurr2 * (*pk)) + gnext1;
-            gnext1 = (fcurr1 * (*pk++)) + gcurr1;
+                        /* Calculation of state values for next stage */
+                        /* g3(n) = f2(n) * K3  +  g2(n-1) */
+                        gnext4 = (fnext4 * (*pk)) + gnext3;
+                        gnext3 = (fnext3 * (*pk)) + gnext2;
+                        gnext2 = (fnext2 * (*pk)) + gnext1;
+                        gnext1 = (fnext1 * (*pk++)) + gcurr1;
 
-            /* Read g2(n-1), g4(n-1) .... from state */
-            gcurr1 = *px;
 
-            /* save g4(n) in state buffer */
-            *px++ = gnext4;
+                        /* Read g1(n-1), g3(n-1) .... from state */
+                        gcurr1 = *px;
 
-            /* Sample processing for K5, K9.... */
-            /* Process first sample for 5th, 9th .. tap */
-            /* f5(n) = f4(n) +  K5 * g4(n-1) */
-            fcurr1 = fnext1 + ((*pk) * gcurr1);
-            /* Process second sample for 5th, 9th .. tap */
-            fcurr2 = fnext2 + ((*pk) * gnext1);
-            /* Process third sample for 5th, 9th .. tap */
-            fcurr3 = fnext3 + ((*pk) * gnext2);
-            /* Process fourth sample for 5th, 9th .. tap */
-            fcurr4 = fnext4 + ((*pk) * gnext3);
+                        /* save g3(n) in state buffer */
+                        *px++ = gnext4;
 
-            /* Calculation of state values for next stage */
-            /* g5(n) = f4(n) * K5  +  g4(n-1) */
-            gnext4 = (fnext4 * (*pk)) + gnext3;
-            gnext3 = (fnext3 * (*pk)) + gnext2;
-            gnext2 = (fnext2 * (*pk)) + gnext1;
-            gnext1 = (fnext1 * (*pk++)) + gcurr1;
+                        /* Sample processing for K4, K8.... */
+                        /* Process first sample for 4th, 8th .. tap */
+                        /* f4(n) = f3(n) +  K4 * g3(n-1) */
+                        fnext1 = fcurr1 + ((*pk) * gcurr1);
+                        /* Process second sample for 4th, 8th .. tap */
+                        /* for sample 2 processing */
+                        fnext2 = fcurr2 + ((*pk) * gnext1);
+                        /* Process third sample for 4th, 8th .. tap */
+                        fnext3 = fcurr3 + ((*pk) * gnext2);
+                        /* Process fourth sample for 4th, 8th .. tap */
+                        fnext4 = fcurr4 + ((*pk) * gnext3);
 
-            stageCnt--;
+                        /* g4(n) = f3(n) * K4  +  g3(n-1) */
+                        /* Calculation of state values for next stage */
+                        gnext4 = (fcurr4 * (*pk)) + gnext3;
+                        gnext3 = (fcurr3 * (*pk)) + gnext2;
+                        gnext2 = (fcurr2 * (*pk)) + gnext1;
+                        gnext1 = (fcurr1 * (*pk++)) + gcurr1;
+
+                        /* Read g2(n-1), g4(n-1) .... from state */
+                        gcurr1 = *px;
+
+                        /* save g4(n) in state buffer */
+                        *px++ = gnext4;
+
+                        /* Sample processing for K5, K9.... */
+                        /* Process first sample for 5th, 9th .. tap */
+                        /* f5(n) = f4(n) +  K5 * g4(n-1) */
+                        fcurr1 = fnext1 + ((*pk) * gcurr1);
+                        /* Process second sample for 5th, 9th .. tap */
+                        fcurr2 = fnext2 + ((*pk) * gnext1);
+                        /* Process third sample for 5th, 9th .. tap */
+                        fcurr3 = fnext3 + ((*pk) * gnext2);
+                        /* Process fourth sample for 5th, 9th .. tap */
+                        fcurr4 = fnext4 + ((*pk) * gnext3);
+
+                        /* Calculation of state values for next stage */
+                        /* g5(n) = f4(n) * K5  +  g4(n-1) */
+                        gnext4 = (fnext4 * (*pk)) + gnext3;
+                        gnext3 = (fnext3 * (*pk)) + gnext2;
+                        gnext2 = (fnext2 * (*pk)) + gnext1;
+                        gnext1 = (fnext1 * (*pk++)) + gcurr1;
+
+                        stageCnt--;
+                }
+
+                /* If the (filter length -1) is not a multiple of 4, compute the remaining filter taps */
+                stageCnt = (numStages - 1u) % 0x4u;
+
+                while(stageCnt > 0u) {
+                        gcurr1 = *px;
+
+                        /* save g value in state buffer */
+                        *px++ = gnext4;
+
+                        /* Process four samples for last three taps here */
+                        fnext1 = fcurr1 + ((*pk) * gcurr1);
+                        fnext2 = fcurr2 + ((*pk) * gnext1);
+                        fnext3 = fcurr3 + ((*pk) * gnext2);
+                        fnext4 = fcurr4 + ((*pk) * gnext3);
+
+                        /* g1(n) = f0(n) * K1  +  g0(n-1) */
+                        gnext4 = (fcurr4 * (*pk)) + gnext3;
+                        gnext3 = (fcurr3 * (*pk)) + gnext2;
+                        gnext2 = (fcurr2 * (*pk)) + gnext1;
+                        gnext1 = (fcurr1 * (*pk++)) + gcurr1;
+
+                        /* Update of f values for next coefficient set processing */
+                        fcurr1 = fnext1;
+                        fcurr2 = fnext2;
+                        fcurr3 = fnext3;
+                        fcurr4 = fnext4;
+
+                        stageCnt--;
+
+                }
+
+                /* The results in the 4 accumulators, store in the destination buffer. */
+                /* y(n) = fN(n) */
+                *pDst++ = fcurr1;
+                *pDst++ = fcurr2;
+                *pDst++ = fcurr3;
+                *pDst++ = fcurr4;
+
+                blkCnt--;
         }
 
-        /* If the (filter length -1) is not a multiple of 4, compute the remaining filter taps */
-        stageCnt = (numStages - 1u) % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
-        while(stageCnt > 0u) {
-            gcurr1 = *px;
+        while(blkCnt > 0u) {
+                /* f0(n) = x(n) */
+                fcurr1 = *pSrc++;
 
-            /* save g value in state buffer */
-            *px++ = gnext4;
+                /* Initialize coeff pointer */
+                pk = (pCoeffs);
 
-            /* Process four samples for last three taps here */
-            fnext1 = fcurr1 + ((*pk) * gcurr1);
-            fnext2 = fcurr2 + ((*pk) * gnext1);
-            fnext3 = fcurr3 + ((*pk) * gnext2);
-            fnext4 = fcurr4 + ((*pk) * gnext3);
+                /* Initialize state pointer */
+                px = pState;
 
-            /* g1(n) = f0(n) * K1  +  g0(n-1) */
-            gnext4 = (fcurr4 * (*pk)) + gnext3;
-            gnext3 = (fcurr3 * (*pk)) + gnext2;
-            gnext2 = (fcurr2 * (*pk)) + gnext1;
-            gnext1 = (fcurr1 * (*pk++)) + gcurr1;
+                /* read g2(n) from state buffer */
+                gcurr1 = *px;
 
-            /* Update of f values for next coefficient set processing */
-            fcurr1 = fnext1;
-            fcurr2 = fnext2;
-            fcurr3 = fnext3;
-            fcurr4 = fnext4;
+                /* for sample 1 processing */
+                /* f1(n) = f0(n) +  K1 * g0(n-1) */
+                fnext1 = fcurr1 + ((*pk) * gcurr1);
+                /* g1(n) = f0(n) * K1  +  g0(n-1) */
+                gnext1 = (fcurr1 * (*pk++)) + gcurr1;
 
-            stageCnt--;
+                /* save g1(n) in state buffer */
+                *px++ = fcurr1;
 
-        }
+                /* f1(n) is saved in fcurr1
+                   for next stage processing */
+                fcurr1 = fnext1;
 
-        /* The results in the 4 accumulators, store in the destination buffer. */
-        /* y(n) = fN(n) */
-        *pDst++ = fcurr1;
-        *pDst++ = fcurr2;
-        *pDst++ = fcurr3;
-        *pDst++ = fcurr4;
+                stageCnt = (numStages - 1u);
 
-        blkCnt--;
-    }
+                /* stage loop */
+                while(stageCnt > 0u) {
+                        /* read g2(n) from state buffer */
+                        gcurr1 = *px;
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+                        /* save g1(n) in state buffer */
+                        *px++ = gnext1;
 
-    while(blkCnt > 0u) {
-        /* f0(n) = x(n) */
-        fcurr1 = *pSrc++;
+                        /* Sample processing for K2, K3.... */
+                        /* f2(n) = f1(n) +  K2 * g1(n-1) */
+                        fnext1 = fcurr1 + ((*pk) * gcurr1);
+                        /* g2(n) = f1(n) * K2  +  g1(n-1) */
+                        gnext1 = (fcurr1 * (*pk++)) + gcurr1;
 
-        /* Initialize coeff pointer */
-        pk = (pCoeffs);
+                        /* f1(n) is saved in fcurr1
+                           for next stage processing */
+                        fcurr1 = fnext1;
 
-        /* Initialize state pointer */
-        px = pState;
+                        stageCnt--;
 
-        /* read g2(n) from state buffer */
-        gcurr1 = *px;
+                }
 
-        /* for sample 1 processing */
-        /* f1(n) = f0(n) +  K1 * g0(n-1) */
-        fnext1 = fcurr1 + ((*pk) * gcurr1);
-        /* g1(n) = f0(n) * K1  +  g0(n-1) */
-        gnext1 = (fcurr1 * (*pk++)) + gcurr1;
+                /* y(n) = fN(n) */
+                *pDst++ = fcurr1;
 
-        /* save g1(n) in state buffer */
-        *px++ = fcurr1;
-
-        /* f1(n) is saved in fcurr1
-           for next stage processing */
-        fcurr1 = fnext1;
-
-        stageCnt = (numStages - 1u);
-
-        /* stage loop */
-        while(stageCnt > 0u) {
-            /* read g2(n) from state buffer */
-            gcurr1 = *px;
-
-            /* save g1(n) in state buffer */
-            *px++ = gnext1;
-
-            /* Sample processing for K2, K3.... */
-            /* f2(n) = f1(n) +  K2 * g1(n-1) */
-            fnext1 = fcurr1 + ((*pk) * gcurr1);
-            /* g2(n) = f1(n) * K2  +  g1(n-1) */
-            gnext1 = (fcurr1 * (*pk++)) + gcurr1;
-
-            /* f1(n) is saved in fcurr1
-               for next stage processing */
-            fcurr1 = fnext1;
-
-            stageCnt--;
+                blkCnt--;
 
         }
-
-        /* y(n) = fN(n) */
-        *pDst++ = fcurr1;
-
-        blkCnt--;
-
-    }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    float32_t fcurr, fnext, gcurr, gnext;          /* temporary variables */
-    uint32_t numStages = S->numStages;             /* Length of the filter */
-    uint32_t blkCnt, stageCnt;                     /* temporary variables for counts */
+        float32_t fcurr, fnext, gcurr, gnext;          /* temporary variables */
+        uint32_t numStages = S->numStages;             /* Length of the filter */
+        uint32_t blkCnt, stageCnt;                     /* temporary variables for counts */
 
-    pState = &S->pState[0];
+        pState = &S->pState[0];
 
-    blkCnt = blockSize;
+        blkCnt = blockSize;
 
-    while(blkCnt > 0u) {
-        /* f0(n) = x(n) */
-        fcurr = *pSrc++;
+        while(blkCnt > 0u) {
+                /* f0(n) = x(n) */
+                fcurr = *pSrc++;
 
-        /* Initialize coeff pointer */
-        pk = pCoeffs;
+                /* Initialize coeff pointer */
+                pk = pCoeffs;
 
-        /* Initialize state pointer */
-        px = pState;
+                /* Initialize state pointer */
+                px = pState;
 
-        /* read g0(n-1) from state buffer */
-        gcurr = *px;
+                /* read g0(n-1) from state buffer */
+                gcurr = *px;
 
-        /* for sample 1 processing */
-        /* f1(n) = f0(n) +  K1 * g0(n-1) */
-        fnext = fcurr + ((*pk) * gcurr);
-        /* g1(n) = f0(n) * K1  +  g0(n-1) */
-        gnext = (fcurr * (*pk++)) + gcurr;
+                /* for sample 1 processing */
+                /* f1(n) = f0(n) +  K1 * g0(n-1) */
+                fnext = fcurr + ((*pk) * gcurr);
+                /* g1(n) = f0(n) * K1  +  g0(n-1) */
+                gnext = (fcurr * (*pk++)) + gcurr;
 
-        /* save f0(n) in state buffer */
-        *px++ = fcurr;
+                /* save f0(n) in state buffer */
+                *px++ = fcurr;
 
-        /* f1(n) is saved in fcurr
-           for next stage processing */
-        fcurr = fnext;
+                /* f1(n) is saved in fcurr
+                   for next stage processing */
+                fcurr = fnext;
 
-        stageCnt = (numStages - 1u);
+                stageCnt = (numStages - 1u);
 
-        /* stage loop */
-        while(stageCnt > 0u) {
-            /* read g2(n) from state buffer */
-            gcurr = *px;
+                /* stage loop */
+                while(stageCnt > 0u) {
+                        /* read g2(n) from state buffer */
+                        gcurr = *px;
 
-            /* save g1(n) in state buffer */
-            *px++ = gnext;
+                        /* save g1(n) in state buffer */
+                        *px++ = gnext;
 
-            /* Sample processing for K2, K3.... */
-            /* f2(n) = f1(n) +  K2 * g1(n-1) */
-            fnext = fcurr + ((*pk) * gcurr);
-            /* g2(n) = f1(n) * K2  +  g1(n-1) */
-            gnext = (fcurr * (*pk++)) + gcurr;
+                        /* Sample processing for K2, K3.... */
+                        /* f2(n) = f1(n) +  K2 * g1(n-1) */
+                        fnext = fcurr + ((*pk) * gcurr);
+                        /* g2(n) = f1(n) * K2  +  g1(n-1) */
+                        gnext = (fcurr * (*pk++)) + gcurr;
 
-            /* f1(n) is saved in fcurr1
-               for next stage processing */
-            fcurr = fnext;
+                        /* f1(n) is saved in fcurr1
+                           for next stage processing */
+                        fcurr = fnext;
 
-            stageCnt--;
+                        stageCnt--;
+
+                }
+
+                /* y(n) = fN(n) */
+                *pDst++ = fcurr;
+
+                blkCnt--;
 
         }
-
-        /* y(n) = fN(n) */
-        *pDst++ = fcurr;
-
-        blkCnt--;
-
-    }
 
 #endif /*   #ifndef ARM_MATH_CM0 */
 

@@ -51,27 +51,27 @@ extern "C" {
   * @brief   ADC Init structure definition
   */
 typedef struct {
-    uint32_t ADC_Resolution;                /*!< Configures the ADC resolution dual mode.
+        uint32_t ADC_Resolution;                /*!< Configures the ADC resolution dual mode.
                                                This parameter can be a value of @ref ADC_resolution */
-    FunctionalState ADC_ScanConvMode;       /*!< Specifies whether the conversion
+        FunctionalState ADC_ScanConvMode;       /*!< Specifies whether the conversion
                                                is performed in Scan (multichannels)
                                                or Single (one channel) mode.
                                                This parameter can be set to ENABLE or DISABLE */
-    FunctionalState ADC_ContinuousConvMode; /*!< Specifies whether the conversion
+        FunctionalState ADC_ContinuousConvMode; /*!< Specifies whether the conversion
                                                is performed in Continuous or Single mode.
                                                This parameter can be set to ENABLE or DISABLE. */
-    uint32_t ADC_ExternalTrigConvEdge;      /*!< Select the external trigger edge and
+        uint32_t ADC_ExternalTrigConvEdge;      /*!< Select the external trigger edge and
                                                enable the trigger of a regular group.
                                                This parameter can be a value of
                                                @ref ADC_external_trigger_edge_for_regular_channels_conversion */
-    uint32_t ADC_ExternalTrigConv;          /*!< Select the external event used to trigger
+        uint32_t ADC_ExternalTrigConv;          /*!< Select the external event used to trigger
                                                the start of conversion of a regular group.
                                                This parameter can be a value of
                                                @ref ADC_extrenal_trigger_sources_for_regular_channels_conversion */
-    uint32_t ADC_DataAlign;                 /*!< Specifies whether the ADC data  alignment
+        uint32_t ADC_DataAlign;                 /*!< Specifies whether the ADC data  alignment
                                                is left or right. This parameter can be
                                                a value of @ref ADC_data_align */
-    uint8_t  ADC_NbrOfConversion;           /*!< Specifies the number of ADC conversions
+        uint8_t  ADC_NbrOfConversion;           /*!< Specifies the number of ADC conversions
                                                that will be done using the sequencer for
                                                regular channel group.
                                                This parameter must range from 1 to 16. */
@@ -81,17 +81,17 @@ typedef struct {
   * @brief   ADC Common Init structure definition
   */
 typedef struct {
-    uint32_t ADC_Mode;                      /*!< Configures the ADC to operate in
+        uint32_t ADC_Mode;                      /*!< Configures the ADC to operate in
                                                independent or multi mode.
                                                This parameter can be a value of @ref ADC_Common_mode */
-    uint32_t ADC_Prescaler;                 /*!< Select the frequency of the clock
+        uint32_t ADC_Prescaler;                 /*!< Select the frequency of the clock
                                                to the ADC. The clock is common for all the ADCs.
                                                This parameter can be a value of @ref ADC_Prescaler */
-    uint32_t ADC_DMAAccessMode;             /*!< Configures the Direct memory access
+        uint32_t ADC_DMAAccessMode;             /*!< Configures the Direct memory access
                                               mode for multi ADC mode.
                                                This parameter can be a value of
                                                @ref ADC_Direct_memory_access_mode_for_multi_mode */
-    uint32_t ADC_TwoSamplingDelay;          /*!< Configures the Delay between 2 sampling phases.
+        uint32_t ADC_TwoSamplingDelay;          /*!< Configures the Delay between 2 sampling phases.
                                                This parameter can be a value of
                                                @ref ADC_delay_between_2_sampling_phases */
 

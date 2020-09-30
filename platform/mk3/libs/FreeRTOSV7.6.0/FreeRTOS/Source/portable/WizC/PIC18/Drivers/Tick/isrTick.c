@@ -87,26 +87,27 @@ Changes from V3.0.1
 #define _FREERTOS_DRIVERS_TICK_ISRTICK_C
 
 {
-    /*
-     * Was the interrupt the SystemClock?
-     */
-    if( bCCP1IF && bCCP1IE ) {
         /*
-         * Reset the interrupt flag
+         * Was the interrupt the SystemClock?
          */
-        bCCP1IF = 0;
+        if( bCCP1IF && bCCP1IE )
+        {
+                /*
+                 * Reset the interrupt flag
+                 */
+                bCCP1IF = 0;
 
-        /*
-         * Maintain the tick count.
-         */
-        if( xTaskIncrementTick() != pdFALSE ) {
-            /*
-             * Ask for a switch to the highest priority task
-             * that is ready to run.
-             */
-            uxSwitchRequested = pdTRUE;
+                /*
+                 * Maintain the tick count.
+                 */
+                if( xTaskIncrementTick() != pdFALSE ) {
+                        /*
+                         * Ask for a switch to the highest priority task
+                         * that is ready to run.
+                         */
+                        uxSwitchRequested = pdTRUE;
+                }
         }
-    }
 }
 
 #pragma wizcpp uselib     "$__PATHNAME__/Tick.c"

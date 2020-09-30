@@ -59,59 +59,59 @@
  */
 
 void arm_mult_q31(
-    q31_t * pSrcA,
-    q31_t * pSrcB,
-    q31_t * pDst,
-    uint32_t blockSize)
+        q31_t * pSrcA,
+        q31_t * pSrcB,
+        q31_t * pDst,
+        uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* loop counters */
+        uint32_t blkCnt;                               /* loop counters */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    /* loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = A * B */
-        /* Multiply the inputs and then store the results in the destination buffer. */
-        *pDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
-        *pDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
-        *pDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
-        *pDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = A * B */
+                /* Multiply the inputs and then store the results in the destination buffer. */
+                *pDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
+                *pDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
+                *pDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
+                *pDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
 
-        /* Decrement the blockSize loop counter */
-        blkCnt--;
-    }
+                /* Decrement the blockSize loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    while(blkCnt > 0u) {
-        /* C = A * B */
-        /* Multiply the inputs and then store the results in the destination buffer. */
-        *pDst++ =
-            (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
+        while(blkCnt > 0u) {
+                /* C = A * B */
+                /* Multiply the inputs and then store the results in the destination buffer. */
+                *pDst++ =
+                        (q31_t) clip_q63_to_q31(((q63_t) (*pSrcA++) * (*pSrcB++)) >> 31);
 
-        /* Decrement the blockSize loop counter */
-        blkCnt--;
-    }
+                /* Decrement the blockSize loop counter */
+                blkCnt--;
+        }
 }
 
 /**

@@ -196,111 +196,111 @@ void vApplicationSetupTickTimerInterrupt( void );
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-    unsigned short usCode;
-    unsigned portBASE_TYPE i;
+        unsigned short usCode;
+        unsigned portBASE_TYPE i;
 
-    const portSTACK_TYPE xInitialStack[] = {
-        0x1111,	/* W1 */
-        0x2222, /* W2 */
-        0x3333, /* W3 */
-        0x4444, /* W4 */
-        0x5555, /* W5 */
-        0x6666, /* W6 */
-        0x7777, /* W7 */
-        0x8888, /* W8 */
-        0x9999, /* W9 */
-        0xaaaa, /* W10 */
-        0xbbbb, /* W11 */
-        0xcccc, /* W12 */
-        0xdddd, /* W13 */
-        0xeeee, /* W14 */
-        0xcdce, /* RCOUNT */
-        0xabac, /* TBLPAG */
+        const portSTACK_TYPE xInitialStack[] = {
+                0x1111,	/* W1 */
+                0x2222, /* W2 */
+                0x3333, /* W3 */
+                0x4444, /* W4 */
+                0x5555, /* W5 */
+                0x6666, /* W6 */
+                0x7777, /* W7 */
+                0x8888, /* W8 */
+                0x9999, /* W9 */
+                0xaaaa, /* W10 */
+                0xbbbb, /* W11 */
+                0xcccc, /* W12 */
+                0xdddd, /* W13 */
+                0xeeee, /* W14 */
+                0xcdce, /* RCOUNT */
+                0xabac, /* TBLPAG */
 
-        /* dsPIC specific registers. */
+                /* dsPIC specific registers. */
 #ifdef MPLAB_DSPIC_PORT
-        0x0202, /* ACCAL */
-        0x0303, /* ACCAH */
-        0x0404, /* ACCAU */
-        0x0505, /* ACCBL */
-        0x0606, /* ACCBH */
-        0x0707, /* ACCBU */
-        0x0808, /* DCOUNT */
-        0x090a, /* DOSTARTL */
-        0x1010, /* DOSTARTH */
-        0x1110, /* DOENDL */
-        0x1212, /* DOENDH */
+                0x0202, /* ACCAL */
+                0x0303, /* ACCAH */
+                0x0404, /* ACCAU */
+                0x0505, /* ACCBL */
+                0x0606, /* ACCBH */
+                0x0707, /* ACCBU */
+                0x0808, /* DCOUNT */
+                0x090a, /* DOSTARTL */
+                0x1010, /* DOSTARTH */
+                0x1110, /* DOENDL */
+                0x1212, /* DOENDH */
 #endif
-    };
+        };
 
-    /* Setup the stack as if a yield had occurred.
+        /* Setup the stack as if a yield had occurred.
 
-    Save the low bytes of the program counter. */
-    usCode = ( unsigned short ) pxCode;
-    *pxTopOfStack = ( portSTACK_TYPE ) usCode;
-    pxTopOfStack++;
-
-    /* Save the high byte of the program counter.  This will always be zero
-    here as it is passed in a 16bit pointer.  If the address is greater than
-    16 bits then the pointer will point to a jump table. */
-    *pxTopOfStack = ( portSTACK_TYPE ) 0;
-    pxTopOfStack++;
-
-    /* Status register with interrupts enabled. */
-    *pxTopOfStack = portINITIAL_SR;
-    pxTopOfStack++;
-
-    /* Parameters are passed in W0. */
-    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters;
-    pxTopOfStack++;
-
-    for( i = 0; i < ( sizeof( xInitialStack ) / sizeof( portSTACK_TYPE ) ); i++ ) {
-        *pxTopOfStack = xInitialStack[ i ];
+        Save the low bytes of the program counter. */
+        usCode = ( unsigned short ) pxCode;
+        *pxTopOfStack = ( portSTACK_TYPE ) usCode;
         pxTopOfStack++;
-    }
 
-    *pxTopOfStack = CORCON;
-    pxTopOfStack++;
+        /* Save the high byte of the program counter.  This will always be zero
+        here as it is passed in a 16bit pointer.  If the address is greater than
+        16 bits then the pointer will point to a jump table. */
+        *pxTopOfStack = ( portSTACK_TYPE ) 0;
+        pxTopOfStack++;
+
+        /* Status register with interrupts enabled. */
+        *pxTopOfStack = portINITIAL_SR;
+        pxTopOfStack++;
+
+        /* Parameters are passed in W0. */
+        *pxTopOfStack = ( portSTACK_TYPE ) pvParameters;
+        pxTopOfStack++;
+
+        for( i = 0; i < ( sizeof( xInitialStack ) / sizeof( portSTACK_TYPE ) ); i++ ) {
+                *pxTopOfStack = xInitialStack[ i ];
+                pxTopOfStack++;
+        }
+
+        *pxTopOfStack = CORCON;
+        pxTopOfStack++;
 
 #if defined(__HAS_EDS__)
-    *pxTopOfStack = DSRPAG;
-    pxTopOfStack++;
-    *pxTopOfStack = DSWPAG;
-    pxTopOfStack++;
+        *pxTopOfStack = DSRPAG;
+        pxTopOfStack++;
+        *pxTopOfStack = DSWPAG;
+        pxTopOfStack++;
 #else /* __HAS_EDS__ */
-    *pxTopOfStack = PSVPAG;
-    pxTopOfStack++;
+        *pxTopOfStack = PSVPAG;
+        pxTopOfStack++;
 #endif /* __HAS_EDS__ */
 
-    /* Finally the critical nesting depth. */
-    *pxTopOfStack = 0x00;
-    pxTopOfStack++;
+        /* Finally the critical nesting depth. */
+        *pxTopOfStack = 0x00;
+        pxTopOfStack++;
 
-    return pxTopOfStack;
+        return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-    /* Setup a timer for the tick ISR. */
-    vApplicationSetupTickTimerInterrupt();
+        /* Setup a timer for the tick ISR. */
+        vApplicationSetupTickTimerInterrupt();
 
-    /* Restore the context of the first task to run. */
-    portRESTORE_CONTEXT();
+        /* Restore the context of the first task to run. */
+        portRESTORE_CONTEXT();
 
-    /* Simulate the end of the yield function. */
-    asm volatile ( "return" );
+        /* Simulate the end of the yield function. */
+        asm volatile ( "return" );
 
-    /* Should not reach here. */
-    return pdTRUE;
+        /* Should not reach here. */
+        return pdTRUE;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-    /* It is unlikely that the scheduler for the PIC port will get stopped
-    once running.  If required disable the tick interrupt here, then return
-    to xPortStartScheduler(). */
+        /* It is unlikely that the scheduler for the PIC port will get stopped
+        once running.  If required disable the tick interrupt here, then return
+        to xPortStartScheduler(). */
 }
 /*-----------------------------------------------------------*/
 
@@ -309,55 +309,55 @@ void vPortEndScheduler( void )
  */
 __attribute__(( weak )) void vApplicationSetupTickTimerInterrupt( void )
 {
-    const unsigned long ulCompareMatch = ( ( configCPU_CLOCK_HZ / portTIMER_PRESCALE ) / configTICK_RATE_HZ ) - 1;
+        const unsigned long ulCompareMatch = ( ( configCPU_CLOCK_HZ / portTIMER_PRESCALE ) / configTICK_RATE_HZ ) - 1;
 
-    /* Prescale of 8. */
-    T1CON = 0;
-    TMR1 = 0;
+        /* Prescale of 8. */
+        T1CON = 0;
+        TMR1 = 0;
 
-    PR1 = ( unsigned short ) ulCompareMatch;
+        PR1 = ( unsigned short ) ulCompareMatch;
 
-    /* Setup timer 1 interrupt priority. */
-    IPC0bits.T1IP = configKERNEL_INTERRUPT_PRIORITY;
+        /* Setup timer 1 interrupt priority. */
+        IPC0bits.T1IP = configKERNEL_INTERRUPT_PRIORITY;
 
-    /* Clear the interrupt as a starting condition. */
-    IFS0bits.T1IF = 0;
+        /* Clear the interrupt as a starting condition. */
+        IFS0bits.T1IF = 0;
 
-    /* Enable the interrupt. */
-    IEC0bits.T1IE = 1;
+        /* Enable the interrupt. */
+        IEC0bits.T1IE = 1;
 
-    /* Setup the prescale value. */
-    T1CONbits.TCKPS0 = 1;
-    T1CONbits.TCKPS1 = 0;
+        /* Setup the prescale value. */
+        T1CONbits.TCKPS0 = 1;
+        T1CONbits.TCKPS1 = 0;
 
-    /* Start the timer. */
-    T1CONbits.TON = 1;
+        /* Start the timer. */
+        T1CONbits.TON = 1;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEnterCritical( void )
 {
-    portDISABLE_INTERRUPTS();
-    uxCriticalNesting++;
+        portDISABLE_INTERRUPTS();
+        uxCriticalNesting++;
 }
 /*-----------------------------------------------------------*/
 
 void vPortExitCritical( void )
 {
-    uxCriticalNesting--;
-    if( uxCriticalNesting == 0 ) {
-        portENABLE_INTERRUPTS();
-    }
+        uxCriticalNesting--;
+        if( uxCriticalNesting == 0 ) {
+                portENABLE_INTERRUPTS();
+        }
 }
 /*-----------------------------------------------------------*/
 
 void __attribute__((__interrupt__, auto_psv)) configTICK_INTERRUPT_HANDLER( void )
 {
-    /* Clear the timer interrupt. */
-    IFS0bits.T1IF = 0;
+        /* Clear the timer interrupt. */
+        IFS0bits.T1IF = 0;
 
-    if( xTaskIncrementTick() != pdFALSE ) {
-        portYIELD();
-    }
+        if( xTaskIncrementTick() != pdFALSE ) {
+                portYIELD();
+        }
 }
 

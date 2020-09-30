@@ -53,20 +53,20 @@ extern "C" {
   */
 
 typedef struct {
-    uint16_t TIM_Prescaler;         /*!< Specifies the prescaler value used to divide the TIM clock.
+        uint16_t TIM_Prescaler;         /*!< Specifies the prescaler value used to divide the TIM clock.
                                        This parameter can be a number between 0x0000 and 0xFFFF */
 
-    uint16_t TIM_CounterMode;       /*!< Specifies the counter mode.
+        uint16_t TIM_CounterMode;       /*!< Specifies the counter mode.
                                        This parameter can be a value of @ref TIM_Counter_Mode */
 
-    uint32_t TIM_Period;            /*!< Specifies the period value to be loaded into the active
+        uint32_t TIM_Period;            /*!< Specifies the period value to be loaded into the active
                                        Auto-Reload Register at the next update event.
                                        This parameter must be a number between 0x0000 and 0xFFFF.  */
 
-    uint16_t TIM_ClockDivision;     /*!< Specifies the clock division.
+        uint16_t TIM_ClockDivision;     /*!< Specifies the clock division.
                                       This parameter can be a value of @ref TIM_Clock_Division_CKD */
 
-    uint8_t TIM_RepetitionCounter;  /*!< Specifies the repetition counter value. Each time the RCR downcounter
+        uint8_t TIM_RepetitionCounter;  /*!< Specifies the repetition counter value. Each time the RCR downcounter
                                        reaches zero, an update event is generated and counting restarts
                                        from the RCR value (N).
                                        This means in PWM mode that (N+1) corresponds to:
@@ -81,31 +81,31 @@ typedef struct {
   */
 
 typedef struct {
-    uint16_t TIM_OCMode;        /*!< Specifies the TIM mode.
+        uint16_t TIM_OCMode;        /*!< Specifies the TIM mode.
                                    This parameter can be a value of @ref TIM_Output_Compare_and_PWM_modes */
 
-    uint16_t TIM_OutputState;   /*!< Specifies the TIM Output Compare state.
+        uint16_t TIM_OutputState;   /*!< Specifies the TIM Output Compare state.
                                    This parameter can be a value of @ref TIM_Output_Compare_State */
 
-    uint16_t TIM_OutputNState;  /*!< Specifies the TIM complementary Output Compare state.
+        uint16_t TIM_OutputNState;  /*!< Specifies the TIM complementary Output Compare state.
                                    This parameter can be a value of @ref TIM_Output_Compare_N_State
                                    @note This parameter is valid only for TIM1 and TIM8. */
 
-    uint32_t TIM_Pulse;         /*!< Specifies the pulse value to be loaded into the Capture Compare Register.
+        uint32_t TIM_Pulse;         /*!< Specifies the pulse value to be loaded into the Capture Compare Register.
                                    This parameter can be a number between 0x0000 and 0xFFFF */
 
-    uint16_t TIM_OCPolarity;    /*!< Specifies the output polarity.
+        uint16_t TIM_OCPolarity;    /*!< Specifies the output polarity.
                                    This parameter can be a value of @ref TIM_Output_Compare_Polarity */
 
-    uint16_t TIM_OCNPolarity;   /*!< Specifies the complementary output polarity.
+        uint16_t TIM_OCNPolarity;   /*!< Specifies the complementary output polarity.
                                    This parameter can be a value of @ref TIM_Output_Compare_N_Polarity
                                    @note This parameter is valid only for TIM1 and TIM8. */
 
-    uint16_t TIM_OCIdleState;   /*!< Specifies the TIM Output Compare pin state during Idle state.
+        uint16_t TIM_OCIdleState;   /*!< Specifies the TIM Output Compare pin state during Idle state.
                                    This parameter can be a value of @ref TIM_Output_Compare_Idle_State
                                    @note This parameter is valid only for TIM1 and TIM8. */
 
-    uint16_t TIM_OCNIdleState;  /*!< Specifies the TIM Output Compare pin state during Idle state.
+        uint16_t TIM_OCNIdleState;  /*!< Specifies the TIM Output Compare pin state during Idle state.
                                    This parameter can be a value of @ref TIM_Output_Compare_N_Idle_State
                                    @note This parameter is valid only for TIM1 and TIM8. */
 } TIM_OCInitTypeDef;
@@ -116,19 +116,19 @@ typedef struct {
 
 typedef struct {
 
-    uint16_t TIM_Channel;      /*!< Specifies the TIM channel.
+        uint16_t TIM_Channel;      /*!< Specifies the TIM channel.
                                   This parameter can be a value of @ref TIM_Channel */
 
-    uint16_t TIM_ICPolarity;   /*!< Specifies the active edge of the input signal.
+        uint16_t TIM_ICPolarity;   /*!< Specifies the active edge of the input signal.
                                   This parameter can be a value of @ref TIM_Input_Capture_Polarity */
 
-    uint16_t TIM_ICSelection;  /*!< Specifies the input.
+        uint16_t TIM_ICSelection;  /*!< Specifies the input.
                                   This parameter can be a value of @ref TIM_Input_Capture_Selection */
 
-    uint16_t TIM_ICPrescaler;  /*!< Specifies the Input Capture Prescaler.
+        uint16_t TIM_ICPrescaler;  /*!< Specifies the Input Capture Prescaler.
                                   This parameter can be a value of @ref TIM_Input_Capture_Prescaler */
 
-    uint16_t TIM_ICFilter;     /*!< Specifies the input capture filter.
+        uint16_t TIM_ICFilter;     /*!< Specifies the input capture filter.
                                   This parameter can be a number between 0x0 and 0xF */
 } TIM_ICInitTypeDef;
 
@@ -139,26 +139,26 @@ typedef struct {
 
 typedef struct {
 
-    uint16_t TIM_OSSRState;        /*!< Specifies the Off-State selection used in Run mode.
+        uint16_t TIM_OSSRState;        /*!< Specifies the Off-State selection used in Run mode.
                                       This parameter can be a value of @ref TIM_OSSR_Off_State_Selection_for_Run_mode_state */
 
-    uint16_t TIM_OSSIState;        /*!< Specifies the Off-State used in Idle state.
+        uint16_t TIM_OSSIState;        /*!< Specifies the Off-State used in Idle state.
                                       This parameter can be a value of @ref TIM_OSSI_Off_State_Selection_for_Idle_mode_state */
 
-    uint16_t TIM_LOCKLevel;        /*!< Specifies the LOCK level parameters.
+        uint16_t TIM_LOCKLevel;        /*!< Specifies the LOCK level parameters.
                                       This parameter can be a value of @ref TIM_Lock_level */
 
-    uint16_t TIM_DeadTime;         /*!< Specifies the delay time between the switching-off and the
+        uint16_t TIM_DeadTime;         /*!< Specifies the delay time between the switching-off and the
                                       switching-on of the outputs.
                                       This parameter can be a number between 0x00 and 0xFF  */
 
-    uint16_t TIM_Break;            /*!< Specifies whether the TIM Break input is enabled or not.
+        uint16_t TIM_Break;            /*!< Specifies whether the TIM Break input is enabled or not.
                                       This parameter can be a value of @ref TIM_Break_Input_enable_disable */
 
-    uint16_t TIM_BreakPolarity;    /*!< Specifies the TIM Break Input pin polarity.
+        uint16_t TIM_BreakPolarity;    /*!< Specifies the TIM Break Input pin polarity.
                                       This parameter can be a value of @ref TIM_Break_Polarity */
 
-    uint16_t TIM_AutomaticOutput;  /*!< Specifies whether the TIM Automatic Output feature is enabled or not.
+        uint16_t TIM_AutomaticOutput;  /*!< Specifies whether the TIM Automatic Output feature is enabled or not.
                                       This parameter can be a value of @ref TIM_AOE_Bit_Set_Reset */
 } TIM_BDTRInitTypeDef;
 

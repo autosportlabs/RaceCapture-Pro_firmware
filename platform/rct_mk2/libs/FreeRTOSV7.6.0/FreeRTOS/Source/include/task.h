@@ -97,61 +97,61 @@ typedef void * xTaskHandle;
 
 /* Task states returned by eTaskGetState. */
 typedef enum {
-    eRunning = 0,	/* A task is querying the state of itself, so must be running. */
-    eReady,			/* The task being queried is in a read or pending ready list. */
-    eBlocked,		/* The task being queried is in the Blocked state. */
-    eSuspended,		/* The task being queried is in the Suspended state, or is in the Blocked state with an infinite time out. */
-    eDeleted		/* The task being queried has been deleted, but its TCB has not yet been freed. */
+        eRunning = 0,	/* A task is querying the state of itself, so must be running. */
+        eReady,			/* The task being queried is in a read or pending ready list. */
+        eBlocked,		/* The task being queried is in the Blocked state. */
+        eSuspended,		/* The task being queried is in the Suspended state, or is in the Blocked state with an infinite time out. */
+        eDeleted		/* The task being queried has been deleted, but its TCB has not yet been freed. */
 } eTaskState;
 
 /*
  * Used internally only.
  */
 typedef struct xTIME_OUT {
-    portBASE_TYPE xOverflowCount;
-    portTickType  xTimeOnEntering;
+        portBASE_TYPE xOverflowCount;
+        portTickType  xTimeOnEntering;
 } xTimeOutType;
 
 /*
  * Defines the memory ranges allocated to the task when an MPU is used.
  */
 typedef struct xMEMORY_REGION {
-    void *pvBaseAddress;
-    unsigned long ulLengthInBytes;
-    unsigned long ulParameters;
+        void *pvBaseAddress;
+        unsigned long ulLengthInBytes;
+        unsigned long ulParameters;
 } xMemoryRegion;
 
 /*
  * Parameters required to create an MPU protected task.
  */
 typedef struct xTASK_PARAMTERS {
-    pdTASK_CODE pvTaskCode;
-    const signed char * const pcName;
-    unsigned short usStackDepth;
-    void *pvParameters;
-    unsigned portBASE_TYPE uxPriority;
-    portSTACK_TYPE *puxStackBuffer;
-    xMemoryRegion xRegions[ portNUM_CONFIGURABLE_REGIONS ];
+        pdTASK_CODE pvTaskCode;
+        const signed char * const pcName;
+        unsigned short usStackDepth;
+        void *pvParameters;
+        unsigned portBASE_TYPE uxPriority;
+        portSTACK_TYPE *puxStackBuffer;
+        xMemoryRegion xRegions[ portNUM_CONFIGURABLE_REGIONS ];
 } xTaskParameters;
 
 /* Used with the uxTaskGetSystemState() function to return the state of each task
 in the system. */
 typedef struct xTASK_STATUS {
-    xTaskHandle xHandle;						/* The handle of the task to which the rest of the information in the structure relates. */
-    const signed char *pcTaskName;				/* A pointer to the task's name.  This value will be invalid if the task was deleted since the structure was populated! */
-    unsigned portBASE_TYPE xTaskNumber;			/* A number unique to the task. */
-    eTaskState eCurrentState;					/* The state in which the task existed when the structure was populated. */
-    unsigned portBASE_TYPE uxCurrentPriority;	/* The priority at which the task was running (may be inherited) when the structure was populated. */
-    unsigned portBASE_TYPE uxBasePriority;		/* The priority to which the task will return if the task's current priority has been inherited to avoid unbounded priority inversion when obtaining a mutex.  Only valid if configUSE_MUTEXES is defined as 1 in FreeRTOSConfig.h. */
-    unsigned long ulRunTimeCounter;				/* The total run time allocated to the task so far, as defined by the run time stats clock.  See http://www.freertos.org/rtos-run-time-stats.html.  Only valid when configGENERATE_RUN_TIME_STATS is defined as 1 in FreeRTOSConfig.h. */
-    unsigned short usStackHighWaterMark;		/* The minimum amount of stack space that has remained for the task since the task was created.  The closer this value is to zero the closer the task has come to overflowing its stack. */
+        xTaskHandle xHandle;						/* The handle of the task to which the rest of the information in the structure relates. */
+        const signed char *pcTaskName;				/* A pointer to the task's name.  This value will be invalid if the task was deleted since the structure was populated! */
+        unsigned portBASE_TYPE xTaskNumber;			/* A number unique to the task. */
+        eTaskState eCurrentState;					/* The state in which the task existed when the structure was populated. */
+        unsigned portBASE_TYPE uxCurrentPriority;	/* The priority at which the task was running (may be inherited) when the structure was populated. */
+        unsigned portBASE_TYPE uxBasePriority;		/* The priority to which the task will return if the task's current priority has been inherited to avoid unbounded priority inversion when obtaining a mutex.  Only valid if configUSE_MUTEXES is defined as 1 in FreeRTOSConfig.h. */
+        unsigned long ulRunTimeCounter;				/* The total run time allocated to the task so far, as defined by the run time stats clock.  See http://www.freertos.org/rtos-run-time-stats.html.  Only valid when configGENERATE_RUN_TIME_STATS is defined as 1 in FreeRTOSConfig.h. */
+        unsigned short usStackHighWaterMark;		/* The minimum amount of stack space that has remained for the task since the task was created.  The closer this value is to zero the closer the task has come to overflowing its stack. */
 } xTaskStatusType;
 
 /* Possible return values for eTaskConfirmSleepModeStatus(). */
 typedef enum {
-    eAbortSleep = 0,		/* A task has been made ready or a context switch pended since portSUPPORESS_TICKS_AND_SLEEP() was called - abort entering a sleep mode. */
-    eStandardSleep,			/* Enter a sleep mode that will not last any longer than the expected idle time. */
-    eNoTasksWaitingTimeout	/* No tasks are waiting for a timeout so it is safe to enter a sleep mode that can only be exited by an external interrupt. */
+        eAbortSleep = 0,		/* A task has been made ready or a context switch pended since portSUPPORESS_TICKS_AND_SLEEP() was called - abort entering a sleep mode. */
+        eStandardSleep,			/* Enter a sleep mode that will not last any longer than the expected idle time. */
+        eNoTasksWaitingTimeout	/* No tasks are waiting for a timeout so it is safe to enter a sleep mode that can only be exited by an external interrupt. */
 } eSleepModeStatus;
 
 

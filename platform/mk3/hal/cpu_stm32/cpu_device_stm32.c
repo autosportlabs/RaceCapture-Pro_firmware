@@ -68,24 +68,24 @@ int cpu_device_init(void)
 
 void cpu_device_reset(int bootloader)
 {
-    struct app_handshake_block *handshake =
-        (struct app_handshake_block *)HANDSHAKE_ADDR;
+        struct app_handshake_block *handshake =
+                (struct app_handshake_block *)HANDSHAKE_ADDR;
 
-    /* Clear any reset flags that might be present (i.e. watchdog) */
-    RCC_ClearFlag();
+        /* Clear any reset flags that might be present (i.e. watchdog) */
+        RCC_ClearFlag();
 
-    /* If bootloader mode is requested, Set the flag in the
-     * handshake area */
-    if (bootloader == 1) {
-        handshake->loader_magic = LOADER_KEY;
-    }
+        /* If bootloader mode is requested, Set the flag in the
+         * handshake area */
+        if (bootloader == 1) {
+                handshake->loader_magic = LOADER_KEY;
+        }
 
-    NVIC_SystemReset();
+        NVIC_SystemReset();
 }
 
 const char *cpu_device_get_serialnumber(void)
 {
-    return cpu_id;
+        return cpu_id;
 }
 
 /**
@@ -96,7 +96,7 @@ const char *cpu_device_get_serialnumber(void)
  */
 void cpu_device_spin(uint32_t ms)
 {
-	const uint32_t iterations = 13500;
-	while(ms-- > 0)
-		for (volatile size_t i = 0; i < iterations; ++i);
+        const uint32_t iterations = 13500;
+        while(ms-- > 0)
+                for (volatile size_t i = 0; i < iterations; ++i);
 }
