@@ -922,7 +922,7 @@ static int lua_add_virt_channel(lua_State *L)
                 return luaL_error(L, "Unable to create channel. "
                                   "Maximum channels reached.");
 
-        lua_pushinteger(L, chan_id);
+        lua_pushinteger(L, chan_id + 1);
         return 1;
 }
 
@@ -937,7 +937,8 @@ static int lua_get_virtual_channel(lua_State *ls)
          */
         if (lua_isnumber(ls, 1)) {
                 VirtualChannel *vc;
-                vc = get_virtual_channel(lua_tointeger(ls, 1));
+                int channel_id = lua_tointeger(ls, 1);
+                vc = get_virtual_channel(channel_id - 1);
                 if (vc) {
                         lua_pushnumber(ls, vc->currentValue);
                         return 1;
@@ -950,16 +951,19 @@ static int lua_get_virtual_channel(lua_State *ls)
                         return 1;
                 }
         }
-        /* Return nil, channel not found */
-        return 0;
+        /* Return error, channel not found */
+        return luaL_error(ls, "getChannel: channel not found");
 }
 
 static int lua_set_virt_channel_value(lua_State *L)
 {
         lua_validate_args_count(L, 2, 2);
 
-        const int id = lua_tointeger(L, 1);
+        const int id = lua_tointeger(L, 1) - 1;
         const float value = lua_tonumber(L, 2);
+        if ( id < 0 )
+                return luaL_error(L, "setChannel: channel not found");
+
         set_virtual_channel_value(id, value);
 
         return 0;
