@@ -922,7 +922,7 @@ static int lua_add_virt_channel(lua_State *L)
                 return luaL_error(L, "Unable to create channel. "
                                   "Maximum channels reached.");
 
-        lua_pushinteger(L, chan_id+1);
+        lua_pushinteger(L, chan_id + 1);
         return 1;
 }
 
