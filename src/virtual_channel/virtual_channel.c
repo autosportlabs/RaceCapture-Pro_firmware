@@ -61,8 +61,7 @@ int create_virtual_channel(const ChannelConfig chCfg)
         xSemaphoreTake(vchan_mutex, portMAX_DELAY);
         /* If the channel exists, return it and be done */
         const int id = find_virtual_channel(chCfg.label);
-        if (id != INVALID_VIRTUAL_CHANNEL)
-        {
+        if (id != INVALID_VIRTUAL_CHANNEL) {
                 xSemaphoreGive(vchan_mutex);
                 return id;
         }
