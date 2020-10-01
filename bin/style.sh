@@ -1,3 +1,1 @@
-find -name '*.c' | xargs astyle -n --style=linux -s8
-find -name '*.h' | xargs astyle -n --style=linux -s8
-
+find -L . -not -xtype l -writable -name "*.[ch]" | xargs -d '\n' astyle -nQ --style=linux -s8
