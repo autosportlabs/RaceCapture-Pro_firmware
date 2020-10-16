@@ -134,6 +134,7 @@ build/rcp_base/%.o: ../%.c
 
 T_SRC = \
 $(GPS_DIR)/geoTriggerTest.cpp \
+$(GPS_DIR)/geo_point.cpp \
 $(GPS_DIR)/gps_test.cpp \
 $(LAP_STATS_DIR)/LapStatsTest.cpp \
 $(UTIL_DIR)/numtoa_test.cpp \
