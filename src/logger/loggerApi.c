@@ -307,10 +307,7 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
         json_float(serial, "lon", GPS_getLongitude(),
                    DEFAULT_GPS_POSITION_PRECISION, 1);
         json_int(serial, "sats", GPS_getSatellitesUsedForPosition(), 1);
-        json_int(serial, "DOP", GPS_getDOP(), 1);
-        json_int(serial, "velx", GPS_getVelocityX(), 1);
-        json_int(serial, "vely", GPS_getVelocityY(), 1);
-        json_int(serial, "velz", GPS_getVelocityZ(), 0);
+        json_int(serial, "DOP", GPS_getDOP(), 0);
         json_objEnd(serial, 1);
 
         get_cellular_status(serial, true);
@@ -1307,9 +1304,6 @@ static unsigned short getGpsConfigHighSampleRate(GPSConfig *cfg)
         rate = getHigherSampleRate(rate, cfg->latitude.sampleRate);
         rate = getHigherSampleRate(rate, cfg->longitude.sampleRate);
         rate = getHigherSampleRate(rate, cfg->speed.sampleRate);
-        rate = getHigherSampleRate(rate, cfg->velocity_x.sampleRate);
-        rate = getHigherSampleRate(rate, cfg->velocity_y.sampleRate);
-        rate = getHigherSampleRate(rate, cfg->velocity_z.sampleRate);
         rate = getHigherSampleRate(rate, cfg->altitude.sampleRate);
         rate = getHigherSampleRate(rate, cfg->satellites.sampleRate);
         rate = getHigherSampleRate(rate, cfg->quality.sampleRate);
@@ -1336,9 +1330,6 @@ int api_getGpsConfig(struct Serial *serial, const jsmntok_t *json)
         json_int(serial, "sats", gpsCfg->satellites.sampleRate != SAMPLE_DISABLED, 1);
         json_int(serial, "qual", gpsCfg->quality.sampleRate != SAMPLE_DISABLED, 1);
         json_int(serial, "dop", gpsCfg->DOP.sampleRate != SAMPLE_DISABLED, 1);
-        json_int(serial, "velx", gpsCfg->velocity_x.sampleRate != SAMPLE_DISABLED, 1);
-        json_int(serial, "vely", gpsCfg->velocity_y.sampleRate != SAMPLE_DISABLED, 1);
-        json_int(serial, "velz", gpsCfg->velocity_z.sampleRate != SAMPLE_DISABLED, 1);
 
         json_objStartString(serial, "units");
         json_string(serial, "alt", gpsCfg->altitude.units, 1);
@@ -1399,9 +1390,6 @@ int api_setGpsConfig(struct Serial *serial, const jsmntok_t *json)
         gpsConfigTestAndSet(json, &(gpsCfg->satellites), "sats", sr);
         gpsConfigTestAndSet(json, &(gpsCfg->quality), "qual", sr);
         gpsConfigTestAndSet(json, &(gpsCfg->DOP), "dop", sr);
-        gpsConfigTestAndSet(json, &(gpsCfg->velocity_x), "velx", sr);
-        gpsConfigTestAndSet(json, &(gpsCfg->velocity_y), "vely", sr);
-        gpsConfigTestAndSet(json, &(gpsCfg->velocity_z), "velz", sr);
 
         const jsmntok_t *units_tok = jsmn_find_node(json, "units");
         if (units_tok)

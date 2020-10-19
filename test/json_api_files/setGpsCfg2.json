@@ -8,9 +8,6 @@
 	"alt": 0,
 	"qual": 0,
 	"dop": 0,
-	"velx": 0,
-	"vely": 0,
-	"velz": 0,
 	"units" : {
 	    "alt" : "ft",
 	}

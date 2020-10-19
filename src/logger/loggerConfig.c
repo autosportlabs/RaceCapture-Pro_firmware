@@ -590,15 +590,6 @@ unsigned int getHighestSampleRate(LoggerConfig *config)
         sr = gpsConfig->altitude.sampleRate;
         s = getHigherSampleRate(sr, s);
 
-        sr = gpsConfig->velocity_x.sampleRate;
-        s = getHigherSampleRate(sr, s);
-
-        sr = gpsConfig->velocity_y.sampleRate;
-        s = getHigherSampleRate(sr, s);
-
-        sr = gpsConfig->velocity_z.sampleRate;
-        s = getHigherSampleRate(sr, s);
-
         sr = gpsConfig->satellites.sampleRate;
         s = getHigherSampleRate(sr, s);
 
@@ -711,9 +702,6 @@ size_t get_enabled_channel_count(LoggerConfig *loggerConfig)
         if (gpsConfigs->longitude.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->speed.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->altitude.sampleRate != SAMPLE_DISABLED) channels++;
-        if (gpsConfigs->velocity_x.sampleRate != SAMPLE_DISABLED) channels++;
-        if (gpsConfigs->velocity_y.sampleRate != SAMPLE_DISABLED) channels++;
-        if (gpsConfigs->velocity_z.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->satellites.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->quality.sampleRate != SAMPLE_DISABLED) channels++;
         if (gpsConfigs->DOP.sampleRate != SAMPLE_DISABLED) channels++;

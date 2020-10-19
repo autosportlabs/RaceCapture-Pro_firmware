@@ -394,9 +394,6 @@ typedef struct _GPSConfig {
         ChannelConfig satellites;
         ChannelConfig quality;
         ChannelConfig DOP;
-        ChannelConfig velocity_x;
-        ChannelConfig velocity_y;
-        ChannelConfig velocity_z;
 #endif
 } GPSConfig;
 
@@ -409,9 +406,6 @@ typedef struct _GPSConfig {
 #define DEFAULT_GPS_SATELLITE_CONFIG {"GPSSats", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_QUALITY_CONFIG {"GPSQual", "", 0, 5, DEFAULT_GPS_SAMPLE_RATE, 0, 0}
 #define DEFAULT_GPS_DOP_CONFIG {"GPSDOP", "", 0, 20, DEFAULT_GPS_SAMPLE_RATE, 1, 0}
-#define DEFAULT_GPS_VELOCITY_X_CONFIG {"VelocityX", "m/s", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
-#define DEFAULT_GPS_VELOCITY_Y_CONFIG {"VelocityY", "m/s", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
-#define DEFAULT_GPS_VELOCITY_Z_CONFIG {"VelocityZ", "m/s", 0, 150, DEFAULT_GPS_SAMPLE_RATE, 2, 0}
 
 #if GPS_HARDWARE_SUPPORT
 #define DEFAULT_GPS_CONFIG {             \
@@ -422,9 +416,6 @@ typedef struct _GPSConfig {
 		DEFAULT_GPS_SATELLITE_CONFIG,          \
 		DEFAULT_GPS_QUALITY_CONFIG,            \
 		DEFAULT_GPS_DOP_CONFIG,                \
-		DEFAULT_GPS_VELOCITY_X_CONFIG,                \
-		DEFAULT_GPS_VELOCITY_Y_CONFIG,                \
-		DEFAULT_GPS_VELOCITY_Z_CONFIG,                \
 }
 #else
 #define DEFAULT_GPS_CONFIG {             \

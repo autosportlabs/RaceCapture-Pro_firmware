@@ -822,9 +822,6 @@ void LoggerApiTest::testSetGpsConfigFile(string filename,
         testChannelConfig(&gpsCfg->satellites, string("GPSSats"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->quality, string("GPSQual"), string(""), sampleRate);
         testChannelConfig(&gpsCfg->DOP, string("GPSDOP"), string(""), sampleRate);
-        testChannelConfig(&gpsCfg->velocity_x, string("VelocityX"), string("m/s"), sampleRate);
-        testChannelConfig(&gpsCfg->velocity_y, string("VelocityY"), string("m/s"), sampleRate);
-        testChannelConfig(&gpsCfg->velocity_z, string("VelocityZ"), string("m/s"), sampleRate);
 
         assertGenericResponse(txBuffer, "setGpsCfg", API_SUCCESS);
 }
@@ -848,9 +845,6 @@ void LoggerApiTest::testGetGpsConfigFile(string filename)
         populateChannelConfig(&gpsCfg->satellites, 0, 100);
         populateChannelConfig(&gpsCfg->quality, 0, 100);
         populateChannelConfig(&gpsCfg->DOP, 0, 100);
-        populateChannelConfig(&gpsCfg->velocity_x, 1, 100);
-        populateChannelConfig(&gpsCfg->velocity_y, 1, 100);
-        populateChannelConfig(&gpsCfg->velocity_z, 1, 100);
 
         const char *response = processApiGeneric(filename);
         Object json;
@@ -866,9 +860,6 @@ void LoggerApiTest::testGetGpsConfigFile(string filename)
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["sats"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["qual"]);
         CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["dop"]);
-        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["velx"]);
-        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["vely"]);
-        CPPUNIT_ASSERT_EQUAL(1, (int)(Number)gpsCfgJson["velz"]);
 
         Object &unitsJson = gpsCfgJson["units"];
         /* Special values here per pupulateChannelConfig above */
@@ -1545,9 +1536,6 @@ void LoggerApiTest::testGetStatus()
         CPPUNIT_ASSERT_EQUAL(0.0f, (float)(Number)gps_obj["lon"]);
         CPPUNIT_ASSERT_EQUAL(0, (int)(Number)gps_obj["sats"]);
         CPPUNIT_ASSERT_EQUAL(0, (int)(Number)gps_obj["DOP"]);
-        CPPUNIT_ASSERT_EQUAL(0, (int)(Number)gps_obj["velx"]);
-        CPPUNIT_ASSERT_EQUAL(0, (int)(Number)gps_obj["vely"]);
-        CPPUNIT_ASSERT_EQUAL(0, (int)(Number)gps_obj["velz"]);
 
         Object cell_obj = json["status"]["cell"];
         CPPUNIT_ASSERT_EQUAL((int) CELLULAR_NETWORK_STATUS_UNKNOWN,
