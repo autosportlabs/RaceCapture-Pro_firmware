@@ -579,24 +579,6 @@ static int lua_get_gps_vel(lua_State *L)
         return 3;
 }
 
-static int lua_get_gps_vel_x(lua_State *L)
-{
-        lua_pushnumber(L,GPS_getVelocityX());
-        return 1;
-}
-
-static int lua_get_gps_vel_y(lua_State *L)
-{
-        lua_pushnumber(L,GPS_getVelocityY());
-        return 1;
-}
-
-static int lua_get_gps_vel_z(lua_State *L)
-{
-        lua_pushnumber(L,GPS_getVelocityZ());
-        return 1;
-}
-
 static int lua_get_gps_distance(lua_State *L)
 {
         lua_pushnumber(L, getLapDistanceInMiles());
@@ -1436,9 +1418,6 @@ void registerLuaLoggerBindings(lua_State *L)
         lua_registerlight(L, "getGpsDist", lua_get_gps_distance);
         lua_registerlight(L, "getGpsAltitude", lua_get_gps_altitude);
         lua_registerlight(L, "getGpsVelocity", lua_get_gps_vel);
-        lua_registerlight(L, "getGpsVelocityX", lua_get_gps_vel_x);
-        lua_registerlight(L, "getGpsVelocityY", lua_get_gps_vel_y);
-        lua_registerlight(L, "getGpsVelocityZ", lua_get_gps_vel_z);
 
         lua_registerlight(L, "getPredTime", lua_get_predicted_lap_time);
         lua_registerlight(L, "getLapCount", lua_get_lap_count);
