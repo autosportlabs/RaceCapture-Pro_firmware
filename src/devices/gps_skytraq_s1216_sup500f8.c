@@ -21,6 +21,7 @@
 #include "FreeRTOS.h"
 #include "at_basic.h"
 #include "byteswap.h"
+#include "convert.h"
 #include "mem_mang.h"
 #include "printk.h"
 #include "task.h"
@@ -784,7 +785,7 @@ gps_msg_result_t GPS_device_get_update(GpsSample *gpsSample, struct Serial *seri
 
         //convert m/sec to km/hour
         gpsSample->speed = speed * 3.6f;
-        gpsSample->altitude = (((float) swap_int32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01f) * 3.28084f;
+        gpsSample->altitude = convert_m_ft(((float) swap_int32(gpsMsg.navigationDataMessage.mean_sea_level_altitude)) * 0.01f);
         gpsSample->velocity_x = ecef_x_velocity;
         gpsSample->velocity_y = ecef_y_velocity;
         gpsSample->velocity_z = ecef_z_velocity;
