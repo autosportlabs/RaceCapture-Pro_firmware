@@ -64,14 +64,6 @@ void modp_ftoa(float value, char* buf, int precision);
 
 void modp_dtoa(double value, char* buf, int precision);
 
-/** \brief convert unsigned int into hexadecimal string.
- *
- *
- * \param[in] value
- * \param[out] buf  The allocated output buffer.  Should be 32 chars or more.
- */
-void modp_uitoa16(uint32_t value, char* buf);
-
 END_C
 
 #endif
