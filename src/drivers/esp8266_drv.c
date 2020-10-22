@@ -83,7 +83,7 @@ struct client {
         struct esp8266_ipv4_info ipv4;
         tiny_millis_t info_timestamp;
         tiny_millis_t next_join_attempt;
-	bool configured;
+        bool configured;
 };
 
 struct ap {
@@ -99,7 +99,7 @@ struct server {
 };
 
 struct channel {
-	bool in_use;
+        bool in_use;
         struct Serial *serial;
 };
 
@@ -142,7 +142,7 @@ enum check {
 struct cmd {
         bool in_progress;
         tiny_millis_t check[__NUM_CHECKS];
-	unsigned int failures;
+        unsigned int failures;
 };
 
 static struct {
@@ -158,7 +158,7 @@ static struct {
         } led;
         xSemaphoreHandle cmd_mutex;
         size_t last_socket_connect;
-} esp8266_state ={0};
+} esp8266_state = {0};
 
 static void led_timer_cb( xTimerHandle xTimer )
 {
@@ -216,18 +216,18 @@ static void cmd_completed(const bool success)
         trigger_led();
         esp8266_state.cmd.in_progress = false;
 
-	/*
-	 * If command failed, then we increment our failure count.
-	 * If command succeeded, decrement our failure count unless
-	 * it is 0.  If we hit the threshold of failures, trigger
-	 * a reset.
-	 */
-	if (!success)
-		++esp8266_state.cmd.failures;
-	else if (esp8266_state.cmd.failures)
-		--esp8266_state.cmd.failures;
+        /*
+         * If command failed, then we increment our failure count.
+         * If command succeeded, decrement our failure count unless
+         * it is 0.  If we hit the threshold of failures, trigger
+         * a reset.
+         */
+        if (!success)
+                ++esp8266_state.cmd.failures;
+        else if (esp8266_state.cmd.failures)
+                --esp8266_state.cmd.failures;
 
-	check_excessive_failures();
+        check_excessive_failures();
 }
 
 /**
@@ -252,7 +252,8 @@ static void cmd_check_complete(enum check check)
 /**
  * Checks if we are ready to execute a command.
  */
-static bool cmd_ready() {
+static bool cmd_ready()
+{
         return !esp8266_state.cmd.in_progress;
 }
 
@@ -265,7 +266,7 @@ static bool channel_is_valid_id(const size_t chan_id)
 
 static bool channel_is_open(struct channel* ch)
 {
-	return ch->in_use;
+        return ch->in_use;
 }
 
 /**
@@ -273,11 +274,11 @@ static bool channel_is_open(struct channel* ch)
  */
 static void channel_close(struct channel* ch)
 {
-	if (!channel_is_open(ch))
-		return;
+        if (!channel_is_open(ch))
+                return;
 
-	serial_close(ch->serial);
-	ch->in_use = false;
+        serial_close(ch->serial);
+        ch->in_use = false;
 }
 
 static const char* channel_get_name(const size_t chan_id)
@@ -310,7 +311,7 @@ static void _tx_char_cb(xQueueHandle queue, void *post_tx_arg)
  * @param pointer to the channel structure that was setup, NULL if failure.
  */
 static struct channel* channel_setup(const unsigned int index,
-				     size_t rx_size, size_t tx_size)
+                                     size_t rx_size, size_t tx_size)
 {
         if (!channel_is_valid_id(index))
                 return NULL;
@@ -318,43 +319,43 @@ static struct channel* channel_setup(const unsigned int index,
         struct channel* ch = esp8266_state.comm.channels + index;
         if (channel_is_open(ch)) {
                 pr_warning_int_msg(LOG_PFX "Setup called on allocated "
-				   "channel ", index);
-		pr_warning(LOG_PFX "Closing stale Serial object\r\n");
-		channel_close(ch);
-	}
+                                   "channel ", index);
+                pr_warning(LOG_PFX "Closing stale Serial object\r\n");
+                channel_close(ch);
+        }
 
-	/*
-	 * HACK:
-	 * Because I can no longer destory Serial devices due to the
-	 * chance of hard fault (issue #847), I must instead reopen
-	 * the Serial device if it has already been allocated. This means
-	 * that rx_size and tx_size have to be the default sizes for now.
-	 * This should get fixed when issue #542 is resolved.  Sorry.
-	 */
-	/* if (0 == rx_size) */
-	/* 	rx_size = SERIAL_BUFF_DEF_RX_SIZE; */
+        /*
+         * HACK:
+         * Because I can no longer destory Serial devices due to the
+         * chance of hard fault (issue #847), I must instead reopen
+         * the Serial device if it has already been allocated. This means
+         * that rx_size and tx_size have to be the default sizes for now.
+         * This should get fixed when issue #542 is resolved.  Sorry.
+         */
+        /* if (0 == rx_size) */
+        /* 	rx_size = SERIAL_BUFF_DEF_RX_SIZE; */
 
-	/* if (0 == tx_size) */
-	/* 	tx_size = SERIAL_BUFF_DEF_TX_SIZE; */
-	rx_size = SERIAL_BUFF_DEF_RX_SIZE;
-	tx_size = SERIAL_BUFF_DEF_TX_SIZE;
+        /* if (0 == tx_size) */
+        /* 	tx_size = SERIAL_BUFF_DEF_TX_SIZE; */
+        rx_size = SERIAL_BUFF_DEF_RX_SIZE;
+        tx_size = SERIAL_BUFF_DEF_TX_SIZE;
 
-	if (NULL == ch->serial) {
-		const char* name = channel_get_name(index);
-		ch->serial = serial_create(name, tx_size, rx_size, NULL,
-					   NULL, _tx_char_cb, ch);
-	} else {
-		serial_reopen(ch->serial);
-	}
+        if (NULL == ch->serial) {
+                const char* name = channel_get_name(index);
+                ch->serial = serial_create(name, tx_size, rx_size, NULL,
+                                           NULL, _tx_char_cb, ch);
+        } else {
+                serial_reopen(ch->serial);
+        }
 
-	if (NULL == ch->serial) {
-		/* Fail state */
-		pr_warning(LOG_PFX "Insufficient resources for new channel\r\n");
-		return NULL;
-	}
+        if (NULL == ch->serial) {
+                /* Fail state */
+                pr_warning(LOG_PFX "Insufficient resources for new channel\r\n");
+                return NULL;
+        }
 
-	/* Set our channel to open now */
-	ch->in_use = true;
+        /* Set our channel to open now */
+        ch->in_use = true;
         return ch;
 }
 
@@ -371,7 +372,7 @@ static int channel_find_serial(struct Serial *serial)
 
 static int channel_get_next_available()
 {
-	for (int i = 0; channel_is_valid_id(i); ++i)
+        for (int i = 0; channel_is_valid_id(i); ++i)
                 if (!channel_is_open(esp8266_state.comm.channels + i))
                         return i;
 
@@ -381,37 +382,37 @@ static int channel_get_next_available()
 
 static void socket_connect_handler(const size_t chan_id)
 {
-	/* Check if the connect op is in progress.  If so, take no action */
-	struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
-	if (cso->chan_id == chan_id)
-		return;
+        /* Check if the connect op is in progress.  If so, take no action */
+        struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
+        if (cso->chan_id == chan_id)
+                return;
 
-	struct channel *ch = esp8266_state.comm.channels + chan_id;
-	/* Use Defaults for rx and tx buff sizes */
-	if (!channel_setup(chan_id, 0, 0)) {
-		/* Close the channel.  Best effort here. */
-		channel_close(ch);
-		esp8266_close(chan_id, NULL);
-		return;
-	}
+        struct channel *ch = esp8266_state.comm.channels + chan_id;
+        /* Use Defaults for rx and tx buff sizes */
+        if (!channel_setup(chan_id, 0, 0)) {
+                /* Close the channel.  Best effort here. */
+                channel_close(ch);
+                esp8266_close(chan_id, NULL);
+                return;
+        }
 
-	if (esp8266_state.comm.new_conn_cb) {
-		esp8266_state.comm.new_conn_cb(ch->serial);
-	} else {
-		pr_warning(LOG_PFX "No incoming server callback "
-			   "defined.\r\n");
-	}
+        if (esp8266_state.comm.new_conn_cb) {
+                esp8266_state.comm.new_conn_cb(ch->serial);
+        } else {
+                pr_warning(LOG_PFX "No incoming server callback "
+                           "defined.\r\n");
+        }
 }
 
 static void socket_disconnect_handler(const size_t chan_id)
 {
-	/* Check if the close op is in progress.  If so, take no action */
-	struct channel_sync_op *cso = &esp8266_state.comm.close_op;
-	if (cso->chan_id == chan_id)
-	        return;
+        /* Check if the close op is in progress.  If so, take no action */
+        struct channel_sync_op *cso = &esp8266_state.comm.close_op;
+        if (cso->chan_id == chan_id)
+                return;
 
-	struct channel *ch = esp8266_state.comm.channels + chan_id;
-	channel_close(ch);
+        struct channel *ch = esp8266_state.comm.channels + chan_id;
+        channel_close(ch);
 }
 
 /**
@@ -419,39 +420,39 @@ static void socket_disconnect_handler(const size_t chan_id)
  */
 
 static void socket_state_changed_cb(const size_t chan_id,
-				    const enum socket_action action)
+                                    const enum socket_action action)
 {
-	if (!channel_is_valid_id(chan_id)) {
-		pr_warning_int_msg(LOG_PFX "Invalid socket id: ",
-				   chan_id);
-		return;
-	}
+        if (!channel_is_valid_id(chan_id)) {
+                pr_warning_int_msg(LOG_PFX "Invalid socket id: ",
+                                   chan_id);
+                return;
+        }
 
-	cmd_set_check(CHECK_DATA);
-	switch (action) {
-	case SOCKET_ACTION_DISCONNECT:
-	case SOCKET_ACTION_CONNECT_FAIL:
-		pr_info_int_msg(LOG_PFX "Socket closed on channel ",
-				chan_id);
-		socket_disconnect_handler(chan_id);
+        cmd_set_check(CHECK_DATA);
+        switch (action) {
+        case SOCKET_ACTION_DISCONNECT:
+        case SOCKET_ACTION_CONNECT_FAIL:
+                pr_info_int_msg(LOG_PFX "Socket closed on channel ",
+                                chan_id);
+                socket_disconnect_handler(chan_id);
 //		if (esp8266_state.last_socket_connect && ticksToMs(getCurrentTicks() - esp8266_state.last_socket_connect) < BAD_WIFI_STATE_TIMEOUT_MS) {
 //		        pr_info("Wifi in bad state!\r\n");
 //		        delayMs(10000);
 //	            esp8266_state.device.init_state = INIT_STATE_RESET_HARD;
 //	            cmd_set_check(CHECK_WIFI_DEVICE);
 //		}
-		break;
-	case SOCKET_ACTION_CONNECT:
-		pr_info_int_msg(LOG_PFX "Socket connected on channel ",
-				chan_id);
-		socket_connect_handler(chan_id);
-		esp8266_state.last_socket_connect = getCurrentTicks();
-		break;
-	default:
-		pr_warning_int_msg(LOG_PFX "Unknown socket action: ",
-				   action);
-		break;
-	}
+                break;
+        case SOCKET_ACTION_CONNECT:
+                pr_info_int_msg(LOG_PFX "Socket connected on channel ",
+                                chan_id);
+                socket_connect_handler(chan_id);
+                esp8266_state.last_socket_connect = getCurrentTicks();
+                break;
+        default:
+                pr_warning_int_msg(LOG_PFX "Unknown socket action: ",
+                                   action);
+                break;
+        }
 }
 
 /**
@@ -468,15 +469,15 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
                 return;
         }
 
-	/*
-	 * Check that we have a backing serial device before we read in
-	 * the data. If none, gotta dump it.
-	 */
-	struct channel *ch = esp8266_state.comm.channels + chan_id;
-	if (!channel_is_open(ch)) {
-		pr_error(LOG_PFX "Channel is not open.  Dropping data\r\n");
-		return;
-	}
+        /*
+         * Check that we have a backing serial device before we read in
+         * the data. If none, gotta dump it.
+         */
+        struct channel *ch = esp8266_state.comm.channels + chan_id;
+        if (!channel_is_open(ch)) {
+                pr_error(LOG_PFX "Channel is not open.  Dropping data\r\n");
+                return;
+        }
 
         xQueueHandle q = serial_get_rx_queue(ch->serial);
         bool data_dropped = false;
@@ -494,25 +495,25 @@ static void rx_data_cb(int chan_id, size_t len, const char* data)
  * Callback that is invoked when the send_data method completes.
  */
 static void _send_data_cb(const bool status, const size_t bytes,
-			  const unsigned int chan)
+                          const unsigned int chan)
 {
-	/* Failure to send data should not lead to WiFi Reset */
-	cmd_completed(true);
-	cmd_set_check(CHECK_DATA);
+        /* Failure to send data should not lead to WiFi Reset */
+        cmd_completed(true);
+        cmd_set_check(CHECK_DATA);
 
-	if (!status) {
-		pr_warning_int_msg(LOG_PFX "Failed to send data on "
-				   "channel ", chan);
+        if (!status) {
+                pr_warning_int_msg(LOG_PFX "Failed to send data on "
+                                   "channel ", chan);
 
-		/*
-		 * Hack: Close channel when error b/c we have lost data.
-		 * Issue #807
-		 */
-		struct channel *ch = esp8266_state.comm.channels + chan;
-		channel_close(ch);
-		esp8266_close(chan, NULL);
-	}
-	xSemaphoreGive(esp8266_state.cmd_mutex);
+                /*
+                 * Hack: Close channel when error b/c we have lost data.
+                 * Issue #807
+                 */
+                struct channel *ch = esp8266_state.comm.channels + chan;
+                channel_close(ch);
+                esp8266_close(chan, NULL);
+        }
+        xSemaphoreGive(esp8266_state.cmd_mutex);
 }
 
 /**
@@ -521,37 +522,37 @@ static void _send_data_cb(const bool status, const size_t bytes,
  */
 static void check_data()
 {
-	cmd_check_complete(CHECK_DATA);
+        cmd_check_complete(CHECK_DATA);
 
-	for (size_t i = 0; i < ARRAY_LEN(esp8266_state.comm.channels); ++i) {
-		struct channel *ch = esp8266_state.comm.channels + i;
-		struct Serial* serial = ch->serial;
+        for (size_t i = 0; i < ARRAY_LEN(esp8266_state.comm.channels); ++i) {
+                struct channel *ch = esp8266_state.comm.channels + i;
+                struct Serial* serial = ch->serial;
 
-		/*
-		 * Check if connection is still active.	 If not then
-		 * there is nothing for us to do.
-		 */
-		if (!channel_is_open(ch))
-			continue;
+                /*
+                 * Check if connection is still active.	 If not then
+                 * there is nothing for us to do.
+                 */
+                if (!channel_is_open(ch))
+                        continue;
 
-		/* If the size is 0, nothing to send */
-		xQueueHandle q = serial_get_tx_queue(ch->serial);
-		const size_t size = uxQueueMessagesWaiting(q);
-		if (0 == size)
-			continue;
+                /* If the size is 0, nothing to send */
+                xQueueHandle q = serial_get_tx_queue(ch->serial);
+                const size_t size = uxQueueMessagesWaiting(q);
+                if (0 == size)
+                        continue;
 
-		xSemaphoreTake(esp8266_state.cmd_mutex, portMAX_DELAY);
-		/* If here, we have a connection and data to send. Do Eet! */
-		if (!esp8266_send_data(i, serial, size, _send_data_cb)) {
-			pr_warning(LOG_PFX "Failed to queue send "
-				   "data command!!!\r\n");
-			/* We will retry */
-			xSemaphoreGive(esp8266_state.cmd_mutex);
-			return;
-		}
-		cmd_started();
-		return;
-	}
+                xSemaphoreTake(esp8266_state.cmd_mutex, portMAX_DELAY);
+                /* If here, we have a connection and data to send. Do Eet! */
+                if (!esp8266_send_data(i, serial, size, _send_data_cb)) {
+                        pr_warning(LOG_PFX "Failed to queue send "
+                                   "data command!!!\r\n");
+                        /* We will retry */
+                        xSemaphoreGive(esp8266_state.cmd_mutex);
+                        return;
+                }
+                cmd_started();
+                return;
+        }
 }
 
 /**
@@ -562,33 +563,33 @@ static void client_state_changed_cb(const enum client_action action)
         /* Need to check our client now that a change has occured */
         cmd_set_check(CHECK_WIFI_CLIENT);
 
-	switch (action) {
-	case CLIENT_ACTION_CONNECT:
-		pr_info(LOG_PFX "Client connected\r\n");
-		esp8266_state.client.info.has_ap = true;
-		break;
-	case CLIENT_ACTION_DISCONNECT:
-		pr_info(LOG_PFX "Client disconnected\r\n");
-		memset(&esp8266_state.client.info, 0,
-		       sizeof(esp8266_state.client.info));
-		memset(&esp8266_state.client.ipv4, 0,
-		       sizeof(esp8266_state.client.ipv4));
-		break;
-	case CLIENT_ACTION_GOT_IP:
-		pr_info(LOG_PFX "Client got IPv4 address\r\n");
-		memset(&esp8266_state.client.ipv4, 0,
-		       sizeof(esp8266_state.client.ipv4));
+        switch (action) {
+        case CLIENT_ACTION_CONNECT:
+                pr_info(LOG_PFX "Client connected\r\n");
+                esp8266_state.client.info.has_ap = true;
+                break;
+        case CLIENT_ACTION_DISCONNECT:
+                pr_info(LOG_PFX "Client disconnected\r\n");
+                memset(&esp8266_state.client.info, 0,
+                       sizeof(esp8266_state.client.info));
+                memset(&esp8266_state.client.ipv4, 0,
+                       sizeof(esp8266_state.client.ipv4));
+                break;
+        case CLIENT_ACTION_GOT_IP:
+                pr_info(LOG_PFX "Client got IPv4 address\r\n");
+                memset(&esp8266_state.client.ipv4, 0,
+                       sizeof(esp8266_state.client.ipv4));
 
-		/*
-		 * Don't update client info until we get an IP.  Because
-		 * if you try to do this it will fail.  Blah.
-		 */
-		esp8266_state.client.info_timestamp = 0;
-		break;
-	default:
-		pr_warning(LOG_PFX "BUG: Unknown client action.\r\n");
-		break;
-	}
+                /*
+                 * Don't update client info until we get an IP.  Because
+                 * if you try to do this it will fail.  Blah.
+                 */
+                esp8266_state.client.info_timestamp = 0;
+                break;
+        default:
+                pr_warning(LOG_PFX "BUG: Unknown client action.\r\n");
+                break;
+        }
 }
 
 /* *** Methods that handle device init and reset *** */
@@ -610,18 +611,18 @@ static void init_wifi_cb(const bool status)
 
         pr_info(LOG_PFX "Initialization successful\r\n");
 
-	/*
-	 * Clear out the timestamps and set the checks on all the
-	 * subsystems since they will all change after an init.
-	 */
-	esp8266_state.client.info_timestamp = 0;
-	esp8266_state.ap.info_timestamp = 0;
-	esp8266_state.cmd.failures = 0;
-    esp8266_state.server.listening = false;
-    esp8266_state.device.init_state = INIT_STATE_READY;
+        /*
+         * Clear out the timestamps and set the checks on all the
+         * subsystems since they will all change after an init.
+         */
+        esp8266_state.client.info_timestamp = 0;
+        esp8266_state.ap.info_timestamp = 0;
+        esp8266_state.cmd.failures = 0;
+        esp8266_state.server.listening = false;
+        esp8266_state.device.init_state = INIT_STATE_READY;
 
-	/* Close all channels if open since we just reset */
-	for (unsigned int i = 0; channel_is_valid_id(i); ++i) {
+        /* Close all channels if open since we just reset */
+        for (unsigned int i = 0; channel_is_valid_id(i); ++i) {
                 struct channel *ch = esp8266_state.comm.channels + i;
                 channel_close(ch);
         }
@@ -737,26 +738,26 @@ static void set_op_mode(const enum esp8266_op_mode mode)
 
 static void set_fast_baud()
 {
-	pr_info_int_msg(LOG_PFX "Increasing baud to ", WIFI_MAX_BAUD);
-	cmd_started();
+        pr_info_int_msg(LOG_PFX "Increasing baud to ", WIFI_MAX_BAUD);
+        cmd_started();
 
-	const bool ok = esp8266_set_uart_config_raw(
-		WIFI_MAX_BAUD, ESP8266_SERIAL_DEF_BITS,
-		ESP8266_SERIAL_DEF_PARITY, ESP8266_SERIAL_DEF_STOP);
+        const bool ok = esp8266_set_uart_config_raw(
+                                WIFI_MAX_BAUD, ESP8266_SERIAL_DEF_BITS,
+                                ESP8266_SERIAL_DEF_PARITY, ESP8266_SERIAL_DEF_STOP);
 
-	if (ok) {
-		serial_config(esp8266_state.device.serial,
-			      ESP8266_SERIAL_DEF_BITS,
-			      ESP8266_SERIAL_DEF_PARITY,
-			      ESP8266_SERIAL_DEF_STOP,
-			      WIFI_MAX_BAUD);
-		serial_clear(esp8266_state.device.serial);
-	} else {
-		pr_warning(LOG_PFX "Set fast baud failed!\r\n");
-	}
+        if (ok) {
+                serial_config(esp8266_state.device.serial,
+                              ESP8266_SERIAL_DEF_BITS,
+                              ESP8266_SERIAL_DEF_PARITY,
+                              ESP8266_SERIAL_DEF_STOP,
+                              WIFI_MAX_BAUD);
+                serial_clear(esp8266_state.device.serial);
+        } else {
+                pr_warning(LOG_PFX "Set fast baud failed!\r\n");
+        }
 
-	cmd_completed(ok);
-	cmd_set_check(CHECK_WIFI_DEVICE);
+        cmd_completed(ok);
+        cmd_set_check(CHECK_WIFI_DEVICE);
 }
 
 /**
@@ -766,32 +767,32 @@ static void set_fast_baud()
  */
 static void check_wifi_device()
 {
-	cmd_check_complete(CHECK_WIFI_DEVICE);
-	pr_info(LOG_PFX "Checking WiFi Device...\r\n");
+        cmd_check_complete(CHECK_WIFI_DEVICE);
+        pr_info(LOG_PFX "Checking WiFi Device...\r\n");
 
-	switch(esp8266_state.device.init_state) {
-	case INIT_STATE_FAILED:
-		delayMs(CLIENT_BACKOFF_MS);
-		/* Fall into hard reset */
-	case INIT_STATE_RESET_HARD:
+        switch(esp8266_state.device.init_state) {
+        case INIT_STATE_FAILED:
+                delayMs(CLIENT_BACKOFF_MS);
+        /* Fall into hard reset */
+        case INIT_STATE_RESET_HARD:
 
-	case INIT_STATE_RESET:
-	case INIT_STATE_UNINITIALIZED:
-		init_wifi();
-		return;
-	case INIT_STATE_READY:
-		/* Then we are where we want to be */
-		break;
-	}
+        case INIT_STATE_RESET:
+        case INIT_STATE_UNINITIALIZED:
+                init_wifi();
+                return;
+        case INIT_STATE_READY:
+                /* Then we are where we want to be */
+                break;
+        }
 
 
-	/* Check our baud rate and ensure it maxed out */
-	const struct serial_cfg* serial_cfg =
-		serial_get_config(esp8266_state.device.serial);
-	if (serial_cfg->baud != WIFI_MAX_BAUD) {
-		set_fast_baud();
-		return;
-	}
+        /* Check our baud rate and ensure it maxed out */
+        const struct serial_cfg* serial_cfg =
+                serial_get_config(esp8266_state.device.serial);
+        if (serial_cfg->baud != WIFI_MAX_BAUD) {
+                set_fast_baud();
+                return;
+        }
 
 
         /* Check if we know our device mode.  If not, get it */
@@ -808,7 +809,7 @@ static void check_wifi_device()
         if (ap_active) {
                 /* AP should be active.  Is the client? */
                 exp_mode = client_active ?
-                        ESP8266_OP_MODE_BOTH : ESP8266_OP_MODE_AP;
+                           ESP8266_OP_MODE_BOTH : ESP8266_OP_MODE_AP;
         } else {
                 /*
                  * AP should be inactive.  We just set client here since
@@ -909,11 +910,11 @@ static void set_client_ap_cb(bool status)
         } else {
                 /* If here, we were successful. */
                 pr_info(LOG_PFX "Successfully joined network\r\n");
-		esp8266_state.client.info_timestamp = 0;
+                esp8266_state.client.info_timestamp = 0;
         }
 
-	/* Even if we fail to connect, we have still configured esp8266 */
-	esp8266_state.client.configured = true;
+        /* Even if we fail to connect, we have still configured esp8266 */
+        esp8266_state.client.configured = true;
 }
 
 /**
@@ -967,15 +968,15 @@ static void check_wifi_client()
                  */
                 if (!esp8266_state.client.configured) {
                         /* Then we need to try and join the AP */
-			set_client_ap();
+                        set_client_ap();
                         return;
                 }
 
-		if (!esp8266_drv_client_connected()) {
-			/* Then no client connection yet.  Done */
-			pr_info(LOG_PFX "Can't connect to client Wifi\r\n");
-			return;
-		}
+                if (!esp8266_drv_client_connected()) {
+                        /* Then no client connection yet.  Done */
+                        pr_info(LOG_PFX "Can't connect to client Wifi\r\n");
+                        return;
+                }
 
                 /* If here, then on client network.  Do we have IP info? */
                 if (!*esp8266_state.client.ipv4.address) {
@@ -987,7 +988,7 @@ static void check_wifi_client()
                 /* If here, we are done */
                 pr_info(LOG_PFX "Client configured correctly\r\n");
                 pr_info_str_msg(LOG_PFX "Client IP: ",
-                        esp8266_state.client.ipv4.address);
+                                esp8266_state.client.ipv4.address);
                 return;
         } else {
                 /* Client should be inactive.  Disable as needed */
@@ -1093,7 +1094,7 @@ static bool set_ap(struct esp8266_ap_info* ap_info)
  */
 static void ap_check_try_set()
 {
-        if (!date_time_is_past(esp8266_state.ap.next_set_attempt)){
+        if (!date_time_is_past(esp8266_state.ap.next_set_attempt)) {
                 /* Then we need to backoff */
                 const tiny_millis_t sleep_len =
                         esp8266_state.ap.next_set_attempt - getUptime();
@@ -1268,20 +1269,20 @@ bool esp8266_drv_update_client_cfg(const struct wifi_client_cfg *wcc)
         if (NULL == wcc)
                 return false;
 
-	/*
-	 * Only trigger the update of a Wifi device if the config settings
-	 * have changed. Otherwise no-op.
-	 */
-	struct wifi_client_cfg* lwcc = &esp8266_state.client.config;
-	if (!memcmp(lwcc, wcc, sizeof(*lwcc))) {
-		pr_info(LOG_PFX "Client config unchanged by update\r\n");
-		return true;
-	}
+        /*
+         * Only trigger the update of a Wifi device if the config settings
+         * have changed. Otherwise no-op.
+         */
+        struct wifi_client_cfg* lwcc = &esp8266_state.client.config;
+        if (!memcmp(lwcc, wcc, sizeof(*lwcc))) {
+                pr_info(LOG_PFX "Client config unchanged by update\r\n");
+                return true;
+        }
 
-	memcpy(lwcc, wcc, sizeof(*wcc));
+        memcpy(lwcc, wcc, sizeof(*wcc));
 
         /* Set flags for what states need checking */
-	esp8266_state.client.configured = false;
+        esp8266_state.client.configured = false;
         cmd_sleep(CHECK_WIFI_DEVICE, CFG_UPDATE_SLEEP_MS);
         cmd_sleep(CHECK_WIFI_CLIENT, CFG_UPDATE_SLEEP_MS);
 
@@ -1298,17 +1299,17 @@ bool esp8266_drv_update_ap_cfg(const struct wifi_ap_cfg *wac)
         if (NULL == wac)
                 return false;
 
-	/*
-	 * Only trigger the update of a Wifi device if the config settings
-	 * have changed. Otherwise no-op.
-	 */
-	struct wifi_ap_cfg* lwac = &esp8266_state.ap.config;
-	if (!memcmp(lwac, wac, sizeof(*lwac))) {
-		pr_info(LOG_PFX "AP config unchanged by update\r\n");
-		return true;
-	}
+        /*
+         * Only trigger the update of a Wifi device if the config settings
+         * have changed. Otherwise no-op.
+         */
+        struct wifi_ap_cfg* lwac = &esp8266_state.ap.config;
+        if (!memcmp(lwac, wac, sizeof(*lwac))) {
+                pr_info(LOG_PFX "AP config unchanged by update\r\n");
+                return true;
+        }
 
-	memcpy(lwac, wac, sizeof(*wac));
+        memcpy(lwac, wac, sizeof(*wac));
 
         /* Zero this value out so we will forego any backoff attempts */
         esp8266_state.ap.next_set_attempt = 0;
@@ -1347,8 +1348,8 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
 {
         /* Initialize the esp8266 hardware */
         if (!wifi_device_init()) {
-            pr_error(LOG_PFX "Failed to init WiFi device\r\n");
-            goto init_failed;
+                pr_error(LOG_PFX "Failed to init WiFi device\r\n");
+                goto init_failed;
         }
 
         if (esp8266_state.device.serial)
@@ -1360,12 +1361,12 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         }
         esp8266_state.device.serial = s;
 
-	/* Probe for our serial device and adjust baud. */
-	esp8266_wait_for_ready(s);
-	if (!esp8266_probe_device(s, WIFI_MAX_BAUD)) {
-		pr_warning(LOG_PFX "Failed to probe WiFi device\r\n");
-		goto init_failed;
-	}
+        /* Probe for our serial device and adjust baud. */
+        esp8266_wait_for_ready(s);
+        if (!esp8266_probe_device(s, WIFI_MAX_BAUD)) {
+                pr_warning(LOG_PFX "Failed to probe WiFi device\r\n");
+                goto init_failed;
+        }
 
         /* Create and setup semaphores for connections */
         const bool init_sync_ops =
@@ -1379,25 +1380,25 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         /* Initialize our WiFi configs here */
         LoggerConfig *lc = getWorkingLoggerConfig();
         const struct wifi_client_cfg *cfg =
-                &lc->ConnectivityConfigs.wifi.client;
-	const struct wifi_ap_cfg* wac =
-                &lc->ConnectivityConfigs.wifi.ap;
+                        &lc->ConnectivityConfigs.wifi.client;
+        const struct wifi_ap_cfg* wac =
+                        &lc->ConnectivityConfigs.wifi.ap;
         if (!esp8266_drv_update_client_cfg(cfg) ||
-	    !esp8266_drv_update_ap_cfg(wac)) {
+            !esp8266_drv_update_ap_cfg(wac)) {
                 pr_error(LOG_PFX "Failed to set WiFi client cfg\r\n");
                 goto init_failed;
         }
 
-	/* Initialize the esp8266 AT subsystem here */
-	if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN)) {
-		pr_warning(LOG_PFX "Failed to setup WiFi AT subsys\r\n");
-		goto init_failed;
-	}
+        /* Initialize the esp8266 AT subsystem here */
+        if (!esp8266_setup(esp8266_state.device.serial, SERIAL_CMD_MAX_LEN)) {
+                pr_warning(LOG_PFX "Failed to setup WiFi AT subsys\r\n");
+                goto init_failed;
+        }
 
-	/* Setup callback for new connections */
-	esp8266_state.comm.new_conn_cb = new_conn_cb;
+        /* Setup callback for new connections */
+        esp8266_state.comm.new_conn_cb = new_conn_cb;
 
-	/* Set the task loop to check the wifi_device first */
+        /* Set the task loop to check the wifi_device first */
         cmd_set_check(CHECK_WIFI_DEVICE);
 
         static const signed char task_name[] = TASK_THREAD_NAME;
@@ -1408,14 +1409,14 @@ bool esp8266_drv_init(struct Serial *s, const int priority,
         const size_t period = msToTicks(LED_PERIOD_MS);
         esp8266_state.led.timer = xTimerCreate(timer_name, period, false,
                                                NULL, led_timer_cb);
-	if (!esp8266_state.led.timer)
-		goto init_failed;
+        if (!esp8266_state.led.timer)
+                goto init_failed;
 
         return true;
 
 init_failed:
-	pr_warning(LOG_PFX "Init failed\r\n");
-	return false;
+        pr_warning(LOG_PFX "Init failed\r\n");
+        return false;
 }
 
 /**
@@ -1427,17 +1428,17 @@ static void connect_cb(const bool status, const bool already_connected)
         struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
 
         if (already_connected) {
-		pr_info_int_msg(LOG_PFX "State mismatch. Channel already "
-				"connected: ", cso->chan_id);
+                pr_info_int_msg(LOG_PFX "State mismatch. Channel already "
+                                "connected: ", cso->chan_id);
                 channel_close(ch);
         } else if (!status) {
                 pr_info_int_msg(LOG_PFX "Failed to connect channel: ",
-				cso->chan_id);
+                                cso->chan_id);
                 esp8266_state.cmd.failures++;
                 check_excessive_failures();
 
-		channel_close(ch);
-	}
+                channel_close(ch);
+        }
 
         cmd_set_check(CHECK_DATA);
         xSemaphoreGive(cso->cb_semaphore);
@@ -1455,8 +1456,8 @@ static void connect_cb(const bool status, const bool already_connected)
 struct Serial* esp8266_drv_connect(const enum protocol proto,
                                    const char* addr,
                                    const unsigned int port,
-				   const size_t rx_size,
-				   const size_t tx_size)
+                                   const size_t rx_size,
+                                   const size_t tx_size)
 {
         /* This is synchronous code for now */
         struct channel_sync_op *cso = &esp8266_state.comm.connect_op;
@@ -1481,15 +1482,14 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 connect_result = esp8266_connect_tcp(cso->chan_id, addr,
                                                      port, -1, connect_cb);
                 break;
-        case PROTOCOL_UDP:
-	{
+        case PROTOCOL_UDP: {
                 const int src_port = 0;
                 const enum esp8266_udp_mode udp_mode = ESP8266_UDP_MODE_NONE;
                 connect_result = esp8266_connect_udp(cso->chan_id, addr,
                                                      port, src_port,
                                                      udp_mode, connect_cb);
                 break;
-	}
+        }
         }
 
         if (!connect_result) {
@@ -1504,7 +1504,7 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
                 goto done;
         }
 
-	/* If unsuccessful, the callback will close the channel */
+        /* If unsuccessful, the callback will close the channel */
         if (!channel_is_open(ch)) {
                 pr_info_str_msg(LOG_PFX "Failed to connect: ", addr);
                 goto done;
@@ -1514,7 +1514,7 @@ struct Serial* esp8266_drv_connect(const enum protocol proto,
         pr_info_int_msg(LOG_PFX "Connected on comm channel ", cso->chan_id);
 
 done:
-	cso->chan_id = INVALID_CHANNEL_ID;
+        cso->chan_id = INVALID_CHANNEL_ID;
         xSemaphoreGive(cso->op_semaphore);
         return serial;
 }
@@ -1527,9 +1527,9 @@ static void close_cb(const bool status)
         struct channel_sync_op *cso = &esp8266_state.comm.close_op;
         cmd_set_check(CHECK_DATA);
 
-	if (!status)
-		pr_warning_int_msg(LOG_PFX "Failed to close channel ",
-				   cso->chan_id);
+        if (!status)
+                pr_warning_int_msg(LOG_PFX "Failed to close channel ",
+                                   cso->chan_id);
 
         xSemaphoreGive(cso->cb_semaphore);
 }
@@ -1556,8 +1556,8 @@ bool esp8266_drv_close(struct Serial* serial)
 
         struct channel *ch = esp8266_state.comm.channels + cso->chan_id;
         if (channel_is_open(ch)) {
-		channel_close(ch);
-	}
+                channel_close(ch);
+        }
 
         if (!esp8266_close(cso->chan_id, close_cb)) {
                 pr_warning(LOG_PFX "Failed to issue close command\r\n");
@@ -1572,7 +1572,7 @@ bool esp8266_drv_close(struct Serial* serial)
         }
 
 done:
-	cso->chan_id = INVALID_CHANNEL_ID;
+        cso->chan_id = INVALID_CHANNEL_ID;
         xSemaphoreGive(cso->op_semaphore);
         return status;
 }
@@ -1602,5 +1602,5 @@ bool esp8266_drv_client_connected()
  */
 bool esp8266_drv_is_initialized()
 {
-	return esp8266_state.device.init_state == INIT_STATE_READY;
+        return esp8266_state.device.init_state == INIT_STATE_READY;
 }

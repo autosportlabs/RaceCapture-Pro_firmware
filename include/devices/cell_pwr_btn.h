@@ -29,6 +29,7 @@
 
 CPP_GUARD_BEGIN
 
+void cell_enable_vreg(const bool enabled);
 void cell_pwr_btn(const bool pressed);
 
 CPP_GUARD_END

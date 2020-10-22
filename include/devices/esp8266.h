@@ -49,16 +49,16 @@ void esp8266_do_loop(const size_t timeout);
 bool esp8266_set_default_serial_params(struct Serial* serial);
 
 enum dev_init_state {
-	DEV_INIT_STATE_FAILED	 = -1,
-	DEV_INIT_STATE_NOT_READY =  0,
-	DEV_INIT_STATE_READY	 =  1,
+        DEV_INIT_STATE_FAILED	 = -1,
+        DEV_INIT_STATE_NOT_READY =  0,
+        DEV_INIT_STATE_READY	 =  1,
 };
 
 enum client_action {
-	CLIENT_ACTION_UNKNOWN,
-	CLIENT_ACTION_CONNECT,
-	CLIENT_ACTION_DISCONNECT,
-	CLIENT_ACTION_GOT_IP,
+        CLIENT_ACTION_UNKNOWN,
+        CLIENT_ACTION_CONNECT,
+        CLIENT_ACTION_DISCONNECT,
+        CLIENT_ACTION_GOT_IP,
 };
 
 /**
@@ -74,7 +74,7 @@ enum socket_action {
         SOCKET_ACTION_UNKNOWN,
         SOCKET_ACTION_DISCONNECT,
         SOCKET_ACTION_CONNECT,
-	SOCKET_ACTION_CONNECT_FAIL,
+        SOCKET_ACTION_CONNECT_FAIL,
 };
 
 /**
@@ -100,6 +100,7 @@ bool esp8266_register_callbacks(const struct esp8266_event_hooks* hooks);
 typedef void esp8266_init_cb_t(const bool status);
 
 bool esp8266_init(esp8266_init_cb_t* cb);
+bool esp8266_factory_restore(void);
 
 enum dev_init_state esp8266_get_dev_init_state();
 
@@ -192,8 +193,8 @@ typedef void esp8266_close_cb_t(const bool status);
 bool esp8266_close(const int chan_id, esp8266_close_cb_t* cb);
 
 typedef void esp8266_send_data_cb_t(const bool status,
-				    const size_t bytes,
-				    const unsigned int chan);
+                                    const size_t bytes,
+                                    const unsigned int chan);
 
 bool esp8266_send_data(const unsigned int chan_id, struct Serial *data,
                        const size_t len, esp8266_send_data_cb_t* cb);
@@ -214,7 +215,7 @@ bool esp8266_server_cmd(const enum esp8266_server_action action, int port,
                         void (*cb)(bool));
 
 bool esp8266_set_uart_config_raw(const size_t baud, const size_t bits,
-				 const size_t parity, const size_t stop_bits);
+                                 const size_t parity, const size_t stop_bits);
 
 bool esp8266_probe_device(struct Serial* serial, const int fast_baud);
 

@@ -47,8 +47,8 @@ void camera_control_reset_config(struct camera_control_config* cfg)
 }
 
 void camera_control_get_config(struct camera_control_config* cfg,
-                            struct Serial* serial,
-                            const bool more)
+                               struct Serial* serial,
+                               const bool more)
 {
         json_objStartString(serial, "camCtrlCfg");
         json_bool(serial, "en", cfg->enabled, true);
@@ -60,7 +60,7 @@ void camera_control_get_config(struct camera_control_config* cfg,
 }
 
 bool camera_control_set_config(struct camera_control_config* cfg,
-                            const jsmntok_t *json)
+                               const jsmntok_t *json)
 {
         jsmn_exists_set_val_bool(json, "en", &cfg->enabled);
         jsmn_exists_set_val_string(json, "channel", cfg->channel, DEFAULT_LABEL_LENGTH, true);
@@ -71,7 +71,7 @@ bool camera_control_set_config(struct camera_control_config* cfg,
 }
 
 static void camera_control_sample_cb(const struct sample* sample,
-                           const int tick, void* data)
+                                     const int tick, void* data)
 {
         if (!camera_control_state.cfg || !camera_control_state.cfg->enabled)
                 return;
@@ -82,20 +82,20 @@ static void camera_control_sample_cb(const struct sample* sample,
                 return;
 
         enum auto_control_trigger_result res = auto_control_check_trigger(value,
-                                                                             &camera_control_state.cfg->start,
-                                                                             &camera_control_state.cfg->stop,
-                                                                             &camera_control_state.control_state);
-        switch(res){
-                case AUTO_CONTROL_TRIGGERED:
-                        wifi_trigger_camera(true, camera_control_state.cfg->make_model);
-                        pr_info(LOG_PFX "Auto-starting camera\r\n");
-                        break;
-                case AUTO_CONTROL_UNTRIGGERED:
-                        wifi_trigger_camera(false, camera_control_state.cfg->make_model);
-                        pr_info(LOG_PFX "Auto-stopping camera\r\n");
-                        break;
-                default:
-                        break;
+                                               &camera_control_state.cfg->start,
+                                               &camera_control_state.cfg->stop,
+                                               &camera_control_state.control_state);
+        switch(res) {
+        case AUTO_CONTROL_TRIGGERED:
+                wifi_trigger_camera(true, camera_control_state.cfg->make_model);
+                pr_info(LOG_PFX "Auto-starting camera\r\n");
+                break;
+        case AUTO_CONTROL_UNTRIGGERED:
+                wifi_trigger_camera(false, camera_control_state.cfg->make_model);
+                pr_info(LOG_PFX "Auto-stopping camera\r\n");
+                break;
+        default:
+                break;
         }
 }
 

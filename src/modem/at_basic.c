@@ -37,22 +37,22 @@
  * @param delay_ms Max time to wait.
  */
 bool at_basic_wait_for_msg(struct Serial* serial, const char* msg,
-			   const tiny_millis_t delay_ms)
+                           const tiny_millis_t delay_ms)
 {
-	const tiny_millis_t term = date_time_uptime_now_plus(delay_ms);
-	const char* ptr = msg;
+        const tiny_millis_t term = date_time_uptime_now_plus(delay_ms);
+        const char* ptr = msg;
 
-	while (!date_time_is_past(term) && *ptr) {
-		const tiny_millis_t max_delay_ms = term - getUptime();
-		if (max_delay_ms <= 0)
-			continue;
+        while (!date_time_is_past(term) && *ptr) {
+                const tiny_millis_t max_delay_ms = term - getUptime();
+                if (max_delay_ms <= 0)
+                        continue;
 
-		char rx_char;
-		if (0 < serial_read_c_wait(serial, &rx_char, max_delay_ms))
-			ptr = rx_char == *ptr ? ptr + 1 : msg;
-	}
+                char rx_char;
+                if (0 < serial_read_c_wait(serial, &rx_char, max_delay_ms))
+                        ptr = rx_char == *ptr ? ptr + 1 : msg;
+        }
 
-	return !*ptr;
+        return !*ptr;
 }
 
 /**
@@ -62,18 +62,18 @@ bool at_basic_wait_for_msg(struct Serial* serial, const char* msg,
  * @param delay_ms The time to wait for each ping in ms before giving up.
  */
 bool at_basic_ping(struct Serial* serial, const size_t tries,
-		   const tiny_millis_t delay_ms)
+                   const tiny_millis_t delay_ms)
 {
-	const char cmd[] = "AT\r\n";
+        const char cmd[] = "AT\r\n";
 
-	for (size_t try = 0; try < tries; ++try) {
-		serial_flush(serial);
-		serial_write_s(serial, cmd);
-		if (at_basic_wait_for_msg(serial, "OK", delay_ms))
-			return true;
-	}
+        for (size_t try = 0; try < tries; ++try) {
+                                serial_flush(serial);
+                                serial_write_s(serial, cmd);
+                                if (at_basic_wait_for_msg(serial, "OK", delay_ms))
+                                        return true;
+                        }
 
-	return false;
+        return false;
 }
 
 /**
@@ -90,15 +90,15 @@ bool at_basic_ping(struct Serial* serial, const size_t tries,
  * @return The baud rate that the device responded to. 0 if no response.
  */
 int at_basic_probe(struct Serial* serial, const int bauds[],
-		   const size_t size, const size_t tries,
-		   const tiny_millis_t delay_ms, const size_t msg_bits,
-		   const size_t parity, const size_t stop_bits)
+                   const size_t size, const size_t tries,
+                   const tiny_millis_t delay_ms, const size_t msg_bits,
+                   const size_t parity, const size_t stop_bits)
 {
-	for (int i = 0; i < size; ++i) {
-		serial_config(serial, msg_bits, parity, stop_bits, bauds[i]);
-		if (at_basic_ping(serial, tries, delay_ms))
-			return bauds[i];
-	}
+        for (int i = 0; i < size; ++i) {
+                serial_config(serial, msg_bits, parity, stop_bits, bauds[i]);
+                if (at_basic_ping(serial, tries, delay_ms))
+                        return bauds[i];
+        }
 
-	return 0;
+        return 0;
 }

@@ -34,7 +34,8 @@ static void print_version(const VersionInfo *vi)
         pr_info_int(vi->bugfix);
 }
 
-const VersionInfo* get_current_version_info() {
+const VersionInfo* get_current_version_info()
+{
         static const VersionInfo vi = {
                 .major = MAJOR_REV,
                 .minor = MINOR_REV,
@@ -48,7 +49,7 @@ bool version_check_changed(const VersionInfo *pv)
 {
         const VersionInfo* cv = get_current_version_info();
         const bool changed = cv->major != pv->major ||
-                cv->minor != pv->minor;
+                             cv->minor != pv->minor;
 
         if (changed) {
                 pr_info(_LOG_PFX "version changed: ");

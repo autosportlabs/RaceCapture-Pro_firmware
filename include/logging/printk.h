@@ -31,20 +31,21 @@
 CPP_GUARD_BEGIN
 
 enum log_level {
-    EMERG = 0,
-    ALERT = 1,
-    CRIT = 2,
-    ERR = 3,
-    WARNING = 4,
-    NOTICE = 5,
-    INFO = 6,
-    DEBUG = 7,
-    TRACE = 8
+        EMERG = 0,
+        ALERT = 1,
+        CRIT = 2,
+        ERR = 3,
+        WARNING = 4,
+        NOTICE = 5,
+        INFO = 6,
+        DEBUG = 7,
+        TRACE = 8
 };
 
 #define pr_trace(arg1) printk(TRACE, arg1);
 #define pr_trace_bool_msg(arg1, arg2) printk_bool_msg(TRACE, arg1, arg2);
 #define pr_trace_char(arg1) printk_char(TRACE, arg1);
+#define pr_trace_float(arg1) printk_float(TRACE, arg1);
 #define pr_trace_float_msg(arg1, arg2) printk_float_msg(TRACE, arg1, arg2);
 #define pr_trace_int(arg1) printk_int(TRACE, arg1);
 #define pr_trace_int_msg(arg1, arg2) printk_int_msg(TRACE, arg1, arg2);

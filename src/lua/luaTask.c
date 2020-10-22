@@ -65,27 +65,33 @@ struct lua_run_state {
 };
 
 enum run_status {
-	LUA_CMD_LOCK_ERROR = -2,
-	LUA_CMD_GENERIC_ERROR = -1,
-	LUA_CMD_FAILURE = 0,
-	LUA_CMD_SUCCESS = 1,
+        LUA_CMD_LOCK_ERROR = -2,
+        LUA_CMD_GENERIC_ERROR = -1,
+        LUA_CMD_FAILURE = 0,
+        LUA_CMD_SUCCESS = 1,
 };
 
 static struct {
         int priority;
         xSemaphoreHandle lock;
-	xSemaphoreHandle lua_signal;
+        xSemaphoreHandle lua_signal;
         xTaskHandle task_handle;
         lua_State *lua_runtime;
         size_t callback_interval;
         size_t lua_mem_size;
-	struct {
-		const char* cmd; /* Command to execute */
-		enum run_status status;
-		xSemaphoreHandle cmd_signal;
-		xSemaphoreHandle cmd_mutex;
-	} interactive;
+        size_t max_mem;
+        struct {
+                const char* cmd; /* Command to execute */
+                enum run_status status;
+                xSemaphoreHandle cmd_signal;
+                xSemaphoreHandle cmd_mutex;
+        } interactive;
 } state;
+
+void lua_task_set_max_mem(size_t max_mem)
+{
+        state.max_mem = max_mem;
+}
 
 static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
 {
@@ -99,10 +105,10 @@ static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
                 return NULL;
         }
 
-        if (LUA_MEM_MAX && LUA_MEM_MAX < new_lua_mem_size) {
+        if (state.max_mem && state.max_mem < new_lua_mem_size) {
                 pr_warning(_LOG_PFX "Memory ceiling hit: ");
                 pr_warning_int(new_lua_mem_size);
-                pr_warning_int_msg(" > ", LUA_MEM_MAX);
+                pr_warning_int_msg(" > ", state.max_mem);
                 return NULL;
         }
 
@@ -115,7 +121,7 @@ static void* myAlloc(void *ud, void *ptr, size_t osize, size_t nsize)
         }
 
         const char *msg = delta < 0 ? _LOG_PFX "RAM released: " :
-                "RAM allocated: ";
+                          "RAM allocated: ";
         pr_trace_int_msg(msg, abs(delta));
         state.lua_mem_size = new_lua_mem_size;
 
@@ -196,7 +202,7 @@ static int lua_invocation(struct lua_run_state *rs)
         }
 
 done:
-	lua_settop(rs->lua_state, 0);
+        lua_settop(rs->lua_state, 0);
         release_lock();
         return status;
 }
@@ -232,43 +238,43 @@ static void lua_failure_state(const int cause)
                 delayMs(LUA_FLASH_DELAY_MS);
                 led_toggle(LED_ERROR);
 
-		/* Give to unblock any waiting interactive commands */
-		xSemaphoreGive(state.interactive.cmd_signal);
+                /* Give to unblock any waiting interactive commands */
+                xSemaphoreGive(state.interactive.cmd_signal);
         }
 }
 
 static bool lua_interactive(struct lua_run_state *rs)
 {
-	/* Check if there is a command */
-	if (NULL == state.interactive.cmd)
-		return false;
+        /* Check if there is a command */
+        if (NULL == state.interactive.cmd)
+                return false;
 
-	/* If here then there is a command.  Lets get it rolling */
-	lua_State *ls = rs->lua_state;
+        /* If here then there is a command.  Lets get it rolling */
+        lua_State *ls = rs->lua_state;
         const bool got_lock = get_lock_wait(msToTicks(LUA_LOCK_WAIT_MS));
         if (!got_lock) {
                 state.interactive.status = LUA_CMD_LOCK_ERROR;
-		goto done;
+                goto done;
         }
 
-	state.interactive.status = luaL_dostring(ls, state.interactive.cmd) ?
-		LUA_CMD_FAILURE : LUA_CMD_SUCCESS;
+        state.interactive.status = luaL_dostring(ls, state.interactive.cmd) ?
+                                   LUA_CMD_FAILURE : LUA_CMD_SUCCESS;
 
 done:
-	state.interactive.cmd = NULL;
+        state.interactive.cmd = NULL;
 
-	/*
-	 * Give the command_signal to unblock the command process and then
-	 * re-take the lua_signal to block until the command is done printing
-	 * the message we have included.
-	 */
-	xSemaphoreGive(state.interactive.cmd_signal);
-	xSemaphoreTake(state.lua_signal, portMAX_DELAY);
+        /*
+         * Give the command_signal to unblock the command process and then
+         * re-take the lua_signal to block until the command is done printing
+         * the message we have included.
+         */
+        xSemaphoreGive(state.interactive.cmd_signal);
+        xSemaphoreTake(state.lua_signal, portMAX_DELAY);
 
-	 /* Clear the stack before we return */
-	lua_settop(ls, 0);
-	release_lock();
-	return true;
+        /* Clear the stack before we return */
+        lua_settop(ls, 0);
+        release_lock();
+        return true;
 }
 
 static void lua_task(void *params)
@@ -279,37 +285,37 @@ static void lua_task(void *params)
         };
 
         int consecutive_failures = 0;
-	portTickType wake_tick = 0;
+        portTickType wake_tick = 0;
         for(;;) {
-		/* Handle the interactive commands if there are any */
-		if (lua_interactive(&rs))
-			continue;
+                /* Handle the interactive commands if there are any */
+                if (lua_interactive(&rs))
+                        continue;
 
-		portTickType curr_tick = xTaskGetTickCount();
-		if (curr_tick < wake_tick)
-			/* If signal is given, restart loop, else normal op */
-			if (xSemaphoreTake(state.lua_signal, wake_tick - curr_tick))
-				continue;
+                portTickType curr_tick = xTaskGetTickCount();
+                if (curr_tick < wake_tick)
+                        /* If signal is given, restart loop, else normal op */
+                        if (xSemaphoreTake(state.lua_signal, wake_tick - curr_tick))
+                                continue;
 
                 wake_tick = xTaskGetTickCount() + state.callback_interval;
                 const int rc = lua_invocation(&rs);
 
                 /* If its a known unrecoverable, fail fast */
                 switch (rc) {
-		case LUA_ERR_NONE:
-		case LUA_NO_PERIODIC_FUNCTION:
-			consecutive_failures = 0;
-			/*
-			 * We no longer stop the task because we always want to
-			 * have a Lua interactive session available.
-			 */
-			continue;
+                case LUA_ERR_NONE:
+                case LUA_NO_PERIODIC_FUNCTION:
+                        consecutive_failures = 0;
+                        /*
+                         * We no longer stop the task because we always want to
+                         * have a Lua interactive session available.
+                         */
+                        continue;
                 case LUA_ERR_BUG:
                 case LUA_ERR_SCRIPT_LOAD_FAILED:
                         lua_failure_state(rc);
-		default:
-			/* If here then there was a failure. */
-			++consecutive_failures;
+                default:
+                        /* If here then there was a failure. */
+                        ++consecutive_failures;
 
                 }
 
@@ -383,68 +389,67 @@ void lua_task_run_interactive_cmd(struct Serial *serial, const char* cmd)
                 return;
         }
 
-	/* Take the mutex to prevent two commands at once */
-	xSemaphoreTake(state.interactive.cmd_mutex, portMAX_DELAY);
+        /* Take the mutex to prevent two commands at once */
+        xSemaphoreTake(state.interactive.cmd_mutex, portMAX_DELAY);
 
-	/*
-	 * To preserve stack space we let the luaTask run the command.  This
-	 * ensures that we can keep stacks from other processes to a minimum
-	 * at the expense of some complexity (the locking here).
-	 *
-	 * Notice we give the lua_signal twice here. The first time will
-	 * unblock the luaTask so that it may perform our command.  The
-	 * second call completes the interactive command.  This is done this
-	 * way so we may pop all elements/error messages as needed. Therefore
-	 * it is safe to manipulate the Lua state since the lua_interactive
-	 * method will keep the Lua lock until we give the lua_signal the
-	 * second time.
-	 *
-	 * Once this task has completed reading the results of the command
-	 * and has given the lua_signa, the lua_interactive task will
-	 * re-activate and will clean up and continue as normal.
-	 */
-	state.interactive.status = LUA_CMD_GENERIC_ERROR;
-	state.interactive.cmd = cmd;
-	xSemaphoreGive(state.lua_signal);
-	xSemaphoreTake(state.interactive.cmd_signal, portMAX_DELAY);
+        /*
+         * To preserve stack space we let the luaTask run the command.  This
+         * ensures that we can keep stacks from other processes to a minimum
+         * at the expense of some complexity (the locking here).
+         *
+         * Notice we give the lua_signal twice here. The first time will
+         * unblock the luaTask so that it may perform our command.  The
+         * second call completes the interactive command.  This is done this
+         * way so we may pop all elements/error messages as needed. Therefore
+         * it is safe to manipulate the Lua state since the lua_interactive
+         * method will keep the Lua lock until we give the lua_signal the
+         * second time.
+         *
+         * Once this task has completed reading the results of the command
+         * and has given the lua_signa, the lua_interactive task will
+         * re-activate and will clean up and continue as normal.
+         */
+        state.interactive.status = LUA_CMD_GENERIC_ERROR;
+        state.interactive.cmd = cmd;
+        xSemaphoreGive(state.lua_signal);
+        xSemaphoreTake(state.interactive.cmd_signal, portMAX_DELAY);
 
-	/*
-	 * Once we get here the command has completed since we got the
-	 * cmd_signal. Print the values on the stack out for the interactive
-	 * user.
-	 */
-	switch (state.interactive.status) {
-	case LUA_CMD_GENERIC_ERROR:
-		serial_write_s(serial, "Internal Error.  Sorry :(");
-		put_crlf(serial);
-		break;
+        /*
+         * Once we get here the command has completed since we got the
+         * cmd_signal. Print the values on the stack out for the interactive
+         * user.
+         */
+        switch (state.interactive.status) {
+        case LUA_CMD_GENERIC_ERROR:
+                serial_write_s(serial, "Internal Error.  Sorry :(");
+                put_crlf(serial);
+                break;
 
-	case LUA_CMD_LOCK_ERROR:
-		serial_write_s(serial, "Internal Error: Failed to acquire "
-			"Lua lock. Check script.");
-		put_crlf(serial);
-		break;
-	case LUA_CMD_FAILURE:
-		serial_write_s(serial, "Error: ");
-	case LUA_CMD_SUCCESS:
-	{
-		lua_State *ls = state.lua_runtime;
-		const int items = lua_gettop(ls);
-		for (int i = 1; i <= items; ++i) {
-			if (1 < i)
-				serial_write_s(serial, ", ");
+        case LUA_CMD_LOCK_ERROR:
+                serial_write_s(serial, "Internal Error: Failed to acquire "
+                               "Lua lock. Check script.");
+                put_crlf(serial);
+                break;
+        case LUA_CMD_FAILURE:
+                serial_write_s(serial, "Error: ");
+        case LUA_CMD_SUCCESS: {
+                lua_State *ls = state.lua_runtime;
+                const int items = lua_gettop(ls);
+                for (int i = 1; i <= items; ++i) {
+                        if (1 < i)
+                                serial_write_s(serial, ", ");
 
-			serial_write_s(serial, lua_tostring(ls, i));
-		}
+                        serial_write_s(serial, lua_tostring(ls, i));
+                }
 
-		if (items)
-			put_crlf(serial);
+                if (items)
+                        put_crlf(serial);
         }
-	}
+        }
 
-	/* Completes the task */
-	xSemaphoreGive(state.lua_signal);
-	xSemaphoreGive(state.interactive.cmd_mutex);
+        /* Completes the task */
+        xSemaphoreGive(state.lua_signal);
+        xSemaphoreGive(state.interactive.cmd_mutex);
 }
 
 struct lua_runtime_info lua_task_get_runtime_info()
@@ -482,8 +487,10 @@ size_t lua_task_get_callback_freq()
 
 bool lua_task_stop()
 {
-        if (!is_init(false) || !is_runtime_active())
+        if (!is_init(false) || !is_runtime_active()) {
+                pr_warning("_LOG_PFX Can not stop Lua task, not active\r\n");
                 return false;
+        }
 
         const size_t ticks = msToTicks(LUA_LOCK_WAIT_MS);
         const bool got_lock = get_lock_wait(ticks);
@@ -527,6 +534,8 @@ bool lua_task_start()
         bool ok = false;
 
         /* Initialize the Lua runtime here */
+        state.max_mem = LUA_MEM_MAX;
+
         state.lua_runtime = setup_lua_state();
         if (!is_runtime_active()) {
                 pr_warning(_LOG_PFX "Failed to create lua runtime\r\n");
@@ -564,7 +573,7 @@ static bool user_bypass_check()
         bool bypass = false;
         led_disable(LED_ERROR);
 
-	const int flash_count =
+        const int flash_count =
                 LUA_BYPASS_DELAY_SEC * 1000 / LUA_FLASH_DELAY_MS;
         for (size_t i = 0; i < flash_count; ++i) {
                 delayMs(LUA_FLASH_DELAY_MS);
@@ -611,21 +620,21 @@ bool lua_task_init(const int priority)
                 return false;
         }
 
-	/* Now init the rest of Lua since we are running it */
-	state.lua_signal = xSemaphoreCreateBinary();
-	state.interactive.cmd_signal = xSemaphoreCreateBinary();
-	state.interactive.cmd_mutex = xSemaphoreCreateMutex();
-	if (!state.lua_signal || !state.interactive.cmd_signal ||
-	    !state.interactive.cmd_mutex) {
-		pr_error(_LOG_PFX "Failed to alloc remaining semaphores\r\n");
-		return false;
-	}
+        /* Now init the rest of Lua since we are running it */
+        state.lua_signal = xSemaphoreCreateBinary();
+        state.interactive.cmd_signal = xSemaphoreCreateBinary();
+        state.interactive.cmd_mutex = xSemaphoreCreateMutex();
+        if (!state.lua_signal || !state.interactive.cmd_signal ||
+            !state.interactive.cmd_mutex) {
+                pr_error(_LOG_PFX "Failed to alloc remaining semaphores\r\n");
+                return false;
+        }
 
-	/*
-	 * Give the command mutex so we may issue interactive commands to
-	 * Lua Runtime.
-	 */
-	xSemaphoreGive(state.interactive.cmd_mutex);
+        /*
+         * Give the command mutex so we may issue interactive commands to
+         * Lua Runtime.
+         */
+        xSemaphoreGive(state.interactive.cmd_mutex);
 
         /* XXX: This method name sucks.  It resests script if needed */
         initialize_script();

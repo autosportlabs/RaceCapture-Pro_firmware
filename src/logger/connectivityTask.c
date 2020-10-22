@@ -44,7 +44,7 @@
 #include "taskUtil.h"
 #include "usart.h"
 #include "gps_device.h"
-
+#include "api_event.h"
 
 #if (CONNECTIVITY_CHANNELS == 1)
 #define CONNECTIVITY_TASK_INIT {NULL}
@@ -54,122 +54,164 @@
 #error "invalid connectivity task count"
 #endif
 
+#define _LOG_PFX "[Conn task] "
+
 /*wait time for sample queue. can be portMAX_DELAY to wait forever, or zero to not wait at all */
-#define TELEMETRY_QUEUE_WAIT_TIME					0
+#define TELEMETRY_QUEUE_WAIT_TIME     0
 
-#define IDLE_TIMEOUT							configTICK_RATE_HZ / 10
-#define INIT_DELAY	 							600
-#define BUFFER_SIZE 							1025
-#define TELEMETRY_DISCONNECT_TIMEOUT            60000
+#define IDLE_TIMEOUT       configTICK_RATE_HZ / 10
+#define INIT_DELAY         600
 
-#define TELEMETRY_STACK_SIZE	300
-#define BAD_MESSAGE_THRESHOLD					10
+#define TELEMETRY_BUFFER_FILE_SYNC_INTERVAL 100
+#define TELEMETRY_STACK_SIZE 300
+#define CELLULAR_TELEMETRY_STACK_SIZE 330
+#define BAD_MESSAGE_THRESHOLD     10
+#define API_EVENT_QUEUE_DEPTH 2
+#define CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH 1
+#define METADATA_SAMPLE_INTERVAL    100
+#define HARD_INIT_RETRY_THRESHOLD 5
 
-#define METADATA_SAMPLE_INTERVAL				100
+#define TELEMETRY_BUFFER_FILENAME "tele.buf"
+#define TELEMETRY_BUFFER_FILE_RETRY_MS 1000
+
+#define BUFFERED_CHUNK_SIZE 7000
+#define BUFFERED_CHUNK_WAIT 1000
+#define BUFFERED_MAX_SIZE 1024 * 1000
 
 static xQueueHandle g_sampleQueue[CONNECTIVITY_CHANNELS] = CONNECTIVITY_TASK_INIT;
 
+#if BLUETOOTH_SUPPORT
+static char bluetooth_buffer[BUFFER_SIZE];
+#endif
+
+#if CELLULAR_SUPPORT
+static CellularState cellular_state = {
+                .buffer_queue = NULL,
+                .buffer_file = NULL,
+                .buffer_buffer = {},
+                .cell_buffer = {},
+                .read_index = 0,
+                .buffer_file_open = false,
+                .should_reconnect = false,
+                .should_stream = false,
+                .server_tick_echo = 0,
+                .server_tick_echo_changed_at = 0,
+                .sample_offset_map = {0},
+                .sample_offset_map_index = 0
+};
+
+bool cellular_telemetry_buffering_enabled(void)
+{
+        return cellular_state.buffer_file_open;
+}
+
+void cellular_telemetry_reconnect()
+{
+        cellular_state.should_reconnect = true;
+}
+
+void cellular_update_last_server_tick_echo(uint32_t server_tick_echo)
+{
+        if (server_tick_echo != cellular_state.server_tick_echo)
+                cellular_state.server_tick_echo_changed_at = getCurrentTicks();
+        cellular_state.server_tick_echo = server_tick_echo;
+}
+
+/* reset the sample offset map circular buffer */
+static void cellular_reset_buffer_offset_map(void){
+        memset(cellular_state.sample_offset_map, 0, SAMPLE_TRACKING_WINDOW * sizeof(SampleOffsetMap));
+}
+
+/* get an offset by the specified tick */
+static bool cellular_get_buffer_offset_by_tick(uint32_t tick, uint32_t *offset)
+{
+        SampleOffsetMap *map = cellular_state.sample_offset_map;
+        for (size_t i = 0; i < SAMPLE_TRACKING_WINDOW; i++){
+                if (map->tick == tick){
+                        *offset = map->buffer_file_index;
+                        return true;
+                }
+                map++;
+        }
+        return false;
+}
+
+/* store an offset into the circular buffer using the tick as a 'key' */
+static void cellular_add_buffer_offset_tick(uint32_t tick, uint32_t offset)
+{
+        int32_t index = cellular_state.sample_offset_map_index;
+        index++;
+        index = index >= SAMPLE_TRACKING_WINDOW ? 0 : index;
+        cellular_state.sample_offset_map[index].buffer_file_index = offset;
+        cellular_state.sample_offset_map[index].tick = tick;
+        cellular_state.sample_offset_map_index = index;
+}
+
+/* A cheap way to extract a value from the json sample string */
+static bool get_tick_from_sample_string(char * sample_string, uint32_t *tick)
+{
+        char * tick_string = strstr(sample_string,"{\"s\":{\"t\":");
+        if (tick_string) {
+                *tick = atoi(tick_string + 10);
+                return true;
+        }
+        return false;
+}
+#endif
 
 static size_t trimBuffer(char *buffer, size_t count)
 {
 
-    char *c = (buffer + count - 1);
-    while (count > 0 && (*c == '\r' || *c == '\n')) {
-        *c = '\0';
-        c--;
-        count--;
-    }
-    return count;
+        char *c = (buffer + count - 1);
+        while (count > 0 && (*c == '\r' || *c == '\n')) {
+                *c = '\0';
+                c--;
+                count--;
+        }
+        return count;
 }
 
-static int processRxBuffer(struct Serial *serial, char *buffer, size_t *rxCount)
+int process_rx_buffer(struct Serial *serial, char *buffer, size_t *rxCount)
 {
         const int count = serial_read_line_wait(serial, buffer + *rxCount,
-						BUFFER_SIZE - *rxCount, 0);
+                                                BUFFER_SIZE - *rxCount, 0);
 
-	if (count < 0) {
-		pr_error("[connectivityTask] Serial device closed\r\n");
-		return 0;
-	}
-
-    *rxCount += count;
-    int processMsg = 0;
-
-    if (*rxCount >= BUFFER_SIZE - 1) {
-        buffer[BUFFER_SIZE - 1] = '\0';
-        *rxCount = BUFFER_SIZE - 1;
-        processMsg = 1;
-        pr_error_str_msg("Rx Buffer overflow:", buffer);
-    }
-    if (*rxCount > 0) {
-        char lastChar = buffer[*rxCount - 1];
-        if ('\r' == lastChar || '\n' == lastChar) {
-            *rxCount = trimBuffer(buffer, *rxCount);
-            processMsg = 1;
+        if (count < 0) {
+                pr_error(_LOG_PFX "Serial device closed\r\n");
+                return 0;
         }
-    }
-    return processMsg;
+
+        *rxCount += count;
+        int processMsg = 0;
+
+        if (*rxCount >= BUFFER_SIZE - 1) {
+                buffer[BUFFER_SIZE - 1] = '\0';
+                *rxCount = BUFFER_SIZE - 1;
+                processMsg = 1;
+                pr_error_str_msg(_LOG_PFX "Rx Buffer overflow:", buffer);
+        }
+        if (*rxCount > 0) {
+                char lastChar = buffer[*rxCount - 1];
+                if ('\r' == lastChar || '\n' == lastChar) {
+                        *rxCount = trimBuffer(buffer, *rxCount);
+                        processMsg = 1;
+                }
+        }
+        return processMsg;
 }
 
 void queueTelemetryRecord(const LoggerMessage *msg)
 {
-    for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++)
-            send_logger_message(g_sampleQueue[i], msg);
+        for (size_t i = 0; i < CONNECTIVITY_CHANNELS; i++)
+                send_logger_message(g_sampleQueue[i], msg);
 }
 
-/*combined telemetry - for when there's only one telemetry / wireless port available on system
-//e.g. "Y-adapter" scenario */
-static void createCombinedTelemetryTask(int16_t priority,
-                                        xQueueHandle sampleQueue)
-{
-        ConnectivityConfig *connConfig =
-                &getWorkingLoggerConfig()->ConnectivityConfigs;
-        size_t btEnabled = connConfig->bluetoothConfig.btEnabled;
-        size_t cellEnabled = connConfig->cellularConfig.cellEnabled;
-
-        if (btEnabled || cellEnabled) {
-                ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
-
-                params->periodicMeta = btEnabled && cellEnabled;
-
-                /*defaults*/
-                params->check_connection_status = &null_device_check_connection_status;
-                params->init_connection = &null_device_init_connection;
-                params->serial = SERIAL_TELEMETRY;
-                params->sampleQueue = sampleQueue;
-                params->connection_timeout = 0;
-                params->always_streaming = false;
-
-                if (btEnabled) {
-                        params->check_connection_status = &bt_check_connection_status;
-                        params->init_connection = &bt_init_connection;
-                        params->disconnect = &bt_disconnect;
-                        params->always_streaming = true;
-                        params->max_sample_rate = SAMPLE_50Hz;
-                }
-
-#if CELLULAR_SUPPORT
-                /*cell overrides wireless*/
-                if (cellEnabled) {
-                        params->check_connection_status = &cellular_check_connection_status;
-                        params->init_connection = &cellular_init_connection;
-                        params->disconnect = &cellular_disconnect;
-                        params->always_streaming = false;
-                        params->max_sample_rate = SAMPLE_10Hz;
-                }
-#endif
-                /* Make all task names 16 chars including NULL char */
-                static const signed portCHAR task_name[] = "Multi Conn Task";
-                xTaskCreate(connectivityTask, task_name, TELEMETRY_STACK_SIZE,
-                            params, priority, NULL );
-        }
-}
-
-static void createWirelessConnectionTask(int16_t priority,
-                                         xQueueHandle sampleQueue,
-                                         enum led activity_led)
-{
 #if BLUETOOTH_SUPPORT
+
+static void create_bluetooth_connection_task(int16_t priority,
+                xQueueHandle sampleQueue,
+                enum led activity_led)
+{
         ConnParams *params = portMalloc(sizeof(ConnParams));
         params->connectionName = "Wireless";
         params->periodicMeta = 0;
@@ -185,36 +227,57 @@ static void createWirelessConnectionTask(int16_t priority,
 
         /* Make all task names 16 chars including NULL char */
         static const signed portCHAR task_name[] = "Bluetooth Task ";
-        xTaskCreate(connectivityTask, task_name, TELEMETRY_STACK_SIZE,
+        xTaskCreate(bluetooth_connectivity_task, task_name, TELEMETRY_STACK_SIZE,
                     params, priority, NULL );
-#endif
 }
+#endif
 
-static void createTelemetryConnectionTask(int16_t priority,
-                                          xQueueHandle sampleQueue,
-                                          enum led activity_led)
-{
 #if CELLULAR_SUPPORT
-        ConnParams * params = (ConnParams *)portMalloc(sizeof(ConnParams));
-        params->connectionName = "Telemetry";
-        params->periodicMeta = 0;
-        params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT;
-        params->disconnect = &cellular_disconnect;
-        params->check_connection_status = &cellular_check_connection_status;
-        params->init_connection = &cellular_init_connection;
-        params->serial = SERIAL_TELEMETRY;
-        params->sampleQueue = sampleQueue;
-        params->always_streaming = false;
-        params->max_sample_rate = SAMPLE_10Hz;
-        params->activity_led = activity_led;
+static void create_cellular_connection_tasks(int16_t priority,
+                xQueueHandle sampleQueue,
+                enum led activity_led)
+{
+        cellular_state.buffer_file = pvPortMalloc(sizeof(FIL));
+        cellular_state.buffer_queue = xQueueCreate(CELLULAR_TELEMETRY_BUFFER_QUEUE_DEPTH, sizeof(BufferedLoggerMessage));
 
-        /* Make all task names 16 chars including NULL char */
-        static const signed portCHAR task_name[] = "Cell Telem Task";
+        {
+                BufferingTaskParams * params = (BufferingTaskParams *)portMalloc(sizeof(BufferingTaskParams));
+                params->connectionName = "TelemBuffer";
+                params->periodicMeta = 0;
+                params->sampleQueue = sampleQueue;
+                params->always_streaming = false;
+                params->max_sample_rate = SAMPLE_10Hz;
 
-        xTaskCreate(connectivityTask, task_name, TELEMETRY_STACK_SIZE,
-                    params, priority, NULL );
-#endif
+                /* Make all task names 16 chars including NULL char */
+                static const signed portCHAR task_name[] = "Telem Buffer";
+
+                xTaskCreate(cellular_buffering_task, task_name, CELLULAR_TELEMETRY_STACK_SIZE,
+                            params, priority, NULL );
+        }
+
+        {
+                TelemetryConnParams * params = (TelemetryConnParams *)portMalloc(sizeof(TelemetryConnParams));
+                params->connectionName = "CellTelem";
+                params->connection_timeout = TELEMETRY_DISCONNECT_TIMEOUT * 1000;
+                params->disconnect = &cellular_disconnect;
+                params->check_connection_status = &cellular_check_connection_status;
+                params->init_connection = &cellular_init_connection;
+                params->serial = SERIAL_TELEMETRY;
+                params->sampleQueue = cellular_state.buffer_queue;
+                params->always_streaming = false;
+                params->max_sample_rate = SAMPLE_10Hz;
+                params->activity_led = activity_led;
+
+                /* Make all task names 16 chars including NULL char */
+                static const signed portCHAR task_name[] = "Cell Telemetry";
+
+                xTaskCreate(cellular_connectivity_task, task_name, CELLULAR_TELEMETRY_STACK_SIZE,
+                            params, priority, NULL );
+        }
 }
+#endif
+
+
 
 void startConnectivityTask(int16_t priority)
 {
@@ -222,201 +285,596 @@ void startConnectivityTask(int16_t priority)
                 g_sampleQueue[i] = create_logger_message_queue();
 
                 if (NULL == g_sampleQueue[i]) {
-                        pr_error("conn: err sample queue\r\n");
+                        pr_error(_LOG_PFX "err sample queue\r\n");
                         return;
                 }
         }
 
         switch (CONNECTIVITY_CHANNELS) {
-        case 1:
-                createCombinedTelemetryTask(priority, g_sampleQueue[0]);
-                break;
         case 2: {
-                ConnectivityConfig *connConfig =
-                        &getWorkingLoggerConfig()->ConnectivityConfigs;
                 /*
                  * Logic to control which connection is considered 'primary',
                  * which is used later to determine which task has control
                  * over LED flashing
                  */
-                const uint8_t cellEnabled =
-                        connConfig->cellularConfig.cellEnabled;
 
+#if CELLULAR_SUPPORT
+                const uint8_t cellEnabled = getWorkingLoggerConfig()->ConnectivityConfigs.cellularConfig.cellEnabled;
                 if (cellEnabled)
-                        createTelemetryConnectionTask(priority,
+                        create_cellular_connection_tasks(priority,
                                                       g_sampleQueue[1], LED_TELEMETRY);
-
-                if (connConfig->bluetoothConfig.btEnabled) {
+#else
+#if BLUETOOTH_SUPPORT
+                const uint8_t cellEnabled = false;
+#endif
+#endif
+#if BLUETOOTH_SUPPORT
+                if (getWorkingLoggerConfig()->ConnectivityConfigs.bluetoothConfig.btEnabled) {
                         /* Pick the bluetooth LED if available */
                         enum led activity_led = led_available(LED_BLUETOOTH) ? LED_BLUETOOTH : LED_TELEMETRY;
                         activity_led = cellEnabled && activity_led == LED_TELEMETRY ? LED_UNKNOWN : activity_led;
 
-                    createWirelessConnectionTask(priority,
-                                                 g_sampleQueue[0],
-                                                 activity_led);
+                        create_bluetooth_connection_task(priority,
+                                                     g_sampleQueue[0],
+                                                     activity_led);
 
                 }
+#endif
         }
-                break;
+        break;
         default:
-                pr_error("conn: err init\r\n");
+                pr_error_int_msg(_LOG_PFX "Error creating connectivity task incorrect number of channels ", CONNECTIVITY_CHANNELS);
                 break;
         }
 }
 
-static void toggle_connectivity_indicator(const enum led indicator)
+#if BLUETOOTH_SUPPORT
+
+static void queue_bluetooth_api_event(const struct api_event * api_event, void * data)
 {
-        led_toggle(indicator);
-}
-
-static void clear_connectivity_indicator(const enum led indicator)
-{
-        led_disable(indicator);
-}
-
-void connectivityTask(void *params)
-{
-
-    char * buffer = (char *)portMalloc(BUFFER_SIZE);
-    size_t rxCount = 0;
-
-    ConnParams *connParams = (ConnParams*)params;
-    LoggerMessage msg;
-
-    struct Serial *serial = serial_device_get(connParams->serial);
-
-    xQueueHandle sampleQueue = connParams->sampleQueue;
-    uint32_t connection_timeout = connParams->connection_timeout;
-    const size_t max_telem_rate = connParams->max_sample_rate;
-
-    DeviceConfig deviceConfig;
-    deviceConfig.serial = serial;
-    deviceConfig.buffer = buffer;
-    deviceConfig.length = BUFFER_SIZE;
-
-    const LoggerConfig *logger_config = getWorkingLoggerConfig();
-
-    bool logging_enabled = false;
-
-    while (1) {
-        millis_t connected_at = 0;
-        bool should_stream = logging_enabled ||
-                             logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
-                             connParams->always_streaming;
-
-        while (should_stream && connParams->init_connection(&deviceConfig, &connected_at) != DEVICE_INIT_SUCCESS) {
-            pr_info("conn: not connected. retrying\r\n");
-            vTaskDelay(INIT_DELAY);
+        xQueueHandle queue = data;
+        if (xQueueSendToBack(queue, api_event, 0)) {
+                pr_trace(_LOG_PFX "queued api event\r\n");
+        } else {
+                pr_warning(_LOG_PFX "bluetooth api event queue overflow\r\n");
         }
-        if (connected_at > 0)
-                GPS_set_UTC_time(connected_at);
+}
+void bluetooth_connectivity_task(void *params)
+{
+        size_t rx_buffer_count = 0;
 
-        serial_flush(serial);
-        rxCount = 0;
-        size_t badMsgCount = 0;
+        ConnParams *connParams = (ConnParams*)params;
+        LoggerMessage msg;
+
+        struct Serial *serial = serial_device_get(connParams->serial);
+
+        xQueueHandle sampleQueue = connParams->sampleQueue;
+        uint32_t connection_timeout = connParams->connection_timeout;
+        const size_t max_telem_rate = connParams->max_sample_rate;
+
+        DeviceConfig deviceConfig;
+        deviceConfig.serial = serial;
+        deviceConfig.buffer = bluetooth_buffer;
+        deviceConfig.length = BUFFER_SIZE;
+
+        const LoggerConfig *logger_config = getWorkingLoggerConfig();
+
+        bool logging_enabled = false;
+
+        xQueueHandle api_event_queue = xQueueCreate(API_EVENT_QUEUE_DEPTH, sizeof(struct api_event));
+        api_event_create_callback(queue_bluetooth_api_event, api_event_queue);
+
+        bool hard_init = true;
+        while (1) {
+                size_t connect_retries = 0;
+                millis_t connected_at = 0;
+                uint32_t last_tick = 0;
+                bool should_stream = logging_enabled ||
+                                     logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
+                                     connParams->always_streaming;
+
+                while (should_stream && connParams->init_connection(&deviceConfig, &connected_at, &last_tick, hard_init) != DEVICE_INIT_SUCCESS) {
+                        pr_info(_LOG_PFX "not connected. retrying\r\n");
+                        vTaskDelay(INIT_DELAY);
+                        connect_retries++;
+                        if (connect_retries > HARD_INIT_RETRY_THRESHOLD) {
+                                pr_info(_LOG_PFX " Too many connection attempts\r\n");
+                                hard_init = true;
+                                connect_retries = 0;
+                        }
+                }
+                if (connected_at > 0)
+                        GPS_set_UTC_time(connected_at);
+
+                serial_flush(serial);
+                rx_buffer_count = 0;
+                size_t bad_message_count = 0;
+                uint32_t tick = 0;
+                size_t last_message_time = getUptimeAsInt();
+                bool should_reconnect = false;
+                hard_init = false;
+                while (1) {
+                        if ( should_reconnect )
+                                break; /*break out and trigger the re-connection if needed */
+
+                        should_stream =
+                                logging_enabled ||
+                                connParams->always_streaming ||
+                                logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
+
+                        const char res = receive_logger_message(sampleQueue, &msg,
+                                                                IDLE_TIMEOUT);
+
+                        /*///////////////////////////////////////////////////////////
+                        // Process a pending message from logger task, if exists
+                        ////////////////////////////////////////////////////////////*/
+                        if (pdFALSE != res) {
+                                switch(msg.type) {
+                                case LoggerMessageType_Start: {
+                                        api_sendLogStart(serial);
+                                        put_crlf(serial);
+                                        tick = 0;
+                                        logging_enabled = true;
+                                        /* If we're not already streaming trigger a re-connect */
+                                        if (!should_stream)
+                                                should_reconnect = true;
+                                        break;
+                                }
+                                case LoggerMessageType_Stop: {
+                                        api_sendLogEnd(serial);
+                                        put_crlf(serial);
+                                        if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
+                                               connParams->always_streaming))
+                                                should_reconnect = true;
+                                        logging_enabled = false;
+                                        break;
+                                }
+                                case LoggerMessageType_Sample: {
+                                        if (!should_stream ||
+                                            !should_sample(msg.ticks, max_telem_rate))
+                                                break;
+
+                                        led_toggle(connParams->activity_led);
+
+                                        const int send_meta = msg.needs_meta || tick == 0 ||
+                                                              (connParams->periodicMeta &&
+                                                               (tick % METADATA_SAMPLE_INTERVAL == 0));
+                                        api_send_sample_record(serial, msg.sample, tick, send_meta);
+
+                                        put_crlf(serial);
+                                        tick++;
+                                        break;
+                                }
+                                default:
+                                        pr_info_int_msg(_LOG_PFX "Unknown logger message type ", msg.type);
+                                        break;
+                                }
+                        }
+                        /*//////////////////////////////////////////////////////////
+                        // Process any pending API events
+                        ////////////////////////////////////////////////////////////*/
+                        struct api_event api_event;
+                        if (xQueueReceive(api_event_queue, &api_event, 0)) {
+                                process_api_event(&api_event, serial);
+                        }
+
+                        /*//////////////////////////////////////////////////////////
+                        // Process incoming message, if available
+                        ////////////////////////////////////////////////////////////
+                        //read in available characters, process message as necessary*/
+                        int msgReceived = process_rx_buffer(serial, bluetooth_buffer, &rx_buffer_count);
+                        /*check the latest contents of the buffer for something that might indicate an error condition*/
+                        if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
+                                pr_info(_LOG_PFX "Disconnected\r\n");
+                                break;
+                        }
+
+                        /*now process a complete message if available*/
+                        if (msgReceived) {
+                                last_message_time = getUptimeAsInt();
+
+                                const int msgRes = process_api(serial, bluetooth_buffer, BUFFER_SIZE);
+                                const int msgError = (msgRes == API_ERROR_MALFORMED);
+                                if (msgError) {
+                                        pr_debug(_LOG_PFX " (failed)\r\n");
+                                }
+                                if (msgError) {
+                                        bad_message_count++;
+                                } else {
+                                        bad_message_count = 0;
+                                }
+                                if (bad_message_count >= BAD_MESSAGE_THRESHOLD) {
+                                        pr_warning_int_msg(_LOG_PFX "re-connecting- empty/bad msgs :", bad_message_count );
+                                        break;
+                                }
+                                rx_buffer_count = 0;
+                        }
+
+                        /*disconnect if a timeout is configured and
+                        // we haven't heard from the other side for a while */
+                        const size_t timeout = getUptimeAsInt() - last_message_time;
+                        if (connection_timeout && timeout > connection_timeout ) {
+                                pr_info_str_msg(_LOG_PFX " Timeout ", connParams->connectionName);
+                                should_reconnect = true;
+                        }
+                }
+
+                led_disable(connParams->activity_led);
+                connParams->disconnect(&deviceConfig);
+        }
+}
+#endif
+
+#if CELLULAR_SUPPORT
+void cellular_buffering_task(void *params)
+{
+
+        BufferingTaskParams *connParams = (BufferingTaskParams*)params;
+        LoggerMessage msg;
+
+        xQueueHandle sampleQueue = connParams->sampleQueue;
+        const size_t max_telem_rate = connParams->max_sample_rate;
+
         size_t tick = 0;
-        size_t last_message_time = getUptimeAsInt();
-        bool should_reconnect = false;
+
+        const LoggerConfig *logger_config = getWorkingLoggerConfig();
+
+        bool logging_enabled = false;
+
+        uint32_t re_open_buffer_file_timeout = 0;
+        uint32_t last_open_buffer_attempt = getCurrentTicks();
+        uint32_t buffer_file_open_retries = 0;
 
         while (1) {
-            if ( should_reconnect )
-                break; /*break out and trigger the re-connection if needed */
+                cellular_state.should_stream = logging_enabled ||
+                                     logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
+                                     connParams->always_streaming;
 
-            should_stream =
-                    logging_enabled ||
-                    connParams->always_streaming ||
-                    logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
+                while (1) {
+                        if (!cellular_state.buffer_file_open && isTimeoutMs(last_open_buffer_attempt, re_open_buffer_file_timeout)) {
+                                last_open_buffer_attempt = getCurrentTicks();
+                                cellular_reset_buffer_offset_map();
+                                cellular_state.read_index = 0;
+                                fs_lock();
+                                bool fs_good = sdcard_fs_mounted();
+                                if (!fs_good) {
+                                        FRESULT initfs_rc = InitFS();
+                                        fs_good = (initfs_rc == FR_OK);
+                                        if (FR_OK != initfs_rc) {
+                                                if (!buffer_file_open_retries)
+                                                        pr_info_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
+                                        }
+                                }
 
-            const char res = receive_logger_message(sampleQueue, &msg,
-                                                    IDLE_TIMEOUT);
+                                if (fs_good) {
+                                        bool sd_write_validated = test_sd(NULL, 1, 0, 1);
+                                        if (sd_write_validated) {
+                                                FRESULT fopen_rc = f_open(cellular_state.buffer_file, TELEMETRY_BUFFER_FILENAME, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+                                                if (FR_OK == fopen_rc) {
+                                                        FRESULT truncate_rc = f_truncate(cellular_state.buffer_file);
+                                                        if (FR_OK == truncate_rc){
+                                                                cellular_state.buffer_file_open = true;
+                                                                /* try to connect immediately on the first re-attempt*/
+                                                                re_open_buffer_file_timeout = 0;
+                                                                buffer_file_open_retries = 0;
+                                                        }
+                                                        else{
+                                                                if (!buffer_file_open_retries)
+                                                                        pr_info_int_msg(_LOG_PFX "Error truncating telemetry buffer file: ", truncate_rc);
+                                                        }
+                                                }
+                                                else {
+                                                        if (!buffer_file_open_retries)
+                                                                pr_info_int_msg(_LOG_PFX "Error opening telemetry buffer file: ", fopen_rc);
+                                                }
+                                        }
+                                        else {
+                                                if (!buffer_file_open_retries)
+                                                        pr_info(_LOG_PFX "SD write verification failed. Try re-formatting SD card\r\n");
+                                        }
+                                }
+                                fs_unlock();
+                                if (!cellular_state.buffer_file_open) {
+                                        /* try re-opening a bit later */
+                                        re_open_buffer_file_timeout = TELEMETRY_BUFFER_FILE_RETRY_MS;
+                                        buffer_file_open_retries++;
+                                }
+                                pr_debug_str_msg(_LOG_PFX "Creating telemetry buffer file: ", cellular_state.buffer_file_open ? "win" : "fail");
+                        }
 
-            /*///////////////////////////////////////////////////////////
-            // Process a pending message from logger task, if exists
-            ////////////////////////////////////////////////////////////*/
-            if (pdFALSE != res) {
-                switch(msg.type) {
-                case LoggerMessageType_Start: {
-                    api_sendLogStart(serial);
-                    put_crlf(serial);
-                    tick = 0;
-                    logging_enabled = true;
-                    /* If we're not already streaming trigger a re-connect */
-                    if (!should_stream)
-                        should_reconnect = true;
-                    break;
+                        cellular_state.should_stream =
+                                logging_enabled ||
+                                connParams->always_streaming ||
+                                logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming;
+
+                        const char res = receive_logger_message(sampleQueue, &msg, IDLE_TIMEOUT);
+
+                        /*///////////////////////////////////////////////////////////
+                        // Process a pending message from logger task, if exists
+                        ////////////////////////////////////////////////////////////*/
+                        if (pdFALSE != res) {
+                                switch(msg.type) {
+                                case LoggerMessageType_Start: {
+                                        logging_enabled = true;
+                                        tick = 0;
+                                        break;
+                                }
+                                case LoggerMessageType_Stop: {
+                                        logging_enabled = false;
+                                        break;
+                                }
+                                case LoggerMessageType_Sample: {
+                                        const int send_meta =  msg.needs_meta ||
+                                                               tick == 0 ||
+                                                              (connParams->periodicMeta &&
+                                                               (tick % METADATA_SAMPLE_INTERVAL == 0));
+
+
+                                        /* skip buffing data if we shouldn't stream/or the sample rate is higher than telemetry sample rate
+                                         * unless we need to send meta
+                                         */
+                                        if ((!cellular_state.should_stream ||
+                                            !should_sample(msg.ticks, max_telem_rate)) && !send_meta)
+                                                break;
+
+                                        bool fs_failed = false;
+                                        fs_lock();
+                                        if (!cellular_state.buffer_file_open) {
+                                                goto BUFFER_DONE;
+                                        }
+
+                                        DWORD file_size = f_size(cellular_state.buffer_file);
+
+                                        if (file_size > BUFFERED_MAX_SIZE) {
+                                                pr_info_int_msg(_LOG_PFX "Max buffer size exceeded, resetting: ", BUFFERED_MAX_SIZE);
+                                                fs_failed = true;
+                                                goto BUFFER_DONE;
+                                        }
+
+                                        FRESULT fseek_res = f_lseek(cellular_state.buffer_file, file_size);
+                                        if (FR_OK != fseek_res) {
+                                                pr_error_int_msg(_LOG_PFX "Failed to seek to end of buffer: ", fseek_res);
+                                                fs_failed = true;
+                                                goto BUFFER_DONE;
+                                        }
+
+                                        fs_write_sample_record(cellular_state.buffer_file, msg.sample, tick, send_meta);
+
+                                        if (tick % TELEMETRY_BUFFER_FILE_SYNC_INTERVAL == 0) {
+                                                pr_debug_int_msg(_LOG_PFX "Flushing buffer file: ", tick);
+                                                FRESULT fsync_res = f_sync(cellular_state.buffer_file);
+                                                if (FR_OK != fsync_res) {
+                                                        pr_error_int_msg(_LOG_PFX "Failed to sync buffer file: ", fsync_res);
+                                                        fs_failed = true;
+                                                        goto BUFFER_DONE;
+                                                }
+                                        }
+
+                                        BUFFER_DONE:
+                                        if (fs_failed ) {
+                                                f_close(cellular_state.buffer_file);
+                                                cellular_state.buffer_file_open = false;
+                                        }
+                                        fs_unlock();
+
+                                        BufferedLoggerMessage buffer_msg;
+                                        buffer_msg.sample = msg.sample;
+                                        buffer_msg.ticks = msg.ticks;
+                                        buffer_msg.needs_meta = msg.needs_meta;
+                                        xQueueSend(cellular_state.buffer_queue, &buffer_msg, 0);
+
+                                        tick++;
+                                        break;
+                                }
+                                default:
+                                        pr_info_int_msg(_LOG_PFX "Unknown logger message type ", msg.type);
+                                        break;
+                                }
+                        }
                 }
-                case LoggerMessageType_Stop: {
-                    api_sendLogEnd(serial);
-                    put_crlf(serial);
-                    if (! (logger_config->ConnectivityConfigs.telemetryConfig.backgroundStreaming ||
-                           connParams->always_streaming))
-                        should_reconnect = true;
-                    logging_enabled = false;
-                    break;
-                }
-                case LoggerMessageType_Sample: {
-                        if (!should_stream ||
-                            !should_sample(msg.ticks, max_telem_rate))
-                                break;
-
-                        toggle_connectivity_indicator(connParams->activity_led);
-
-                        const int send_meta = tick == 0 ||
-                                (connParams->periodicMeta &&
-                                 (tick % METADATA_SAMPLE_INTERVAL == 0));
-                        api_send_sample_record(serial, msg.sample, tick, send_meta);
-
-                        put_crlf(serial);
-                        tick++;
-                        break;
-                }
-                default:
-                    break;
-                }
-            }
-
-            /*//////////////////////////////////////////////////////////
-            // Process incoming message, if available
-            ////////////////////////////////////////////////////////////
-            //read in available characters, process message as necessary*/
-            int msgReceived = processRxBuffer(serial, buffer, &rxCount);
-            /*check the latest contents of the buffer for something that might indicate an error condition*/
-            if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
-                pr_info("conn: disconnected\r\n");
-                break;
-            }
-
-            /*now process a complete message if available*/
-            if (msgReceived) {
-                last_message_time = getUptimeAsInt();
-
-                const int msgRes = process_api(serial, buffer, BUFFER_SIZE);
-                const int msgError = (msgRes == API_ERROR_MALFORMED);
-                if (msgError) {
-                    pr_debug("(failed)\r\n");
-                }
-                if (msgError) {
-                    badMsgCount++;
-                } else {
-                    badMsgCount = 0;
-                }
-                if (badMsgCount >= BAD_MESSAGE_THRESHOLD) {
-                    pr_warning_int_msg("re-connecting- empty/bad msgs :", badMsgCount );
-                    break;
-                }
-                rxCount = 0;
-            }
-
-            /*disconnect if a timeout is configured and
-            // we haven't heard from the other side for a while */
-            const size_t timeout = getUptimeAsInt() - last_message_time;
-            if (connection_timeout && timeout > connection_timeout ) {
-                pr_info_str_msg(connParams->connectionName, ": timeout");
-                should_reconnect = true;
-            }
         }
-
-        clear_connectivity_indicator(connParams->activity_led);
-        connParams->disconnect(&deviceConfig);
-    }
 }
+
+static void queue_cellular_api_event(const struct api_event * api_event, void * data)
+{
+        xQueueHandle queue = data;
+        if (xQueueSendToBack(queue, api_event, 0)) {
+                pr_trace(_LOG_PFX "queued api event\r\n");
+        } else {
+                pr_warning(_LOG_PFX "cellular api event queue overflow\r\n");
+        }
+}
+
+void cellular_connectivity_task(void *params)
+{
+        size_t rx_buffer_count = 0;
+
+        TelemetryConnParams *connParams = (TelemetryConnParams*)params;
+        BufferedLoggerMessage msg;
+
+        struct Serial *serial = serial_device_get(connParams->serial);
+
+        xQueueHandle sampleQueue = connParams->sampleQueue;
+        uint32_t connection_timeout = connParams->connection_timeout;
+        const size_t max_telem_rate = connParams->max_sample_rate;
+
+        DeviceConfig deviceConfig;
+        deviceConfig.serial = serial;
+        deviceConfig.buffer = cellular_state.cell_buffer;
+        deviceConfig.length = BUFFER_SIZE;
+
+        xQueueHandle api_event_queue = xQueueCreate(API_EVENT_QUEUE_DEPTH, sizeof(struct api_event));
+        api_event_create_callback(queue_cellular_api_event, api_event_queue);
+
+        bool hard_init = true;
+        bool buffering_enabled = false;
+
+        while (1) {
+                size_t connect_retries = 0;
+                millis_t connected_at = 0;
+                uint32_t last_tick = 0;
+
+                led_disable(connParams->activity_led);
+                delayMs(INIT_DELAY);
+                if (!cellular_state.should_stream)
+                        continue;
+
+                while (connParams->init_connection(&deviceConfig, &connected_at, &last_tick, hard_init) != DEVICE_INIT_SUCCESS) {
+                        pr_info(_LOG_PFX "not connected. retrying\r\n");
+                        vTaskDelay(INIT_DELAY);
+                        connect_retries++;
+                        if (connect_retries > HARD_INIT_RETRY_THRESHOLD) {
+                                pr_info(_LOG_PFX " Too many connection attempts\r\n");
+                                hard_init = true;
+                                connect_retries = 0;
+                        }
+                }
+                if (connected_at > 0)
+                        GPS_set_UTC_time(connected_at);
+
+                serial_flush(serial);
+                rx_buffer_count = 0;
+                size_t bad_api_msg_count = 0;
+                cellular_state.should_reconnect = false;
+
+                uint32_t file_offset = 0;
+                if(cellular_get_buffer_offset_by_tick(last_tick, &file_offset)) {
+                        cellular_state.read_index = file_offset;
+                        cellular_state.server_tick_echo = last_tick;
+                }
+                else {
+                        pr_info_int_msg(_LOG_PFX "could not find precise location in buffer file for tick: ", last_tick);
+                }
+
+                cellular_state.server_tick_echo = 0;
+                cellular_state.server_tick_echo_changed_at = getCurrentTicks();
+
+                hard_init = false;
+
+                fs_lock();
+                int32_t backlog_size = f_size(cellular_state.buffer_file) - cellular_state.read_index;
+                fs_unlock();
+
+                if ( backlog_size > 0) {
+                        pr_info_int_msg(_LOG_PFX "Telemetry backlog: ", backlog_size);
+                }
+
+                bool needs_meta = true;
+                while (cellular_state.should_stream) {
+                        if ( cellular_state.should_reconnect )
+                                break; /*break out and trigger the re-connection if needed */
+
+                        bool current_buffering_enabled = cellular_state.buffer_file_open;
+                        if (buffering_enabled != current_buffering_enabled) {
+                                pr_info(current_buffering_enabled ? _LOG_PFX "Telemetry buffering enabled\r\n" : _LOG_PFX "Telemetry buffering disabled\r\n");
+                                buffering_enabled = current_buffering_enabled;
+                        }
+
+                        const char res = xQueueReceive(sampleQueue, &msg, IDLE_TIMEOUT);
+
+                        /*///////////////////////////////////////////////////////////
+                        // Process a pending message from logger task, if exists
+                        ////////////////////////////////////////////////////////////*/
+                        if (pdFALSE != res) {
+                                if (cellular_state.should_stream && should_sample(msg.ticks, max_telem_rate)) {
+
+                                        led_toggle(connParams->activity_led);
+
+                                        if (!current_buffering_enabled) {
+                                                /* Fall back to non-buffered sample streaming */
+                                                api_send_sample_record(serial, msg.sample, msg.ticks, needs_meta || msg.needs_meta);
+                                                needs_meta = false;
+                                                put_crlf(serial);
+                                        }
+                                        else {
+                                                /* Stream buffered samples, catching up with the tail of the file as needed */
+                                                int32_t start_index = cellular_state.read_index;
+                                                while (true) {
+                                                        char * read_string = NULL;
+                                                        fs_lock();
+                                                        FRESULT fseek_res = f_lseek(cellular_state.buffer_file, cellular_state.read_index);
+                                                        read_string = f_gets(cellular_state.buffer_buffer, BUFFER_BUFFER_SIZE, cellular_state.buffer_file);
+                                                        fs_unlock();
+
+                                                        if (FR_OK != fseek_res) {
+                                                                pr_error_int_msg("Error reading telemetry buffer, aborting ", fseek_res);
+                                                                break;
+                                                        }
+
+                                                        if (read_string == NULL || strlen(read_string) == 0)
+                                                                break;
+
+                                                        serial_write_s(serial, read_string);
+                                                        cellular_state.read_index += strlen(read_string);
+
+                                                        uint32_t tick = 0;
+                                                        if(get_tick_from_sample_string(read_string, &tick)){
+                                                                cellular_add_buffer_offset_tick(tick, cellular_state.read_index);
+                                                        }
+
+                                                        if (cellular_state.read_index - start_index > BUFFERED_CHUNK_SIZE){
+                                                                delayMs(BUFFERED_CHUNK_WAIT);
+                                                                start_index = cellular_state.read_index;
+
+                                                                /* here we're catching up on a lot of buffered data,
+                                                                 * so reset the timestamp so we don't time out
+                                                                 * prematurely
+                                                                 */
+                                                                cellular_state.server_tick_echo_changed_at = getCurrentTicks();
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+
+                        /*//////////////////////////////////////////////////////////
+                        // Process any pending API events
+                        ////////////////////////////////////////////////////////////*/
+                        struct api_event api_event;
+                        if (xQueueReceive(api_event_queue, &api_event, 0)) {
+                                process_api_event(&api_event, serial);
+                        }
+
+                        /*//////////////////////////////////////////////////////////
+                        // Process incoming message, if available
+                        ////////////////////////////////////////////////////////////
+                        //read in available characters, process message as necessary*/
+                        int msgReceived = process_rx_buffer(serial, cellular_state.cell_buffer, &rx_buffer_count);
+                        /*check the latest contents of the buffer for something that might indicate an error condition*/
+                        if (connParams->check_connection_status(&deviceConfig) != DEVICE_STATUS_NO_ERROR) {
+                                pr_info(_LOG_PFX "Disconnected\r\n");
+                                break;
+                        }
+
+                        /*now process a complete message if available*/
+                        if (msgReceived) {
+                                const int msgRes = process_api(serial, cellular_state.cell_buffer, BUFFER_SIZE);
+                                const int msgError = (msgRes == API_ERROR_MALFORMED);
+                                if (msgError) {
+                                        pr_error_int_msg(_LOG_PFX " process_api_failed ", msgRes);
+                                        pr_error_str_msg(_LOG_PFX " message: ", cellular_state.cell_buffer);
+                                }
+                                if (msgError) {
+                                        bad_api_msg_count++;
+                                } else {
+                                        bad_api_msg_count = 0;
+                                }
+                                if (bad_api_msg_count >= BAD_MESSAGE_THRESHOLD) {
+                                        pr_warning_int_msg(_LOG_PFX "re-connecting- empty/bad msgs :", bad_api_msg_count );
+                                        break;
+                                }
+                                rx_buffer_count = 0;
+                        }
+
+                        /*disconnect if a timeout is configured and
+                        // we haven't heard from the other side for a while */
+                        if (cellular_state.should_stream && isTimeoutMs(cellular_state.server_tick_echo_changed_at, connection_timeout)) {
+                                pr_info_str_msg(_LOG_PFX " Heartbeat timeout ", connParams->connectionName);
+                                cellular_state.should_reconnect = true;
+                        }
+                }
+                connParams->disconnect(&deviceConfig);
+        }
+}
+#endif
+

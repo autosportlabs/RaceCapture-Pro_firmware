@@ -84,6 +84,13 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg);
  */
 bool OBD2_get_value_for_pid(uint16_t pid, float *value);
 
+/**
+ * Set a statis OBDII delay between queries, in ms.
+ * Used to throttle OBDII PID requests.
+ * @param the delay to set, in ms
+ */
+void OBD2_set_pid_delay(uint32_t delay);
+
 CPP_GUARD_END
 
 #endif /* OBD2_H_ */

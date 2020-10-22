@@ -50,6 +50,8 @@ bool lua_task_start();
 
 bool lua_task_init(const int priority);
 
+void lua_task_set_max_mem(size_t max_mem);
+
 CPP_GUARD_END
 
 #endif /*LUATASK_H_*/

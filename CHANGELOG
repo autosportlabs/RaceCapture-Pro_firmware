@@ -1,14 +1,96 @@
+= 2.18.0=
+* IMU: Enable GSumPctMax and GSumMax channels to act as performance indicators within session
+* IMU: Offset Z axis to zero to compensate for gravity
+* IMU: Update Gsum calculation to include Z-axis, to account for hills / banked conditions
+* Core: Increment ElapsedTime on every sample to maximize analysis resolution
+* Telemetry: Enable 'reverse telemetry' to allow Podium to push timing/scoring data and more to device, to blend with regular telemetry
+* Lua: Fix issue with getAnalog not adding the offset for 'linear' mode inputs
+* Lua: Avoid nil on getChannelByName, if channel name exists
+* Lua: Expose GPS DOP to Lua
+* WiFi: Also perform a factory reset on WiFi module if user performs a factory reset on device
+* WiFi: help prevent WiFi from being stuck in a loop, preventing initializaton
+* Logging: Fix case where 10Hz sample rate logs at 5hz under certain circumstances
+* CAN: Broadcast pit-to-car alert message on CAN bus
+
+= 2.17.8=
+* Telemetry: Disable +URAT feature on 4G as it is not be supported by all carriers
+
+= 2.17.6=
+* Lua: Ensure factory reset also resets script, even in out of memory conditions
+* TrackMap: Ensure Lap target radius is within reasonable bounds
+* LapConfig: Ensure sample rates are consistent for Lap Timing
+* Core: Expand IMU device support
+* Telemetry: Configure 4G module based on settings from SIM card, for faster connection
+
+= 2.17.4=
+* Telemetry: Fix issue with telemetry failing if buffering is enabled + virtual channels present
+
+= 2.17.2=
+* Telemetry: Ensure telemetry stream starts correctly if no SD card is installed
+
+= 2.17.0=
+* Telemetry: Add telemetry buffering via SD card to account for marginal cellular conditions. 
+* Core: improve testSD command
+
+= 2.16.0=
+* IMU: Add real-time Gsum channel 
+* Core: Add metric/imperial switches for calculated Distance, GPS Speed, GPS Altitude
+* Core: Add ability to reset lap session via Lua or API (RaceCaptureApp)
+* Core: API to reset lap stats (via RaceCapture app)
+* Lua: Add resetLapStats() function to resetLapStats via scripting
+* LapStats: Add SessionTime channel
+* Telemetry: Add support for SARA R4 Cat M1 LTE
+* Telemetry: Speed up telemetry re-connect by not immediately power-cycling modem after a disconnect.
+* OBDII: Honor the CAN bus channel selected for OBDII broadcast and receive
+
+= 2.15.1=
+* Core: Ensure ShiftX configuration happens after ShiftX is booted and ready
+
+= 2.15.0=
+* Core: add support for ShiftX2/3 lua functions
+* Core: broadcast button events from ShiftX2/3 to connected clients for dashboard navigation
+* Lua: Reduce default memory limit back to safe level, add lua function to override limit
+* Lua: Add Gear calculation helper function
+* Lua: Add functions to support ShiftX3
+* Config: Ensure we can configure maximum number of CAN channels without crashing firmware
+* Config: Fix error updating Track database under certain high memory usage conditions. (Reduce track DB to 50 tracks)
+* Config: Add ability to configure a fixed delay between OBDII queries to slow down OBDII engine, used for diagnostic purposes
+* GPS: Filter out GPS speed spikes
+
+= 2.14.0=
+* Core: Add support for pit-to-car alerting
+
+= 2.13.9=
+* lapStats: Prevent edge cases where incorrect timestamp prevents proper lap timing
+* lapStats: Require a minimum lap distance of 0.1Km to prevent false lap completion
+
+= 2.13.8=
+* GPS: Prevent coarse updating of distance for channel data
+* GPS: Limit interpolation to reasonable value
+
+= 2.13.7=
+* GPS: Upsample GPS if GPS source is slower than 10Hz, to improve lap timing accuracy and reliability
+
+= 2.13.6=
+* Builds for RaceCapture/Apex and PodiumConnect
+
 = 2.13.5 =
 * Core: Restore 2.12.x bit mode little endian behavior to resolve regression with E46 CAN bus
 * Core: Resolve logger crashing randomly when lap is completed
 * Core: Clean up Command Line Interface options, remove obsolete functions
 * Core: Add internal test function for stimulating lap timer
 
+= 2.13.4=
+* Builds for PodiumConnect
+
 = 2.13.3 = 
 * GPS: Get UTC time directly from GPS driver
 * WiFi: Fix wifi initialization problem on WiFi modules running older firmware
 * Lua: prevent a critical Lua error if getchannel fails to find a channel by name; return nil instead.
 * Analog: Increase smoothing range by 2x
+
+= 2.13.1 =
+* Builds for RaceCapture/Apex and PodiumConnect
 
 = 2.13.0 =
 * Core: Ensure Distance channel is always enabled, even if hardware GPS is disabled

@@ -47,19 +47,34 @@ int f_puts(const TCHAR* str,
 }
 
 FRESULT f_write (
-    FIL* fp,			/* Pointer to the file object */
-    const void *buff,	/* Pointer to the data to be written */
-    UINT btw,			/* Number of bytes to write */
-    UINT* bw			/* Pointer to number of bytes written */
+        FIL* fp,			/* Pointer to the file object */
+        const void *buff,	/* Pointer to the data to be written */
+        UINT btw,			/* Number of bytes to write */
+        UINT* bw			/* Pointer to number of bytes written */
 )
 {
         return FR_OK;
 }
 
 FRESULT f_lseek (
-    FIL* fp,		/* Pointer to the file object */
-    DWORD ofs		/* File pointer from top of file */
+        FIL* fp,		/* Pointer to the file object */
+        DWORD ofs		/* File pointer from top of file */
 )
 {
         return FR_OK;
 }
+
+TCHAR* f_gets (
+        TCHAR* buff, /* Pointer to the string buffer to read */
+        int len,  /* Size of string buffer (characters) */
+        FIL* fp   /* Pointer to the file object */
+)
+{
+        return "";
+}
+
+FRESULT f_truncate (FIL* fp )
+{
+        return FR_OK;
+}
+

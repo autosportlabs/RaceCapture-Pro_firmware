@@ -31,8 +31,8 @@
 CPP_GUARD_BEGIN
 
 enum camera_make_model {
-    CAMERA_MAKEMODEL_GOPRO_HERO2_3 = 0,
-    CAMERA_MAKEMODEL_GOPRO_HERO4_5 = 1,
+        CAMERA_MAKEMODEL_GOPRO_HERO2_3 = 0,
+        CAMERA_MAKEMODEL_GOPRO_HERO4_5 = 1,
 };
 
 struct camera_control_config {
@@ -46,11 +46,11 @@ struct camera_control_config {
 void camera_control_reset_config(struct camera_control_config* cfg);
 
 void camera_control_get_config(struct camera_control_config* cfg,
-                            struct Serial* serial,
-                            const bool more);
+                               struct Serial* serial,
+                               const bool more);
 
 bool camera_control_set_config(struct camera_control_config* cfg,
-                            const jsmntok_t *json);
+                               const jsmntok_t *json);
 
 bool camera_control_init(struct camera_control_config* cfg);
 

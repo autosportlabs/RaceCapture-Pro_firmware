@@ -34,6 +34,7 @@
 #include "printk.h"
 #include "serial_buffer.h"
 #include "serial.h"
+#include "sara_r4.h"
 #include "sara_u280.h"
 #include "sim900.h"
 #include "taskUtil.h"
@@ -44,8 +45,10 @@
 #define AUTOBAUD_BACKOFF_MS	200
 #define PROBE_READ_TIMEOUT_MS	500
 /* Good balance between SIM900 and Ublox sara module */
+#define RESET_MODEM_POWER_DELAY_MS 500
 #define RESET_MODEM_DELAY_MS	1100
-#define TELEM_AUTH_JSMN_TOKENS	5
+#define RESET_MODEM_WAIT_MS 1100
+#define TELEM_AUTH_JSMN_TOKENS	11
 #define TELEM_AUTH_RX_TRIES	3
 #define TELEM_AUTH_RX_WAIT_MS	5000
 
@@ -174,8 +177,13 @@ static bool get_methods(const enum cellular_modem modem,
                 break;
         case CELLULAR_MODEM_UBLOX_SARA_U2:
                 modem_name = "UBlox Sara U2";
-                *methods = get_sara_u280_methods();
+                *methods = get_sara_u2_methods();
                 break;
+        case CELLULAR_MODEM_UBLOX_SARA_R4:
+                modem_name = "UBlox Sara R4";
+                *methods = get_sara_r4_methods();
+                break;
+
         default:
                 break;
         }
@@ -202,6 +210,7 @@ static bool get_methods(const enum cellular_modem modem,
 bool autobaud_modem(struct serial_buffer *sb, size_t tries,
                     const size_t backoff_ms)
 {
+        pr_info("[cell] Auto-baud configuration\r\n");
         for(; tries > 0; --tries) {
                 if (gsm_ping_modem(sb)) {
                         pr_info("[cell] auto-baud successful\r\n");
@@ -220,6 +229,7 @@ enum cellular_modem probe_cellular_manuf(struct serial_buffer *sb)
         const char *msgs[2];
         const size_t msgs_len = ARRAY_LEN(msgs);
 
+        /* Get manufacturer and then model number */
         serial_buffer_reset(sb);
         serial_buffer_append(sb, "AT+CGMI");
         const size_t count = cellular_exec_cmd(sb, PROBE_READ_TIMEOUT_MS,
@@ -230,8 +240,24 @@ enum cellular_modem probe_cellular_manuf(struct serial_buffer *sb)
 
         pr_info_str_msg("[cell] manufacturer is ", msgs[0]);
 
-        if (strstr(msgs[0], "u-blox"))
-                return CELLULAR_MODEM_UBLOX_SARA_U2;
+        if (strstr(msgs[0], "u-blox")) {
+                /* Get manufacturer and then model number */
+                serial_buffer_reset(sb);
+                serial_buffer_append(sb, "AT+CGMM");
+                const size_t count = cellular_exec_cmd(sb, PROBE_READ_TIMEOUT_MS,
+                                                       msgs, msgs_len);
+
+                if (!is_rsp_ok(msgs, count))
+                        return CELLULAR_MODEM_UNKNOWN;
+
+                pr_info_str_msg("[cell] model is ", msgs[0]);
+                if (strstr(msgs[0], "SARA-R4")) {
+                        return CELLULAR_MODEM_UBLOX_SARA_R4;
+                }
+                else { /* Default to GSM u-blox module */
+                        return CELLULAR_MODEM_UBLOX_SARA_U2;
+                }
+        }
         else if (strstr(msgs[0], "SIMCOM_Ltd"))
                 return CELLULAR_MODEM_SIM900;
         else
@@ -280,7 +306,7 @@ int cellular_disconnect(DeviceConfig *config)
         }
 
         return methods ? methods->close_telem_connection(
-                sb, &cell_info, &telemetry_info) : 0;
+                       sb, &cell_info, &telemetry_info) : 0;
 }
 
 static void reset_modem()
@@ -294,10 +320,17 @@ static void reset_modem()
          * shortly (< 3sec) after powerup.  This balance seems to work
          * "Well enough"(tm).
          */
+
+
+        /* enable/disable voltage regulator */
+        cell_enable_vreg(false);
+        delayMs(RESET_MODEM_POWER_DELAY_MS);
+        cell_enable_vreg(true);
+        delayMs(RESET_MODEM_POWER_DELAY_MS);
         cell_pwr_btn(true);
         delayMs(RESET_MODEM_DELAY_MS);
         cell_pwr_btn(false);
-        delayMs(RESET_MODEM_DELAY_MS);
+        delayMs(RESET_MODEM_WAIT_MS);
 
         at_cfg = get_safe_at_config();
 }
@@ -338,7 +371,8 @@ static void print_registration_failure()
 
 static bool auth_telem_stream(struct serial_buffer *sb,
                               const TelemetryConfig *tc,
-                              millis_t * connected_at)
+                              millis_t * connected_at,
+                              uint32_t * last_tick)
 {
         serial_buffer_reset(sb);
 
@@ -348,7 +382,7 @@ static bool auth_telem_stream(struct serial_buffer *sb,
         json_objStart(serial);
         json_objStartString(serial, "auth");
         json_string(serial, "deviceId", deviceId, 1);
-        json_int(serial, "apiVer", API_REV, 1);
+        json_float(serial, "apiVer", API_REV, 1, 1);
         json_string(serial, "device", DEVICE_NAME, 1);
         json_string(serial, "ver", version_full(), 1);
         json_string(serial, "sn", cpu_get_serialnumber(), 0);
@@ -377,20 +411,23 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                 }
 
                 const jsmntok_t *status_val = jsmn_find_get_node_value_string(
-                        toks, "status");
+                                                      toks, "status");
                 if (status_val) {
                         /* Could be success or failure.  Handle both */
                         const char *status = status_val->data;
                         if (0 == strcmp(status, "ok")) {
                                 jsmn_exists_set_val_uint64(toks, "utc", (uint64_t *)connected_at);
-                                pr_info("[cell] Server authenticated\r\n");
+                                jsmn_exists_set_val_uint32(toks, "lt", (uint32_t *)last_tick);
+                                pr_info("[cell] Connected to Podium\r\n");
                                 return true;
+
+
                         }
 
                         /* If here, then something went wrong. */
                         pr_warning_str_msg("[cell] Auth status: ", status);
                         const jsmntok_t *message_val = jsmn_find_get_node_value_string(
-                                toks, "message");
+                                                               toks, "message");
                         if (message_val)
                                 pr_warning_str_msg("[cell] Auth message: ",
                                                    message_val->data);
@@ -402,14 +439,13 @@ static bool auth_telem_stream(struct serial_buffer *sb,
                                  sb->buffer);
         }
 
-        pr_info("[cell] Unable to authenticate telemetry server.\r\n");
+        pr_info("[cell] Unable to authenticate telemetry\r\n");
         return false;
 }
 
-int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
+int cellular_init_connection(DeviceConfig *config, millis_t * connected_at, uint32_t * last_tick, bool hard_init)
 {
-	telemetry_info.active_since = 0;
-
+        telemetry_info.active_since = 0;
         LoggerConfig *loggerConfig = getWorkingLoggerConfig();
         CellularConfig *cellCfg =
                 &(loggerConfig->ConnectivityConfigs.cellularConfig);
@@ -419,9 +455,14 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
         /* This is sane since DeviceConfig is typedef'd as a serial_buffer */
         struct serial_buffer *sb = (struct serial_buffer*) config;
 
-        const int init_status = cellular_init_modem(sb);
-        if (DEVICE_INIT_SUCCESS != init_status)
-                return DEVICE_INIT_FAIL;
+        if (hard_init) {
+                serial_config(sb->serial,8,0,1,115200);
+                gsm_power_off(sb);
+                pr_info("[cell] Power cycling modem\r\n");
+                const int init_status = cellular_init_modem(sb);
+                if (DEVICE_INIT_SUCCESS != init_status)
+                        return DEVICE_INIT_FAIL;
+        }
 
         /* If here, there is a modem attached.  Figure out what modem it is */
         enum cellular_modem modem_type = probe_cellular_manuf(sb);
@@ -431,7 +472,7 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
                 return DEVICE_INIT_FAIL;
         }
 
-        if (!methods->init_modem(sb, &cell_info)) {
+        if (!methods->init_modem(sb, &cell_info, cellCfg)) {
                 telemetry_info.status = TELEMETRY_STATUS_MODEM_INIT_FAILED;
                 return DEVICE_INIT_FAIL;
         }
@@ -467,7 +508,7 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
         }
 
         /* Auth against RCL */
-        if (!auth_telem_stream(sb, telemetryConfig, connected_at)){
+        if (!auth_telem_stream(sb, telemetryConfig, connected_at, last_tick)) {
                 telemetry_info.status = TELEMETRY_STATUS_REJECTED_DEVICE_ID;
                 return DEVICE_INIT_FAIL;
         }
@@ -476,12 +517,12 @@ int cellular_init_connection(DeviceConfig *config, millis_t * connected_at)
         telemetry_info.status = TELEMETRY_STATUS_CONNECTED;
         telemetry_info.active_since = getUptime();
 
-	return DEVICE_INIT_SUCCESS;
+        return DEVICE_INIT_SUCCESS;
 }
 
 int cellular_check_connection_status(DeviceConfig *config)
 {
-	if (0 != strncmp(config->buffer, "DISCONNECT", 10))
+        if (0 != strncmp(config->buffer, "DISCONNECT", 10))
                 return 0;
 
         pr_info("[cell] socket disconnect\r\n");

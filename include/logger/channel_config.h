@@ -39,13 +39,13 @@ CPP_GUARD_BEGIN
 #define ALWAYS_SAMPLED 1 << 0
 
 typedef struct _ChannelConfig {
-    char label[DEFAULT_LABEL_LENGTH];
-    char units[DEFAULT_UNITS_LENGTH];
-    float min;
-    float max;
-    unsigned short sampleRate;
-    unsigned char precision;
-    unsigned char flags;
+        char label[DEFAULT_LABEL_LENGTH];
+        char units[DEFAULT_UNITS_LENGTH];
+        float min;
+        float max;
+        unsigned short sampleRate;
+        unsigned char precision;
+        unsigned char flags;
 } ChannelConfig;
 
 enum chan_cfg_status {

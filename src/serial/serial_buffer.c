@@ -62,8 +62,8 @@ char* serial_buffer_rx(struct serial_buffer *sb,
                        const size_t ms_delay)
 {
         const size_t available = sb->length - sb->curr_len;
-	if (!available)
-		return NULL;
+        if (!available)
+                return NULL;
 
         char *ptr = sb->buffer + sb->curr_len;
         size_t msg_len = 0;
@@ -71,7 +71,7 @@ char* serial_buffer_rx(struct serial_buffer *sb,
 
         while (!msg_len) {
                 read  = serial_read_line_wait(sb->serial, ptr, available - 1,
-					      msToTicks(ms_delay));
+                                              msToTicks(ms_delay));
 
                 if (read < 1)
                         return NULL;
@@ -79,11 +79,11 @@ char* serial_buffer_rx(struct serial_buffer *sb,
                 msg_len = serial_msg_strlen(ptr);
         }
 
-	/* Check for overflow and warn */
-	if (read == available)
-		pr_warning(LOG_PFX "Serial buffer overflow!\r\n");
+        /* Check for overflow and warn */
+        if (read == available)
+                pr_warning(LOG_PFX "Serial buffer overflow!\r\n");
 
-	/* If here, got a non-empty msg.  Terminate it and add the length */
+        /* If here, got a non-empty msg.  Terminate it and add the length */
         ptr[read] = 0;
         sb->curr_len += ++read;
         return ptr;

@@ -49,40 +49,40 @@
 
 static const Track* findClosestTrack(const Tracks *tracks, const GeoPoint *location)
 {
-    float dist = MAX_DIST_FROM_SF;
-    const Track *best = NULL;
+        float dist = MAX_DIST_FROM_SF;
+        const Track *best = NULL;
 
-    for (unsigned i = 0; i < tracks->count; ++i) {
-        const Track *track = &(tracks->tracks[i]);
+        for (unsigned i = 0; i < tracks->count; ++i) {
+                const Track *track = &(tracks->tracks[i]);
 
-        // XXX: inaccurate but fast.  Good enough for now.
-        GeoPoint startPoint = getStartPoint(track);
-        float track_distance = distPythag(&startPoint, location);
+                // XXX: inaccurate but fast.  Good enough for now.
+                GeoPoint startPoint = getStartPoint(track);
+                float track_distance = distPythag(&startPoint, location);
 
-        if (track_distance >= dist)
-            continue;
+                if (track_distance >= dist)
+                        continue;
 
-        // If here then we have a new best.  Set it accordingly
-        dist = track_distance;
-        best = track;
-    }
+                // If here then we have a new best.  Set it accordingly
+                dist = track_distance;
+                best = track;
+        }
 
-    return best;
+        return best;
 }
 
 const Track* auto_configure_track(const Track *defaultCfg, const GeoPoint *gp)
 {
-    const Tracks *tracks = get_tracks();
-    if (!tracks || tracks->count <= 0) {
-        // Well shit!
-        return defaultCfg;
-    }
+        const Tracks *tracks = get_tracks();
+        if (!tracks || tracks->count <= 0) {
+                // Well shit!
+                return defaultCfg;
+        }
 
-    const Track *foundTrack = findClosestTrack(tracks, gp);
-    if (!foundTrack) {
-        foundTrack = defaultCfg;
-    } else {
-        pr_info_int_msg("tracks: found ", foundTrack->trackId);
-    }
-    return foundTrack;
+        const Track *foundTrack = findClosestTrack(tracks, gp);
+        if (!foundTrack) {
+                foundTrack = defaultCfg;
+        } else {
+                pr_info_int_msg("tracks: found ", foundTrack->trackId);
+        }
+        return foundTrack;
 }

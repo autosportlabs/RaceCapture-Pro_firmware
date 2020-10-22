@@ -28,6 +28,7 @@
 #include "dateTime.h"
 #include "loggerConfig.h"
 #include "queue.h"
+#include "serial.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -35,9 +36,9 @@
 CPP_GUARD_BEGIN
 
 enum LoggerMessageType {
-    LoggerMessageType_Sample,
-    LoggerMessageType_Start,
-    LoggerMessageType_Stop,
+        LoggerMessageType_Sample,
+        LoggerMessageType_Start,
+        LoggerMessageType_Stop
 };
 
 /*
@@ -47,49 +48,50 @@ enum LoggerMessageType {
  * and int64_t if we want to gaurantee this going forward.
  */
 enum SampleData {
-    SampleData_Int_Noarg,
-    SampleData_Int,
-    SampleData_LongLong_Noarg,
-    SampleData_LongLong,
-    SampleData_Float_Noarg,
-    SampleData_Float,
-    SampleData_Double_Noarg,
-    SampleData_Double,
+        SampleData_Int_Noarg,
+        SampleData_Int,
+        SampleData_LongLong_Noarg,
+        SampleData_LongLong,
+        SampleData_Float_Noarg,
+        SampleData_Float,
+        SampleData_Double_Noarg,
+        SampleData_Double,
 };
 
 typedef struct _ChannelSample {
-    union {
-        int valueInt;
-        long long valueLongLong;
-        float valueFloat;
-        double valueDouble;
-    };
-    ChannelConfig *cfg;
-    union {
-        int (*get_int_sample)(int);
-        long long (*get_longlong_sample)(int);
-        float (*get_float_sample)(int);
-        double (*get_double_sample)(int);
-        int (*get_int_sample_noarg)();
-        long long (*get_longlong_sample_noarg)();
-        float (*get_float_sample_noarg)();
-        double (*get_double_sample_noarg)();
-    };
-    uint8_t channelIndex;
-    bool populated;
-    enum SampleData sampleData;
+        union {
+                int valueInt;
+                long long valueLongLong;
+                float valueFloat;
+                double valueDouble;
+        };
+        ChannelConfig *cfg;
+        union {
+                int (*get_int_sample)(int);
+                long long (*get_longlong_sample)(int);
+                float (*get_float_sample)(int);
+                double (*get_double_sample)(int);
+                int (*get_int_sample_noarg)();
+                long long (*get_longlong_sample_noarg)();
+                float (*get_float_sample_noarg)();
+                double (*get_double_sample_noarg)();
+        };
+        uint8_t channelIndex;
+        bool populated;
+        enum SampleData sampleData;
 }  __attribute__((__packed__,aligned(4))) ChannelSample;
 
 struct sample {
-   size_t ticks;
-   size_t channel_count;
-   ChannelSample *channel_samples;
+        size_t ticks;
+        size_t channel_count;
+        ChannelSample *channel_samples;
 };
 
 typedef struct _LoggerMessage {
-        enum LoggerMessageType type;
         size_t ticks;
         struct sample *sample;
+        enum LoggerMessageType type;
+        bool needs_meta;
 } LoggerMessage;
 
 /**
@@ -119,15 +121,18 @@ void free_sample_buffer(struct sample *s);
  * @return true if the sample was found and set
  */
 bool get_sample_value_by_name(const struct sample *s, const char * name, double *value, char ** units);
+bool get_channel_value_by_name(const char * name, double *value, char ** units);
 
 /**
  * Creates a LoggerMessage for use in the messaging between threads.
  * @param t The messaget type.
  * @param ticks The logger tick value.
  * @param s The associated sample object (if any).
+ * @param needs_meta true if metadata changed
  */
 LoggerMessage create_logger_message(const enum LoggerMessageType t,
-                                    const size_t ticks, struct sample *s);
+                                    const size_t ticks, struct sample *s,
+                                    const bool needs_meta);
 
 /**
  * Receives and validates a LoggerMessage from the provided queue.  If the

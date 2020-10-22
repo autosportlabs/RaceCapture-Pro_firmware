@@ -39,14 +39,14 @@ CPP_GUARD_BEGIN
 #define API_ERROR_UNSPECIFIED 	-100
 
 typedef struct _api_context {
-    struct Serial * serial;
-    char * lineBuffer;
-    size_t lineBufferSize;
+        struct Serial * serial;
+        char * lineBuffer;
+        size_t lineBufferSize;
 } api_context;
 
 typedef struct _api_t {
-    const char *cmd;
-    int (*func)(struct Serial *serial, const jsmntok_t *json);
+        const char *cmd;
+        int (*func)(struct Serial *serial, const jsmntok_t *json);
 } api_t;
 
 #define NULL_API {NULL, NULL}

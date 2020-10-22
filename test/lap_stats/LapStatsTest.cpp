@@ -25,7 +25,8 @@
 #include "lap_stats.h"
 #include "dateTime.h"
 #include "gps.h"
-
+#include "FreeRTOS.h"
+#include "task_testing.h"
 /* Inclue the code to test here */
 extern "C" {
 #include "lap_stats.c"
@@ -37,7 +38,7 @@ GpsSnapshot gps_ss;
 
 void LapStatsTest::setUp()
 {
-        lapstats_reset();
+        lapstats_reset(false);
         reset_track();
 
         /* Give us valid values. */
@@ -52,6 +53,7 @@ void LapStatsTest::setUp()
         gps_ss.previousPoint.longitude = 2.0;
         gps_ss.previous_speed = 34;
         gps_ss.delta_last_sample = 100;
+        increment_tick();
 }
 
 void LapStatsTest::reset_test()
@@ -73,7 +75,7 @@ void LapStatsTest::reset_test()
         g_lap = 3;
         g_lapCount = 2;
 
-        lapstats_reset();
+        lapstats_reset(false);
 
         /* Track setting don't change here */
         CPPUNIT_ASSERT_EQUAL(1, g_configured);
@@ -325,13 +327,45 @@ void LapStatsTest::sector_boundary_event_test()
 
 void LapStatsTest::update_distance_test()
 {
-        const float expected =
-                (gps_ss.sample.speed + gps_ss.previous_speed) / 2 *
-                gps_ss.delta_last_sample / 3600000.0;
-
+        lapstats_reset(false);
+        GpsSample gps_sam;
+        gps_sam.time = 100;
+        GPS_sample_update(&gps_sam);
         CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
+        GpsSnapshot ss;
+        ss.sample.quality = GPS_QUALITY_2D;
+        ss.sample.point.latitude = 1.1;
+        ss.sample.point.longitude = 2.1;
+        ss.sample.time = 1234567;
+        ss.sample.speed = 100;
 
-        update_distance(&gps_ss);
+        ss.deltaFirstFix = 100;
+        ss.previousPoint.latitude = 1.0;
+        ss.previousPoint.longitude = 2.0;
+        ss.delta_last_sample = 100;
+        increment_tick();
+
+        /* Do it once to get the lapstats pumped primed */
+        lapstats_process_incremental(&ss.sample);
+        lapstats_processUpdate(&ss);
+        lapstats_update_distance();
+
+        lapstats_process_incremental(&ss.sample);
+        lapstats_processUpdate(&ss);
+        lapstats_update_distance();
+
+        for (int i = 0; i < msToTicks(100); i++) {
+                increment_tick();
+        }
+        /* update the speed */
+        ss.sample.speed = 120;
+        lapstats_process_incremental(&ss.sample);
+        lapstats_processUpdate(&ss);
+        lapstats_update_distance();
+
+
+        const float expected =
+                ((120.0 + 100.0) / 2) * ss.delta_last_sample / 3600000.0;
 
         CPPUNIT_ASSERT_EQUAL(expected, getLapDistance());
         CPPUNIT_ASSERT(0 != getLapDistance());
@@ -339,14 +373,46 @@ void LapStatsTest::update_distance_test()
 
 void LapStatsTest::update_distance_low_speed_test()
 {
+        lapstats_reset(false);
+        GpsSample gps_sam;
+        gps_sam.time = 100;
+        GPS_sample_update(&gps_sam);
         CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
+        GpsSnapshot ss;
+        ss.sample.quality = GPS_QUALITY_2D;
+        ss.sample.point.latitude = 1.1;
+        ss.sample.point.longitude = 2.1;
+        ss.sample.time = 1234567;
+        ss.sample.speed = 0.5;
 
-        /* Threshold is 1 KM/H as of this writing */
-        gps_ss.sample.speed = 1.0;
-        gps_ss.previous_speed = 0.8;
-        update_distance(&gps_ss);
+        ss.deltaFirstFix = 100;
+        ss.previousPoint.latitude = 1.0;
+        ss.previousPoint.longitude = 2.0;
+        ss.delta_last_sample = 100;
+        increment_tick();
 
-        CPPUNIT_ASSERT_EQUAL((float) 0, getLapDistance());
+        /* Do it once to get the lapstats pumped primed */
+        lapstats_process_incremental(&ss.sample);
+        lapstats_processUpdate(&ss);
+        lapstats_update_distance();
+
+        lapstats_process_incremental(&ss.sample);
+        lapstats_processUpdate(&ss);
+        lapstats_update_distance();
+
+        for (int i = 0; i < msToTicks(100); i++) {
+                increment_tick();
+        }
+        /* update the speed */
+        ss.sample.speed = 0.6;
+        lapstats_process_incremental(&ss.sample);
+        lapstats_processUpdate(&ss);
+        lapstats_update_distance();
+
+
+        const float expected = 0;
+        /* should be 0 because under the speed threshold */
+        CPPUNIT_ASSERT_EQUAL(expected, getLapDistance());
 }
 
 void LapStatsTest::update_sector_geo_circle_test()

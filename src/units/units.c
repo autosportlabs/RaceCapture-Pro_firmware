@@ -27,19 +27,19 @@
 #define UNIT_LABEL(u, l) { .unit = (u), .label = (l) }
 
 static const struct {
-	enum unit unit;
-	const char label[DEFAULT_UNITS_LENGTH];
+        enum unit unit;
+        const char label[DEFAULT_UNITS_LENGTH];
 } unit_label_map[] = {
-	/* Length Units Map */
-	UNIT_LABEL(UNIT_LENGTH_METERS, "m"),
-	UNIT_LABEL(UNIT_LENGTH_KILOMETERS, "Km"),
-	UNIT_LABEL(UNIT_LENGTH_FEET, "ft"),
-	UNIT_LABEL(UNIT_LENGTH_MILES, "mi"),
+        /* Length Units Map */
+        UNIT_LABEL(UNIT_LENGTH_METERS, "m"),
+        UNIT_LABEL(UNIT_LENGTH_KILOMETERS, "km"),
+        UNIT_LABEL(UNIT_LENGTH_FEET, "ft"),
+        UNIT_LABEL(UNIT_LENGTH_MILES, "mi"),
 
-	/* Speed Units Map */
-	UNIT_LABEL(UNIT_SPEED_METERS_SECOND, "m/s"),
-	UNIT_LABEL(UNIT_SPEED_KILOMETERS_HOUR, "Kph"),
-	UNIT_LABEL(UNIT_SPEED_MILES_HOUR, "MPH"),
+        /* Speed Units Map */
+        UNIT_LABEL(UNIT_SPEED_METERS_SECOND, "m/s"),
+        UNIT_LABEL(UNIT_SPEED_KILOMETERS_HOUR, "kph"),
+        UNIT_LABEL(UNIT_SPEED_MILES_HOUR, "mph"),
 };
 
 /**
@@ -50,15 +50,15 @@ static const struct {
  */
 enum unit units_get_unit(const char* label)
 {
-	if (!label)
-		return UNIT_UNKNOWN;
+        if (!label)
+                return UNIT_UNKNOWN;
 
-	for (int i = 0; i < ARRAY_LEN(unit_label_map); ++i) {
-		if (STR_EQ(unit_label_map[i].label, label))
-			return unit_label_map[i].unit;
-	}
+        for (int i = 0; i < ARRAY_LEN(unit_label_map); ++i) {
+                if (STR_EQ(unit_label_map[i].label, label))
+                        return unit_label_map[i].unit;
+        }
 
-	return UNIT_UNKNOWN;
+        return UNIT_UNKNOWN;
 }
 
 /**
@@ -69,12 +69,12 @@ enum unit units_get_unit(const char* label)
  */
 const char* units_get_label(const enum unit unit)
 {
-	for (int i = 0; i < ARRAY_LEN(unit_label_map); ++i) {
-		if (unit_label_map[i].unit == unit)
-			return unit_label_map[i].label;
-	}
+        for (int i = 0; i < ARRAY_LEN(unit_label_map); ++i) {
+                if (unit_label_map[i].unit == unit)
+                        return unit_label_map[i].label;
+        }
 
-	return NULL;
+        return NULL;
 }
 
 /**
@@ -83,5 +83,5 @@ const char* units_get_label(const enum unit unit)
  */
 bool units_is_label(const char* label)
 {
-	return UNIT_UNKNOWN != units_get_unit(label);
+        return UNIT_UNKNOWN != units_get_unit(label);
 }

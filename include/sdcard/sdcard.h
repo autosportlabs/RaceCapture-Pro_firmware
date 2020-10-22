@@ -25,15 +25,23 @@
 #include "cpp_guard.h"
 #include "serial.h"
 #include "ff.h"
+#include "sampleRecord.h"
 
 CPP_GUARD_BEGIN
 
-void TestSDWrite(struct Serial *serial, int lines,int doFlush, int quiet);
+bool test_sd(struct Serial *serial, int lines,int doFlush, int quiet);
+void test_sd_interactive(struct Serial *serial, int lines,int doFlush, int quiet);
 void InitFSHardware(void);
 int InitFS();
 int UnmountFS();
 bool sdcard_present();
+bool sdcard_fs_mounted(void);
 int OpenNextLogFile(FIL *f);
+void fs_lock(void);
+void fs_unlock(void);
+void fs_write_sample_record(FIL *buffer_file,
+                            const struct sample *sample,
+                            const unsigned int tick, const int sendMeta);
 
 CPP_GUARD_END
 

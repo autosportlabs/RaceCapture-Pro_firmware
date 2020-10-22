@@ -170,10 +170,10 @@ void lua_validate_arg_boolean_flex(lua_State *l, const int idx)
  */
 bool lua_toboolean_flex(lua_State *l, const int idx)
 {
-	if (lua_isnumber(l, idx))
-		return 0 != lua_tonumber(l, idx);
+        if (lua_isnumber(l, idx))
+                return 0 != lua_tonumber(l, idx);
 
-	return lua_toboolean(l, idx);
+        return lua_toboolean(l, idx);
 }
 
 
@@ -226,7 +226,7 @@ static int log_print(lua_State *L, bool addNewline)
         case 2:
                 lua_validate_arg_number(L, 2);
                 level = lua_tointeger(L, 2);
-                /* Break intentionally missing here */
+        /* Break intentionally missing here */
         case 1:
                 lua_validate_arg_string(L, 1);
                 msg = lua_tostring(L, 1);
@@ -272,6 +272,14 @@ static int lua_log_get_level(lua_State *L)
         return 1;
 }
 
+static int lua_set_max_mem(lua_State *L)
+{
+        lua_validate_args_count(L, 1, 1);
+        lua_validate_arg_number(L, 1);
+        lua_task_set_max_mem(lua_tointeger(L, 1));
+        return 0;
+}
+
 void registerBaseLuaFunctions(lua_State *L)
 {
         lua_registerlight(L, "getStackSize", lua_get_stack_size);
@@ -282,4 +290,5 @@ void registerBaseLuaFunctions(lua_State *L)
         lua_registerlight(L, "setLogLevel", lua_log_set_level);
         lua_registerlight(L, "getLogLevel", lua_log_get_level);
         lua_registerlight(L, "sleep", lua_sleep);
+        lua_registerlight(L, "setMaxMem", lua_set_max_mem);
 }

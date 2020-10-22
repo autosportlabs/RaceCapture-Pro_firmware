@@ -27,9 +27,16 @@
 #include <string.h>
 #include "printk.h"
 #include "virtual_channel.h"
+#include "semphr.h"
 
 static size_t g_virtualChannelCount = 0;
 static VirtualChannel g_virtualChannels[MAX_VIRTUAL_CHANNELS];
+static xSemaphoreHandle vchan_mutex = NULL;
+
+void init_virtual_channels(void)
+{
+        vchan_mutex = xSemaphoreCreateMutex();
+}
 
 VirtualChannel* get_virtual_channel(size_t id)
 {
@@ -60,18 +67,21 @@ int create_virtual_channel(const ChannelConfig chCfg)
          * Here we actually try to create a new channel.  But only if we
          * have the room for it.
          */
-        if (g_virtualChannelCount >= MAX_VIRTUAL_CHANNELS) {
-                pr_error_int_msg("[vchan] Limit reached: ",
-                                 g_virtualChannelCount);
-                return INVALID_VIRTUAL_CHANNEL;
+        int new_channel_id = INVALID_VIRTUAL_CHANNEL;
+
+        xSemaphoreTake(vchan_mutex, portMAX_DELAY);
+        if (g_virtualChannelCount < MAX_VIRTUAL_CHANNELS) {
+                VirtualChannel * channel = g_virtualChannels + g_virtualChannelCount;
+                channel->config = chCfg;
+                channel->currentValue = 0;
+                configChanged();
+                new_channel_id = g_virtualChannelCount++;
         }
-
-        VirtualChannel * channel = g_virtualChannels + g_virtualChannelCount;
-        channel->config = chCfg;
-        channel->currentValue = 0;
-        configChanged();
-
-        return g_virtualChannelCount++;
+        else {
+                pr_error_int_msg("[vchan] Limit reached: ", g_virtualChannelCount);
+        }
+        xSemaphoreGive(vchan_mutex);
+        return new_channel_id;
 }
 
 void set_virtual_channel_value(size_t id, float value)
@@ -109,3 +119,4 @@ int get_virtual_channel_high_sample_rate(void)
 
         return sr;
 }
+

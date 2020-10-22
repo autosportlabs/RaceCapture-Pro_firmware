@@ -49,13 +49,15 @@
 #include "usb_comm.h"
 #include "wifi.h"
 #include "watchdog.h"
+#include "versionInfo.h"
+#include "virtual_channel.h"
 #include <app_info.h>
 #include <stdbool.h>
 
 __attribute__((aligned (4)))
 static const struct app_info_block info_block = {
-    .magic_number = APP_INFO_MAGIC_NUMBER,
-    .info_crc = 0xDEADBEEF,
+        .magic_number = APP_INFO_MAGIC_NUMBER,
+        .info_crc = 0xDEADBEEF,
 };
 
 /*
@@ -72,6 +74,9 @@ static const struct app_info_block info_block = {
 
 void setupTask(void *param)
 {
+#if VIRTUAL_CHANNEL_SUPPORT == 1
+        init_virtual_channels();
+#endif
         initialize_tracks();
         initialize_logger_config();
 
@@ -105,7 +110,7 @@ void setupTask(void *param)
 #endif
 
         /* Removes this setup task from the scheduler */
-	pr_info("[main] Setup Task complete!\r\n");
+        pr_info("[main] Setup Task complete!\r\n");
         vTaskDelete(NULL);
 }
 
@@ -113,7 +118,11 @@ int main( void )
 {
         ALWAYS_KEEP(info_block);
         cpu_init();
-        pr_info("*** Start! ***\r\n");
+        pr_info("*** ");
+        pr_info(FRIENDLY_DEVICE_NAME);
+        pr_info(" ");
+        pr_info(version_full());
+        pr_info(" ***\r\n");
 
         /* Defined as part of our compilation process */
         if (true == ASL_WATCHDOG)

@@ -29,43 +29,43 @@
 
 int CAN_init(LoggerConfig *loggerConfig)
 {
-    CANConfig *canConfig = &loggerConfig->CanConfig;
+        CANConfig *canConfig = &loggerConfig->CanConfig;
 
-    for (size_t i = 0; i < CAN_CHANNELS; i++) {
-        bool termination = false;
+        for (size_t i = 0; i < CAN_CHANNELS; i++) {
+                bool termination = false;
 #if CAN_SW_TERMINATION == true
-        termination = canConfig->termination[i];
+                termination = canConfig->termination[i];
 #endif
-        if (!CAN_init_port(i, canConfig->baud[i], termination))
-            return 0;
-    }
-    return 1;
+                if (!CAN_init_port(i, canConfig->baud[i], termination))
+                        return 0;
+        }
+        return 1;
 }
 
 int CAN_init_port(const uint8_t port, const uint32_t baud, const bool termination_enabled)
 {
-    return CAN_device_init(port, baud, termination_enabled);
+        return CAN_device_init(port, baud, termination_enabled);
 }
 
 int CAN_set_filter(const uint8_t channel, const uint8_t id, const uint8_t extended,
-           const uint32_t filter, const uint32_t mask, const bool enabled)
+                   const uint32_t filter, const uint32_t mask, const bool enabled)
 {
-    return CAN_device_set_filter(channel, id, extended, filter,
-                     mask, enabled);
+        return CAN_device_set_filter(channel, id, extended, filter,
+                                     mask, enabled);
 }
 
 int CAN_tx_msg(const uint8_t channel, const CAN_msg *msg, const unsigned int timeoutMs)
 {
-    const int rc = CAN_device_tx_msg(channel, msg, timeoutMs);
-    if (rc)
-            led_toggle(LED_CAN);
-    return rc;
+        const int rc = CAN_device_tx_msg(channel, msg, timeoutMs);
+        if (rc)
+                led_toggle(LED_CAN);
+        return rc;
 }
 
 int CAN_rx_msg(CAN_msg *msg, const unsigned int timeoutMs)
 {
-    const int rc = CAN_device_rx_msg(msg, timeoutMs);
-    if (rc)
-            led_toggle(LED_CAN);
-    return rc;
+        const int rc = CAN_device_rx_msg(msg, timeoutMs);
+        if (rc)
+                led_toggle(LED_CAN);
+        return rc;
 }

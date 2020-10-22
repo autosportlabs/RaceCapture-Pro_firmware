@@ -38,6 +38,7 @@
 #include <string.h>
 #include <string.h>
 
+#define _LOG_PFX "[fileWriter] "
 #define ERROR_SLEEP_DELAY_MS	500
 #define FILE_BUFFER_SIZE	1024
 #define FILE_WRITER_STACK_SIZE	512
@@ -57,25 +58,25 @@ static void error_led(const bool on)
 static FRESULT flush_file_buffer(void)
 {
         while(true) {
-		size_t available = 0;
-		const void* buff =
-			ring_buffer_dma_read_init(file_buff, &available);
+                size_t available = 0;
+                const void* buff =
+                        ring_buffer_dma_read_init(file_buff, &available);
 
-		/* If nothing to write, we are done. */
-		if (!available)
-			return FR_OK;
+                /* If nothing to write, we are done. */
+                if (!available)
+                        return FR_OK;
 
-		unsigned int written = 0;
-		const FRESULT res =
-			f_write(g_logfile, buff, available, &written);
-
-		ring_buffer_dma_read_fini(file_buff, written);
-		if (FR_OK != res) {
-			pr_debug_int_msg("[FileWriter] f_write failed "
-					 "with status: ", (int) res);
-			error_led(true);
-			return res;
-		}
+                unsigned int written = 0;
+                fs_lock();
+                const FRESULT res = f_write(g_logfile, buff, available, &written);
+                fs_unlock();
+                ring_buffer_dma_read_fini(file_buff, written);
+                if (FR_OK != res) {
+                        pr_debug_int_msg("[FileWriter] f_write failed "
+                                         "with status: ", (int) res);
+                        error_led(true);
+                        return res;
+                }
         }
 }
 
@@ -177,7 +178,7 @@ static int write_samples_data(const LoggerMessage *msg)
         size_t count = msg->sample->channel_count;
 
         if (NULL == sample) {
-                pr_warning(_RCP_BASE_FILE_ "null sample record\r\n");
+                pr_warning(_LOG_PFX "null sample record\r\n");
                 return WRITE_FAIL;
         }
 
@@ -208,7 +209,7 @@ static int write_samples_data(const LoggerMessage *msg)
                         appendDouble(sample->valueDouble, precision);
                         break;
                 default:
-                        pr_warning(_RCP_BASE_FILE_ "Unknown channel "
+                        pr_warning(_LOG_PFX "Unknown channel "
                                    "sample type\n");
                 }
         }
@@ -219,22 +220,26 @@ static int write_samples_data(const LoggerMessage *msg)
 
 static enum writing_status open_existing_log_file(struct logging_status *ls)
 {
-        pr_debug_str_msg(_RCP_BASE_FILE_ "Opening log file ", ls->name);
+        pr_debug_str_msg(_LOG_PFX "Opening log file ", ls->name);
 
+        fs_lock();
         int rc = f_open(g_logfile, ls->name, FA_WRITE);
+        fs_unlock();
 
         if (FR_OK != rc)
                 return WRITING_INACTIVE;
 
         // Seek to the end so we append instead of overwriting
+        fs_lock();
         rc = f_lseek(g_logfile, f_size(g_logfile));
+        fs_unlock();
 
         return rc == FR_OK ? WRITING_ACTIVE : WRITING_INACTIVE;
 }
 
 static enum writing_status open_new_log_file(struct logging_status *ls)
 {
-        pr_debug(_RCP_BASE_FILE_ "Opening new log file\r\n");
+        pr_debug(_LOG_PFX "Opening new log file\r\n");
 
         int i;
 
@@ -246,12 +251,16 @@ static enum writing_status open_new_log_file(struct logging_status *ls)
                 strcat(ls->name, buf);
                 strcat(ls->name, ".log");
 
-                const FRESULT res = f_open(g_logfile, ls->name,
-                                           FA_WRITE | FA_CREATE_NEW);
+                fs_lock();
+                const FRESULT res = f_open(g_logfile, ls->name, FA_WRITE | FA_CREATE_NEW);
+                fs_unlock();
+
                 if ( FR_OK == res )
                         return WRITING_ACTIVE;
 
+                fs_lock();
                 f_close(g_logfile);
+                fs_unlock();
         }
 
         /* We fail if here. Be sure to clean up name buffer.*/
@@ -262,8 +271,9 @@ static enum writing_status open_new_log_file(struct logging_status *ls)
 static void close_log_file(struct logging_status *ls)
 {
         ls->writing_status = WRITING_INACTIVE;
+        fs_lock();
         f_close(g_logfile);
-        UnmountFS();
+        fs_unlock();
 }
 
 static void logging_led_toggle(void)
@@ -278,39 +288,48 @@ static void logging_led_off(void)
 
 static void open_log_file(struct logging_status *ls)
 {
-        pr_info(_RCP_BASE_FILE_ "Opening log file\r\n");
+        pr_info(_LOG_PFX "Opening log file\r\n");
         ls->writing_status = WRITING_INACTIVE;
 
         if (!sdcard_present()) {
                 ls->writing_status = SD_CARD_NOT_PRESENT;
-                pr_error(_RCP_BASE_FILE_ "SD card not present\r\n");
+                pr_error(_LOG_PFX "SD card not present\r\n");
                 return;
         }
 
-        const int rc = InitFS();
-        if (0 != rc) {
-                pr_error_int_msg(_RCP_BASE_FILE_ "FS init error: ", rc);
-                return;
-        }
 
-        pr_debug(_RCP_BASE_FILE_ "FS init success.  Opening file...\r\n");
+        fs_lock();
+        bool fs_good = sdcard_fs_mounted();
+        if (!fs_good) {
+                FRESULT initfs_rc = InitFS();
+                pr_info_int_msg(_LOG_PFX "Remounting filesystem: ", initfs_rc);
+                fs_good = (initfs_rc == FR_OK);
+                if (FR_OK != initfs_rc) {
+                        pr_error_int_msg(_LOG_PFX "Error Initializing filesystem: ", initfs_rc);
+                }
+        }
+        fs_unlock();
+        if (!fs_good)
+                return;
+
+
         // Open a file if one is set, else create a new one.
         ls->writing_status = ls->name[0] ? open_existing_log_file(ls) :
-                open_new_log_file(ls);
+                             open_new_log_file(ls);
 
         if (WRITING_INACTIVE == ls->writing_status) {
-                pr_warning_str_msg(_RCP_BASE_FILE_ "Failed to open: ", ls->name);
+                pr_warning_str_msg(_LOG_PFX "Failed to open: ", ls->name);
                 return;
         }
 
-        pr_info_str_msg(_RCP_BASE_FILE_ "Opened " , ls->name);
+        pr_info_str_msg(_LOG_PFX "Opened " , ls->name);
         ls->flush_tick = xTaskGetTickCount();
-	ls->last_sample_tick = 0;
+        ls->last_sample_tick = 0;
 }
 
 TESTABLE_STATIC int logging_start(struct logging_status *ls)
 {
-        pr_info(_RCP_BASE_FILE_ "Start\r\n");
+        pr_info(_LOG_PFX "Start\r\n");
         ls->logging = true;
 
         /* Set this here because this is the start of the log stream */
@@ -322,7 +341,7 @@ TESTABLE_STATIC int logging_start(struct logging_status *ls)
 
 TESTABLE_STATIC int logging_stop(struct logging_status *ls)
 {
-        pr_debug(_RCP_BASE_FILE_ "End\r\n");
+        pr_debug(_LOG_PFX "End\r\n");
         ls->logging = false;
 
         close_log_file(ls);
@@ -336,20 +355,20 @@ TESTABLE_STATIC int logging_stop(struct logging_status *ls)
 
 static int write_samples(struct logging_status *ls, const LoggerMessage *msg)
 {
-	/* Ensure the LoggerMessage we are writing is valid */
-	if (!is_sample_data_valid(msg)) {
-		pr_warning(LOG_PFX "Sample invalid.  Skipping...\r\n");
-		return 0;
-	}
+        /* Ensure the LoggerMessage we are writing is valid */
+        if (!is_sample_data_valid(msg)) {
+                pr_warning(LOG_PFX "Sample invalid.  Skipping...\r\n");
+                return 0;
+        }
 
-	/* Ensure that we don't write a sample that is older than previous */
-	if (msg->ticks < ls->last_sample_tick) {
-		pr_debug(LOG_PFX "Sample is too old.  Skipping...\r\n");
-		return 0;
-	}
-	ls->last_sample_tick = msg->ticks;
+        /* Ensure that we don't write a sample that is older than previous */
+        if (msg->ticks < ls->last_sample_tick) {
+                pr_debug(LOG_PFX "Sample is too old.  Skipping...\r\n");
+                return 0;
+        }
+        ls->last_sample_tick = msg->ticks;
 
-	int rc = 0;
+        int rc = 0;
 
         /* If we haven't written to this file yet, start with the headers */
         if (0 == ls->rows_written) {
@@ -401,7 +420,7 @@ TESTABLE_STATIC int logging_sample(struct logging_status *ls,
                 }
 
                 /* If here, then unmount and try attempts more time */
-                pr_error(_RCP_BASE_FILE_ "Remounting FS due to write "
+                pr_error(_LOG_PFX "Remounting FS due to write "
                          "error.\r\n");
                 close_log_file(ls);
 
@@ -426,10 +445,12 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
         if (!isTimeoutMs(ls->flush_tick, FLUSH_INTERVAL_MS))
                 return -2;
 
-        pr_debug(_RCP_BASE_FILE_ "flush\r\n");
+        pr_debug(_LOG_PFX "flush\r\n");
+        fs_lock();
         const int res = f_sync(g_logfile);
+        fs_unlock();
         if (0 != res)
-                pr_debug_int_msg(_RCP_BASE_FILE_ "flush err ", res);
+                pr_debug_int_msg(_LOG_PFX "flush err ", res);
 
         ls->flush_tick = xTaskGetTickCount();
         return res;
@@ -437,19 +458,19 @@ TESTABLE_STATIC int flush_logfile(struct logging_status *ls)
 
 static void update_logger_status(struct logging_status *ls)
 {
-    switch(ls->writing_status) {
-    case WRITING_INACTIVE:
-        logging_set_status(LOGGING_STATUS_IDLE);
-        break;
-    case WRITING_ACTIVE:
-        logging_set_status(LOGGING_STATUS_WRITING);
-        break;
-    case SD_CARD_NOT_PRESENT:
-        logging_set_status(LOGGING_STATUS_CARD_NOT_PRESENT);
-        break;
-    default:
-        break;
-    }
+        switch(ls->writing_status) {
+        case WRITING_INACTIVE:
+                logging_set_status(LOGGING_STATUS_IDLE);
+                break;
+        case WRITING_ACTIVE:
+                logging_set_status(LOGGING_STATUS_WRITING);
+                break;
+        case SD_CARD_NOT_PRESENT:
+                logging_set_status(LOGGING_STATUS_CARD_NOT_PRESENT);
+                break;
+        default:
+                break;
+        }
 }
 
 static void fileWriterTask(void *params)
@@ -463,11 +484,11 @@ static void fileWriterTask(void *params)
 
                 /* Get a sample. */
                 const char status = receive_logger_message(g_LoggerMessage_queue,
-                                                           &msg, portMAX_DELAY);
+                                    &msg, portMAX_DELAY);
 
                 /* If we fail to receive for any reason, keep trying */
                 if (pdPASS != status)
-                   continue;
+                        continue;
 
                 switch (msg.type) {
                 case LoggerMessageType_Sample:
@@ -480,14 +501,14 @@ static void fileWriterTask(void *params)
                         rc = logging_stop(&ls);
                         break;
                 default:
-                        pr_warning(_RCP_BASE_FILE_ "Unsupported message "
+                        pr_warning(_LOG_PFX "Unsupported message "
                                    "type\r\n");
                 }
 
                 /* Turns the LED on if things are bad, off otherwise. */
                 error_led(rc);
                 if (rc) {
-                        pr_debug(_RCP_BASE_FILE_ "Msg type ");
+                        pr_debug(_LOG_PFX "Msg type ");
                         pr_debug_int(msg.type);
                         pr_debug_int_msg(" failed with code ", rc);
                 }
@@ -502,20 +523,20 @@ void startFileWriterTask(int priority)
         g_LoggerMessage_queue = create_logger_message_queue();
 
         if (NULL == g_LoggerMessage_queue) {
-                pr_error(_RCP_BASE_FILE_ "LoggerMessage Queue is null!\r\n");
+                pr_error(_LOG_PFX "LoggerMessage Queue is null!\r\n");
                 return;
         }
 
         g_logfile = (FIL *) portMalloc(sizeof(FIL));
         if (NULL == g_logfile) {
-                pr_error(_RCP_BASE_FILE_ "logfile sruct alloc err\r\n");
+                pr_error(_LOG_PFX "logfile sruct alloc err\r\n");
                 return;
         }
         memset(g_logfile, 0, sizeof(FIL));
 
         file_buff = ring_buffer_create(FILE_BUFFER_SIZE);
         if (!file_buff) {
-                pr_error(_RCP_BASE_FILE_ "Failed to alloc ring buffer.\r\n");
+                pr_error(_LOG_PFX "Failed to alloc ring buffer.\r\n");
                 return;
         }
 

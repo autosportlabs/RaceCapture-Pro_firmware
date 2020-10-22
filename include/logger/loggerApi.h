@@ -23,12 +23,12 @@
 #define LOGGERAPI_H_
 
 #include "api.h"
+#include "api_event.h"
 #include "capabilities.h"
 #include "cpp_guard.h"
 #include "jsmn.h"
 #include "sampleRecord.h"
 #include "serial.h"
-
 CPP_GUARD_BEGIN
 
 #define API_METHOD(_NAME, _FUNC) {(_NAME), (_FUNC)},
@@ -51,19 +51,30 @@ CPP_GUARD_BEGIN
 	API_METHOD("getTrackDb", api_getTrackDb)			\
 	API_METHOD("getVer", api_getVersion)				\
 	API_METHOD("getWifiCfg", api_get_wifi_cfg)			\
-	API_METHOD("hb", api_heart_beat)				\
 	API_METHOD("log", api_log)					\
 	API_METHOD("s", api_sampleData)					\
+	API_METHOD("alertmessage", api_alertmessage)     \
+	API_METHOD("alertmsgReply", api_alertmsg_reply)     \
+	API_METHOD("alertmsgAck", api_alertmsg_ack)     \
 	API_METHOD("setActiveTrack", api_set_active_track)		\
 	API_METHOD("setCanCfg", api_setCanConfig)			\
 	API_METHOD("setConnCfg", api_setConnectivityConfig)		\
 	API_METHOD("setLapCfg", api_setLapConfig)			\
+ API_METHOD("resetLapStats", api_reset_lap_stats) \
 	API_METHOD("setLogfileLevel", api_setLogfileLevel)		\
 	API_METHOD("setObd2Cfg", api_setObd2Config)			\
 	API_METHOD("setTelemetry", api_set_telemetry)			\
 	API_METHOD("setTrackCfg", api_setTrackConfig)			\
 	API_METHOD("setWifiCfg", api_set_wifi_cfg)			\
 	API_METHOD("sysReset", api_systemReset)				\
+
+
+#if VIRTUAL_CHANNEL_SUPPORT == 1
+#define VIRTUAL_CHANNEL_METHODS                 \
+    API_METHOD("setVChan", api_set_virtual_channel_value)
+#else
+#define VIRTUAL_CHANNEL_METHODS
+#endif
 
 #if GPS_HARDWARE_SUPPORT
 #define GPS_API_METHODS                         \
@@ -140,7 +151,15 @@ CPP_GUARD_BEGIN
 #define LUA_API_METHODS
 #endif
 
+#if CELLULAR_SUPPORT
+#define CELLULAR_API_METHODS \
+        API_METHOD("hb", api_heart_beat)
+#else
+#define CELLULAR_API_METHODS
+#endif
+
 #define API_METHODS                             \
+        VIRTUAL_CHANNEL_METHODS                 \
         AUTOLOGGING_METHODS                     \
         CAMERA_CONTROL_METHODS                  \
         BASE_API_METHODS                        \
@@ -150,7 +169,8 @@ CPP_GUARD_BEGIN
         PWM_API_METHODS                         \
         GPIO_API_METHODS                        \
         TIMER_API_METHODS                       \
-        LUA_API_METHODS
+        LUA_API_METHODS                         \
+        CELLULAR_API_METHODS
 
 
 /* commands */
@@ -161,7 +181,16 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json);
 int api_systemReset(struct Serial *serial, const jsmntok_t *json);
 int api_factoryReset(struct Serial *serial, const jsmntok_t *json);
 int api_sampleData(struct Serial *serial, const jsmntok_t *json);
+int api_alertmessage(struct Serial *serial, const jsmntok_t *json);
+int api_alertmsg_reply(struct Serial *serial, const jsmntok_t *json);
+int api_alertmsg_ack(struct Serial *serial, const jsmntok_t *json);
+int api_send_alertmessage(struct Serial *serial, const struct alertmessage *alertmsg);
+int api_send_alertmsg_ack(struct Serial *serial, const struct alertmessage_ack *alertmsg_ack);
+int api_send_alertmsg_reply(struct Serial *serial, const struct alertmessage *alertmsg);
+int api_send_button_state(struct Serial *serial, const struct button_state *butt_state);
+#if CELLULAR_SUPPORT
 int api_heart_beat(struct Serial *serial, const jsmntok_t *json);
+#endif
 int api_log(struct Serial *serial, const jsmntok_t *json);
 int api_getMeta(struct Serial *serial, const jsmntok_t *json);
 int api_getConnectivityConfig(struct Serial *serial, const jsmntok_t *json);
@@ -182,6 +211,7 @@ int api_getCanConfig(struct Serial *serial, const jsmntok_t *json);
 int api_setCanConfig(struct Serial *serial, const jsmntok_t *json);
 int api_get_can_channel_config(struct Serial *serial, const jsmntok_t *json);
 int api_set_can_channel_config(struct Serial *serial, const jsmntok_t *json);
+int api_reset_lap_stats(struct Serial *serial, const jsmntok_t *json);
 
 /* Sensor channels */
 int api_getAnalogConfig(struct Serial *serial, const jsmntok_t *json);
@@ -225,6 +255,10 @@ int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 #if CAMERA_CONTROL
 int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
+#endif
+
+#if VIRTUAL_CHANNEL_SUPPORT == 1
+int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json);
 #endif
 
 CPP_GUARD_END

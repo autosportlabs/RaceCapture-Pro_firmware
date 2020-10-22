@@ -51,20 +51,20 @@ void startGPIOTasks(int priority)
 
 void onPushbuttonTask(void *pvParameters)
 {
-    size_t last_press = 0;
-    while(1) {
-        if ( xSemaphoreTake(xOnPushbutton, portMAX_DELAY) == pdTRUE) {
-            if (! isTimeoutMs(last_press, DEBOUNCE_DELAY_PERIOD))
-                    continue;
-            last_press = getCurrentTicks();
+        size_t last_press = 0;
+        while(1) {
+                if ( xSemaphoreTake(xOnPushbutton, portMAX_DELAY) == pdTRUE) {
+                        if (! isTimeoutMs(last_press, DEBOUNCE_DELAY_PERIOD))
+                                continue;
+                        last_press = getCurrentTicks();
 
-            if (GPIO_is_button_pressed()) {
-                if (logging_is_active()) {
-                    stopLogging();
-                } else {
-                    startLogging();
+                        if (GPIO_is_button_pressed()) {
+                                if (logging_is_active()) {
+                                        stopLogging();
+                                } else {
+                                        startLogging();
+                                }
+                        }
                 }
-            }
         }
-    }
 }

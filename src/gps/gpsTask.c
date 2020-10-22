@@ -51,9 +51,18 @@ void GPSTask(void *pvParameters)
                 }
 
                 for (;;) {
-                        gps_msg_result_t result = GPS_processUpdate(serial);
-                        if (result == GPS_MSG_SUCCESS) {
-                                const GpsSnapshot snap = getGpsSnapshot();
+                        GpsSample s;
+
+                        const gps_msg_result_t result = GPS_device_get_update(&s, serial);
+                        gps_flash_status_led(s.quality);
+
+                        if (result == GPS_MSG_DEFERRED) {
+                                lapstats_process_incremental(&s);
+                        } else if (result == GPS_MSG_SUCCESS) {
+                                lapstats_process_incremental(&s);
+                                GPS_sample_update(&s);
+
+                                GpsSnapshot snap = getGpsSnapshot();
                                 lapstats_processUpdate(&snap);
 
                                 if (failures > 0)
@@ -62,7 +71,7 @@ void GPSTask(void *pvParameters)
                                 pr_debug("GPS: Msx Rx Failure\r\n");
                                 if (++failures >= MSG_FAILURES_TRIGGER) {
                                         pr_debug("GPS: Too many failures.  "
-                                                   "Reenum\r\n");
+                                                 "Reenum\r\n");
                                         break;
                                 }
                         }

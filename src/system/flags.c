@@ -96,12 +96,13 @@ static const char* feature_flags[] = {
 #endif
 
 #if SDCARD_SUPPORT
-		FEATURE_FLAG("sd")
+        FEATURE_FLAG("sd")
 #endif
 
 #if CAMERA_CONTROL
-		FEATURE_FLAG("camctl")
+        FEATURE_FLAG("camctl")
 #endif
+
         NULL, /* Always NULL terminated! */
 };
 

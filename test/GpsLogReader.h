@@ -25,7 +25,7 @@
 class GpsLogReader
 {
 public:
-    GpsLogReader(string fName);
+        GpsLogReader(string fName);
 
 };
 

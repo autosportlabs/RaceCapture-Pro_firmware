@@ -26,21 +26,21 @@
 #include "printk.h"
 struct GeoCircle gc_createGeoCircle(const GeoPoint gp, const float r)
 {
-    struct GeoCircle gc;
+        struct GeoCircle gc;
 
-    gc.point = gp;
-    gc.radius = r;
+        gc.point = gp;
+        gc.radius = r;
 
-    return gc;
+        return gc;
 }
 
 bool gc_isPointInGeoCircle(const GeoPoint * point, const struct GeoCircle gc)
 {
-    float dist = distPythag(point, &(gc.point));
-    return  dist <= gc.radius;
+        float dist = distPythag(point, &(gc.point));
+        return  dist <= gc.radius;
 }
 
 bool gc_isValidGeoCircle(const struct GeoCircle gc)
 {
-    return isValidPoint(&(gc.point)) && gc.radius > 0.0;
+        return isValidPoint(&(gc.point)) && gc.radius > 0.0f;
 }

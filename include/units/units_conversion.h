@@ -25,41 +25,41 @@
 #define UNITS_CONVERSION_COUNT 19
 
 enum unit_conversions {
-    UNIT_CONVERSION_NONE = 0,
+        UNIT_CONVERSION_NONE = 0,
 
-    /* Temperature conversion */
-    UNIT_CONVERSION_TEMPERATURE_C_TO_F,
-    UNIT_CONVERSION_TEMPERATURE_F_TO_C,
+        /* Temperature conversion */
+        UNIT_CONVERSION_TEMPERATURE_C_TO_F,
+        UNIT_CONVERSION_TEMPERATURE_F_TO_C,
 
-    /* Pressure Conversion */
-    UNIT_CONVERSION_PRESSURE_BAR_TO_PSI,
-    UNIT_CONVERSION_PRESSURE_PSI_TO_BAR,
+        /* Pressure Conversion */
+        UNIT_CONVERSION_PRESSURE_BAR_TO_PSI,
+        UNIT_CONVERSION_PRESSURE_PSI_TO_BAR,
 
-    /* Speed Conversion */
-    UNIT_CONVERSION_SPEED_KPH_TO_MPH,
-    UNIT_CONVERSION_SPEED_MPH_TO_KPH,
+        /* Speed Conversion */
+        UNIT_CONVERSION_SPEED_KPH_TO_MPH,
+        UNIT_CONVERSION_SPEED_MPH_TO_KPH,
 
-    /* Length Conversion */
-    UNIT_CONVERSION_LENGTH_KM_TO_MI,
-    UNIT_CONVERSION_LENGTH_MI_TO_KM,
-    UNIT_CONVERSION_LENGTH_MM_TO_INCH,
-    UNIT_CONVERSION_LENGTH_INCH_TO_MM,
+        /* Length Conversion */
+        UNIT_CONVERSION_LENGTH_KM_TO_MI,
+        UNIT_CONVERSION_LENGTH_MI_TO_KM,
+        UNIT_CONVERSION_LENGTH_MM_TO_INCH,
+        UNIT_CONVERSION_LENGTH_INCH_TO_MM,
 
-    /* Volume Conversion */
-    UNIT_CONVERSION_VOLUME_L_TO_GAL,
-    UNIT_CONVERSION_VOLUME_GAL_TO_L,
+        /* Volume Conversion */
+        UNIT_CONVERSION_VOLUME_L_TO_GAL,
+        UNIT_CONVERSION_VOLUME_GAL_TO_L,
 
-    /* Mass Conversion */
-    UNIT_CONVERSION_MASS_KG_TO_LB,
-    UNIT_CONVERSION_MASS_LB_TO_KG,
+        /* Mass Conversion */
+        UNIT_CONVERSION_MASS_KG_TO_LB,
+        UNIT_CONVERSION_MASS_LB_TO_KG,
 
-    /* Torque Conversion */
-    UNIT_CONVERSION_TORQUE_NM_TO_LBFT,
-    UNIT_CONVERSION_TORQUE_LBFT_TO_NM,
+        /* Torque Conversion */
+        UNIT_CONVERSION_TORQUE_NM_TO_LBFT,
+        UNIT_CONVERSION_TORQUE_LBFT_TO_NM,
 
-    /* Power Conversion */
-    UNIT_CONVERSION_POWER_W_TO_HP,
-    UNIT_CONVERSION_POWER_HP_TO_W,
+        /* Power Conversion */
+        UNIT_CONVERSION_POWER_W_TO_HP,
+        UNIT_CONVERSION_POWER_HP_TO_W,
 };
 
 /**

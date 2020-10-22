@@ -239,7 +239,7 @@ int CAN_device_init(const uint8_t channel, const uint32_t baud, const bool termi
         return 1;
 }
 
-int CAN_device_set_filter(const uint8_t const channel, const uint8_t id, const uint8_t extended,
+int CAN_device_set_filter(const uint8_t channel, const uint8_t id, const uint8_t extended,
               const uint32_t filter, const uint32_t mask, const bool enabled)
 {
         if (channel > 1)

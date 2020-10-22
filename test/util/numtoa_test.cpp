@@ -34,68 +34,70 @@ void NumtoaTest::setUp() {}
 
 void NumtoaTest::tearDown() {}
 
-void NumtoaTest::testDoubleConversion() {
-  double num;
-  char expStr[10];
-  char str[10];
+void NumtoaTest::testDoubleConversion()
+{
+        double num;
+        char expStr[10];
+        char str[10];
 
-  num = 0.123;
-  strcpy(expStr, "0.123");
-  modp_dtoa(num, str, 5);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        num = 0.123;
+        strcpy(expStr, "0.123");
+        modp_dtoa(num, str, 5);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
-  num = -1.1500;
-  strcpy(expStr, "-1.15");
-  modp_dtoa(num, str, 5);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        num = -1.1500;
+        strcpy(expStr, "-1.15");
+        modp_dtoa(num, str, 5);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
-  num = 1.0000;
-  strcpy(expStr, "1.0");
-  modp_dtoa(num, str, 5);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        num = 1.0000;
+        strcpy(expStr, "1.0");
+        modp_dtoa(num, str, 5);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
-  // XXX: Should this be "5"?
-  num = 005;
-  strcpy(expStr, "5.0");
-  modp_dtoa(num, str, 5);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        // XXX: Should this be "5"?
+        num = 005;
+        strcpy(expStr, "5.0");
+        modp_dtoa(num, str, 5);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
-  num = 3000;
-  strcpy(expStr, "3000");
-  modp_dtoa(num, str, 0);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        num = 3000;
+        strcpy(expStr, "3000");
+        modp_dtoa(num, str, 0);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
 }
 
-void NumtoaTest::testModpFToA() {
-  float num;
-  char expStr[10];
-  char str[10];
+void NumtoaTest::testModpFToA()
+{
+        float num;
+        char expStr[10];
+        char str[10];
 
-  num = 0.123;
-  strcpy(expStr, "0.123");
-  modp_ftoa(num, str, 5);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        num = 0.123;
+        strcpy(expStr, "0.123");
+        modp_ftoa(num, str, 5);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
-  num = -1.1500;
-  strcpy(expStr, "-1.15");
-  modp_ftoa(num, str, 5);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        num = -1.1500;
+        strcpy(expStr, "-1.15");
+        modp_ftoa(num, str, 5);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
-  num = 1.0000;
-  strcpy(expStr, "1.0");
-  modp_ftoa(num, str, 5);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        num = 1.0000;
+        strcpy(expStr, "1.0");
+        modp_ftoa(num, str, 5);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
-  // XXX: Should this be "5"?
-  num = 005;
-  strcpy(expStr, "5.0");
-  modp_ftoa(num, str, 5);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        // XXX: Should this be "5"?
+        num = 005;
+        strcpy(expStr, "5.0");
+        modp_ftoa(num, str, 5);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
-  num = 3000;
-  strcpy(expStr, "3000");
-  modp_ftoa(num, str, 0);
-  CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
+        num = 3000;
+        strcpy(expStr, "3000");
+        modp_ftoa(num, str, 0);
+        CPPUNIT_ASSERT_EQUAL(string(expStr), string(str));
 
 }

@@ -50,7 +50,7 @@
  * LUA allocate before we say no.  This keeps LUA from crashing the system
  * when a memory hog LUA script is running.  Set to 0 for no limit.
  */
-#define LUA_MEM_MAX (1024 * 60)
+#define LUA_MEM_MAX (1024 * 50)
 
 /*
  * These values dictate how the LUA garbage collector will behave.
@@ -73,7 +73,7 @@
 
 //Sensor Channels
 #define ANALOG_CHANNELS 		1
-#define IMU_CHANNELS			7
+#define IMU_CHANNELS			6
 #define	GPIO_CHANNELS			0
 #define TIMER_CHANNELS			0
 #define PWM_CHANNELS			0
@@ -89,6 +89,9 @@
 #define MAX_SENSOR_SAMPLE_RATE	50
 #define MAX_GPS_SAMPLE_RATE		50
 #define MAX_OBD2_SAMPLE_RATE	50
+
+// support GSUMMAX
+#define GSUMMAX
 
 //logging
 #define LOG_BUFFER_SIZE			8192

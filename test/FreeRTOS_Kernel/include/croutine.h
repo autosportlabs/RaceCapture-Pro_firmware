@@ -75,12 +75,12 @@ typedef void * xCoRoutineHandle;
 typedef void (*crCOROUTINE_CODE)( xCoRoutineHandle, unsigned portBASE_TYPE );
 
 typedef struct corCoRoutineControlBlock {
-    crCOROUTINE_CODE 		pxCoRoutineFunction;
-    xListItem				xGenericListItem;	/*< List item used to place the CRCB in ready and blocked queues. */
-    xListItem				xEventListItem;		/*< List item used to place the CRCB in event lists. */
-    unsigned portBASE_TYPE 	uxPriority;			/*< The priority of the co-routine in relation to other co-routines. */
-    unsigned portBASE_TYPE 	uxIndex;			/*< Used to distinguish between co-routines when multiple co-routines use the same co-routine function. */
-    unsigned short 		uxState;			/*< Used internally by the co-routine implementation. */
+        crCOROUTINE_CODE 		pxCoRoutineFunction;
+        xListItem				xGenericListItem;	/*< List item used to place the CRCB in ready and blocked queues. */
+        xListItem				xEventListItem;		/*< List item used to place the CRCB in event lists. */
+        unsigned portBASE_TYPE 	uxPriority;			/*< The priority of the co-routine in relation to other co-routines. */
+        unsigned portBASE_TYPE 	uxIndex;			/*< Used to distinguish between co-routines when multiple co-routines use the same co-routine function. */
+        unsigned short 		uxState;			/*< Used internally by the co-routine implementation. */
 } corCRCB; /* Co-routine control block.  Note must be identical in size down to uxPriority with tskTCB. */
 
 /**

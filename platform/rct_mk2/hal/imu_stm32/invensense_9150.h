@@ -71,6 +71,7 @@
 /* Chip Defaults */
 #define IS_WHOAMI_9150	0x68
 #define IS_WHOAMI_9250	0x71
+#define IS_WHOAMI_6500 0X70
 
 struct is9150_gyro_data {
     int16_t gyro_x;
