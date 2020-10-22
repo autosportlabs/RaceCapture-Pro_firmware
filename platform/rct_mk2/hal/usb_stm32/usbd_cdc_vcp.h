@@ -48,10 +48,10 @@
    ComPort. These parameters can modified on the fly by the host through CDC class
    command class requests. */
 typedef struct {
-    uint32_t bitrate;
-    uint8_t  format;
-    uint8_t  paritytype;
-    uint8_t  datatype;
+        uint32_t bitrate;
+        uint8_t  format;
+        uint8_t  paritytype;
+        uint8_t  datatype;
 } LINE_CODING;
 
 /* Exported constants --------------------------------------------------------*/

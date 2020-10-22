@@ -61,56 +61,56 @@
 
 
 void arm_q7_to_float(
-    q7_t * pSrc,
-    float32_t * pDst,
-    uint32_t blockSize)
+        q7_t * pSrc,
+        float32_t * pDst,
+        uint32_t blockSize)
 {
-    q7_t *pIn = pSrc;                              /* Src pointer */
-    uint32_t blkCnt;                               /* loop counter */
+        q7_t *pIn = pSrc;                              /* Src pointer */
+        uint32_t blkCnt;                               /* loop counter */
 
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = (float32_t) A / 128 */
-        /* convert from q7 to float and then store the results in the destination buffer */
-        *pDst++ = ((float32_t) * pIn++ / 128.0f);
-        *pDst++ = ((float32_t) * pIn++ / 128.0f);
-        *pDst++ = ((float32_t) * pIn++ / 128.0f);
-        *pDst++ = ((float32_t) * pIn++ / 128.0f);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = (float32_t) A / 128 */
+                /* convert from q7 to float and then store the results in the destination buffer */
+                *pDst++ = ((float32_t) * pIn++ / 128.0f);
+                *pDst++ = ((float32_t) * pIn++ / 128.0f);
+                *pDst++ = ((float32_t) * pIn++ / 128.0f);
+                *pDst++ = ((float32_t) * pIn++ / 128.0f);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Loop over blockSize number of values */
-    blkCnt = blockSize;
+        /* Loop over blockSize number of values */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    while(blkCnt > 0u) {
-        /* C = (float32_t) A / 128 */
-        /* convert from q7 to float and then store the results in the destination buffer */
-        *pDst++ = ((float32_t) * pIn++ / 128.0f);
+        while(blkCnt > 0u) {
+                /* C = (float32_t) A / 128 */
+                /* convert from q7 to float and then store the results in the destination buffer */
+                *pDst++ = ((float32_t) * pIn++ / 128.0f);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 }
 
 /**

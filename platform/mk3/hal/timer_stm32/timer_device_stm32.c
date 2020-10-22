@@ -517,7 +517,7 @@ void TIM1_UP_TIM10_IRQHandler(void)
 
                 const uint32_t current = TIM_GetCapture1(TIM10);
                 const uint16_t p_ticks = last < current ? current - last :
-                        TIMER_PERIOD - last + current;
+                                         TIMER_PERIOD - last + current;
 
                 /* No duty cycle on timer 2 because no chained / PWM timer support */
                 update_device_state(2, p_ticks, 0);
@@ -546,7 +546,7 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void)
 
                 const uint32_t current = TIM_GetCapture1(TIM14);
                 const uint16_t p_ticks = last < current ? current - last :
-                        TIMER_PERIOD - last + current;
+                                         TIMER_PERIOD - last + current;
 
                 /* No duty cycle on timer 2 because no chained / PWM timer support */
                 update_device_state(3, p_ticks, 0);

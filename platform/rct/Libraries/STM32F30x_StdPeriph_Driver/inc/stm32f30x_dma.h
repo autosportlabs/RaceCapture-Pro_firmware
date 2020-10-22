@@ -17,8 +17,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -31,7 +31,7 @@
 #define __STM32F30X_DMA_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -47,52 +47,51 @@
 
 /* Exported types ------------------------------------------------------------*/
 
-/** 
+/**
   * @brief  DMA Init structures definition
   */
-typedef struct
-{
-  uint32_t DMA_PeripheralBaseAddr; /*!< Specifies the peripheral base address for DMAy Channelx.              */
+typedef struct {
+        uint32_t DMA_PeripheralBaseAddr; /*!< Specifies the peripheral base address for DMAy Channelx.              */
 
-  uint32_t DMA_MemoryBaseAddr;     /*!< Specifies the memory base address for DMAy Channelx.                  */
+        uint32_t DMA_MemoryBaseAddr;     /*!< Specifies the memory base address for DMAy Channelx.                  */
 
-  uint32_t DMA_DIR;                /*!< Specifies if the peripheral is the source or destination.
+        uint32_t DMA_DIR;                /*!< Specifies if the peripheral is the source or destination.
                                         This parameter can be a value of @ref DMA_data_transfer_direction     */
 
-  uint16_t DMA_BufferSize;         /*!< Specifies the buffer size, in data unit, of the specified Channel. 
+        uint16_t DMA_BufferSize;         /*!< Specifies the buffer size, in data unit, of the specified Channel.
                                         The data unit is equal to the configuration set in DMA_PeripheralDataSize
                                         or DMA_MemoryDataSize members depending in the transfer direction.    */
 
-  uint32_t DMA_PeripheralInc;      /*!< Specifies whether the Peripheral address register is incremented or not.
+        uint32_t DMA_PeripheralInc;      /*!< Specifies whether the Peripheral address register is incremented or not.
                                         This parameter can be a value of @ref DMA_peripheral_incremented_mode */
 
-  uint32_t DMA_MemoryInc;          /*!< Specifies whether the memory address register is incremented or not.
+        uint32_t DMA_MemoryInc;          /*!< Specifies whether the memory address register is incremented or not.
                                         This parameter can be a value of @ref DMA_memory_incremented_mode     */
 
-  uint32_t DMA_PeripheralDataSize; /*!< Specifies the Peripheral data width.
+        uint32_t DMA_PeripheralDataSize; /*!< Specifies the Peripheral data width.
                                         This parameter can be a value of @ref DMA_peripheral_data_size        */
 
-  uint32_t DMA_MemoryDataSize;     /*!< Specifies the Memory data width.
+        uint32_t DMA_MemoryDataSize;     /*!< Specifies the Memory data width.
                                         This parameter can be a value of @ref DMA_memory_data_size            */
 
-  uint32_t DMA_Mode;               /*!< Specifies the operation mode of the DMAy Channelx.
+        uint32_t DMA_Mode;               /*!< Specifies the operation mode of the DMAy Channelx.
                                         This parameter can be a value of @ref DMA_circular_normal_mode
                                         @note: The circular buffer mode cannot be used if the memory-to-memory
                                               data transfer is configured on the selected Channel */
 
-  uint32_t DMA_Priority;           /*!< Specifies the software priority for the DMAy Channelx.
+        uint32_t DMA_Priority;           /*!< Specifies the software priority for the DMAy Channelx.
                                         This parameter can be a value of @ref DMA_priority_level              */
 
-  uint32_t DMA_M2M;                /*!< Specifies if the DMAy Channelx will be used in memory-to-memory transfer.
+        uint32_t DMA_M2M;                /*!< Specifies if the DMAy Channelx will be used in memory-to-memory transfer.
                                         This parameter can be a value of @ref DMA_memory_to_memory            */
-}DMA_InitTypeDef;
+} DMA_InitTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
 
 /** @defgroup DMA_Exported_Constants
   * @{
   */
-  
+
 #define IS_DMA_ALL_PERIPH(PERIPH) (((PERIPH) == DMA1_Channel1) || \
                                    ((PERIPH) == DMA1_Channel2) || \
                                    ((PERIPH) == DMA1_Channel3) || \
@@ -106,7 +105,7 @@ typedef struct
                                    ((PERIPH) == DMA2_Channel4) || \
                                    ((PERIPH) == DMA2_Channel5))
 
-/** @defgroup DMA_data_transfer_direction 
+/** @defgroup DMA_data_transfer_direction
   * @{
   */
 
@@ -120,7 +119,7 @@ typedef struct
   */
 
 
-/** @defgroup DMA_peripheral_incremented_mode 
+/** @defgroup DMA_peripheral_incremented_mode
   * @{
   */
 
@@ -133,7 +132,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup DMA_memory_incremented_mode 
+/** @defgroup DMA_memory_incremented_mode
   * @{
   */
 
@@ -146,7 +145,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup DMA_peripheral_data_size 
+/** @defgroup DMA_peripheral_data_size
   * @{
   */
 
@@ -161,7 +160,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup DMA_memory_data_size 
+/** @defgroup DMA_memory_data_size
   * @{
   */
 
@@ -176,7 +175,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup DMA_circular_normal_mode 
+/** @defgroup DMA_circular_normal_mode
   * @{
   */
 
@@ -188,7 +187,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup DMA_priority_level 
+/** @defgroup DMA_priority_level
   * @{
   */
 
@@ -205,7 +204,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup DMA_memory_to_memory 
+/** @defgroup DMA_memory_to_memory
   * @{
   */
 
@@ -308,10 +307,10 @@ typedef struct
   * @}
   */
 
-/** @defgroup DMA_flags_definition 
+/** @defgroup DMA_flags_definition
   * @{
   */
-  
+
 #define DMA1_FLAG_GL1                      ((uint32_t)0x00000001)
 #define DMA1_FLAG_TC1                      ((uint32_t)0x00000002)
 #define DMA1_FLAG_HT1                      ((uint32_t)0x00000004)
@@ -408,7 +407,7 @@ void DMA_Init(DMA_Channel_TypeDef* DMAy_Channelx, DMA_InitTypeDef* DMA_InitStruc
 void DMA_StructInit(DMA_InitTypeDef* DMA_InitStruct);
 void DMA_Cmd(DMA_Channel_TypeDef* DMAy_Channelx, FunctionalState NewState);
 
-/* Data Counter functions******************************************************/ 
+/* Data Counter functions******************************************************/
 void DMA_SetCurrDataCounter(DMA_Channel_TypeDef* DMAy_Channelx, uint16_t DataNumber);
 uint16_t DMA_GetCurrDataCounter(DMA_Channel_TypeDef* DMAy_Channelx);
 

@@ -162,78 +162,78 @@ float32_t err_signal[BLOCKSIZE];
 
 int32_t main(void)
 {
-    uint32_t i;
-    arm_status status;
-    uint32_t index;
-    float32_t minValue;
+        uint32_t i;
+        arm_status status;
+        uint32_t index;
+        float32_t minValue;
 
-    /* Initialize the LMSNorm data structure */
-    arm_lms_norm_init_f32(&lmsNorm_instance, NUMTAPS, lmsNormCoeff_f32, lmsStateF32, MU, BLOCKSIZE);
+        /* Initialize the LMSNorm data structure */
+        arm_lms_norm_init_f32(&lmsNorm_instance, NUMTAPS, lmsNormCoeff_f32, lmsStateF32, MU, BLOCKSIZE);
 
-    /* Initialize the FIR data structure */
-    arm_fir_init_f32(&LPF_instance, NUMTAPS, (float32_t *)FIRCoeff_f32, firStateF32, BLOCKSIZE);
+        /* Initialize the FIR data structure */
+        arm_fir_init_f32(&LPF_instance, NUMTAPS, (float32_t *)FIRCoeff_f32, firStateF32, BLOCKSIZE);
 
-    /* ----------------------------------------------------------------------
-    * Loop over the frames of data and execute each of the processing
-    * functions in the system.
-    * ------------------------------------------------------------------- */
+        /* ----------------------------------------------------------------------
+        * Loop over the frames of data and execute each of the processing
+        * functions in the system.
+        * ------------------------------------------------------------------- */
 
-    for(i=0; i < NUMFRAMES; i++) {
-        /* Read the input data - uniformly distributed random noise - into wire1 */
-        arm_copy_f32(testInput_f32 + (i * BLOCKSIZE), wire1, BLOCKSIZE);
+        for(i=0; i < NUMFRAMES; i++) {
+                /* Read the input data - uniformly distributed random noise - into wire1 */
+                arm_copy_f32(testInput_f32 + (i * BLOCKSIZE), wire1, BLOCKSIZE);
 
-        /* Execute the FIR processing function.  Input wire1 and output wire2 */
-        arm_fir_f32(&LPF_instance, wire1, wire2, BLOCKSIZE);
+                /* Execute the FIR processing function.  Input wire1 and output wire2 */
+                arm_fir_f32(&LPF_instance, wire1, wire2, BLOCKSIZE);
 
-        /* Execute the LMS Norm processing function*/
+                /* Execute the LMS Norm processing function*/
 
-        arm_lms_norm_f32(&lmsNorm_instance, /* LMSNorm instance */
-                         wire1,                     /* Input signal */
-                         wire2,			          /* Reference Signal */
-                         wire3, 			          /* Converged Signal */
-                         err_signal, 		          /* Error Signal, this will become small as the signal converges */
-                         BLOCKSIZE);		          /* BlockSize */
+                arm_lms_norm_f32(&lmsNorm_instance, /* LMSNorm instance */
+                                 wire1,                     /* Input signal */
+                                 wire2,			          /* Reference Signal */
+                                 wire3, 			          /* Converged Signal */
+                                 err_signal, 		          /* Error Signal, this will become small as the signal converges */
+                                 BLOCKSIZE);		          /* BlockSize */
 
-        /* apply overall gain */
-        arm_scale_f32(wire3, 5, wire3, BLOCKSIZE);	 /* in-place buffer */
-    }
+                /* apply overall gain */
+                arm_scale_f32(wire3, 5, wire3, BLOCKSIZE);	 /* in-place buffer */
+        }
 
-    status = ARM_MATH_SUCCESS;
+        status = ARM_MATH_SUCCESS;
 
-    /* -------------------------------------------------------------------------------
-    * Test whether the error signal has reached towards 0.
-    * ----------------------------------------------------------------------------- */
+        /* -------------------------------------------------------------------------------
+        * Test whether the error signal has reached towards 0.
+        * ----------------------------------------------------------------------------- */
 
-    arm_abs_f32(err_signal, err_signal, BLOCKSIZE);
-    arm_min_f32(err_signal, BLOCKSIZE, &minValue, &index);
+        arm_abs_f32(err_signal, err_signal, BLOCKSIZE);
+        arm_min_f32(err_signal, BLOCKSIZE, &minValue, &index);
 
-    if (minValue > DELTA_ERROR) {
-        status = ARM_MATH_TEST_FAILURE;
-    }
+        if (minValue > DELTA_ERROR) {
+                status = ARM_MATH_TEST_FAILURE;
+        }
 
-    /* ----------------------------------------------------------------------
-    * Test whether the filter coefficients have converged.
-    * ------------------------------------------------------------------- */
+        /* ----------------------------------------------------------------------
+        * Test whether the filter coefficients have converged.
+        * ------------------------------------------------------------------- */
 
-    arm_sub_f32((float32_t *)FIRCoeff_f32, lmsNormCoeff_f32, lmsNormCoeff_f32, NUMTAPS);
+        arm_sub_f32((float32_t *)FIRCoeff_f32, lmsNormCoeff_f32, lmsNormCoeff_f32, NUMTAPS);
 
-    arm_abs_f32(lmsNormCoeff_f32, lmsNormCoeff_f32, NUMTAPS);
-    arm_min_f32(lmsNormCoeff_f32, NUMTAPS, &minValue, &index);
+        arm_abs_f32(lmsNormCoeff_f32, lmsNormCoeff_f32, NUMTAPS);
+        arm_min_f32(lmsNormCoeff_f32, NUMTAPS, &minValue, &index);
 
-    if (minValue > DELTA_COEFF) {
-        status = ARM_MATH_TEST_FAILURE;
-    }
+        if (minValue > DELTA_COEFF) {
+                status = ARM_MATH_TEST_FAILURE;
+        }
 
-    /* ----------------------------------------------------------------------
-    * Loop here if the signals did not pass the convergence check.
-    * This denotes a test failure
-    * ------------------------------------------------------------------- */
+        /* ----------------------------------------------------------------------
+        * Loop here if the signals did not pass the convergence check.
+        * This denotes a test failure
+        * ------------------------------------------------------------------- */
 
-    if( status != ARM_MATH_SUCCESS) {
-        while(1);
-    }
+        if( status != ARM_MATH_SUCCESS) {
+                while(1);
+        }
 
-    while(1);                             /* main function does not return */
+        while(1);                             /* main function does not return */
 }
 
 /** \endlink */

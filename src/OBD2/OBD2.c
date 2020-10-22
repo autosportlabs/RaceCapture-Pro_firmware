@@ -387,7 +387,7 @@ void update_obd2_channels(CAN_msg *msg, OBD2Config *cfg)
         if (obd2_state.last_obd2_query_timestamp &&
 
             /* is this CAN message an OBD2 PID response */
-            (msg->addressValue == OBD2_11BIT_PID_RESPONSE || msg->addressValue == OBD2_29BIT_PID_RESPONSE) &&
+            (msg->addressValue == pid_config->mapping.can_id) &&
 
             /* does the returned mode + response offeset match the one expected in the current query? ? */
             msg->data[1] == mode + OBD2_MODE_RESPONSE_OFFSET &&
@@ -440,6 +440,7 @@ bool OBD2_get_value_for_pid(uint16_t pid, float *value)
         return false;
 }
 
-void OBD2_set_pid_delay(uint32_t delay){
+void OBD2_set_pid_delay(uint32_t delay)
+{
         obd2_state.pid_query_delay = delay;
 }

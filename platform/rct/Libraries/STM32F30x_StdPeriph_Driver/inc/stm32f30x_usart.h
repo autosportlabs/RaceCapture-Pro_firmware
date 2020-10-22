@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V1.0.1
   * @date    23-October-2012
-  * @brief   This file contains all the functions prototypes for the USART 
+  * @brief   This file contains all the functions prototypes for the USART
   *          firmware library.
   ******************************************************************************
   * @attention
@@ -17,8 +17,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -31,7 +31,7 @@
 #define __STM32F30x_USART_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -43,60 +43,58 @@
 
 /** @addtogroup USART
   * @{
-  */ 
+  */
 
 /* Exported types ------------------------------------------------------------*/
 
-   
-   
-/** 
-  * @brief  USART Init Structure definition  
-  */ 
 
-typedef struct
-{
-  uint32_t USART_BaudRate;            /*!< This member configures the USART communication baud rate.
+
+/**
+  * @brief  USART Init Structure definition
+  */
+
+typedef struct {
+        uint32_t USART_BaudRate;            /*!< This member configures the USART communication baud rate.
                                            The baud rate is computed using the following formula:
                                             - IntegerDivider = ((PCLKx) / (16 * (USART_InitStruct->USART_BaudRate)))
                                             - FractionalDivider = ((IntegerDivider - ((uint32_t) IntegerDivider)) * 16) + 0.5 */
 
-  uint32_t USART_WordLength;          /*!< Specifies the number of data bits transmitted or received in a frame.
+        uint32_t USART_WordLength;          /*!< Specifies the number of data bits transmitted or received in a frame.
                                            This parameter can be a value of @ref USART_Word_Length */
 
-  uint32_t USART_StopBits;            /*!< Specifies the number of stop bits transmitted.
+        uint32_t USART_StopBits;            /*!< Specifies the number of stop bits transmitted.
                                            This parameter can be a value of @ref USART_Stop_Bits */
 
-  uint32_t USART_Parity;              /*!< Specifies the parity mode.
+        uint32_t USART_Parity;              /*!< Specifies the parity mode.
                                            This parameter can be a value of @ref USART_Parity
                                            @note When parity is enabled, the computed parity is inserted
                                                  at the MSB position of the transmitted data (9th bit when
                                                  the word length is set to 9 data bits; 8th bit when the
                                                  word length is set to 8 data bits). */
- 
-  uint32_t USART_Mode;                /*!< Specifies wether the Receive or Transmit mode is enabled or disabled.
+
+        uint32_t USART_Mode;                /*!< Specifies wether the Receive or Transmit mode is enabled or disabled.
                                            This parameter can be a value of @ref USART_Mode */
 
-  uint32_t USART_HardwareFlowControl; /*!< Specifies wether the hardware flow control mode is enabled
+        uint32_t USART_HardwareFlowControl; /*!< Specifies wether the hardware flow control mode is enabled
                                            or disabled.
                                            This parameter can be a value of @ref USART_Hardware_Flow_Control*/
 } USART_InitTypeDef;
 
-/** 
+/**
   * @brief  USART Clock Init Structure definition
-  */ 
+  */
 
-typedef struct
-{
-  uint32_t USART_Clock;             /*!< Specifies whether the USART clock is enabled or disabled.
+typedef struct {
+        uint32_t USART_Clock;             /*!< Specifies whether the USART clock is enabled or disabled.
                                          This parameter can be a value of @ref USART_Clock */
 
-  uint32_t USART_CPOL;              /*!< Specifies the steady state of the serial clock.
+        uint32_t USART_CPOL;              /*!< Specifies the steady state of the serial clock.
                                          This parameter can be a value of @ref USART_Clock_Polarity */
 
-  uint32_t USART_CPHA;              /*!< Specifies the clock transition on which the bit capture is made.
+        uint32_t USART_CPHA;              /*!< Specifies the clock transition on which the bit capture is made.
                                          This parameter can be a value of @ref USART_Clock_Phase */
 
-  uint32_t USART_LastBit;           /*!< Specifies whether the clock pulse corresponding to the last transmitted
+        uint32_t USART_LastBit;           /*!< Specifies whether the clock pulse corresponding to the last transmitted
                                          data bit (MSB) has to be output on the SCLK pin in synchronous mode.
                                          This parameter can be a value of @ref USART_Last_Bit */
 } USART_ClockInitTypeDef;
@@ -105,7 +103,7 @@ typedef struct
 
 /** @defgroup USART_Exported_Constants
   * @{
-  */ 
+  */
 
 #define IS_USART_ALL_PERIPH(PERIPH) (((PERIPH) == USART1) || \
                                      ((PERIPH) == USART2) || \
@@ -123,9 +121,9 @@ typedef struct
                                       ((PERIPH) == UART4))
 
 
-/** @defgroup USART_Word_Length 
+/** @defgroup USART_Word_Length
   * @{
-  */ 
+  */
 
 #define USART_WordLength_8b                  ((uint32_t)0x00000000)
 #define USART_WordLength_9b                  USART_CR1_M
@@ -133,11 +131,11 @@ typedef struct
                                       ((LENGTH) == USART_WordLength_9b))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Stop_Bits 
+/** @defgroup USART_Stop_Bits
   * @{
-  */ 
+  */
 
 #define USART_StopBits_1                     ((uint32_t)0x00000000)
 #define USART_StopBits_2                     USART_CR2_STOP_1
@@ -147,25 +145,25 @@ typedef struct
                                      ((STOPBITS) == USART_StopBits_1_5))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Parity 
+/** @defgroup USART_Parity
   * @{
-  */ 
+  */
 
 #define USART_Parity_No                      ((uint32_t)0x00000000)
 #define USART_Parity_Even                    USART_CR1_PCE
-#define USART_Parity_Odd                     (USART_CR1_PCE | USART_CR1_PS) 
+#define USART_Parity_Odd                     (USART_CR1_PCE | USART_CR1_PS)
 #define IS_USART_PARITY(PARITY) (((PARITY) == USART_Parity_No) || \
                                  ((PARITY) == USART_Parity_Even) || \
                                  ((PARITY) == USART_Parity_Odd))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Mode 
+/** @defgroup USART_Mode
   * @{
-  */ 
+  */
 
 #define USART_Mode_Rx                        USART_CR1_RE
 #define USART_Mode_Tx                        USART_CR1_TE
@@ -173,11 +171,11 @@ typedef struct
                               ((MODE) != (uint32_t)0x00))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Hardware_Flow_Control 
+/** @defgroup USART_Hardware_Flow_Control
   * @{
-  */ 
+  */
 
 #define USART_HardwareFlowControl_None       ((uint32_t)0x00000000)
 #define USART_HardwareFlowControl_RTS        USART_CR3_RTSE
@@ -190,31 +188,31 @@ typedef struct
                                ((CONTROL) == USART_HardwareFlowControl_RTS_CTS))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Clock 
+/** @defgroup USART_Clock
   * @{
-  */ 
-  
+  */
+
 #define USART_Clock_Disable                  ((uint32_t)0x00000000)
 #define USART_Clock_Enable                   USART_CR2_CLKEN
 #define IS_USART_CLOCK(CLOCK) (((CLOCK) == USART_Clock_Disable) || \
                                ((CLOCK) == USART_Clock_Enable))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Clock_Polarity 
+/** @defgroup USART_Clock_Polarity
   * @{
   */
-  
+
 #define USART_CPOL_Low                       ((uint32_t)0x00000000)
 #define USART_CPOL_High                      USART_CR2_CPOL
 #define IS_USART_CPOL(CPOL) (((CPOL) == USART_CPOL_Low) || ((CPOL) == USART_CPOL_High))
 
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USART_Clock_Phase
   * @{
@@ -239,8 +237,8 @@ typedef struct
 /**
   * @}
   */
-  
-/** @defgroup USART_DMA_Requests 
+
+/** @defgroup USART_DMA_Requests
   * @{
   */
 
@@ -251,7 +249,7 @@ typedef struct
 
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USART_DMA_Recception_Error
   * @{
@@ -263,7 +261,7 @@ typedef struct
                                        ((DMAERROR) == USART_DMAOnError_Enable))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USART_MuteMode_WakeUp_methods
   * @{
@@ -279,7 +277,7 @@ typedef struct
 
 /** @defgroup USART_Address_Detection
   * @{
-  */ 
+  */
 
 #define USART_AddressLength_4b               ((uint32_t)0x00000000)
 #define USART_AddressLength_7b               USART_CR2_ADDM7
@@ -287,11 +285,11 @@ typedef struct
                                              ((ADDRESS) == USART_AddressLength_7b))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_StopMode_WakeUp_methods 
+/** @defgroup USART_StopMode_WakeUp_methods
   * @{
-  */ 
+  */
 
 #define USART_WakeUpSource_AddressMatch      ((uint32_t)0x00000000)
 #define USART_WakeUpSource_StartBit          USART_CR3_WUS_1
@@ -301,12 +299,12 @@ typedef struct
                                                 ((SOURCE) == USART_WakeUpSource_RXNE))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_LIN_Break_Detection_Length 
+/** @defgroup USART_LIN_Break_Detection_Length
   * @{
   */
-  
+
 #define USART_LINBreakDetectLength_10b       ((uint32_t)0x00000000)
 #define USART_LINBreakDetectLength_11b       USART_CR2_LBDL
 #define IS_USART_LIN_BREAK_DETECT_LENGTH(LENGTH) \
@@ -316,7 +314,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup USART_IrDA_Low_Power 
+/** @defgroup USART_IrDA_Low_Power
   * @{
   */
 
@@ -326,9 +324,9 @@ typedef struct
                                   ((MODE) == USART_IrDAMode_Normal))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_DE_Polarity 
+/** @defgroup USART_DE_Polarity
   * @{
   */
 
@@ -338,9 +336,9 @@ typedef struct
                                         ((POLARITY) == USART_DEPolarity_High))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Inversion_Pins 
+/** @defgroup USART_Inversion_Pins
   * @{
   */
 
@@ -353,7 +351,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup USART_AutoBaudRate_Mode 
+/** @defgroup USART_AutoBaudRate_Mode
   * @{
   */
 
@@ -379,8 +377,8 @@ typedef struct
                                     ((OVR) == USART_OVRDetection_Disable))
 /**
   * @}
-  */ 
-/** @defgroup USART_Request 
+  */
+/** @defgroup USART_Request
   * @{
   */
 
@@ -397,9 +395,9 @@ typedef struct
                                    ((REQUEST) == USART_Request_ABRRQ))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Flags 
+/** @defgroup USART_Flags
   * @{
   */
 #define USART_FLAG_REACK                     USART_ISR_REACK
@@ -413,7 +411,7 @@ typedef struct
 #define USART_FLAG_ABRE                      USART_ISR_ABRE
 #define USART_FLAG_EOB                       USART_ISR_EOBF
 #define USART_FLAG_RTO                       USART_ISR_RTOF
-#define USART_FLAG_nCTSS                     USART_ISR_CTS 
+#define USART_FLAG_nCTSS                     USART_ISR_CTS
 #define USART_FLAG_CTS                       USART_ISR_CTSIF
 #define USART_FLAG_LBD                       USART_ISR_LBD
 #define USART_FLAG_TXE                       USART_ISR_TXE
@@ -444,9 +442,9 @@ typedef struct
                                    ((FLAG) == USART_FLAG_CM) || ((FLAG) == USART_FLAG_PE))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup USART_Interrupt_definition 
+/** @defgroup USART_Interrupt_definition
   * @brief USART Interrupt definition
   * USART_IT possible values
   * Elements values convention: 0xZZZZYYXX
@@ -466,7 +464,7 @@ typedef struct
 #define USART_IT_RXNE                        ((uint32_t)0x00050105)
 #define USART_IT_IDLE                        ((uint32_t)0x00040104)
 #define USART_IT_LBD                         ((uint32_t)0x00080206)
-#define USART_IT_CTS                         ((uint32_t)0x0009030A) 
+#define USART_IT_CTS                         ((uint32_t)0x0009030A)
 #define USART_IT_ERR                         ((uint32_t)0x00000300)
 #define USART_IT_ORE                         ((uint32_t)0x00030300)
 #define USART_IT_NE                          ((uint32_t)0x00020300)
@@ -497,7 +495,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup USART_Global_definition 
+/** @defgroup USART_Global_definition
   * @{
   */
 
@@ -509,11 +507,11 @@ typedef struct
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-  */ 
+  */
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
@@ -598,10 +596,10 @@ void USART_ClearITPendingBit(USART_TypeDef* USARTx, uint32_t USART_IT);
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-  */ 
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

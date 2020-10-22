@@ -164,59 +164,59 @@ extern volatile unsigned long ulTaskSwitchRequested;
 filled with the MicroBlaze context as it was at the time the exception occurred.
 This is done as an aid to debugging exception occurrences. */
 typedef struct PORT_REGISTER_DUMP {
-    /* The following structure members hold the values of the MicroBlaze
-    registers at the time the exception was raised. */
-    unsigned long ulR1_SP;
-    unsigned long ulR2_small_data_area;
-    unsigned long ulR3;
-    unsigned long ulR4;
-    unsigned long ulR5;
-    unsigned long ulR6;
-    unsigned long ulR7;
-    unsigned long ulR8;
-    unsigned long ulR9;
-    unsigned long ulR10;
-    unsigned long ulR11;
-    unsigned long ulR12;
-    unsigned long ulR13_read_write_small_data_area;
-    unsigned long ulR14_return_address_from_interrupt;
-    unsigned long ulR15_return_address_from_subroutine;
-    unsigned long ulR16_return_address_from_trap;
-    unsigned long ulR17_return_address_from_exceptions; /* The exception entry code will copy the BTR into R17 if the exception occurred in the delay slot of a branch instruction. */
-    unsigned long ulR18;
-    unsigned long ulR19;
-    unsigned long ulR20;
-    unsigned long ulR21;
-    unsigned long ulR22;
-    unsigned long ulR23;
-    unsigned long ulR24;
-    unsigned long ulR25;
-    unsigned long ulR26;
-    unsigned long ulR27;
-    unsigned long ulR28;
-    unsigned long ulR29;
-    unsigned long ulR30;
-    unsigned long ulR31;
-    unsigned long ulPC;
-    unsigned long ulESR;
-    unsigned long ulMSR;
-    unsigned long ulEAR;
-    unsigned long ulFSR;
-    unsigned long ulEDR;
+        /* The following structure members hold the values of the MicroBlaze
+        registers at the time the exception was raised. */
+        unsigned long ulR1_SP;
+        unsigned long ulR2_small_data_area;
+        unsigned long ulR3;
+        unsigned long ulR4;
+        unsigned long ulR5;
+        unsigned long ulR6;
+        unsigned long ulR7;
+        unsigned long ulR8;
+        unsigned long ulR9;
+        unsigned long ulR10;
+        unsigned long ulR11;
+        unsigned long ulR12;
+        unsigned long ulR13_read_write_small_data_area;
+        unsigned long ulR14_return_address_from_interrupt;
+        unsigned long ulR15_return_address_from_subroutine;
+        unsigned long ulR16_return_address_from_trap;
+        unsigned long ulR17_return_address_from_exceptions; /* The exception entry code will copy the BTR into R17 if the exception occurred in the delay slot of a branch instruction. */
+        unsigned long ulR18;
+        unsigned long ulR19;
+        unsigned long ulR20;
+        unsigned long ulR21;
+        unsigned long ulR22;
+        unsigned long ulR23;
+        unsigned long ulR24;
+        unsigned long ulR25;
+        unsigned long ulR26;
+        unsigned long ulR27;
+        unsigned long ulR28;
+        unsigned long ulR29;
+        unsigned long ulR30;
+        unsigned long ulR31;
+        unsigned long ulPC;
+        unsigned long ulESR;
+        unsigned long ulMSR;
+        unsigned long ulEAR;
+        unsigned long ulFSR;
+        unsigned long ulEDR;
 
-    /* A human readable description of the exception cause.  The strings used
-    are the same as the #define constant names found in the
-    microblaze_exceptions_i.h header file */
-    signed char *pcExceptionCause;
+        /* A human readable description of the exception cause.  The strings used
+        are the same as the #define constant names found in the
+        microblaze_exceptions_i.h header file */
+        signed char *pcExceptionCause;
 
-    /* The human readable name of the task that was running at the time the
-    exception occurred.  This is the name that was given to the task when the
-    task was created using the FreeRTOS xTaskCreate() API function. */
-    signed char *pcCurrentTaskName;
+        /* The human readable name of the task that was running at the time the
+        exception occurred.  This is the name that was given to the task when the
+        task was created using the FreeRTOS xTaskCreate() API function. */
+        signed char *pcCurrentTaskName;
 
-    /* The handle of the task that was running a the time the exception
-    occurred. */
-    void * xCurrentTaskHandle;
+        /* The handle of the task that was running a the time the exception
+        occurred. */
+        void * xCurrentTaskHandle;
 
 } xPortRegisterDump;
 

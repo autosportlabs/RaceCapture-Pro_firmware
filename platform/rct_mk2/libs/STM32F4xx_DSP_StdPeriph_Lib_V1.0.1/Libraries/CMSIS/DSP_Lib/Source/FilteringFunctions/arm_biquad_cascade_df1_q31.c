@@ -67,287 +67,287 @@
  */
 
 void arm_biquad_cascade_df1_q31(
-    const arm_biquad_casd_df1_inst_q31 * S,
-    q31_t * pSrc,
-    q31_t * pDst,
-    uint32_t blockSize)
+        const arm_biquad_casd_df1_inst_q31 * S,
+        q31_t * pSrc,
+        q31_t * pDst,
+        uint32_t blockSize)
 {
-    q31_t *pIn = pSrc;                             /*  input pointer initialization  */
-    q31_t *pOut = pDst;                            /*  output pointer initialization */
-    q31_t *pState = S->pState;                     /*  pState pointer initialization */
-    q31_t *pCoeffs = S->pCoeffs;                   /*  coeff pointer initialization  */
-    q63_t acc;                                     /*  accumulator                   */
-    q31_t Xn1, Xn2, Yn1, Yn2;                      /*  Filter state variables        */
-    q31_t b0, b1, b2, a1, a2;                      /*  Filter coefficients           */
-    q31_t Xn;                                      /*  temporary input               */
-    uint32_t shift = 32u - ((uint32_t) S->postShift + 1u);        /*  Shift to be applied to the output */
-    uint32_t sample, stage = S->numStages;         /*  loop counters                     */
+        q31_t *pIn = pSrc;                             /*  input pointer initialization  */
+        q31_t *pOut = pDst;                            /*  output pointer initialization */
+        q31_t *pState = S->pState;                     /*  pState pointer initialization */
+        q31_t *pCoeffs = S->pCoeffs;                   /*  coeff pointer initialization  */
+        q63_t acc;                                     /*  accumulator                   */
+        q31_t Xn1, Xn2, Yn1, Yn2;                      /*  Filter state variables        */
+        q31_t b0, b1, b2, a1, a2;                      /*  Filter coefficients           */
+        q31_t Xn;                                      /*  temporary input               */
+        uint32_t shift = 32u - ((uint32_t) S->postShift + 1u);        /*  Shift to be applied to the output */
+        uint32_t sample, stage = S->numStages;         /*  loop counters                     */
 
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    do {
-        /* Reading the coefficients */
-        b0 = *pCoeffs++;
-        b1 = *pCoeffs++;
-        b2 = *pCoeffs++;
-        a1 = *pCoeffs++;
-        a2 = *pCoeffs++;
+        do {
+                /* Reading the coefficients */
+                b0 = *pCoeffs++;
+                b1 = *pCoeffs++;
+                b2 = *pCoeffs++;
+                a1 = *pCoeffs++;
+                a2 = *pCoeffs++;
 
-        /* Reading the state values */
-        Xn1 = pState[0];
-        Xn2 = pState[1];
-        Yn1 = pState[2];
-        Yn2 = pState[3];
+                /* Reading the state values */
+                Xn1 = pState[0];
+                Xn2 = pState[1];
+                Yn1 = pState[2];
+                Yn2 = pState[3];
 
-        /* Apply loop unrolling and compute 4 output values simultaneously. */
-        /*      The variable acc hold output values that are being computed:
-         *
-         *    acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
-         */
+                /* Apply loop unrolling and compute 4 output values simultaneously. */
+                /*      The variable acc hold output values that are being computed:
+                 *
+                 *    acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
+                 */
 
-        sample = blockSize >> 2u;
+                sample = blockSize >> 2u;
 
-        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-         ** a second loop below computes the remaining 1 to 3 samples. */
-        while(sample > 0u) {
-            /* Read the input */
-            Xn = *pIn++;
+                /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+                 ** a second loop below computes the remaining 1 to 3 samples. */
+                while(sample > 0u) {
+                        /* Read the input */
+                        Xn = *pIn++;
 
-            /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+                        /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
 
-            /* acc =  b0 * x[n] */
-            acc = (q63_t) b0 *Xn;
-            /* acc +=  b1 * x[n-1] */
-            acc += (q63_t) b1 *Xn1;
-            /* acc +=  b[2] * x[n-2] */
-            acc += (q63_t) b2 *Xn2;
-            /* acc +=  a1 * y[n-1] */
-            acc += (q63_t) a1 *Yn1;
-            /* acc +=  a2 * y[n-2] */
-            acc += (q63_t) a2 *Yn2;
+                        /* acc =  b0 * x[n] */
+                        acc = (q63_t) b0 *Xn;
+                        /* acc +=  b1 * x[n-1] */
+                        acc += (q63_t) b1 *Xn1;
+                        /* acc +=  b[2] * x[n-2] */
+                        acc += (q63_t) b2 *Xn2;
+                        /* acc +=  a1 * y[n-1] */
+                        acc += (q63_t) a1 *Yn1;
+                        /* acc +=  a2 * y[n-2] */
+                        acc += (q63_t) a2 *Yn2;
 
-            /* The result is converted to 1.31 , Yn2 variable is reused */
-            Yn2 = (q31_t) (acc >> shift);
+                        /* The result is converted to 1.31 , Yn2 variable is reused */
+                        Yn2 = (q31_t) (acc >> shift);
 
-            /* Store the output in the destination buffer. */
-            *pOut++ = Yn2;
+                        /* Store the output in the destination buffer. */
+                        *pOut++ = Yn2;
 
-            /* Read the second input */
-            Xn2 = *pIn++;
+                        /* Read the second input */
+                        Xn2 = *pIn++;
 
-            /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+                        /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
 
-            /* acc =  b0 * x[n] */
-            acc = (q63_t) b0 *Xn2;
-            /* acc +=  b1 * x[n-1] */
-            acc += (q63_t) b1 *Xn;
-            /* acc +=  b[2] * x[n-2] */
-            acc += (q63_t) b2 *Xn1;
-            /* acc +=  a1 * y[n-1] */
-            acc += (q63_t) a1 *Yn2;
-            /* acc +=  a2 * y[n-2] */
-            acc += (q63_t) a2 *Yn1;
+                        /* acc =  b0 * x[n] */
+                        acc = (q63_t) b0 *Xn2;
+                        /* acc +=  b1 * x[n-1] */
+                        acc += (q63_t) b1 *Xn;
+                        /* acc +=  b[2] * x[n-2] */
+                        acc += (q63_t) b2 *Xn1;
+                        /* acc +=  a1 * y[n-1] */
+                        acc += (q63_t) a1 *Yn2;
+                        /* acc +=  a2 * y[n-2] */
+                        acc += (q63_t) a2 *Yn1;
 
 
-            /* The result is converted to 1.31, Yn1 variable is reused  */
-            Yn1 = (q31_t) (acc >> shift);
+                        /* The result is converted to 1.31, Yn1 variable is reused  */
+                        Yn1 = (q31_t) (acc >> shift);
 
-            /* Store the output in the destination buffer. */
-            *pOut++ = Yn1;
+                        /* Store the output in the destination buffer. */
+                        *pOut++ = Yn1;
 
-            /* Read the third input  */
-            Xn1 = *pIn++;
+                        /* Read the third input  */
+                        Xn1 = *pIn++;
 
-            /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+                        /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
 
-            /* acc =  b0 * x[n] */
-            acc = (q63_t) b0 *Xn1;
-            /* acc +=  b1 * x[n-1] */
-            acc += (q63_t) b1 *Xn2;
-            /* acc +=  b[2] * x[n-2] */
-            acc += (q63_t) b2 *Xn;
-            /* acc +=  a1 * y[n-1] */
-            acc += (q63_t) a1 *Yn1;
-            /* acc +=  a2 * y[n-2] */
-            acc += (q63_t) a2 *Yn2;
+                        /* acc =  b0 * x[n] */
+                        acc = (q63_t) b0 *Xn1;
+                        /* acc +=  b1 * x[n-1] */
+                        acc += (q63_t) b1 *Xn2;
+                        /* acc +=  b[2] * x[n-2] */
+                        acc += (q63_t) b2 *Xn;
+                        /* acc +=  a1 * y[n-1] */
+                        acc += (q63_t) a1 *Yn1;
+                        /* acc +=  a2 * y[n-2] */
+                        acc += (q63_t) a2 *Yn2;
 
-            /* The result is converted to 1.31, Yn2 variable is reused  */
-            Yn2 = (q31_t) (acc >> shift);
+                        /* The result is converted to 1.31, Yn2 variable is reused  */
+                        Yn2 = (q31_t) (acc >> shift);
 
-            /* Store the output in the destination buffer. */
-            *pOut++ = Yn2;
+                        /* Store the output in the destination buffer. */
+                        *pOut++ = Yn2;
 
-            /* Read the forth input */
-            Xn = *pIn++;
+                        /* Read the forth input */
+                        Xn = *pIn++;
 
-            /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+                        /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
 
-            /* acc =  b0 * x[n] */
-            acc = (q63_t) b0 *Xn;
-            /* acc +=  b1 * x[n-1] */
-            acc += (q63_t) b1 *Xn1;
-            /* acc +=  b[2] * x[n-2] */
-            acc += (q63_t) b2 *Xn2;
-            /* acc +=  a1 * y[n-1] */
-            acc += (q63_t) a1 *Yn2;
-            /* acc +=  a2 * y[n-2] */
-            acc += (q63_t) a2 *Yn1;
+                        /* acc =  b0 * x[n] */
+                        acc = (q63_t) b0 *Xn;
+                        /* acc +=  b1 * x[n-1] */
+                        acc += (q63_t) b1 *Xn1;
+                        /* acc +=  b[2] * x[n-2] */
+                        acc += (q63_t) b2 *Xn2;
+                        /* acc +=  a1 * y[n-1] */
+                        acc += (q63_t) a1 *Yn2;
+                        /* acc +=  a2 * y[n-2] */
+                        acc += (q63_t) a2 *Yn1;
 
-            /* The result is converted to 1.31, Yn1 variable is reused  */
-            Yn1 = (q31_t) (acc >> shift);
+                        /* The result is converted to 1.31, Yn1 variable is reused  */
+                        Yn1 = (q31_t) (acc >> shift);
 
-            /* Every time after the output is computed state should be updated. */
-            /* The states should be updated as:  */
-            /* Xn2 = Xn1    */
-            /* Xn1 = Xn     */
-            /* Yn2 = Yn1    */
-            /* Yn1 = acc    */
-            Xn2 = Xn1;
-            Xn1 = Xn;
+                        /* Every time after the output is computed state should be updated. */
+                        /* The states should be updated as:  */
+                        /* Xn2 = Xn1    */
+                        /* Xn1 = Xn     */
+                        /* Yn2 = Yn1    */
+                        /* Yn1 = acc    */
+                        Xn2 = Xn1;
+                        Xn1 = Xn;
 
-            /* Store the output in the destination buffer. */
-            *pOut++ = Yn1;
+                        /* Store the output in the destination buffer. */
+                        *pOut++ = Yn1;
 
-            /* decrement the loop counter */
-            sample--;
-        }
+                        /* decrement the loop counter */
+                        sample--;
+                }
 
-        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-         ** No loop unrolling is used. */
-        sample = (blockSize & 0x3u);
+                /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+                 ** No loop unrolling is used. */
+                sample = (blockSize & 0x3u);
 
-        while(sample > 0u) {
-            /* Read the input */
-            Xn = *pIn++;
+                while(sample > 0u) {
+                        /* Read the input */
+                        Xn = *pIn++;
 
-            /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+                        /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
 
-            /* acc =  b0 * x[n] */
-            acc = (q63_t) b0 *Xn;
-            /* acc +=  b1 * x[n-1] */
-            acc += (q63_t) b1 *Xn1;
-            /* acc +=  b[2] * x[n-2] */
-            acc += (q63_t) b2 *Xn2;
-            /* acc +=  a1 * y[n-1] */
-            acc += (q63_t) a1 *Yn1;
-            /* acc +=  a2 * y[n-2] */
-            acc += (q63_t) a2 *Yn2;
+                        /* acc =  b0 * x[n] */
+                        acc = (q63_t) b0 *Xn;
+                        /* acc +=  b1 * x[n-1] */
+                        acc += (q63_t) b1 *Xn1;
+                        /* acc +=  b[2] * x[n-2] */
+                        acc += (q63_t) b2 *Xn2;
+                        /* acc +=  a1 * y[n-1] */
+                        acc += (q63_t) a1 *Yn1;
+                        /* acc +=  a2 * y[n-2] */
+                        acc += (q63_t) a2 *Yn2;
 
-            /* The result is converted to 1.31  */
-            acc = acc >> shift;
+                        /* The result is converted to 1.31  */
+                        acc = acc >> shift;
 
-            /* Every time after the output is computed state should be updated. */
-            /* The states should be updated as:  */
-            /* Xn2 = Xn1    */
-            /* Xn1 = Xn     */
-            /* Yn2 = Yn1    */
-            /* Yn1 = acc    */
-            Xn2 = Xn1;
-            Xn1 = Xn;
-            Yn2 = Yn1;
-            Yn1 = (q31_t) acc;
+                        /* Every time after the output is computed state should be updated. */
+                        /* The states should be updated as:  */
+                        /* Xn2 = Xn1    */
+                        /* Xn1 = Xn     */
+                        /* Yn2 = Yn1    */
+                        /* Yn1 = acc    */
+                        Xn2 = Xn1;
+                        Xn1 = Xn;
+                        Yn2 = Yn1;
+                        Yn1 = (q31_t) acc;
 
-            /* Store the output in the destination buffer. */
-            *pOut++ = (q31_t) acc;
+                        /* Store the output in the destination buffer. */
+                        *pOut++ = (q31_t) acc;
 
-            /* decrement the loop counter */
-            sample--;
-        }
+                        /* decrement the loop counter */
+                        sample--;
+                }
 
-        /*  The first stage goes from the input buffer to the output buffer. */
-        /*  Subsequent stages occur in-place in the output buffer */
-        pIn = pDst;
+                /*  The first stage goes from the input buffer to the output buffer. */
+                /*  Subsequent stages occur in-place in the output buffer */
+                pIn = pDst;
 
-        /* Reset to destination pointer */
-        pOut = pDst;
+                /* Reset to destination pointer */
+                pOut = pDst;
 
-        /*  Store the updated state variables back into the pState array */
-        *pState++ = Xn1;
-        *pState++ = Xn2;
-        *pState++ = Yn1;
-        *pState++ = Yn2;
+                /*  Store the updated state variables back into the pState array */
+                *pState++ = Xn1;
+                *pState++ = Xn2;
+                *pState++ = Yn1;
+                *pState++ = Yn2;
 
-    } while(--stage);
+        } while(--stage);
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    do {
-        /* Reading the coefficients */
-        b0 = *pCoeffs++;
-        b1 = *pCoeffs++;
-        b2 = *pCoeffs++;
-        a1 = *pCoeffs++;
-        a2 = *pCoeffs++;
+        do {
+                /* Reading the coefficients */
+                b0 = *pCoeffs++;
+                b1 = *pCoeffs++;
+                b2 = *pCoeffs++;
+                a1 = *pCoeffs++;
+                a2 = *pCoeffs++;
 
-        /* Reading the state values */
-        Xn1 = pState[0];
-        Xn2 = pState[1];
-        Yn1 = pState[2];
-        Yn2 = pState[3];
+                /* Reading the state values */
+                Xn1 = pState[0];
+                Xn2 = pState[1];
+                Yn1 = pState[2];
+                Yn2 = pState[3];
 
-        /*      The variables acc holds the output value that is computed:
-         *    acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
-         */
+                /*      The variables acc holds the output value that is computed:
+                 *    acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
+                 */
 
-        sample = blockSize;
+                sample = blockSize;
 
-        while(sample > 0u) {
-            /* Read the input */
-            Xn = *pIn++;
+                while(sample > 0u) {
+                        /* Read the input */
+                        Xn = *pIn++;
 
-            /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
-            /* acc =  b0 * x[n] */
-            acc = (q63_t) b0 *Xn;
+                        /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+                        /* acc =  b0 * x[n] */
+                        acc = (q63_t) b0 *Xn;
 
-            /* acc +=  b1 * x[n-1] */
-            acc += (q63_t) b1 *Xn1;
-            /* acc +=  b[2] * x[n-2] */
-            acc += (q63_t) b2 *Xn2;
-            /* acc +=  a1 * y[n-1] */
-            acc += (q63_t) a1 *Yn1;
-            /* acc +=  a2 * y[n-2] */
-            acc += (q63_t) a2 *Yn2;
+                        /* acc +=  b1 * x[n-1] */
+                        acc += (q63_t) b1 *Xn1;
+                        /* acc +=  b[2] * x[n-2] */
+                        acc += (q63_t) b2 *Xn2;
+                        /* acc +=  a1 * y[n-1] */
+                        acc += (q63_t) a1 *Yn1;
+                        /* acc +=  a2 * y[n-2] */
+                        acc += (q63_t) a2 *Yn2;
 
-            /* The result is converted to 1.31  */
-            acc = acc >> shift;
+                        /* The result is converted to 1.31  */
+                        acc = acc >> shift;
 
-            /* Every time after the output is computed state should be updated. */
-            /* The states should be updated as:  */
-            /* Xn2 = Xn1    */
-            /* Xn1 = Xn     */
-            /* Yn2 = Yn1    */
-            /* Yn1 = acc    */
-            Xn2 = Xn1;
-            Xn1 = Xn;
-            Yn2 = Yn1;
-            Yn1 = (q31_t) acc;
+                        /* Every time after the output is computed state should be updated. */
+                        /* The states should be updated as:  */
+                        /* Xn2 = Xn1    */
+                        /* Xn1 = Xn     */
+                        /* Yn2 = Yn1    */
+                        /* Yn1 = acc    */
+                        Xn2 = Xn1;
+                        Xn1 = Xn;
+                        Yn2 = Yn1;
+                        Yn1 = (q31_t) acc;
 
-            /* Store the output in the destination buffer. */
-            *pOut++ = (q31_t) acc;
+                        /* Store the output in the destination buffer. */
+                        *pOut++ = (q31_t) acc;
 
-            /* decrement the loop counter */
-            sample--;
-        }
+                        /* decrement the loop counter */
+                        sample--;
+                }
 
-        /*  The first stage goes from the input buffer to the output buffer. */
-        /*  Subsequent stages occur in-place in the output buffer */
-        pIn = pDst;
+                /*  The first stage goes from the input buffer to the output buffer. */
+                /*  Subsequent stages occur in-place in the output buffer */
+                pIn = pDst;
 
-        /* Reset to destination pointer */
-        pOut = pDst;
+                /* Reset to destination pointer */
+                pOut = pDst;
 
-        /*  Store the updated state variables back into the pState array */
-        *pState++ = Xn1;
-        *pState++ = Xn2;
-        *pState++ = Yn1;
-        *pState++ = Yn2;
+                /*  Store the updated state variables back into the pState array */
+                *pState++ = Xn1;
+                *pState++ = Xn2;
+                *pState++ = Yn1;
+                *pState++ = Yn2;
 
-    } while(--stage);
+        } while(--stage);
 
 #endif /*  #ifndef ARM_MATH_CM0 */
 }

@@ -123,13 +123,13 @@ typedef unsigned portLONG portTickType;
 #define portSWITCH_TO_USER_MODE() __asm volatile ( " mrs r0, control \n orr r0, #1 \n msr control, r0 " :::"r0" )
 
 typedef struct MPU_REGION_REGISTERS {
-    unsigned portLONG ulRegionBaseAddress;
-    unsigned portLONG ulRegionAttribute;
+        unsigned portLONG ulRegionBaseAddress;
+        unsigned portLONG ulRegionAttribute;
 } xMPU_REGION_REGISTERS;
 
 /* Plus 1 to create space for the stack region. */
 typedef struct MPU_SETTINGS {
-    xMPU_REGION_REGISTERS xRegion[ portTOTAL_NUM_REGIONS ];
+        xMPU_REGION_REGISTERS xRegion[ portTOTAL_NUM_REGIONS ];
 } xMPU_SETTINGS;
 
 /* Architecture specifics. */

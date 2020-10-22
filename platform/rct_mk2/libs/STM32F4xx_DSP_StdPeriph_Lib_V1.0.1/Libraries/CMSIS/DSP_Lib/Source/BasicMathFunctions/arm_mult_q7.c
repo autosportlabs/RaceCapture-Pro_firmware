@@ -62,60 +62,60 @@
  */
 
 void arm_mult_q7(
-    q7_t * pSrcA,
-    q7_t * pSrcB,
-    q7_t * pDst,
-    uint32_t blockSize)
+        q7_t * pSrcA,
+        q7_t * pSrcB,
+        q7_t * pDst,
+        uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* loop counters */
+        uint32_t blkCnt;                               /* loop counters */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    q7_t out1, out2, out3, out4;                   /* Temporary variables to store the product */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        q7_t out1, out2, out3, out4;                   /* Temporary variables to store the product */
 
-    /* loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /* loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = A * B */
-        /* Multiply the inputs and store the results in temporary variables */
-        out1 = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
-        out2 = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
-        out3 = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
-        out4 = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = A * B */
+                /* Multiply the inputs and store the results in temporary variables */
+                out1 = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
+                out2 = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
+                out3 = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
+                out4 = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
 
-        /* Store the results of 4 inputs in the destination buffer in single cycle by packing */
-        *__SIMD32(pDst)++ = __PACKq7(out1, out2, out3, out4);
+                /* Store the results of 4 inputs in the destination buffer in single cycle by packing */
+                *__SIMD32(pDst)++ = __PACKq7(out1, out2, out3, out4);
 
-        /* Decrement the blockSize loop counter */
-        blkCnt--;
-    }
+                /* Decrement the blockSize loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
 
-    while(blkCnt > 0u) {
-        /* C = A * B */
-        /* Multiply the inputs and store the result in the destination buffer */
-        *pDst++ = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
+        while(blkCnt > 0u) {
+                /* C = A * B */
+                /* Multiply the inputs and store the result in the destination buffer */
+                *pDst++ = (q7_t) (((q15_t) (*pSrcA++) * (*pSrcB++)) >> 7);
 
-        /* Decrement the blockSize loop counter */
-        blkCnt--;
-    }
+                /* Decrement the blockSize loop counter */
+                blkCnt--;
+        }
 }
 
 /**

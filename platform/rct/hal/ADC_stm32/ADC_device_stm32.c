@@ -43,7 +43,7 @@ volatile unsigned short *ADC_Val;
 
 int ADC_device_init(void)
 {
-	ADC_Val = calloc(TOTAL_ADC_CHANNELS, sizeof(*ADC_Val));
+        ADC_Val = calloc(TOTAL_ADC_CHANNELS, sizeof(*ADC_Val));
 
         /* Configure the ADC clock */
         RCC_ADCCLKConfig(RCC_ADC34PLLCLK_Div2);
@@ -58,7 +58,7 @@ int ADC_device_init(void)
         DMA_DeInit(DMA2_Channel5);
 
         DMA_InitTypeDef DMA_InitStructure;
-	DMA_StructInit(&DMA_InitStructure);
+        DMA_StructInit(&DMA_InitStructure);
         DMA_InitStructure.DMA_BufferSize = TOTAL_ADC_CHANNELS;
         DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
         DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t) &ADC_Val[0];
@@ -86,13 +86,13 @@ int ADC_device_init(void)
         /* Calibration procedure */
         ADC_VoltageRegulatorCmd(ADC3, ENABLE);
 
-	/* Disable ADC3 and its associated DMA before we calibrate if enabled. */
-	if (ADC3->CR & ADC_CR_ADEN) {
-		ADC_StopConversion(ADC3);
-		while(SET == ADC_GetStartConversionStatus(ADC3));
-		ADC_Cmd(ADC3, DISABLE);
-		while(SET == ADC_GetDisableCmdStatus(ADC3));
-	}
+        /* Disable ADC3 and its associated DMA before we calibrate if enabled. */
+        if (ADC3->CR & ADC_CR_ADEN) {
+                ADC_StopConversion(ADC3);
+                while(SET == ADC_GetStartConversionStatus(ADC3));
+                ADC_Cmd(ADC3, DISABLE);
+                while(SET == ADC_GetDisableCmdStatus(ADC3));
+        }
 
         /*
          * Wait at least 10us before starting calibration or enabling.
@@ -124,11 +124,11 @@ int ADC_device_init(void)
         ADC_DMAConfig(ADC3, ADC_DMAMode_Circular);
         DMA_Cmd(DMA2_Channel5, ENABLE);
 
-	/* Enable ADC3 */
-	ADC_Cmd(ADC3, ENABLE);
+        /* Enable ADC3 */
+        ADC_Cmd(ADC3, ENABLE);
 
         /* wait for ADRDY */
-	while(!ADC_GetFlagStatus(ADC3, ADC_FLAG_RDY));
+        while(!ADC_GetFlagStatus(ADC3, ADC_FLAG_RDY));
 
         /* Start ADC3 Conversion. Must be called after ADC enabled */
         ADC_StartConversion(ADC3);
@@ -148,10 +148,10 @@ int ADC_device_sample(const size_t channel)
 
 float ADC_device_get_voltage_range(const size_t channel)
 {
-	return ADC_SYSTEM_VOLTAGE_RANGE;
+        return ADC_SYSTEM_VOLTAGE_RANGE;
 }
 
 float ADC_device_get_channel_scaling(const size_t channel)
 {
-	return SCALING_BATTERYV;
+        return SCALING_BATTERYV;
 }

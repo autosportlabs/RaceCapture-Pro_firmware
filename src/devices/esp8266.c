@@ -416,7 +416,7 @@ bool esp8266_factory_restore(void)
 {
         const char cmd[] = "AT+RESTORE";
         return NULL != at_put_cmd(state.ati, cmd, _TIMEOUT_LONG_MS,
-                                        NULL, NULL);
+                                  NULL, NULL);
 }
 
 /**

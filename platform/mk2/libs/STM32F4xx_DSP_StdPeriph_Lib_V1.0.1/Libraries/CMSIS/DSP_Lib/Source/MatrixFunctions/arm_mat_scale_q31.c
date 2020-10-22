@@ -61,86 +61,86 @@
  */
 
 arm_status arm_mat_scale_q31(
-    const arm_matrix_instance_q31 * pSrc,
-    q31_t scaleFract,
-    int32_t shift,
-    arm_matrix_instance_q31 * pDst)
+        const arm_matrix_instance_q31 * pSrc,
+        q31_t scaleFract,
+        int32_t shift,
+        arm_matrix_instance_q31 * pDst)
 {
-    q31_t *pIn = pSrc->pData;                      /* input data matrix pointer */
-    q31_t *pOut = pDst->pData;                     /* output data matrix pointer */
-    q63_t out;                                     /* temporary variable to hold output value */
-    uint32_t numSamples;                           /* total number of elements in the matrix */
-    int32_t totShift = 31 - shift;                 /* shift to apply after scaling */
-    uint32_t blkCnt;                               /* loop counters  */
-    arm_status status;                             /* status of matrix scaling      */
+        q31_t *pIn = pSrc->pData;                      /* input data matrix pointer */
+        q31_t *pOut = pDst->pData;                     /* output data matrix pointer */
+        q63_t out;                                     /* temporary variable to hold output value */
+        uint32_t numSamples;                           /* total number of elements in the matrix */
+        int32_t totShift = 31 - shift;                 /* shift to apply after scaling */
+        uint32_t blkCnt;                               /* loop counters  */
+        arm_status status;                             /* status of matrix scaling      */
 
 #ifdef ARM_MATH_MATRIX_CHECK
 
 
-    /* Check for matrix mismatch  */
-    if((pSrc->numRows != pDst->numRows) || (pSrc->numCols != pDst->numCols)) {
-        /* Set status as ARM_MATH_SIZE_MISMATCH */
-        status = ARM_MATH_SIZE_MISMATCH;
-    } else
+        /* Check for matrix mismatch  */
+        if((pSrc->numRows != pDst->numRows) || (pSrc->numCols != pDst->numCols)) {
+                /* Set status as ARM_MATH_SIZE_MISMATCH */
+                status = ARM_MATH_SIZE_MISMATCH;
+        } else
 #endif /*    #ifdef ARM_MATH_MATRIX_CHECK    */
 
-    {
-        /* Total number of samples in the input matrix */
-        numSamples = (uint32_t) pSrc->numRows * pSrc->numCols;
+        {
+                /* Total number of samples in the input matrix */
+                numSamples = (uint32_t) pSrc->numRows * pSrc->numCols;
 
 #ifndef ARM_MATH_CM0
 
-        /* Run the below code for Cortex-M4 and Cortex-M3 */
+                /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-        /* Loop Unrolling */
-        blkCnt = numSamples >> 2u;
+                /* Loop Unrolling */
+                blkCnt = numSamples >> 2u;
 
-        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-         ** a second loop below computes the remaining 1 to 3 samples. */
-        while(blkCnt > 0u) {
-            /* C(m,n) = A(m,n) * k */
-            /* Scale, saturate and then store the results in the destination buffer. */
-            out = ((q63_t) * pIn++ * scaleFract) >> totShift;
-            *pOut++ = clip_q63_to_q31(out);
-            out = ((q63_t) * pIn++ * scaleFract) >> totShift;
-            *pOut++ = clip_q63_to_q31(out);
-            out = ((q63_t) * pIn++ * scaleFract) >> totShift;
-            *pOut++ = clip_q63_to_q31(out);
-            out = ((q63_t) * pIn++ * scaleFract) >> totShift;
-            *pOut++ = clip_q63_to_q31(out);
+                /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+                 ** a second loop below computes the remaining 1 to 3 samples. */
+                while(blkCnt > 0u) {
+                        /* C(m,n) = A(m,n) * k */
+                        /* Scale, saturate and then store the results in the destination buffer. */
+                        out = ((q63_t) * pIn++ * scaleFract) >> totShift;
+                        *pOut++ = clip_q63_to_q31(out);
+                        out = ((q63_t) * pIn++ * scaleFract) >> totShift;
+                        *pOut++ = clip_q63_to_q31(out);
+                        out = ((q63_t) * pIn++ * scaleFract) >> totShift;
+                        *pOut++ = clip_q63_to_q31(out);
+                        out = ((q63_t) * pIn++ * scaleFract) >> totShift;
+                        *pOut++ = clip_q63_to_q31(out);
 
-            /* Decrement the numSamples loop counter */
-            blkCnt--;
-        }
+                        /* Decrement the numSamples loop counter */
+                        blkCnt--;
+                }
 
-        /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
-         ** No loop unrolling is used. */
-        blkCnt = numSamples % 0x4u;
+                /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
+                 ** No loop unrolling is used. */
+                blkCnt = numSamples % 0x4u;
 
 #else
 
-        /* Run the below code for Cortex-M0 */
+                /* Run the below code for Cortex-M0 */
 
-        /* Initialize blkCnt with number of samples */
-        blkCnt = numSamples;
+                /* Initialize blkCnt with number of samples */
+                blkCnt = numSamples;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-        while(blkCnt > 0u) {
-            /* C(m,n) = A(m,n) * k */
-            /* Scale, saturate and then store the results in the destination buffer. */
-            out = ((q63_t) * pIn++ * scaleFract) >> totShift;
-            *pOut++ = clip_q63_to_q31(out);
+                while(blkCnt > 0u) {
+                        /* C(m,n) = A(m,n) * k */
+                        /* Scale, saturate and then store the results in the destination buffer. */
+                        out = ((q63_t) * pIn++ * scaleFract) >> totShift;
+                        *pOut++ = clip_q63_to_q31(out);
 
-            /* Decrement the numSamples loop counter */
-            blkCnt--;
+                        /* Decrement the numSamples loop counter */
+                        blkCnt--;
+                }
+                /* Set status as ARM_MATH_SUCCESS */
+                status = ARM_MATH_SUCCESS;
         }
-        /* Set status as ARM_MATH_SUCCESS */
-        status = ARM_MATH_SUCCESS;
-    }
 
-    /* Return to application */
-    return (status);
+        /* Return to application */
+        return (status);
 }
 
 /**

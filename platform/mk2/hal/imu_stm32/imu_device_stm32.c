@@ -25,37 +25,37 @@ static enum imu_init_status init_status;
 
 static void imu_update_buf_ptrs(void)
 {
-    static struct is9150_all_sensor_data *tmp;
-    tmp = read_buf;
-    read_buf = fill_buf;
-    fill_buf = tmp;
+        static struct is9150_all_sensor_data *tmp;
+        tmp = read_buf;
+        read_buf = fill_buf;
+        fill_buf = tmp;
 }
 
 static void imu_update_task(void *params)
 {
-    (void)params;
-    int res;
+        (void)params;
+        int res;
 
-    struct i2c_dev *i2c1 = i2c_get_device(I2C_1);
+        struct i2c_dev *i2c1 = i2c_get_device(I2C_1);
 
-    i2c_init(i2c1, 400000);
+        i2c_init(i2c1, 400000);
 
-    res = is9150_init(i2c1, IS_9150_ADDR << 1);
-    pr_info("IMU: init res=");
-    pr_info_int(res);
-    pr_info("\r\n");
-    (void)res;
+        res = is9150_init(i2c1, IS_9150_ADDR << 1);
+        pr_info("IMU: init res=");
+        pr_info_int(res);
+        pr_info("\r\n");
+        (void)res;
 
-    /* Clear the sensor data structures */
-    memset(sensor_data, 0x00, sizeof(struct is9150_all_sensor_data) * 2);
-    init_status = 0 == res ? IMU_INIT_STATUS_SUCCESS : IMU_INIT_STATUS_FAILED;
+        /* Clear the sensor data structures */
+        memset(sensor_data, 0x00, sizeof(struct is9150_all_sensor_data) * 2);
+        init_status = 0 == res ? IMU_INIT_STATUS_SUCCESS : IMU_INIT_STATUS_FAILED;
 
-    while(1) {
-        res = is9150_read_all_sensors(fill_buf);
-        if (!res)
-            imu_update_buf_ptrs();
-        vTaskDelay(1);
-    }
+        while(1) {
+                res = is9150_read_all_sensors(fill_buf);
+                if (!res)
+                        imu_update_buf_ptrs();
+                vTaskDelay(1);
+        }
 }
 
 void imu_device_init()
@@ -100,16 +100,16 @@ int imu_device_read(enum imu_channel channel)
 
 float imu_device_counts_per_unit(enum imu_channel channel)
 {
-    switch(channel) {
-    case IMU_CHANNEL_YAW:
-    case IMU_CHANNEL_PITCH:
-    case IMU_CHANNEL_ROLL:
-        return IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC;
-    case IMU_CHANNEL_X:
-    case IMU_CHANNEL_Y:
-    case IMU_CHANNEL_Z:
-        return IMU_DEVICE_COUNTS_PER_G;
-    default:
-        return 0.0;
-    }
+        switch(channel) {
+        case IMU_CHANNEL_YAW:
+        case IMU_CHANNEL_PITCH:
+        case IMU_CHANNEL_ROLL:
+                return IMU_DEVICE_COUNTS_PER_DEGREE_PER_SEC;
+        case IMU_CHANNEL_X:
+        case IMU_CHANNEL_Y:
+        case IMU_CHANNEL_Z:
+                return IMU_DEVICE_COUNTS_PER_G;
+        default:
+                return 0.0;
+        }
 }

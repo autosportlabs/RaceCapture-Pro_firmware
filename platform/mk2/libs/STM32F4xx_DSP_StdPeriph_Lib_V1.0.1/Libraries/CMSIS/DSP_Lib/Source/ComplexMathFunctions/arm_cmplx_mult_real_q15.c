@@ -54,90 +54,90 @@
  */
 
 void arm_cmplx_mult_real_q15(
-    q15_t * pSrcCmplx,
-    q15_t * pSrcReal,
-    q15_t * pCmplxDst,
-    uint32_t numSamples)
+        q15_t * pSrcCmplx,
+        q15_t * pSrcReal,
+        q15_t * pCmplxDst,
+        uint32_t numSamples)
 {
-    q15_t in;                                      /* Temporary variable to store input value */
+        q15_t in;                                      /* Temporary variable to store input value */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    uint32_t blkCnt;                               /* loop counters */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        uint32_t blkCnt;                               /* loop counters */
 
-    /* loop Unrolling */
-    blkCnt = numSamples >> 2u;
+        /* loop Unrolling */
+        blkCnt = numSamples >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C[2 * i] = A[2 * i] * B[i].            */
-        /* C[2 * i + 1] = A[2 * i + 1] * B[i].        */
-        in = *pSrcReal++;
-        /* store the result in the destination buffer. */
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C[2 * i] = A[2 * i] * B[i].            */
+                /* C[2 * i + 1] = A[2 * i + 1] * B[i].        */
+                in = *pSrcReal++;
+                /* store the result in the destination buffer. */
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
 
-        in = *pSrcReal++;
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                in = *pSrcReal++;
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
 
-        in = *pSrcReal++;
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                in = *pSrcReal++;
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
 
-        in = *pSrcReal++;
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                in = *pSrcReal++;
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
 
-        /* Decrement the numSamples loop counter */
-        blkCnt--;
-    }
+                /* Decrement the numSamples loop counter */
+                blkCnt--;
+        }
 
-    /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = numSamples % 0x4u;
+        /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = numSamples % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* C[2 * i] = A[2 * i] * B[i].            */
-        /* C[2 * i + 1] = A[2 * i + 1] * B[i].        */
-        in = *pSrcReal++;
-        /* store the result in the destination buffer. */
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+        while(blkCnt > 0u) {
+                /* C[2 * i] = A[2 * i] * B[i].            */
+                /* C[2 * i + 1] = A[2 * i + 1] * B[i].        */
+                in = *pSrcReal++;
+                /* store the result in the destination buffer. */
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
 
-        /* Decrement the numSamples loop counter */
-        blkCnt--;
-    }
+                /* Decrement the numSamples loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    while(numSamples > 0u) {
-        /* realOut = realA * realB.            */
-        /* imagOut = imagA * realB.                */
-        in = *pSrcReal++;
-        /* store the result in the destination buffer. */
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
-        *pCmplxDst++ =
-            (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+        while(numSamples > 0u) {
+                /* realOut = realA * realB.            */
+                /* imagOut = imagA * realB.                */
+                in = *pSrcReal++;
+                /* store the result in the destination buffer. */
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
+                *pCmplxDst++ =
+                        (q15_t) __SSAT((((q31_t) (*pSrcCmplx++) * (in)) >> 15), 16);
 
-        /* Decrement the numSamples loop counter */
-        numSamples--;
-    }
+                /* Decrement the numSamples loop counter */
+                numSamples--;
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 

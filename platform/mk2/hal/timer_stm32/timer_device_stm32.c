@@ -89,170 +89,170 @@ static void set_local_uri_source(TIM_TypeDef *tim)
 
 static void init_timer_0(struct config *cfg)
 {
-    //enable and configure GPIO for alternate function
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_StructInit(&GPIO_InitStructure);
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+        //enable and configure GPIO for alternate function
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_StructInit(&GPIO_InitStructure);
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    // Connect TIM pins to Alternate Function
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource6, GPIO_AF_TIM3);
+        // Connect TIM pins to Alternate Function
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource6, GPIO_AF_TIM3);
 
-    //initialize timer
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+        //initialize timer
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
 
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-    TIM_TimeBaseInitStructure.TIM_Prescaler = cfg->prescaler - 1;
-    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
-    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
-    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStructure);
+        TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+        TIM_TimeBaseInitStructure.TIM_Prescaler = cfg->prescaler - 1;
+        TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+        TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
+        TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+        TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
+        TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStructure);
 
-    /* Fix the Update Request Interrupt Source */
-    set_local_uri_source(TIM3);
+        /* Fix the Update Request Interrupt Source */
+        set_local_uri_source(TIM3);
 
-    TIM_Cmd(TIM3, ENABLE);
+        TIM_Cmd(TIM3, ENABLE);
 
-    TIM_ICInitTypeDef TIM_ICInitStructure;
-    TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
-    TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
-    TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
-    TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
-    TIM_PWMIConfig(TIM3, &TIM_ICInitStructure);
+        TIM_ICInitTypeDef TIM_ICInitStructure;
+        TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
+        TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
+        TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
+        TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
+        TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
+        TIM_PWMIConfig(TIM3, &TIM_ICInitStructure);
 
-    /* Select the slave Mode: Reset Mode */
-    TIM_SelectSlaveMode(TIM3, TIM_SlaveMode_Reset);
-    TIM_SelectMasterSlaveMode(TIM3, TIM_MasterSlaveMode_Enable);
+        /* Select the slave Mode: Reset Mode */
+        TIM_SelectSlaveMode(TIM3, TIM_SlaveMode_Reset);
+        TIM_SelectMasterSlaveMode(TIM3, TIM_MasterSlaveMode_Enable);
 
-    TIM_SelectInputTrigger(TIM3, TIM_TS_TI1FP1);
+        TIM_SelectInputTrigger(TIM3, TIM_TS_TI1FP1);
 
-    /* Enable the TIM1 global Interrupt */
-    NVIC_InitTypeDef NVIC_InitStructure;
-    NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = TIMER_IRQ_PRIORITY;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = TIMER_IRQ_SUB_PRIORITY;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+        /* Enable the TIM1 global Interrupt */
+        NVIC_InitTypeDef NVIC_InitStructure;
+        NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = TIMER_IRQ_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = TIMER_IRQ_SUB_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
 
-    // Enable the CC2 Interrupt Request
-    TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
-    TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+        // Enable the CC2 Interrupt Request
+        TIM_ITConfig(TIM3, TIM_IT_CC2, ENABLE);
+        TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
 }
 
 static void init_timer_1(struct config *cfg)
 {
-    //enable and configure GPIO for alternate function
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_StructInit(&GPIO_InitStructure);
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+        //enable and configure GPIO for alternate function
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_StructInit(&GPIO_InitStructure);
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    // Connect TIM pins to Alternate Function
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_TIM9);
+        // Connect TIM pins to Alternate Function
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_TIM9);
 
-    //initialize timer
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM9, ENABLE);
+        //initialize timer
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM9, ENABLE);
 
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-    TIM_TimeBaseInitStructure.TIM_Prescaler = cfg->prescaler - 1;
-    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
-    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-    TIM_TimeBaseInit(TIM9, &TIM_TimeBaseInitStructure);
+        TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+        TIM_TimeBaseInitStructure.TIM_Prescaler = cfg->prescaler - 1;
+        TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+        TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
+        TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+        TIM_TimeBaseInit(TIM9, &TIM_TimeBaseInitStructure);
 
-    TIM_ICInitTypeDef TIM_ICInitStructure;
-    TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
-    TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
-    TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
-    TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
-    TIM_PWMIConfig(TIM9, &TIM_ICInitStructure);
+        TIM_ICInitTypeDef TIM_ICInitStructure;
+        TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
+        TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
+        TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
+        TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
+        TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
+        TIM_PWMIConfig(TIM9, &TIM_ICInitStructure);
 
-    /* Select the slave Mode: Reset Mode */
-    TIM_SelectSlaveMode(TIM9, TIM_SlaveMode_Reset);
-    TIM_SelectMasterSlaveMode(TIM9, TIM_MasterSlaveMode_Enable);
+        /* Select the slave Mode: Reset Mode */
+        TIM_SelectSlaveMode(TIM9, TIM_SlaveMode_Reset);
+        TIM_SelectMasterSlaveMode(TIM9, TIM_MasterSlaveMode_Enable);
 
-    TIM_SelectInputTrigger(TIM9, TIM_TS_TI1FP1);
+        TIM_SelectInputTrigger(TIM9, TIM_TS_TI1FP1);
 
-    /* Fix the Update Request Interrupt Source */
-    set_local_uri_source(TIM9);
+        /* Fix the Update Request Interrupt Source */
+        set_local_uri_source(TIM9);
 
-    TIM_Cmd(TIM9, ENABLE);
+        TIM_Cmd(TIM9, ENABLE);
 
-    /* Enable the TIM1 global Interrupt */
-    NVIC_InitTypeDef NVIC_InitStructure;
-    NVIC_InitStructure.NVIC_IRQChannel = TIM1_BRK_TIM9_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = TIMER_IRQ_PRIORITY;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = TIMER_IRQ_SUB_PRIORITY;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+        /* Enable the TIM1 global Interrupt */
+        NVIC_InitTypeDef NVIC_InitStructure;
+        NVIC_InitStructure.NVIC_IRQChannel = TIM1_BRK_TIM9_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = TIMER_IRQ_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = TIMER_IRQ_SUB_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
 
-    // Enable the CC2 Interrupt Request
-    TIM_ITConfig(TIM9, TIM_IT_CC2, ENABLE);
-    TIM_ITConfig(TIM9, TIM_IT_Update, ENABLE);
+        // Enable the CC2 Interrupt Request
+        TIM_ITConfig(TIM9, TIM_IT_CC2, ENABLE);
+        TIM_ITConfig(TIM9, TIM_IT_Update, ENABLE);
 }
 
 static void init_timer_2(struct config *cfg)
 {
-    //enable and configure GPIO for alternate function
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_StructInit(&GPIO_InitStructure);
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+        //enable and configure GPIO for alternate function
+        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+        GPIO_InitTypeDef GPIO_InitStructure;
+        GPIO_StructInit(&GPIO_InitStructure);
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    // Connect TIM pins to Alternate Function
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_TIM2);
+        // Connect TIM pins to Alternate Function
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_TIM2);
 
-    //initialize timer
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+        //initialize timer
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
-    TIM_DeInit(TIM2);
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-    TIM_TimeBaseInitStructure.TIM_Prescaler = cfg->prescaler - 1;
-    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
-    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStructure);
+        TIM_DeInit(TIM2);
+        TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+        TIM_TimeBaseInitStructure.TIM_Prescaler = cfg->prescaler - 1;
+        TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+        TIM_TimeBaseInitStructure.TIM_Period = TIMER_PERIOD;
+        TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+        TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStructure);
 
-    TIM_ICInitTypeDef TIM_ICInitStructure;
-    TIM_ICInitStructure.TIM_Channel = TIM_Channel_4;
-    TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
-    TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
-    TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
-    TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
-    TIM_ICInit(TIM2, &TIM_ICInitStructure);
+        TIM_ICInitTypeDef TIM_ICInitStructure;
+        TIM_ICInitStructure.TIM_Channel = TIM_Channel_4;
+        TIM_ICInitStructure.TIM_ICPolarity = get_polarity(cfg->edge);
+        TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
+        TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
+        TIM_ICInitStructure.TIM_ICFilter = INPUT_CAPTURE_FILTER;
+        TIM_ICInit(TIM2, &TIM_ICInitStructure);
 
-    set_local_uri_source(TIM2);
-    TIM_Cmd(TIM2, ENABLE);
+        set_local_uri_source(TIM2);
+        TIM_Cmd(TIM2, ENABLE);
 
-    /* Enable the TIM1 global Interrupt */
-    NVIC_InitTypeDef NVIC_InitStructure;
-    NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = TIMER_IRQ_PRIORITY;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = TIMER_IRQ_SUB_PRIORITY;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+        /* Enable the TIM1 global Interrupt */
+        NVIC_InitTypeDef NVIC_InitStructure;
+        NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = TIMER_IRQ_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = TIMER_IRQ_SUB_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
 
-    // Enable the CC2 Interrupt Request
-    TIM_ITConfig(TIM2, TIM_IT_CC4, ENABLE);
-    TIM_ITConfig(TIM2, TIM_IT_Update , ENABLE);
+        // Enable the CC2 Interrupt Request
+        TIM_ITConfig(TIM2, TIM_IT_CC4, ENABLE);
+        TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
 }
 
 /**
@@ -477,7 +477,7 @@ void TIM2_IRQHandler(void)
 
                 const uint32_t current = TIM_GetCapture4(TIM2);
                 const uint16_t p_ticks = last < current ? current - last :
-                        TIMER_PERIOD - last + current;
+                                         TIMER_PERIOD - last + current;
 
                 /* No duty cycle on timer 2 because of hardware bug */
                 update_device_state(2, p_ticks, 0);

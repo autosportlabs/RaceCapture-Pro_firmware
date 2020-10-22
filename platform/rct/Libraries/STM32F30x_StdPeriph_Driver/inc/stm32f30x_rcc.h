@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V1.0.1
   * @date    23-October-2012
-  * @brief   This file contains all the functions prototypes for the RCC 
+  * @brief   This file contains all the functions prototypes for the RCC
   *          firmware library.
   ******************************************************************************
   * @attention
@@ -17,8 +17,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -31,7 +31,7 @@
 #define __STM32F30x_RCC_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -47,24 +47,23 @@
 
 /* Exported types ------------------------------------------------------------*/
 
-typedef struct
-{
-  uint32_t SYSCLK_Frequency;
-  uint32_t HCLK_Frequency;
-  uint32_t PCLK1_Frequency;
-  uint32_t PCLK2_Frequency;
-  uint32_t ADC12CLK_Frequency;
-  uint32_t ADC34CLK_Frequency;
-  uint32_t I2C1CLK_Frequency;
-  uint32_t I2C2CLK_Frequency;
-  uint32_t TIM1CLK_Frequency;
-  uint32_t TIM8CLK_Frequency;
-  uint32_t USART1CLK_Frequency;
-  uint32_t USART2CLK_Frequency;
-  uint32_t USART3CLK_Frequency;
-  uint32_t UART4CLK_Frequency;
-  uint32_t UART5CLK_Frequency;  
-}RCC_ClocksTypeDef;
+typedef struct {
+        uint32_t SYSCLK_Frequency;
+        uint32_t HCLK_Frequency;
+        uint32_t PCLK1_Frequency;
+        uint32_t PCLK2_Frequency;
+        uint32_t ADC12CLK_Frequency;
+        uint32_t ADC34CLK_Frequency;
+        uint32_t I2C1CLK_Frequency;
+        uint32_t I2C2CLK_Frequency;
+        uint32_t TIM1CLK_Frequency;
+        uint32_t TIM8CLK_Frequency;
+        uint32_t USART1CLK_Frequency;
+        uint32_t USART2CLK_Frequency;
+        uint32_t USART3CLK_Frequency;
+        uint32_t UART4CLK_Frequency;
+        uint32_t UART5CLK_Frequency;
+} RCC_ClocksTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
 
@@ -72,7 +71,7 @@ typedef struct
   * @{
   */
 
-/** @defgroup RCC_HSE_configuration 
+/** @defgroup RCC_HSE_configuration
   * @{
   */
 
@@ -84,22 +83,22 @@ typedef struct
 
 /**
   * @}
-  */ 
- 
-/** @defgroup RCC_PLL_Clock_Source 
+  */
+
+/** @defgroup RCC_PLL_Clock_Source
   * @{
   */
 
 #define RCC_PLLSource_HSI_Div2           RCC_CFGR_PLLSRC_HSI_Div2
 #define RCC_PLLSource_PREDIV1            RCC_CFGR_PLLSRC_PREDIV1
- 
+
 #define IS_RCC_PLL_SOURCE(SOURCE) (((SOURCE) == RCC_PLLSource_HSI_Div2) || \
                                    ((SOURCE) == RCC_PLLSource_PREDIV1))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup RCC_PLL_Multiplication_Factor 
+/** @defgroup RCC_PLL_Multiplication_Factor
   * @{
   */
 
@@ -160,9 +159,9 @@ typedef struct
                                  ((PREDIV1) == RCC_PREDIV1_Div15) || ((PREDIV1) == RCC_PREDIV1_Div16))
 /**
   * @}
-  */ 
- 
-/** @defgroup RCC_System_Clock_Source 
+  */
+
+/** @defgroup RCC_System_Clock_Source
   * @{
   */
 
@@ -196,9 +195,9 @@ typedef struct
                            ((HCLK) == RCC_SYSCLK_Div512))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup RCC_APB1_APB2_clock_source 
+/** @defgroup RCC_APB1_APB2_clock_source
   * @{
   */
 
@@ -213,11 +212,11 @@ typedef struct
 /**
   * @}
   */
-  
-/** @defgroup RCC_ADC_clock_source 
+
+/** @defgroup RCC_ADC_clock_source
   * @{
   */
-  
+
 /* ADC1 & ADC2 */
 #define RCC_ADC12PLLCLK_OFF                    ((uint32_t)0x00000000)
 #define RCC_ADC12PLLCLK_Div1                   ((uint32_t)0x00000100)
@@ -266,7 +265,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup RCC_TIM_clock_source 
+/** @defgroup RCC_TIM_clock_source
   * @{
   */
 
@@ -283,7 +282,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup RCC_I2C_clock_source 
+/** @defgroup RCC_I2C_clock_source
   * @{
   */
 
@@ -300,7 +299,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup RCC_USART_clock_source 
+/** @defgroup RCC_USART_clock_source
   * @{
   */
 
@@ -343,8 +342,8 @@ typedef struct
 /**
   * @}
   */
-       
-/** @defgroup RCC_Interrupt_Source 
+
+/** @defgroup RCC_Interrupt_Source
   * @{
   */
 
@@ -360,15 +359,15 @@ typedef struct
 #define IS_RCC_GET_IT(IT) (((IT) == RCC_IT_LSIRDY) || ((IT) == RCC_IT_LSERDY) || \
                            ((IT) == RCC_IT_HSIRDY) || ((IT) == RCC_IT_HSERDY) || \
                            ((IT) == RCC_IT_PLLRDY) || ((IT) == RCC_IT_CSS))
-                           
+
 
 #define IS_RCC_CLEAR_IT(IT) ((((IT) & (uint8_t)0x40) == 0x00) && ((IT) != 0x00))
 
 /**
   * @}
   */
-  
-/** @defgroup RCC_LSE_configuration 
+
+/** @defgroup RCC_LSE_configuration
   * @{
   */
 
@@ -402,9 +401,9 @@ typedef struct
 #define RCC_I2S2CLKSource_SYSCLK             ((uint8_t)0x00)
 #define RCC_I2S2CLKSource_Ext                ((uint8_t)0x01)
 
-#define IS_RCC_I2SCLK_SOURCE(SOURCE) (((SOURCE) == RCC_I2S2CLKSource_SYSCLK) || ((SOURCE) == RCC_I2S2CLKSource_Ext)) 
+#define IS_RCC_I2SCLK_SOURCE(SOURCE) (((SOURCE) == RCC_I2S2CLKSource_SYSCLK) || ((SOURCE) == RCC_I2S2CLKSource_Ext))
 
-/** @defgroup RCC_LSE_Drive_Configuration 
+/** @defgroup RCC_LSE_Drive_Configuration
   * @{
   */
 
@@ -417,8 +416,8 @@ typedef struct
 /**
   * @}
   */
-  
-/** @defgroup RCC_AHB_Peripherals 
+
+/** @defgroup RCC_AHB_Peripherals
   * @{
   */
 
@@ -444,7 +443,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup RCC_APB2_Peripherals 
+/** @defgroup RCC_APB2_Peripherals
   * @{
   */
 
@@ -461,9 +460,9 @@ typedef struct
 
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup RCC_APB1_Peripherals 
+/** @defgroup RCC_APB1_Peripherals
   * @{
   */
 #define RCC_APB1Periph_TIM2              ((uint32_t)0x00000001)
@@ -508,22 +507,22 @@ typedef struct
                                     ((SOURCE) == RCC_MCOSource_PLLCLK_Div2))
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup RCC_USB_Device_clock_source 
+/** @defgroup RCC_USB_Device_clock_source
   * @{
   */
 
- #define RCC_USBCLKSource_PLLCLK_1Div5   ((uint8_t)0x00)
- #define RCC_USBCLKSource_PLLCLK_Div1    ((uint8_t)0x01)
+#define RCC_USBCLKSource_PLLCLK_1Div5   ((uint8_t)0x00)
+#define RCC_USBCLKSource_PLLCLK_Div1    ((uint8_t)0x01)
 
- #define IS_RCC_USBCLK_SOURCE(SOURCE) (((SOURCE) == RCC_USBCLKSource_PLLCLK_1Div5) || \
+#define IS_RCC_USBCLK_SOURCE(SOURCE) (((SOURCE) == RCC_USBCLKSource_PLLCLK_1Div5) || \
                                       ((SOURCE) == RCC_USBCLKSource_PLLCLK_Div1))
 /**
   * @}
   */
 
-/** @defgroup RCC_Flag 
+/** @defgroup RCC_Flag
   * @{
   */
 #define RCC_FLAG_HSIRDY                  ((uint8_t)0x01)
@@ -590,7 +589,7 @@ void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks);
 void RCC_ADCCLKConfig(uint32_t RCC_PLLCLK);
 void RCC_I2CCLKConfig(uint32_t RCC_I2CCLK);
 void RCC_TIMCLKConfig(uint32_t RCC_TIMCLK);
-void RCC_I2SCLKConfig(uint32_t RCC_I2SCLKSource); 
+void RCC_I2SCLKConfig(uint32_t RCC_I2SCLKSource);
 void RCC_USARTCLKConfig(uint32_t RCC_USARTCLK);
 void RCC_USBCLKConfig(uint32_t RCC_USBCLKSource);
 
@@ -625,6 +624,6 @@ void RCC_ClearITPendingBit(uint8_t RCC_IT);
 
 /**
   * @}
-  */ 
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

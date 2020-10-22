@@ -60,61 +60,61 @@
  */
 
 void arm_dot_prod_q31(
-    q31_t * pSrcA,
-    q31_t * pSrcB,
-    uint32_t blockSize,
-    q63_t * result)
+        q31_t * pSrcA,
+        q31_t * pSrcB,
+        uint32_t blockSize,
+        q63_t * result)
 {
-    q63_t sum = 0;                                 /* Temporary result storage */
-    uint32_t blkCnt;                               /* loop counter */
+        q63_t sum = 0;                                 /* Temporary result storage */
+        uint32_t blkCnt;                               /* loop counter */
 
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
-        /* Calculate dot product and then store the result in a temporary buffer. */
-        sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
-        sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
-        sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
-        sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
+                /* Calculate dot product and then store the result in a temporary buffer. */
+                sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
+                sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
+                sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
+                sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
 
-    while(blkCnt > 0u) {
-        /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
-        /* Calculate dot product and then store the result in a temporary buffer. */
-        sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
+        while(blkCnt > 0u) {
+                /* C = A[0]* B[0] + A[1]* B[1] + A[2]* B[2] + .....+ A[blockSize-1]* B[blockSize-1] */
+                /* Calculate dot product and then store the result in a temporary buffer. */
+                sum += ((q63_t) * pSrcA++ **pSrcB++) >> 14u;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* Store the result in the destination buffer in 16.48 format */
-    *result = sum;
+        /* Store the result in the destination buffer in 16.48 format */
+        *result = sum;
 }
 
 /**

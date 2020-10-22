@@ -67,15 +67,15 @@
 */
 
 USBD_Usr_cb_TypeDef USR_cb = {
-    USBD_USR_Init,
-    USBD_USR_DeviceReset,
-    USBD_USR_DeviceConfigured,
-    USBD_USR_DeviceSuspended,
-    USBD_USR_DeviceResumed,
+        USBD_USR_Init,
+        USBD_USR_DeviceReset,
+        USBD_USR_DeviceConfigured,
+        USBD_USR_DeviceSuspended,
+        USBD_USR_DeviceResumed,
 
 
-    USBD_USR_DeviceConnected,
-    USBD_USR_DeviceDisconnected,
+        USBD_USR_DeviceConnected,
+        USBD_USR_DeviceDisconnected,
 };
 
 /**

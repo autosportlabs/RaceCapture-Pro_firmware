@@ -38,125 +38,125 @@ typedef volatile unsigned int AT91_REG;// Hardware register definition
 //              SOFTWARE API DEFINITION  FOR System Peripherals
 // *****************************************************************************
 typedef struct _AT91S_SYSC {
-    AT91_REG	 SYSC_AIC_SMR[32]; 	// Source Mode Register
-    AT91_REG	 SYSC_AIC_SVR[32]; 	// Source Vector Register
-    AT91_REG	 SYSC_AIC_IVR; 	// IRQ Vector Register
-    AT91_REG	 SYSC_AIC_FVR; 	// FIQ Vector Register
-    AT91_REG	 SYSC_AIC_ISR; 	// Interrupt Status Register
-    AT91_REG	 SYSC_AIC_IPR; 	// Interrupt Pending Register
-    AT91_REG	 SYSC_AIC_IMR; 	// Interrupt Mask Register
-    AT91_REG	 SYSC_AIC_CISR; 	// Core Interrupt Status Register
-    AT91_REG	 Reserved0[2]; 	//
-    AT91_REG	 SYSC_AIC_IECR; 	// Interrupt Enable Command Register
-    AT91_REG	 SYSC_AIC_IDCR; 	// Interrupt Disable Command Register
-    AT91_REG	 SYSC_AIC_ICCR; 	// Interrupt Clear Command Register
-    AT91_REG	 SYSC_AIC_ISCR; 	// Interrupt Set Command Register
-    AT91_REG	 SYSC_AIC_EOICR; 	// End of Interrupt Command Register
-    AT91_REG	 SYSC_AIC_SPU; 	// Spurious Vector Register
-    AT91_REG	 SYSC_AIC_DCR; 	// Debug Control Register (Protect)
-    AT91_REG	 Reserved1[1]; 	//
-    AT91_REG	 SYSC_AIC_FFER; 	// Fast Forcing Enable Register
-    AT91_REG	 SYSC_AIC_FFDR; 	// Fast Forcing Disable Register
-    AT91_REG	 SYSC_AIC_FFSR; 	// Fast Forcing Status Register
-    AT91_REG	 Reserved2[45]; 	//
-    AT91_REG	 SYSC_DBGU_CR; 	// Control Register
-    AT91_REG	 SYSC_DBGU_MR; 	// Mode Register
-    AT91_REG	 SYSC_DBGU_IER; 	// Interrupt Enable Register
-    AT91_REG	 SYSC_DBGU_IDR; 	// Interrupt Disable Register
-    AT91_REG	 SYSC_DBGU_IMR; 	// Interrupt Mask Register
-    AT91_REG	 SYSC_DBGU_CSR; 	// Channel Status Register
-    AT91_REG	 SYSC_DBGU_RHR; 	// Receiver Holding Register
-    AT91_REG	 SYSC_DBGU_THR; 	// Transmitter Holding Register
-    AT91_REG	 SYSC_DBGU_BRGR; 	// Baud Rate Generator Register
-    AT91_REG	 Reserved3[7]; 	//
-    AT91_REG	 SYSC_DBGU_C1R; 	// Chip ID1 Register
-    AT91_REG	 SYSC_DBGU_C2R; 	// Chip ID2 Register
-    AT91_REG	 SYSC_DBGU_FNTR; 	// Force NTRST Register
-    AT91_REG	 Reserved4[45]; 	//
-    AT91_REG	 SYSC_DBGU_RPR; 	// Receive Pointer Register
-    AT91_REG	 SYSC_DBGU_RCR; 	// Receive Counter Register
-    AT91_REG	 SYSC_DBGU_TPR; 	// Transmit Pointer Register
-    AT91_REG	 SYSC_DBGU_TCR; 	// Transmit Counter Register
-    AT91_REG	 SYSC_DBGU_RNPR; 	// Receive Next Pointer Register
-    AT91_REG	 SYSC_DBGU_RNCR; 	// Receive Next Counter Register
-    AT91_REG	 SYSC_DBGU_TNPR; 	// Transmit Next Pointer Register
-    AT91_REG	 SYSC_DBGU_TNCR; 	// Transmit Next Counter Register
-    AT91_REG	 SYSC_DBGU_PTCR; 	// PDC Transfer Control Register
-    AT91_REG	 SYSC_DBGU_PTSR; 	// PDC Transfer Status Register
-    AT91_REG	 Reserved5[54]; 	//
-    AT91_REG	 SYSC_PIOA_PER; 	// PIO Enable Register
-    AT91_REG	 SYSC_PIOA_PDR; 	// PIO Disable Register
-    AT91_REG	 SYSC_PIOA_PSR; 	// PIO Status Register
-    AT91_REG	 Reserved6[1]; 	//
-    AT91_REG	 SYSC_PIOA_OER; 	// Output Enable Register
-    AT91_REG	 SYSC_PIOA_ODR; 	// Output Disable Registerr
-    AT91_REG	 SYSC_PIOA_OSR; 	// Output Status Register
-    AT91_REG	 Reserved7[1]; 	//
-    AT91_REG	 SYSC_PIOA_IFER; 	// Input Filter Enable Register
-    AT91_REG	 SYSC_PIOA_IFDR; 	// Input Filter Disable Register
-    AT91_REG	 SYSC_PIOA_IFSR; 	// Input Filter Status Register
-    AT91_REG	 Reserved8[1]; 	//
-    AT91_REG	 SYSC_PIOA_SODR; 	// Set Output Data Register
-    AT91_REG	 SYSC_PIOA_CODR; 	// Clear Output Data Register
-    AT91_REG	 SYSC_PIOA_ODSR; 	// Output Data Status Register
-    AT91_REG	 SYSC_PIOA_PDSR; 	// Pin Data Status Register
-    AT91_REG	 SYSC_PIOA_IER; 	// Interrupt Enable Register
-    AT91_REG	 SYSC_PIOA_IDR; 	// Interrupt Disable Register
-    AT91_REG	 SYSC_PIOA_IMR; 	// Interrupt Mask Register
-    AT91_REG	 SYSC_PIOA_ISR; 	// Interrupt Status Register
-    AT91_REG	 SYSC_PIOA_MDER; 	// Multi-driver Enable Register
-    AT91_REG	 SYSC_PIOA_MDDR; 	// Multi-driver Disable Register
-    AT91_REG	 SYSC_PIOA_MDSR; 	// Multi-driver Status Register
-    AT91_REG	 Reserved9[1]; 	//
-    AT91_REG	 SYSC_PIOA_PPUDR; 	// Pull-up Disable Register
-    AT91_REG	 SYSC_PIOA_PPUER; 	// Pull-up Enable Register
-    AT91_REG	 SYSC_PIOA_PPUSR; 	// Pad Pull-up Status Register
-    AT91_REG	 Reserved10[1]; 	//
-    AT91_REG	 SYSC_PIOA_ASR; 	// Select A Register
-    AT91_REG	 SYSC_PIOA_BSR; 	// Select B Register
-    AT91_REG	 SYSC_PIOA_ABSR; 	// AB Select Status Register
-    AT91_REG	 Reserved11[9]; 	//
-    AT91_REG	 SYSC_PIOA_OWER; 	// Output Write Enable Register
-    AT91_REG	 SYSC_PIOA_OWDR; 	// Output Write Disable Register
-    AT91_REG	 SYSC_PIOA_OWSR; 	// Output Write Status Register
-    AT91_REG	 Reserved12[469]; 	//
-    AT91_REG	 SYSC_PMC_SCER; 	// System Clock Enable Register
-    AT91_REG	 SYSC_PMC_SCDR; 	// System Clock Disable Register
-    AT91_REG	 SYSC_PMC_SCSR; 	// System Clock Status Register
-    AT91_REG	 Reserved13[1]; 	//
-    AT91_REG	 SYSC_PMC_PCER; 	// Peripheral Clock Enable Register
-    AT91_REG	 SYSC_PMC_PCDR; 	// Peripheral Clock Disable Register
-    AT91_REG	 SYSC_PMC_PCSR; 	// Peripheral Clock Status Register
-    AT91_REG	 Reserved14[1]; 	//
-    AT91_REG	 SYSC_PMC_MOR; 	// Main Oscillator Register
-    AT91_REG	 SYSC_PMC_MCFR; 	// Main Clock  Frequency Register
-    AT91_REG	 Reserved15[1]; 	//
-    AT91_REG	 SYSC_PMC_PLLR; 	// PLL Register
-    AT91_REG	 SYSC_PMC_MCKR; 	// Master Clock Register
-    AT91_REG	 Reserved16[3]; 	//
-    AT91_REG	 SYSC_PMC_PCKR[8]; 	// Programmable Clock Register
-    AT91_REG	 SYSC_PMC_IER; 	// Interrupt Enable Register
-    AT91_REG	 SYSC_PMC_IDR; 	// Interrupt Disable Register
-    AT91_REG	 SYSC_PMC_SR; 	// Status Register
-    AT91_REG	 SYSC_PMC_IMR; 	// Interrupt Mask Register
-    AT91_REG	 Reserved17[36]; 	//
-    AT91_REG	 SYSC_RSTC_RCR; 	// Reset Control Register
-    AT91_REG	 SYSC_RSTC_RSR; 	// Reset Status Register
-    AT91_REG	 SYSC_RSTC_RMR; 	// Reset Mode Register
-    AT91_REG	 Reserved18[5]; 	//
-    AT91_REG	 SYSC_RTTC_RTMR; 	// Real-time Mode Register
-    AT91_REG	 SYSC_RTTC_RTAR; 	// Real-time Alarm Register
-    AT91_REG	 SYSC_RTTC_RTVR; 	// Real-time Value Register
-    AT91_REG	 SYSC_RTTC_RTSR; 	// Real-time Status Register
-    AT91_REG	 SYSC_PITC_PIMR; 	// Period Interval Mode Register
-    AT91_REG	 SYSC_PITC_PISR; 	// Period Interval Status Register
-    AT91_REG	 SYSC_PITC_PIVR; 	// Period Interval Value Register
-    AT91_REG	 SYSC_PITC_PIIR; 	// Period Interval Image Register
-    AT91_REG	 SYSC_WDTC_WDCR; 	// Watchdog Control Register
-    AT91_REG	 SYSC_WDTC_WDMR; 	// Watchdog Mode Register
-    AT91_REG	 SYSC_WDTC_WDSR; 	// Watchdog Status Register
-    AT91_REG	 Reserved19[5]; 	//
-    AT91_REG	 SYSC_SYSC_VRPM; 	// Voltage Regulator Power Mode Register
+        AT91_REG	 SYSC_AIC_SMR[32]; 	// Source Mode Register
+        AT91_REG	 SYSC_AIC_SVR[32]; 	// Source Vector Register
+        AT91_REG	 SYSC_AIC_IVR; 	// IRQ Vector Register
+        AT91_REG	 SYSC_AIC_FVR; 	// FIQ Vector Register
+        AT91_REG	 SYSC_AIC_ISR; 	// Interrupt Status Register
+        AT91_REG	 SYSC_AIC_IPR; 	// Interrupt Pending Register
+        AT91_REG	 SYSC_AIC_IMR; 	// Interrupt Mask Register
+        AT91_REG	 SYSC_AIC_CISR; 	// Core Interrupt Status Register
+        AT91_REG	 Reserved0[2]; 	//
+        AT91_REG	 SYSC_AIC_IECR; 	// Interrupt Enable Command Register
+        AT91_REG	 SYSC_AIC_IDCR; 	// Interrupt Disable Command Register
+        AT91_REG	 SYSC_AIC_ICCR; 	// Interrupt Clear Command Register
+        AT91_REG	 SYSC_AIC_ISCR; 	// Interrupt Set Command Register
+        AT91_REG	 SYSC_AIC_EOICR; 	// End of Interrupt Command Register
+        AT91_REG	 SYSC_AIC_SPU; 	// Spurious Vector Register
+        AT91_REG	 SYSC_AIC_DCR; 	// Debug Control Register (Protect)
+        AT91_REG	 Reserved1[1]; 	//
+        AT91_REG	 SYSC_AIC_FFER; 	// Fast Forcing Enable Register
+        AT91_REG	 SYSC_AIC_FFDR; 	// Fast Forcing Disable Register
+        AT91_REG	 SYSC_AIC_FFSR; 	// Fast Forcing Status Register
+        AT91_REG	 Reserved2[45]; 	//
+        AT91_REG	 SYSC_DBGU_CR; 	// Control Register
+        AT91_REG	 SYSC_DBGU_MR; 	// Mode Register
+        AT91_REG	 SYSC_DBGU_IER; 	// Interrupt Enable Register
+        AT91_REG	 SYSC_DBGU_IDR; 	// Interrupt Disable Register
+        AT91_REG	 SYSC_DBGU_IMR; 	// Interrupt Mask Register
+        AT91_REG	 SYSC_DBGU_CSR; 	// Channel Status Register
+        AT91_REG	 SYSC_DBGU_RHR; 	// Receiver Holding Register
+        AT91_REG	 SYSC_DBGU_THR; 	// Transmitter Holding Register
+        AT91_REG	 SYSC_DBGU_BRGR; 	// Baud Rate Generator Register
+        AT91_REG	 Reserved3[7]; 	//
+        AT91_REG	 SYSC_DBGU_C1R; 	// Chip ID1 Register
+        AT91_REG	 SYSC_DBGU_C2R; 	// Chip ID2 Register
+        AT91_REG	 SYSC_DBGU_FNTR; 	// Force NTRST Register
+        AT91_REG	 Reserved4[45]; 	//
+        AT91_REG	 SYSC_DBGU_RPR; 	// Receive Pointer Register
+        AT91_REG	 SYSC_DBGU_RCR; 	// Receive Counter Register
+        AT91_REG	 SYSC_DBGU_TPR; 	// Transmit Pointer Register
+        AT91_REG	 SYSC_DBGU_TCR; 	// Transmit Counter Register
+        AT91_REG	 SYSC_DBGU_RNPR; 	// Receive Next Pointer Register
+        AT91_REG	 SYSC_DBGU_RNCR; 	// Receive Next Counter Register
+        AT91_REG	 SYSC_DBGU_TNPR; 	// Transmit Next Pointer Register
+        AT91_REG	 SYSC_DBGU_TNCR; 	// Transmit Next Counter Register
+        AT91_REG	 SYSC_DBGU_PTCR; 	// PDC Transfer Control Register
+        AT91_REG	 SYSC_DBGU_PTSR; 	// PDC Transfer Status Register
+        AT91_REG	 Reserved5[54]; 	//
+        AT91_REG	 SYSC_PIOA_PER; 	// PIO Enable Register
+        AT91_REG	 SYSC_PIOA_PDR; 	// PIO Disable Register
+        AT91_REG	 SYSC_PIOA_PSR; 	// PIO Status Register
+        AT91_REG	 Reserved6[1]; 	//
+        AT91_REG	 SYSC_PIOA_OER; 	// Output Enable Register
+        AT91_REG	 SYSC_PIOA_ODR; 	// Output Disable Registerr
+        AT91_REG	 SYSC_PIOA_OSR; 	// Output Status Register
+        AT91_REG	 Reserved7[1]; 	//
+        AT91_REG	 SYSC_PIOA_IFER; 	// Input Filter Enable Register
+        AT91_REG	 SYSC_PIOA_IFDR; 	// Input Filter Disable Register
+        AT91_REG	 SYSC_PIOA_IFSR; 	// Input Filter Status Register
+        AT91_REG	 Reserved8[1]; 	//
+        AT91_REG	 SYSC_PIOA_SODR; 	// Set Output Data Register
+        AT91_REG	 SYSC_PIOA_CODR; 	// Clear Output Data Register
+        AT91_REG	 SYSC_PIOA_ODSR; 	// Output Data Status Register
+        AT91_REG	 SYSC_PIOA_PDSR; 	// Pin Data Status Register
+        AT91_REG	 SYSC_PIOA_IER; 	// Interrupt Enable Register
+        AT91_REG	 SYSC_PIOA_IDR; 	// Interrupt Disable Register
+        AT91_REG	 SYSC_PIOA_IMR; 	// Interrupt Mask Register
+        AT91_REG	 SYSC_PIOA_ISR; 	// Interrupt Status Register
+        AT91_REG	 SYSC_PIOA_MDER; 	// Multi-driver Enable Register
+        AT91_REG	 SYSC_PIOA_MDDR; 	// Multi-driver Disable Register
+        AT91_REG	 SYSC_PIOA_MDSR; 	// Multi-driver Status Register
+        AT91_REG	 Reserved9[1]; 	//
+        AT91_REG	 SYSC_PIOA_PPUDR; 	// Pull-up Disable Register
+        AT91_REG	 SYSC_PIOA_PPUER; 	// Pull-up Enable Register
+        AT91_REG	 SYSC_PIOA_PPUSR; 	// Pad Pull-up Status Register
+        AT91_REG	 Reserved10[1]; 	//
+        AT91_REG	 SYSC_PIOA_ASR; 	// Select A Register
+        AT91_REG	 SYSC_PIOA_BSR; 	// Select B Register
+        AT91_REG	 SYSC_PIOA_ABSR; 	// AB Select Status Register
+        AT91_REG	 Reserved11[9]; 	//
+        AT91_REG	 SYSC_PIOA_OWER; 	// Output Write Enable Register
+        AT91_REG	 SYSC_PIOA_OWDR; 	// Output Write Disable Register
+        AT91_REG	 SYSC_PIOA_OWSR; 	// Output Write Status Register
+        AT91_REG	 Reserved12[469]; 	//
+        AT91_REG	 SYSC_PMC_SCER; 	// System Clock Enable Register
+        AT91_REG	 SYSC_PMC_SCDR; 	// System Clock Disable Register
+        AT91_REG	 SYSC_PMC_SCSR; 	// System Clock Status Register
+        AT91_REG	 Reserved13[1]; 	//
+        AT91_REG	 SYSC_PMC_PCER; 	// Peripheral Clock Enable Register
+        AT91_REG	 SYSC_PMC_PCDR; 	// Peripheral Clock Disable Register
+        AT91_REG	 SYSC_PMC_PCSR; 	// Peripheral Clock Status Register
+        AT91_REG	 Reserved14[1]; 	//
+        AT91_REG	 SYSC_PMC_MOR; 	// Main Oscillator Register
+        AT91_REG	 SYSC_PMC_MCFR; 	// Main Clock  Frequency Register
+        AT91_REG	 Reserved15[1]; 	//
+        AT91_REG	 SYSC_PMC_PLLR; 	// PLL Register
+        AT91_REG	 SYSC_PMC_MCKR; 	// Master Clock Register
+        AT91_REG	 Reserved16[3]; 	//
+        AT91_REG	 SYSC_PMC_PCKR[8]; 	// Programmable Clock Register
+        AT91_REG	 SYSC_PMC_IER; 	// Interrupt Enable Register
+        AT91_REG	 SYSC_PMC_IDR; 	// Interrupt Disable Register
+        AT91_REG	 SYSC_PMC_SR; 	// Status Register
+        AT91_REG	 SYSC_PMC_IMR; 	// Interrupt Mask Register
+        AT91_REG	 Reserved17[36]; 	//
+        AT91_REG	 SYSC_RSTC_RCR; 	// Reset Control Register
+        AT91_REG	 SYSC_RSTC_RSR; 	// Reset Status Register
+        AT91_REG	 SYSC_RSTC_RMR; 	// Reset Mode Register
+        AT91_REG	 Reserved18[5]; 	//
+        AT91_REG	 SYSC_RTTC_RTMR; 	// Real-time Mode Register
+        AT91_REG	 SYSC_RTTC_RTAR; 	// Real-time Alarm Register
+        AT91_REG	 SYSC_RTTC_RTVR; 	// Real-time Value Register
+        AT91_REG	 SYSC_RTTC_RTSR; 	// Real-time Status Register
+        AT91_REG	 SYSC_PITC_PIMR; 	// Period Interval Mode Register
+        AT91_REG	 SYSC_PITC_PISR; 	// Period Interval Status Register
+        AT91_REG	 SYSC_PITC_PIVR; 	// Period Interval Value Register
+        AT91_REG	 SYSC_PITC_PIIR; 	// Period Interval Image Register
+        AT91_REG	 SYSC_WDTC_WDCR; 	// Watchdog Control Register
+        AT91_REG	 SYSC_WDTC_WDMR; 	// Watchdog Mode Register
+        AT91_REG	 SYSC_WDTC_WDSR; 	// Watchdog Status Register
+        AT91_REG	 Reserved19[5]; 	//
+        AT91_REG	 SYSC_SYSC_VRPM; 	// Voltage Regulator Power Mode Register
 } AT91S_SYSC, *AT91PS_SYSC;
 
 // -------- VRPM : (SYSC Offset: 0xd60) Voltage Regulator Power Mode Register --------
@@ -166,26 +166,26 @@ typedef struct _AT91S_SYSC {
 //              SOFTWARE API DEFINITION  FOR Advanced Interrupt Controller
 // *****************************************************************************
 typedef struct _AT91S_AIC {
-    AT91_REG	 AIC_SMR[32]; 	// Source Mode Register
-    AT91_REG	 AIC_SVR[32]; 	// Source Vector Register
-    AT91_REG	 AIC_IVR; 	// IRQ Vector Register
-    AT91_REG	 AIC_FVR; 	// FIQ Vector Register
-    AT91_REG	 AIC_ISR; 	// Interrupt Status Register
-    AT91_REG	 AIC_IPR; 	// Interrupt Pending Register
-    AT91_REG	 AIC_IMR; 	// Interrupt Mask Register
-    AT91_REG	 AIC_CISR; 	// Core Interrupt Status Register
-    AT91_REG	 Reserved0[2]; 	//
-    AT91_REG	 AIC_IECR; 	// Interrupt Enable Command Register
-    AT91_REG	 AIC_IDCR; 	// Interrupt Disable Command Register
-    AT91_REG	 AIC_ICCR; 	// Interrupt Clear Command Register
-    AT91_REG	 AIC_ISCR; 	// Interrupt Set Command Register
-    AT91_REG	 AIC_EOICR; 	// End of Interrupt Command Register
-    AT91_REG	 AIC_SPU; 	// Spurious Vector Register
-    AT91_REG	 AIC_DCR; 	// Debug Control Register (Protect)
-    AT91_REG	 Reserved1[1]; 	//
-    AT91_REG	 AIC_FFER; 	// Fast Forcing Enable Register
-    AT91_REG	 AIC_FFDR; 	// Fast Forcing Disable Register
-    AT91_REG	 AIC_FFSR; 	// Fast Forcing Status Register
+        AT91_REG	 AIC_SMR[32]; 	// Source Mode Register
+        AT91_REG	 AIC_SVR[32]; 	// Source Vector Register
+        AT91_REG	 AIC_IVR; 	// IRQ Vector Register
+        AT91_REG	 AIC_FVR; 	// FIQ Vector Register
+        AT91_REG	 AIC_ISR; 	// Interrupt Status Register
+        AT91_REG	 AIC_IPR; 	// Interrupt Pending Register
+        AT91_REG	 AIC_IMR; 	// Interrupt Mask Register
+        AT91_REG	 AIC_CISR; 	// Core Interrupt Status Register
+        AT91_REG	 Reserved0[2]; 	//
+        AT91_REG	 AIC_IECR; 	// Interrupt Enable Command Register
+        AT91_REG	 AIC_IDCR; 	// Interrupt Disable Command Register
+        AT91_REG	 AIC_ICCR; 	// Interrupt Clear Command Register
+        AT91_REG	 AIC_ISCR; 	// Interrupt Set Command Register
+        AT91_REG	 AIC_EOICR; 	// End of Interrupt Command Register
+        AT91_REG	 AIC_SPU; 	// Spurious Vector Register
+        AT91_REG	 AIC_DCR; 	// Debug Control Register (Protect)
+        AT91_REG	 Reserved1[1]; 	//
+        AT91_REG	 AIC_FFER; 	// Fast Forcing Enable Register
+        AT91_REG	 AIC_FFDR; 	// Fast Forcing Disable Register
+        AT91_REG	 AIC_FFSR; 	// Fast Forcing Status Register
 } AT91S_AIC, *AT91PS_AIC;
 
 // -------- AIC_SMR : (AIC Offset: 0x0) Control Register --------
@@ -208,30 +208,30 @@ typedef struct _AT91S_AIC {
 //              SOFTWARE API DEFINITION  FOR Debug Unit
 // *****************************************************************************
 typedef struct _AT91S_DBGU {
-    AT91_REG	 DBGU_CR; 	// Control Register
-    AT91_REG	 DBGU_MR; 	// Mode Register
-    AT91_REG	 DBGU_IER; 	// Interrupt Enable Register
-    AT91_REG	 DBGU_IDR; 	// Interrupt Disable Register
-    AT91_REG	 DBGU_IMR; 	// Interrupt Mask Register
-    AT91_REG	 DBGU_CSR; 	// Channel Status Register
-    AT91_REG	 DBGU_RHR; 	// Receiver Holding Register
-    AT91_REG	 DBGU_THR; 	// Transmitter Holding Register
-    AT91_REG	 DBGU_BRGR; 	// Baud Rate Generator Register
-    AT91_REG	 Reserved0[7]; 	//
-    AT91_REG	 DBGU_C1R; 	// Chip ID1 Register
-    AT91_REG	 DBGU_C2R; 	// Chip ID2 Register
-    AT91_REG	 DBGU_FNTR; 	// Force NTRST Register
-    AT91_REG	 Reserved1[45]; 	//
-    AT91_REG	 DBGU_RPR; 	// Receive Pointer Register
-    AT91_REG	 DBGU_RCR; 	// Receive Counter Register
-    AT91_REG	 DBGU_TPR; 	// Transmit Pointer Register
-    AT91_REG	 DBGU_TCR; 	// Transmit Counter Register
-    AT91_REG	 DBGU_RNPR; 	// Receive Next Pointer Register
-    AT91_REG	 DBGU_RNCR; 	// Receive Next Counter Register
-    AT91_REG	 DBGU_TNPR; 	// Transmit Next Pointer Register
-    AT91_REG	 DBGU_TNCR; 	// Transmit Next Counter Register
-    AT91_REG	 DBGU_PTCR; 	// PDC Transfer Control Register
-    AT91_REG	 DBGU_PTSR; 	// PDC Transfer Status Register
+        AT91_REG	 DBGU_CR; 	// Control Register
+        AT91_REG	 DBGU_MR; 	// Mode Register
+        AT91_REG	 DBGU_IER; 	// Interrupt Enable Register
+        AT91_REG	 DBGU_IDR; 	// Interrupt Disable Register
+        AT91_REG	 DBGU_IMR; 	// Interrupt Mask Register
+        AT91_REG	 DBGU_CSR; 	// Channel Status Register
+        AT91_REG	 DBGU_RHR; 	// Receiver Holding Register
+        AT91_REG	 DBGU_THR; 	// Transmitter Holding Register
+        AT91_REG	 DBGU_BRGR; 	// Baud Rate Generator Register
+        AT91_REG	 Reserved0[7]; 	//
+        AT91_REG	 DBGU_C1R; 	// Chip ID1 Register
+        AT91_REG	 DBGU_C2R; 	// Chip ID2 Register
+        AT91_REG	 DBGU_FNTR; 	// Force NTRST Register
+        AT91_REG	 Reserved1[45]; 	//
+        AT91_REG	 DBGU_RPR; 	// Receive Pointer Register
+        AT91_REG	 DBGU_RCR; 	// Receive Counter Register
+        AT91_REG	 DBGU_TPR; 	// Transmit Pointer Register
+        AT91_REG	 DBGU_TCR; 	// Transmit Counter Register
+        AT91_REG	 DBGU_RNPR; 	// Receive Next Pointer Register
+        AT91_REG	 DBGU_RNCR; 	// Receive Next Counter Register
+        AT91_REG	 DBGU_TNPR; 	// Transmit Next Pointer Register
+        AT91_REG	 DBGU_TNCR; 	// Transmit Next Counter Register
+        AT91_REG	 DBGU_PTCR; 	// PDC Transfer Control Register
+        AT91_REG	 DBGU_PTSR; 	// PDC Transfer Status Register
 } AT91S_DBGU, *AT91PS_DBGU;
 
 // -------- DBGU_CR : (DBGU Offset: 0x0) Debug Unit Control Register --------
@@ -277,16 +277,16 @@ typedef struct _AT91S_DBGU {
 //              SOFTWARE API DEFINITION  FOR Peripheral Data Controller
 // *****************************************************************************
 typedef struct _AT91S_PDC {
-    AT91_REG	 PDC_RPR; 	// Receive Pointer Register
-    AT91_REG	 PDC_RCR; 	// Receive Counter Register
-    AT91_REG	 PDC_TPR; 	// Transmit Pointer Register
-    AT91_REG	 PDC_TCR; 	// Transmit Counter Register
-    AT91_REG	 PDC_RNPR; 	// Receive Next Pointer Register
-    AT91_REG	 PDC_RNCR; 	// Receive Next Counter Register
-    AT91_REG	 PDC_TNPR; 	// Transmit Next Pointer Register
-    AT91_REG	 PDC_TNCR; 	// Transmit Next Counter Register
-    AT91_REG	 PDC_PTCR; 	// PDC Transfer Control Register
-    AT91_REG	 PDC_PTSR; 	// PDC Transfer Status Register
+        AT91_REG	 PDC_RPR; 	// Receive Pointer Register
+        AT91_REG	 PDC_RCR; 	// Receive Counter Register
+        AT91_REG	 PDC_TPR; 	// Transmit Pointer Register
+        AT91_REG	 PDC_TCR; 	// Transmit Counter Register
+        AT91_REG	 PDC_RNPR; 	// Receive Next Pointer Register
+        AT91_REG	 PDC_RNCR; 	// Receive Next Counter Register
+        AT91_REG	 PDC_TNPR; 	// Transmit Next Pointer Register
+        AT91_REG	 PDC_TNCR; 	// Transmit Next Counter Register
+        AT91_REG	 PDC_PTCR; 	// PDC Transfer Control Register
+        AT91_REG	 PDC_PTSR; 	// PDC Transfer Status Register
 } AT91S_PDC, *AT91PS_PDC;
 
 // -------- PDC_PTCR : (PDC Offset: 0x20) PDC Transfer Control Register --------
@@ -300,41 +300,41 @@ typedef struct _AT91S_PDC {
 //              SOFTWARE API DEFINITION  FOR Parallel Input Output Controler
 // *****************************************************************************
 typedef struct _AT91S_PIO {
-    AT91_REG	 PIO_PER; 	// PIO Enable Register
-    AT91_REG	 PIO_PDR; 	// PIO Disable Register
-    AT91_REG	 PIO_PSR; 	// PIO Status Register
-    AT91_REG	 Reserved0[1]; 	//
-    AT91_REG	 PIO_OER; 	// Output Enable Register
-    AT91_REG	 PIO_ODR; 	// Output Disable Registerr
-    AT91_REG	 PIO_OSR; 	// Output Status Register
-    AT91_REG	 Reserved1[1]; 	//
-    AT91_REG	 PIO_IFER; 	// Input Filter Enable Register
-    AT91_REG	 PIO_IFDR; 	// Input Filter Disable Register
-    AT91_REG	 PIO_IFSR; 	// Input Filter Status Register
-    AT91_REG	 Reserved2[1]; 	//
-    AT91_REG	 PIO_SODR; 	// Set Output Data Register
-    AT91_REG	 PIO_CODR; 	// Clear Output Data Register
-    AT91_REG	 PIO_ODSR; 	// Output Data Status Register
-    AT91_REG	 PIO_PDSR; 	// Pin Data Status Register
-    AT91_REG	 PIO_IER; 	// Interrupt Enable Register
-    AT91_REG	 PIO_IDR; 	// Interrupt Disable Register
-    AT91_REG	 PIO_IMR; 	// Interrupt Mask Register
-    AT91_REG	 PIO_ISR; 	// Interrupt Status Register
-    AT91_REG	 PIO_MDER; 	// Multi-driver Enable Register
-    AT91_REG	 PIO_MDDR; 	// Multi-driver Disable Register
-    AT91_REG	 PIO_MDSR; 	// Multi-driver Status Register
-    AT91_REG	 Reserved3[1]; 	//
-    AT91_REG	 PIO_PPUDR; 	// Pull-up Disable Register
-    AT91_REG	 PIO_PPUER; 	// Pull-up Enable Register
-    AT91_REG	 PIO_PPUSR; 	// Pad Pull-up Status Register
-    AT91_REG	 Reserved4[1]; 	//
-    AT91_REG	 PIO_ASR; 	// Select A Register
-    AT91_REG	 PIO_BSR; 	// Select B Register
-    AT91_REG	 PIO_ABSR; 	// AB Select Status Register
-    AT91_REG	 Reserved5[9]; 	//
-    AT91_REG	 PIO_OWER; 	// Output Write Enable Register
-    AT91_REG	 PIO_OWDR; 	// Output Write Disable Register
-    AT91_REG	 PIO_OWSR; 	// Output Write Status Register
+        AT91_REG	 PIO_PER; 	// PIO Enable Register
+        AT91_REG	 PIO_PDR; 	// PIO Disable Register
+        AT91_REG	 PIO_PSR; 	// PIO Status Register
+        AT91_REG	 Reserved0[1]; 	//
+        AT91_REG	 PIO_OER; 	// Output Enable Register
+        AT91_REG	 PIO_ODR; 	// Output Disable Registerr
+        AT91_REG	 PIO_OSR; 	// Output Status Register
+        AT91_REG	 Reserved1[1]; 	//
+        AT91_REG	 PIO_IFER; 	// Input Filter Enable Register
+        AT91_REG	 PIO_IFDR; 	// Input Filter Disable Register
+        AT91_REG	 PIO_IFSR; 	// Input Filter Status Register
+        AT91_REG	 Reserved2[1]; 	//
+        AT91_REG	 PIO_SODR; 	// Set Output Data Register
+        AT91_REG	 PIO_CODR; 	// Clear Output Data Register
+        AT91_REG	 PIO_ODSR; 	// Output Data Status Register
+        AT91_REG	 PIO_PDSR; 	// Pin Data Status Register
+        AT91_REG	 PIO_IER; 	// Interrupt Enable Register
+        AT91_REG	 PIO_IDR; 	// Interrupt Disable Register
+        AT91_REG	 PIO_IMR; 	// Interrupt Mask Register
+        AT91_REG	 PIO_ISR; 	// Interrupt Status Register
+        AT91_REG	 PIO_MDER; 	// Multi-driver Enable Register
+        AT91_REG	 PIO_MDDR; 	// Multi-driver Disable Register
+        AT91_REG	 PIO_MDSR; 	// Multi-driver Status Register
+        AT91_REG	 Reserved3[1]; 	//
+        AT91_REG	 PIO_PPUDR; 	// Pull-up Disable Register
+        AT91_REG	 PIO_PPUER; 	// Pull-up Enable Register
+        AT91_REG	 PIO_PPUSR; 	// Pad Pull-up Status Register
+        AT91_REG	 Reserved4[1]; 	//
+        AT91_REG	 PIO_ASR; 	// Select A Register
+        AT91_REG	 PIO_BSR; 	// Select B Register
+        AT91_REG	 PIO_ABSR; 	// AB Select Status Register
+        AT91_REG	 Reserved5[9]; 	//
+        AT91_REG	 PIO_OWER; 	// Output Write Enable Register
+        AT91_REG	 PIO_OWDR; 	// Output Write Disable Register
+        AT91_REG	 PIO_OWSR; 	// Output Write Status Register
 } AT91S_PIO, *AT91PS_PIO;
 
 
@@ -342,10 +342,10 @@ typedef struct _AT91S_PIO {
 //              SOFTWARE API DEFINITION  FOR Clock Generator Controler
 // *****************************************************************************
 typedef struct _AT91S_CKGR {
-    AT91_REG	 CKGR_MOR; 	// Main Oscillator Register
-    AT91_REG	 CKGR_MCFR; 	// Main Clock  Frequency Register
-    AT91_REG	 Reserved0[1]; 	//
-    AT91_REG	 CKGR_PLLR; 	// PLL Register
+        AT91_REG	 CKGR_MOR; 	// Main Oscillator Register
+        AT91_REG	 CKGR_MCFR; 	// Main Clock  Frequency Register
+        AT91_REG	 Reserved0[1]; 	//
+        AT91_REG	 CKGR_PLLR; 	// PLL Register
 } AT91S_CKGR, *AT91PS_CKGR;
 
 // -------- CKGR_MOR : (CKGR Offset: 0x0) Main Oscillator Register --------
@@ -375,25 +375,25 @@ typedef struct _AT91S_CKGR {
 //              SOFTWARE API DEFINITION  FOR Power Management Controler
 // *****************************************************************************
 typedef struct _AT91S_PMC {
-    AT91_REG	 PMC_SCER; 	// System Clock Enable Register
-    AT91_REG	 PMC_SCDR; 	// System Clock Disable Register
-    AT91_REG	 PMC_SCSR; 	// System Clock Status Register
-    AT91_REG	 Reserved0[1]; 	//
-    AT91_REG	 PMC_PCER; 	// Peripheral Clock Enable Register
-    AT91_REG	 PMC_PCDR; 	// Peripheral Clock Disable Register
-    AT91_REG	 PMC_PCSR; 	// Peripheral Clock Status Register
-    AT91_REG	 Reserved1[1]; 	//
-    AT91_REG	 PMC_MOR; 	// Main Oscillator Register
-    AT91_REG	 PMC_MCFR; 	// Main Clock  Frequency Register
-    AT91_REG	 Reserved2[1]; 	//
-    AT91_REG	 PMC_PLLR; 	// PLL Register
-    AT91_REG	 PMC_MCKR; 	// Master Clock Register
-    AT91_REG	 Reserved3[3]; 	//
-    AT91_REG	 PMC_PCKR[8]; 	// Programmable Clock Register
-    AT91_REG	 PMC_IER; 	// Interrupt Enable Register
-    AT91_REG	 PMC_IDR; 	// Interrupt Disable Register
-    AT91_REG	 PMC_SR; 	// Status Register
-    AT91_REG	 PMC_IMR; 	// Interrupt Mask Register
+        AT91_REG	 PMC_SCER; 	// System Clock Enable Register
+        AT91_REG	 PMC_SCDR; 	// System Clock Disable Register
+        AT91_REG	 PMC_SCSR; 	// System Clock Status Register
+        AT91_REG	 Reserved0[1]; 	//
+        AT91_REG	 PMC_PCER; 	// Peripheral Clock Enable Register
+        AT91_REG	 PMC_PCDR; 	// Peripheral Clock Disable Register
+        AT91_REG	 PMC_PCSR; 	// Peripheral Clock Status Register
+        AT91_REG	 Reserved1[1]; 	//
+        AT91_REG	 PMC_MOR; 	// Main Oscillator Register
+        AT91_REG	 PMC_MCFR; 	// Main Clock  Frequency Register
+        AT91_REG	 Reserved2[1]; 	//
+        AT91_REG	 PMC_PLLR; 	// PLL Register
+        AT91_REG	 PMC_MCKR; 	// Master Clock Register
+        AT91_REG	 Reserved3[3]; 	//
+        AT91_REG	 PMC_PCKR[8]; 	// Programmable Clock Register
+        AT91_REG	 PMC_IER; 	// Interrupt Enable Register
+        AT91_REG	 PMC_IDR; 	// Interrupt Disable Register
+        AT91_REG	 PMC_SR; 	// Status Register
+        AT91_REG	 PMC_IMR; 	// Interrupt Mask Register
 } AT91S_PMC, *AT91PS_PMC;
 
 // -------- PMC_SCER : (PMC Offset: 0x0) System Clock Enable Register --------
@@ -438,9 +438,9 @@ typedef struct _AT91S_PMC {
 //              SOFTWARE API DEFINITION  FOR Reset Controller Interface
 // *****************************************************************************
 typedef struct _AT91S_RSTC {
-    AT91_REG	 RSTC_RCR; 	// Reset Control Register
-    AT91_REG	 RSTC_RSR; 	// Reset Status Register
-    AT91_REG	 RSTC_RMR; 	// Reset Mode Register
+        AT91_REG	 RSTC_RCR; 	// Reset Control Register
+        AT91_REG	 RSTC_RSR; 	// Reset Status Register
+        AT91_REG	 RSTC_RMR; 	// Reset Mode Register
 } AT91S_RSTC, *AT91PS_RSTC;
 
 // -------- SYSC_RCR : (RSTC Offset: 0x0) Reset Control Register --------
@@ -470,10 +470,10 @@ typedef struct _AT91S_RSTC {
 //              SOFTWARE API DEFINITION  FOR Real Time Timer Controller Interface
 // *****************************************************************************
 typedef struct _AT91S_RTTC {
-    AT91_REG	 RTTC_RTMR; 	// Real-time Mode Register
-    AT91_REG	 RTTC_RTAR; 	// Real-time Alarm Register
-    AT91_REG	 RTTC_RTVR; 	// Real-time Value Register
-    AT91_REG	 RTTC_RTSR; 	// Real-time Status Register
+        AT91_REG	 RTTC_RTMR; 	// Real-time Mode Register
+        AT91_REG	 RTTC_RTAR; 	// Real-time Alarm Register
+        AT91_REG	 RTTC_RTVR; 	// Real-time Value Register
+        AT91_REG	 RTTC_RTSR; 	// Real-time Status Register
 } AT91S_RTTC, *AT91PS_RTTC;
 
 // -------- SYSC_RTMR : (RTTC Offset: 0x0) Real-time Mode Register --------
@@ -493,10 +493,10 @@ typedef struct _AT91S_RTTC {
 //              SOFTWARE API DEFINITION  FOR Periodic Interval Timer Controller Interface
 // *****************************************************************************
 typedef struct _AT91S_PITC {
-    AT91_REG	 PITC_PIMR; 	// Period Interval Mode Register
-    AT91_REG	 PITC_PISR; 	// Period Interval Status Register
-    AT91_REG	 PITC_PIVR; 	// Period Interval Value Register
-    AT91_REG	 PITC_PIIR; 	// Period Interval Image Register
+        AT91_REG	 PITC_PIMR; 	// Period Interval Mode Register
+        AT91_REG	 PITC_PISR; 	// Period Interval Status Register
+        AT91_REG	 PITC_PIVR; 	// Period Interval Value Register
+        AT91_REG	 PITC_PIIR; 	// Period Interval Image Register
 } AT91S_PITC, *AT91PS_PITC;
 
 // -------- SYSC_PIMR : (PITC Offset: 0x0) Periodic Interval Mode Register --------
@@ -514,9 +514,9 @@ typedef struct _AT91S_PITC {
 //              SOFTWARE API DEFINITION  FOR Watchdog Timer Controller Interface
 // *****************************************************************************
 typedef struct _AT91S_WDTC {
-    AT91_REG	 WDTC_WDCR; 	// Watchdog Control Register
-    AT91_REG	 WDTC_WDMR; 	// Watchdog Mode Register
-    AT91_REG	 WDTC_WDSR; 	// Watchdog Status Register
+        AT91_REG	 WDTC_WDCR; 	// Watchdog Control Register
+        AT91_REG	 WDTC_WDMR; 	// Watchdog Mode Register
+        AT91_REG	 WDTC_WDSR; 	// Watchdog Status Register
 } AT91S_WDTC, *AT91PS_WDTC;
 
 // -------- SYSC_WDCR : (WDTC Offset: 0x0) Periodic Interval Image Register --------
@@ -538,13 +538,13 @@ typedef struct _AT91S_WDTC {
 //              SOFTWARE API DEFINITION  FOR Memory Controller Interface
 // *****************************************************************************
 typedef struct _AT91S_MC {
-    AT91_REG	 MC_RCR; 	// MC Remap Control Register
-    AT91_REG	 MC_ASR; 	// MC Abort Status Register
-    AT91_REG	 MC_AASR; 	// MC Abort Address Status Register
-    AT91_REG	 Reserved0[21]; 	//
-    AT91_REG	 MC_FMR; 	// MC Flash Mode Register
-    AT91_REG	 MC_FCR; 	// MC Flash Command Register
-    AT91_REG	 MC_FSR; 	// MC Flash Status Register
+        AT91_REG	 MC_RCR; 	// MC Remap Control Register
+        AT91_REG	 MC_ASR; 	// MC Abort Status Register
+        AT91_REG	 MC_AASR; 	// MC Abort Address Status Register
+        AT91_REG	 Reserved0[21]; 	//
+        AT91_REG	 MC_FMR; 	// MC Flash Mode Register
+        AT91_REG	 MC_FCR; 	// MC Flash Command Register
+        AT91_REG	 MC_FSR; 	// MC Flash Status Register
 } AT91S_MC, *AT91PS_MC;
 
 // -------- MC_RCR : (MC Offset: 0x0) MC Remap Control Register --------
@@ -618,27 +618,27 @@ typedef struct _AT91S_MC {
 //              SOFTWARE API DEFINITION  FOR Serial Parallel Interface
 // *****************************************************************************
 typedef struct _AT91S_SPI {
-    AT91_REG	 SPI_CR; 	// Control Register
-    AT91_REG	 SPI_MR; 	// Mode Register
-    AT91_REG	 SPI_RDR; 	// Receive Data Register
-    AT91_REG	 SPI_TDR; 	// Transmit Data Register
-    AT91_REG	 SPI_SR; 	// Status Register
-    AT91_REG	 SPI_IER; 	// Interrupt Enable Register
-    AT91_REG	 SPI_IDR; 	// Interrupt Disable Register
-    AT91_REG	 SPI_IMR; 	// Interrupt Mask Register
-    AT91_REG	 Reserved0[4]; 	//
-    AT91_REG	 SPI_CSR[4]; 	// Chip Select Register
-    AT91_REG	 Reserved1[48]; 	//
-    AT91_REG	 SPI_RPR; 	// Receive Pointer Register
-    AT91_REG	 SPI_RCR; 	// Receive Counter Register
-    AT91_REG	 SPI_TPR; 	// Transmit Pointer Register
-    AT91_REG	 SPI_TCR; 	// Transmit Counter Register
-    AT91_REG	 SPI_RNPR; 	// Receive Next Pointer Register
-    AT91_REG	 SPI_RNCR; 	// Receive Next Counter Register
-    AT91_REG	 SPI_TNPR; 	// Transmit Next Pointer Register
-    AT91_REG	 SPI_TNCR; 	// Transmit Next Counter Register
-    AT91_REG	 SPI_PTCR; 	// PDC Transfer Control Register
-    AT91_REG	 SPI_PTSR; 	// PDC Transfer Status Register
+        AT91_REG	 SPI_CR; 	// Control Register
+        AT91_REG	 SPI_MR; 	// Mode Register
+        AT91_REG	 SPI_RDR; 	// Receive Data Register
+        AT91_REG	 SPI_TDR; 	// Transmit Data Register
+        AT91_REG	 SPI_SR; 	// Status Register
+        AT91_REG	 SPI_IER; 	// Interrupt Enable Register
+        AT91_REG	 SPI_IDR; 	// Interrupt Disable Register
+        AT91_REG	 SPI_IMR; 	// Interrupt Mask Register
+        AT91_REG	 Reserved0[4]; 	//
+        AT91_REG	 SPI_CSR[4]; 	// Chip Select Register
+        AT91_REG	 Reserved1[48]; 	//
+        AT91_REG	 SPI_RPR; 	// Receive Pointer Register
+        AT91_REG	 SPI_RCR; 	// Receive Counter Register
+        AT91_REG	 SPI_TPR; 	// Transmit Pointer Register
+        AT91_REG	 SPI_TCR; 	// Transmit Counter Register
+        AT91_REG	 SPI_RNPR; 	// Receive Next Pointer Register
+        AT91_REG	 SPI_RNCR; 	// Receive Next Counter Register
+        AT91_REG	 SPI_TNPR; 	// Transmit Next Pointer Register
+        AT91_REG	 SPI_TNCR; 	// Transmit Next Counter Register
+        AT91_REG	 SPI_PTCR; 	// PDC Transfer Control Register
+        AT91_REG	 SPI_PTSR; 	// PDC Transfer Status Register
 } AT91S_SPI, *AT91PS_SPI;
 
 // -------- SPI_CR : (SPI Offset: 0x0) SPI Control Register --------
@@ -700,36 +700,36 @@ typedef struct _AT91S_SPI {
 //              SOFTWARE API DEFINITION  FOR Analog to Digital Convertor
 // *****************************************************************************
 typedef struct _AT91S_ADC {
-    AT91_REG	 ADC_CR; 	// ADC Control Register
-    AT91_REG	 ADC_MR; 	// ADC Mode Register
-    AT91_REG	 Reserved0[2]; 	//
-    AT91_REG	 ADC_CHER; 	// ADC Channel Enable Register
-    AT91_REG	 ADC_CHDR; 	// ADC Channel Disable Register
-    AT91_REG	 ADC_CHSR; 	// ADC Channel Status Register
-    AT91_REG	 ADC_SR; 	// ADC Status Register
-    AT91_REG	 ADC_LCDR; 	// ADC Last Converted Data Register
-    AT91_REG	 ADC_IER; 	// ADC Interrupt Enable Register
-    AT91_REG	 ADC_IDR; 	// ADC Interrupt Disable Register
-    AT91_REG	 ADC_IMR; 	// ADC Interrupt Mask Register
-    AT91_REG	 ADC_CDR0; 	// ADC Channel Data Register 0
-    AT91_REG	 ADC_CDR1; 	// ADC Channel Data Register 1
-    AT91_REG	 ADC_CDR2; 	// ADC Channel Data Register 2
-    AT91_REG	 ADC_CDR3; 	// ADC Channel Data Register 3
-    AT91_REG	 ADC_CDR4; 	// ADC Channel Data Register 4
-    AT91_REG	 ADC_CDR5; 	// ADC Channel Data Register 5
-    AT91_REG	 ADC_CDR6; 	// ADC Channel Data Register 6
-    AT91_REG	 ADC_CDR7; 	// ADC Channel Data Register 7
-    AT91_REG	 Reserved1[44]; 	//
-    AT91_REG	 ADC_RPR; 	// Receive Pointer Register
-    AT91_REG	 ADC_RCR; 	// Receive Counter Register
-    AT91_REG	 ADC_TPR; 	// Transmit Pointer Register
-    AT91_REG	 ADC_TCR; 	// Transmit Counter Register
-    AT91_REG	 ADC_RNPR; 	// Receive Next Pointer Register
-    AT91_REG	 ADC_RNCR; 	// Receive Next Counter Register
-    AT91_REG	 ADC_TNPR; 	// Transmit Next Pointer Register
-    AT91_REG	 ADC_TNCR; 	// Transmit Next Counter Register
-    AT91_REG	 ADC_PTCR; 	// PDC Transfer Control Register
-    AT91_REG	 ADC_PTSR; 	// PDC Transfer Status Register
+        AT91_REG	 ADC_CR; 	// ADC Control Register
+        AT91_REG	 ADC_MR; 	// ADC Mode Register
+        AT91_REG	 Reserved0[2]; 	//
+        AT91_REG	 ADC_CHER; 	// ADC Channel Enable Register
+        AT91_REG	 ADC_CHDR; 	// ADC Channel Disable Register
+        AT91_REG	 ADC_CHSR; 	// ADC Channel Status Register
+        AT91_REG	 ADC_SR; 	// ADC Status Register
+        AT91_REG	 ADC_LCDR; 	// ADC Last Converted Data Register
+        AT91_REG	 ADC_IER; 	// ADC Interrupt Enable Register
+        AT91_REG	 ADC_IDR; 	// ADC Interrupt Disable Register
+        AT91_REG	 ADC_IMR; 	// ADC Interrupt Mask Register
+        AT91_REG	 ADC_CDR0; 	// ADC Channel Data Register 0
+        AT91_REG	 ADC_CDR1; 	// ADC Channel Data Register 1
+        AT91_REG	 ADC_CDR2; 	// ADC Channel Data Register 2
+        AT91_REG	 ADC_CDR3; 	// ADC Channel Data Register 3
+        AT91_REG	 ADC_CDR4; 	// ADC Channel Data Register 4
+        AT91_REG	 ADC_CDR5; 	// ADC Channel Data Register 5
+        AT91_REG	 ADC_CDR6; 	// ADC Channel Data Register 6
+        AT91_REG	 ADC_CDR7; 	// ADC Channel Data Register 7
+        AT91_REG	 Reserved1[44]; 	//
+        AT91_REG	 ADC_RPR; 	// Receive Pointer Register
+        AT91_REG	 ADC_RCR; 	// Receive Counter Register
+        AT91_REG	 ADC_TPR; 	// Transmit Pointer Register
+        AT91_REG	 ADC_TCR; 	// Transmit Counter Register
+        AT91_REG	 ADC_RNPR; 	// Receive Next Pointer Register
+        AT91_REG	 ADC_RNCR; 	// Receive Next Counter Register
+        AT91_REG	 ADC_TNPR; 	// Transmit Next Pointer Register
+        AT91_REG	 ADC_TNCR; 	// Transmit Next Counter Register
+        AT91_REG	 ADC_PTCR; 	// PDC Transfer Control Register
+        AT91_REG	 ADC_PTSR; 	// PDC Transfer Status Register
 } AT91S_ADC, *AT91PS_ADC;
 
 // -------- ADC_CR : (ADC Offset: 0x0) ADC Control Register --------
@@ -807,35 +807,35 @@ typedef struct _AT91S_ADC {
 //              SOFTWARE API DEFINITION  FOR Synchronous Serial Controller Interface
 // *****************************************************************************
 typedef struct _AT91S_SSC {
-    AT91_REG	 SSC_CR; 	// Control Register
-    AT91_REG	 SSC_CMR; 	// Clock Mode Register
-    AT91_REG	 Reserved0[2]; 	//
-    AT91_REG	 SSC_RCMR; 	// Receive Clock ModeRegister
-    AT91_REG	 SSC_RFMR; 	// Receive Frame Mode Register
-    AT91_REG	 SSC_TCMR; 	// Transmit Clock Mode Register
-    AT91_REG	 SSC_TFMR; 	// Transmit Frame Mode Register
-    AT91_REG	 SSC_RHR; 	// Receive Holding Register
-    AT91_REG	 SSC_THR; 	// Transmit Holding Register
-    AT91_REG	 Reserved1[2]; 	//
-    AT91_REG	 SSC_RSHR; 	// Receive Sync Holding Register
-    AT91_REG	 SSC_TSHR; 	// Transmit Sync Holding Register
-    AT91_REG	 SSC_RC0R; 	// Receive Compare 0 Register
-    AT91_REG	 SSC_RC1R; 	// Receive Compare 1 Register
-    AT91_REG	 SSC_SR; 	// Status Register
-    AT91_REG	 SSC_IER; 	// Interrupt Enable Register
-    AT91_REG	 SSC_IDR; 	// Interrupt Disable Register
-    AT91_REG	 SSC_IMR; 	// Interrupt Mask Register
-    AT91_REG	 Reserved2[44]; 	//
-    AT91_REG	 SSC_RPR; 	// Receive Pointer Register
-    AT91_REG	 SSC_RCR; 	// Receive Counter Register
-    AT91_REG	 SSC_TPR; 	// Transmit Pointer Register
-    AT91_REG	 SSC_TCR; 	// Transmit Counter Register
-    AT91_REG	 SSC_RNPR; 	// Receive Next Pointer Register
-    AT91_REG	 SSC_RNCR; 	// Receive Next Counter Register
-    AT91_REG	 SSC_TNPR; 	// Transmit Next Pointer Register
-    AT91_REG	 SSC_TNCR; 	// Transmit Next Counter Register
-    AT91_REG	 SSC_PTCR; 	// PDC Transfer Control Register
-    AT91_REG	 SSC_PTSR; 	// PDC Transfer Status Register
+        AT91_REG	 SSC_CR; 	// Control Register
+        AT91_REG	 SSC_CMR; 	// Clock Mode Register
+        AT91_REG	 Reserved0[2]; 	//
+        AT91_REG	 SSC_RCMR; 	// Receive Clock ModeRegister
+        AT91_REG	 SSC_RFMR; 	// Receive Frame Mode Register
+        AT91_REG	 SSC_TCMR; 	// Transmit Clock Mode Register
+        AT91_REG	 SSC_TFMR; 	// Transmit Frame Mode Register
+        AT91_REG	 SSC_RHR; 	// Receive Holding Register
+        AT91_REG	 SSC_THR; 	// Transmit Holding Register
+        AT91_REG	 Reserved1[2]; 	//
+        AT91_REG	 SSC_RSHR; 	// Receive Sync Holding Register
+        AT91_REG	 SSC_TSHR; 	// Transmit Sync Holding Register
+        AT91_REG	 SSC_RC0R; 	// Receive Compare 0 Register
+        AT91_REG	 SSC_RC1R; 	// Receive Compare 1 Register
+        AT91_REG	 SSC_SR; 	// Status Register
+        AT91_REG	 SSC_IER; 	// Interrupt Enable Register
+        AT91_REG	 SSC_IDR; 	// Interrupt Disable Register
+        AT91_REG	 SSC_IMR; 	// Interrupt Mask Register
+        AT91_REG	 Reserved2[44]; 	//
+        AT91_REG	 SSC_RPR; 	// Receive Pointer Register
+        AT91_REG	 SSC_RCR; 	// Receive Counter Register
+        AT91_REG	 SSC_TPR; 	// Transmit Pointer Register
+        AT91_REG	 SSC_TCR; 	// Transmit Counter Register
+        AT91_REG	 SSC_RNPR; 	// Receive Next Pointer Register
+        AT91_REG	 SSC_RNCR; 	// Receive Next Counter Register
+        AT91_REG	 SSC_TNPR; 	// Transmit Next Pointer Register
+        AT91_REG	 SSC_TNCR; 	// Transmit Next Counter Register
+        AT91_REG	 SSC_PTCR; 	// PDC Transfer Control Register
+        AT91_REG	 SSC_PTSR; 	// PDC Transfer Status Register
 } AT91S_SSC, *AT91PS_SSC;
 
 // -------- SSC_CR : (SSC Offset: 0x0) SSC Control Register --------
@@ -913,33 +913,33 @@ typedef struct _AT91S_SSC {
 //              SOFTWARE API DEFINITION  FOR Usart
 // *****************************************************************************
 typedef struct _AT91S_USART {
-    AT91_REG	 US_CR; 	// Control Register
-    AT91_REG	 US_MR; 	// Mode Register
-    AT91_REG	 US_IER; 	// Interrupt Enable Register
-    AT91_REG	 US_IDR; 	// Interrupt Disable Register
-    AT91_REG	 US_IMR; 	// Interrupt Mask Register
-    AT91_REG	 US_CSR; 	// Channel Status Register
-    AT91_REG	 US_RHR; 	// Receiver Holding Register
-    AT91_REG	 US_THR; 	// Transmitter Holding Register
-    AT91_REG	 US_BRGR; 	// Baud Rate Generator Register
-    AT91_REG	 US_RTOR; 	// Receiver Time-out Register
-    AT91_REG	 US_TTGR; 	// Transmitter Time-guard Register
-    AT91_REG	 Reserved0[5]; 	//
-    AT91_REG	 US_FIDI; 	// FI_DI_Ratio Register
-    AT91_REG	 US_NER; 	// Nb Errors Register
-    AT91_REG	 US_XXR; 	// XON_XOFF Register
-    AT91_REG	 US_IF; 	// IRDA_FILTER Register
-    AT91_REG	 Reserved1[44]; 	//
-    AT91_REG	 US_RPR; 	// Receive Pointer Register
-    AT91_REG	 US_RCR; 	// Receive Counter Register
-    AT91_REG	 US_TPR; 	// Transmit Pointer Register
-    AT91_REG	 US_TCR; 	// Transmit Counter Register
-    AT91_REG	 US_RNPR; 	// Receive Next Pointer Register
-    AT91_REG	 US_RNCR; 	// Receive Next Counter Register
-    AT91_REG	 US_TNPR; 	// Transmit Next Pointer Register
-    AT91_REG	 US_TNCR; 	// Transmit Next Counter Register
-    AT91_REG	 US_PTCR; 	// PDC Transfer Control Register
-    AT91_REG	 US_PTSR; 	// PDC Transfer Status Register
+        AT91_REG	 US_CR; 	// Control Register
+        AT91_REG	 US_MR; 	// Mode Register
+        AT91_REG	 US_IER; 	// Interrupt Enable Register
+        AT91_REG	 US_IDR; 	// Interrupt Disable Register
+        AT91_REG	 US_IMR; 	// Interrupt Mask Register
+        AT91_REG	 US_CSR; 	// Channel Status Register
+        AT91_REG	 US_RHR; 	// Receiver Holding Register
+        AT91_REG	 US_THR; 	// Transmitter Holding Register
+        AT91_REG	 US_BRGR; 	// Baud Rate Generator Register
+        AT91_REG	 US_RTOR; 	// Receiver Time-out Register
+        AT91_REG	 US_TTGR; 	// Transmitter Time-guard Register
+        AT91_REG	 Reserved0[5]; 	//
+        AT91_REG	 US_FIDI; 	// FI_DI_Ratio Register
+        AT91_REG	 US_NER; 	// Nb Errors Register
+        AT91_REG	 US_XXR; 	// XON_XOFF Register
+        AT91_REG	 US_IF; 	// IRDA_FILTER Register
+        AT91_REG	 Reserved1[44]; 	//
+        AT91_REG	 US_RPR; 	// Receive Pointer Register
+        AT91_REG	 US_RCR; 	// Receive Counter Register
+        AT91_REG	 US_TPR; 	// Transmit Pointer Register
+        AT91_REG	 US_TCR; 	// Transmit Counter Register
+        AT91_REG	 US_RNPR; 	// Receive Next Pointer Register
+        AT91_REG	 US_RNCR; 	// Receive Next Counter Register
+        AT91_REG	 US_TNPR; 	// Transmit Next Pointer Register
+        AT91_REG	 US_TNCR; 	// Transmit Next Counter Register
+        AT91_REG	 US_PTCR; 	// PDC Transfer Control Register
+        AT91_REG	 US_PTSR; 	// PDC Transfer Status Register
 } AT91S_USART, *AT91PS_USART;
 
 // -------- US_CR : (USART Offset: 0x0) Debug Unit Control Register --------
@@ -1009,18 +1009,18 @@ typedef struct _AT91S_USART {
 //              SOFTWARE API DEFINITION  FOR Two-wire Interface
 // *****************************************************************************
 typedef struct _AT91S_TWI {
-    AT91_REG	 TWI_CR; 	// Control Register
-    AT91_REG	 TWI_MMR; 	// Master Mode Register
-    AT91_REG	 TWI_SMR; 	// Slave Mode Register
-    AT91_REG	 TWI_IADR; 	// Internal Address Register
-    AT91_REG	 TWI_CWGR; 	// Clock Waveform Generator Register
-    AT91_REG	 Reserved0[3]; 	//
-    AT91_REG	 TWI_SR; 	// Status Register
-    AT91_REG	 TWI_IER; 	// Interrupt Enable Register
-    AT91_REG	 TWI_IDR; 	// Interrupt Disable Register
-    AT91_REG	 TWI_IMR; 	// Interrupt Mask Register
-    AT91_REG	 TWI_RHR; 	// Receive Holding Register
-    AT91_REG	 TWI_THR; 	// Transmit Holding Register
+        AT91_REG	 TWI_CR; 	// Control Register
+        AT91_REG	 TWI_MMR; 	// Master Mode Register
+        AT91_REG	 TWI_SMR; 	// Slave Mode Register
+        AT91_REG	 TWI_IADR; 	// Internal Address Register
+        AT91_REG	 TWI_CWGR; 	// Clock Waveform Generator Register
+        AT91_REG	 Reserved0[3]; 	//
+        AT91_REG	 TWI_SR; 	// Status Register
+        AT91_REG	 TWI_IER; 	// Interrupt Enable Register
+        AT91_REG	 TWI_IDR; 	// Interrupt Disable Register
+        AT91_REG	 TWI_IMR; 	// Interrupt Mask Register
+        AT91_REG	 TWI_RHR; 	// Receive Holding Register
+        AT91_REG	 TWI_THR; 	// Transmit Holding Register
 } AT91S_TWI, *AT91PS_TWI;
 
 // -------- TWI_CR : (TWI Offset: 0x0) TWI Control Register --------
@@ -1064,17 +1064,17 @@ typedef struct _AT91S_TWI {
 //              SOFTWARE API DEFINITION  FOR Timer Counter Channel Interface
 // *****************************************************************************
 typedef struct _AT91S_TC {
-    AT91_REG	 TC_CCR; 	// Channel Control Register
-    AT91_REG	 TC_CMR; 	// Channel Mode Register (Capture Mode / Waveform Mode)
-    AT91_REG	 Reserved0[2]; 	//
-    AT91_REG	 TC_CV; 	// Counter Value
-    AT91_REG	 TC_RA; 	// Register A
-    AT91_REG	 TC_RB; 	// Register B
-    AT91_REG	 TC_RC; 	// Register C
-    AT91_REG	 TC_SR; 	// Status Register
-    AT91_REG	 TC_IER; 	// Interrupt Enable Register
-    AT91_REG	 TC_IDR; 	// Interrupt Disable Register
-    AT91_REG	 TC_IMR; 	// Interrupt Mask Register
+        AT91_REG	 TC_CCR; 	// Channel Control Register
+        AT91_REG	 TC_CMR; 	// Channel Mode Register (Capture Mode / Waveform Mode)
+        AT91_REG	 Reserved0[2]; 	//
+        AT91_REG	 TC_CV; 	// Counter Value
+        AT91_REG	 TC_RA; 	// Register A
+        AT91_REG	 TC_RB; 	// Register B
+        AT91_REG	 TC_RC; 	// Register C
+        AT91_REG	 TC_SR; 	// Status Register
+        AT91_REG	 TC_IER; 	// Interrupt Enable Register
+        AT91_REG	 TC_IDR; 	// Interrupt Disable Register
+        AT91_REG	 TC_IMR; 	// Interrupt Mask Register
 } AT91S_TC, *AT91PS_TC;
 
 // -------- TC_CCR : (TC Offset: 0x0) TC Channel Control Register --------
@@ -1195,14 +1195,14 @@ typedef struct _AT91S_TC {
 //              SOFTWARE API DEFINITION  FOR Timer Counter Interface
 // *****************************************************************************
 typedef struct _AT91S_TCB {
-    AT91S_TC	 TCB_TC0; 	// TC Channel 0
-    AT91_REG	 Reserved0[4]; 	//
-    AT91S_TC	 TCB_TC1; 	// TC Channel 1
-    AT91_REG	 Reserved1[4]; 	//
-    AT91S_TC	 TCB_TC2; 	// TC Channel 2
-    AT91_REG	 Reserved2[4]; 	//
-    AT91_REG	 TCB_BCR; 	// TC Block Control Register
-    AT91_REG	 TCB_BMR; 	// TC Block Mode Register
+        AT91S_TC	 TCB_TC0; 	// TC Channel 0
+        AT91_REG	 Reserved0[4]; 	//
+        AT91S_TC	 TCB_TC1; 	// TC Channel 1
+        AT91_REG	 Reserved1[4]; 	//
+        AT91S_TC	 TCB_TC2; 	// TC Channel 2
+        AT91_REG	 Reserved2[4]; 	//
+        AT91_REG	 TCB_BCR; 	// TC Block Control Register
+        AT91_REG	 TCB_BMR; 	// TC Block Mode Register
 } AT91S_TCB, *AT91PS_TCB;
 
 // -------- TCB_BCR : (TCB Offset: 0xc0) TC Block Control Register --------
@@ -1228,12 +1228,12 @@ typedef struct _AT91S_TCB {
 //              SOFTWARE API DEFINITION  FOR PWMC Channel Interface
 // *****************************************************************************
 typedef struct _AT91S_PWMC_CH {
-    AT91_REG	 PWMC_CMR; 	// Channel Mode Register
-    AT91_REG	 PWMC_CDTYR; 	// Channel Duty Cycle Register
-    AT91_REG	 PWMC_CPRDR; 	// Channel Period Register
-    AT91_REG	 PWMC_CCNTR; 	// Channel Counter Register
-    AT91_REG	 PWMC_CUPDR; 	// Channel Update Register
-    AT91_REG	 PWMC_Reserved[3]; 	// Reserved
+        AT91_REG	 PWMC_CMR; 	// Channel Mode Register
+        AT91_REG	 PWMC_CDTYR; 	// Channel Duty Cycle Register
+        AT91_REG	 PWMC_CPRDR; 	// Channel Period Register
+        AT91_REG	 PWMC_CCNTR; 	// Channel Counter Register
+        AT91_REG	 PWMC_CUPDR; 	// Channel Update Register
+        AT91_REG	 PWMC_Reserved[3]; 	// Reserved
 } AT91S_PWMC_CH, *AT91PS_PWMC_CH;
 
 // -------- PWMC_CMR : (PWMC_CH Offset: 0x0) PWMC Channel Mode Register --------
@@ -1257,18 +1257,18 @@ typedef struct _AT91S_PWMC_CH {
 //              SOFTWARE API DEFINITION  FOR Pulse Width Modulation Controller Interface
 // *****************************************************************************
 typedef struct _AT91S_PWMC {
-    AT91_REG	 PWMC_MR; 	// PWMC Mode Register
-    AT91_REG	 PWMC_ENA; 	// PWMC Enable Register
-    AT91_REG	 PWMC_DIS; 	// PWMC Disable Register
-    AT91_REG	 PWMC_SR; 	// PWMC Status Register
-    AT91_REG	 PWMC_IER; 	// PWMC Interrupt Enable Register
-    AT91_REG	 PWMC_IDR; 	// PWMC Interrupt Disable Register
-    AT91_REG	 PWMC_IMR; 	// PWMC Interrupt Mask Register
-    AT91_REG	 PWMC_ISR; 	// PWMC Interrupt Status Register
-    AT91_REG	 Reserved0[55]; 	//
-    AT91_REG	 PWMC_VR; 	// PWMC Version Register
-    AT91_REG	 Reserved1[64]; 	//
-    AT91S_PWMC_CH	 PWMC_CH[32]; 	// PWMC Channel 0
+        AT91_REG	 PWMC_MR; 	// PWMC Mode Register
+        AT91_REG	 PWMC_ENA; 	// PWMC Enable Register
+        AT91_REG	 PWMC_DIS; 	// PWMC Disable Register
+        AT91_REG	 PWMC_SR; 	// PWMC Status Register
+        AT91_REG	 PWMC_IER; 	// PWMC Interrupt Enable Register
+        AT91_REG	 PWMC_IDR; 	// PWMC Interrupt Disable Register
+        AT91_REG	 PWMC_IMR; 	// PWMC Interrupt Mask Register
+        AT91_REG	 PWMC_ISR; 	// PWMC Interrupt Status Register
+        AT91_REG	 Reserved0[55]; 	//
+        AT91_REG	 PWMC_VR; 	// PWMC Version Register
+        AT91_REG	 Reserved1[64]; 	//
+        AT91S_PWMC_CH	 PWMC_CH[32]; 	// PWMC Channel 0
 } AT91S_PWMC, *AT91PS_PWMC;
 
 // -------- PWMC_MR : (PWMC Offset: 0x0) PWMC Mode Register --------
@@ -1298,20 +1298,20 @@ typedef struct _AT91S_PWMC {
 //              SOFTWARE API DEFINITION  FOR USB Device Interface
 // *****************************************************************************
 typedef struct _AT91S_UDP {
-    AT91_REG	 UDP_NUM; 	// Frame Number Register
-    AT91_REG	 UDP_GLBSTATE; 	// Global State Register
-    AT91_REG	 UDP_FADDR; 	// Function Address Register
-    AT91_REG	 Reserved0[1]; 	//
-    AT91_REG	 UDP_IER; 	// Interrupt Enable Register
-    AT91_REG	 UDP_IDR; 	// Interrupt Disable Register
-    AT91_REG	 UDP_IMR; 	// Interrupt Mask Register
-    AT91_REG	 UDP_ISR; 	// Interrupt Status Register
-    AT91_REG	 UDP_ICR; 	// Interrupt Clear Register
-    AT91_REG	 Reserved1[1]; 	//
-    AT91_REG	 UDP_RSTEP; 	// Reset Endpoint Register
-    AT91_REG	 Reserved2[1]; 	//
-    AT91_REG	 UDP_CSR[8]; 	// Endpoint Control and Status Register
-    AT91_REG	 UDP_FDR[8]; 	// Endpoint FIFO Data Register
+        AT91_REG	 UDP_NUM; 	// Frame Number Register
+        AT91_REG	 UDP_GLBSTATE; 	// Global State Register
+        AT91_REG	 UDP_FADDR; 	// Function Address Register
+        AT91_REG	 Reserved0[1]; 	//
+        AT91_REG	 UDP_IER; 	// Interrupt Enable Register
+        AT91_REG	 UDP_IDR; 	// Interrupt Disable Register
+        AT91_REG	 UDP_IMR; 	// Interrupt Mask Register
+        AT91_REG	 UDP_ISR; 	// Interrupt Status Register
+        AT91_REG	 UDP_ICR; 	// Interrupt Clear Register
+        AT91_REG	 Reserved1[1]; 	//
+        AT91_REG	 UDP_RSTEP; 	// Reset Endpoint Register
+        AT91_REG	 Reserved2[1]; 	//
+        AT91_REG	 UDP_CSR[8]; 	// Endpoint Control and Status Register
+        AT91_REG	 UDP_FDR[8]; 	// Endpoint FIFO Data Register
 } AT91S_UDP, *AT91PS_UDP;
 
 // -------- UDP_FRM_NUM : (UDP Offset: 0x0) USB Frame Number Register --------

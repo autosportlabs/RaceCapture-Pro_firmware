@@ -45,149 +45,149 @@
  */
 
 arm_status arm_sqrt_q31(
-    q31_t in,
-    q31_t * pOut)
+        q31_t in,
+        q31_t * pOut)
 {
-    q63_t prevOut;
-    q31_t oneByOut;
-    uint32_t signBits;
+        q63_t prevOut;
+        q31_t oneByOut;
+        uint32_t signBits;
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    q63_t out;
+        q63_t out;
 
-    if(in > 0) {
+        if(in > 0) {
 
-        /* run for ten iterations */
+                /* run for ten iterations */
 
-        /* Take initial guess as half of the input and first iteration */
-        out = (in >> 1) + 0x3FFFFFFF;
+                /* Take initial guess as half of the input and first iteration */
+                out = (in >> 1) + 0x3FFFFFFF;
 
-        /* Calculation of reciprocal of out */
-        /* oneByOut contains reciprocal of out which is in 2.30 format
-           and oneByOut should be upscaled by signBits */
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                /* Calculation of reciprocal of out */
+                /* oneByOut contains reciprocal of out which is in 2.30 format
+                   and oneByOut should be upscaled by signBits */
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
 
-        /* 0.5 * (out) */
-        out = out >> 1u;
+                /* 0.5 * (out) */
+                out = out >> 1u;
 
-        /* prevOut = 0.5 * out + (in * (oneByOut << signBits))) */
-        prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                /* prevOut = 0.5 * out + (in * (oneByOut << signBits))) */
+                prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        /* Third iteration */
-        signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
-        prevOut = prevOut >> 1u;
-        out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                /* Third iteration */
+                signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
+                prevOut = prevOut >> 1u;
+                out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
-        out = out >> 1u;
-        prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                out = out >> 1u;
+                prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        /* Fifth iteration */
-        signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
-        prevOut = prevOut >> 1u;
-        out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                /* Fifth iteration */
+                signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
+                prevOut = prevOut >> 1u;
+                out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
-        out = out >> 1u;
-        prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                out = out >> 1u;
+                prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        /* Seventh iteration */
-        signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
-        prevOut = prevOut >> 1u;
-        out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                /* Seventh iteration */
+                signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
+                prevOut = prevOut >> 1u;
+                out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
-        out = out >> 1u;
-        prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                out = out >> 1u;
+                prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
-        prevOut = prevOut >> 1u;
-        out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
+                prevOut = prevOut >> 1u;
+                out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
-        out = out >> 1u;
-        prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                out = out >> 1u;
+                prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
-        prevOut = prevOut >> 1u;
-        out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
+                prevOut = prevOut >> 1u;
+                out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
-        out = out >> 1u;
-        prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                out = out >> 1u;
+                prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
-        prevOut = prevOut >> 1u;
-        out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
+                prevOut = prevOut >> 1u;
+                out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
-        out = out >> 1u;
-        prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                out = out >> 1u;
+                prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
-        prevOut = prevOut >> 1u;
-        out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
+                prevOut = prevOut >> 1u;
+                out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        /* tenth iteration */
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
-        out = out >> 1u;
-        *pOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                /* tenth iteration */
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                out = out >> 1u;
+                *pOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
-        return (ARM_MATH_SUCCESS);
-    }
+                return (ARM_MATH_SUCCESS);
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    q63_t out, loopVar;                            /* Temporary variable for output, loop variable */
-    if(in > 0) {
+        q63_t out, loopVar;                            /* Temporary variable for output, loop variable */
+        if(in > 0) {
 
-        /* run for ten iterations */
+                /* run for ten iterations */
 
-        /* Take initial guess as half of the input and first iteration */
-        out = (in >> 1) + 0x3FFFFFFF;
+                /* Take initial guess as half of the input and first iteration */
+                out = (in >> 1) + 0x3FFFFFFF;
 
-        /* Calculation of reciprocal of out */
-        /* oneByOut contains reciprocal of out which is in 2.30 format
-           and oneByOut should be upscaled by sign bits */
-        signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
+                /* Calculation of reciprocal of out */
+                /* oneByOut contains reciprocal of out which is in 2.30 format
+                   and oneByOut should be upscaled by sign bits */
+                signBits = arm_recip_q31((q31_t) out, &oneByOut, armRecipTableQ31);
 
-        /* 0.5 * (out) */
-        out = out >> 1u;
+                /* 0.5 * (out) */
+                out = out >> 1u;
 
-        /* prevOut = 0.5 * out + (in * (oneByOut) << signbits) */
-        prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                /* prevOut = 0.5 * out + (in * (oneByOut) << signbits) */
+                prevOut = out + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
 
 
-        /* loop for third iteration to tength iteration */
+                /* loop for third iteration to tength iteration */
 
-        for (loopVar = 1; loopVar <= 14; loopVar++) {
+                for (loopVar = 1; loopVar <= 14; loopVar++) {
 
-            signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
-            /* 0.5 * (prevOut) */
-            prevOut = prevOut >> 1u;
-            /* out = 0.5 * prevOut + (in * oneByOut) << signbits))) */
-            out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
-            /* prevOut      = out */
-            prevOut = out;
+                        signBits = arm_recip_q31((q31_t) prevOut, &oneByOut, armRecipTableQ31);
+                        /* 0.5 * (prevOut) */
+                        prevOut = prevOut >> 1u;
+                        /* out = 0.5 * prevOut + (in * oneByOut) << signbits))) */
+                        out = prevOut + (((q31_t) (((q63_t) in * oneByOut) >> 32)) << signBits);
+                        /* prevOut      = out */
+                        prevOut = out;
 
+                }
+                /* output is moved to pOut pointer */
+                *pOut = prevOut;
+
+                return (ARM_MATH_SUCCESS);
         }
-        /* output is moved to pOut pointer */
-        *pOut = prevOut;
-
-        return (ARM_MATH_SUCCESS);
-    }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    else {
-        *pOut = 0;
-        return (ARM_MATH_ARGUMENT_ERROR);
-    }
+        else {
+                *pOut = 0;
+                return (ARM_MATH_ARGUMENT_ERROR);
+        }
 }
 
 /**

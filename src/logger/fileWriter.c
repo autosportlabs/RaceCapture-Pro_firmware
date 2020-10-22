@@ -322,7 +322,7 @@ static void open_log_file(struct logging_status *ls)
                 return;
         }
 
-        pr_info_str_msg(_LOG_PFX "Opened " , ls->name);
+        pr_info_str_msg(_LOG_PFX "Opened ", ls->name);
         ls->flush_tick = xTaskGetTickCount();
         ls->last_sample_tick = 0;
 }

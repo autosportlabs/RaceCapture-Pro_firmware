@@ -46,7 +46,7 @@
 
 
 void USB_OTG_InitiateSRP(USB_OTG_CORE_HANDLE *pdev);
-void USB_OTG_InitiateHNP(USB_OTG_CORE_HANDLE *pdev , uint8_t state, uint8_t mode);
+void USB_OTG_InitiateHNP(USB_OTG_CORE_HANDLE *pdev, uint8_t state, uint8_t mode);
 void USB_OTG_Switchback (USB_OTG_CORE_HANDLE *pdev);
 uint32_t  USB_OTG_GetCurrentState (USB_OTG_CORE_HANDLE *pdev);
 

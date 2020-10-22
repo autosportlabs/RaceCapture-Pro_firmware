@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V1.0.1
   * @date    23-October-2012
-  * @brief   This file contains all the functions prototypes for the COMP firmware 
+  * @brief   This file contains all the functions prototypes for the COMP firmware
   *          library.
   ******************************************************************************
   * @attention
@@ -17,21 +17,21 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM32F30x_COMP_H
 #define __STM32F30x_COMP_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -47,42 +47,41 @@
 
 /* Exported types ------------------------------------------------------------*/
 
-/** 
-  * @brief  COMP Init structure definition  
+/**
+  * @brief  COMP Init structure definition
   */
-  
-typedef struct
-{
 
-  uint32_t COMP_InvertingInput;     /*!< Selects the inverting input of the comparator.
+typedef struct {
+
+        uint32_t COMP_InvertingInput;     /*!< Selects the inverting input of the comparator.
                                           This parameter can be a value of @ref COMP_InvertingInput */
 
-  uint32_t COMP_NonInvertingInput;  /*!< Selects the non inverting input of the comparator.
+        uint32_t COMP_NonInvertingInput;  /*!< Selects the non inverting input of the comparator.
                                          This parameter can be a value of @ref COMP_NonInvertingInput */
 
-  uint32_t COMP_Output;             /*!< Selects the output redirection of the comparator.
+        uint32_t COMP_Output;             /*!< Selects the output redirection of the comparator.
                                           This parameter can be a value of @ref COMP_Output */
 
-  uint32_t COMP_BlankingSrce;      /*!< Selects the output blanking source of the comparator.
+        uint32_t COMP_BlankingSrce;      /*!< Selects the output blanking source of the comparator.
                                           This parameter can be a value of @ref COMP_BlankingSrce */
 
-  uint32_t COMP_OutputPol;           /*!< Selects the output polarity of the comparator.
+        uint32_t COMP_OutputPol;           /*!< Selects the output polarity of the comparator.
                                           This parameter can be a value of @ref COMP_OutputPoloarity */
 
-  uint32_t COMP_Hysteresis;         /*!< Selects the hysteresis voltage of the comparator.
+        uint32_t COMP_Hysteresis;         /*!< Selects the hysteresis voltage of the comparator.
                                           This parameter can be a value of @ref COMP_Hysteresis */
 
-  uint32_t COMP_Mode;               /*!< Selects the operating mode of the comparator
+        uint32_t COMP_Mode;               /*!< Selects the operating mode of the comparator
                                          and allows to adjust the speed/consumption.
                                           This parameter can be a value of @ref COMP_Mode */
 
-}COMP_InitTypeDef;
+} COMP_InitTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
-   
+
 /** @defgroup COMP_Exported_Constants
   * @{
-  */ 
+  */
 
 /** @defgroup COMP_Selection
   * @{
@@ -103,10 +102,10 @@ typedef struct
                                     ((PERIPH) == COMP_Selection_COMP5) || \
                                     ((PERIPH) == COMP_Selection_COMP6) || \
                                     ((PERIPH) == COMP_Selection_COMP7))
- 
+
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup COMP_InvertingInput
   * @{
@@ -135,7 +134,7 @@ typedef struct
                                         ((INPUT) == COMP_InvertingInput_IO2))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup COMP_NonInvertingInput
   * @{
@@ -152,7 +151,7 @@ typedef struct
                                            ((INPUT) == COMP_NonInvertingInput_IO2))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup COMP_Output
   * @{
@@ -243,7 +242,7 @@ typedef struct
                                 ((OUTPUT) == COMP_Output_TIM17OCREFCLR))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup COMP_BlankingSrce
   * @{
@@ -285,7 +284,7 @@ typedef struct
                                          ((SOURCE) == COMP_BlankingSrce_TIM15OC2))
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup COMP_OutputPoloarity
   * @{
@@ -298,7 +297,7 @@ typedef struct
 
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup COMP_Hysteresis
   * @{
@@ -338,7 +337,7 @@ typedef struct
 
 /** @defgroup COMP_OutputLevel
   * @{
-  */ 
+  */
 /* When output polarity is not inverted, comparator output is high when
    the non-inverting input is at a higher voltage than the inverting input */
 #define COMP_OutputLevel_High                   COMP_CSR_COMPxOUT
@@ -348,7 +347,7 @@ typedef struct
 
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup COMP_WindowMode
   * @{
@@ -362,7 +361,7 @@ typedef struct
 
 /**
   * @}
-  */ 
+  */
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
@@ -391,7 +390,7 @@ void COMP_LockConfig(uint32_t COMP_Selection);
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}

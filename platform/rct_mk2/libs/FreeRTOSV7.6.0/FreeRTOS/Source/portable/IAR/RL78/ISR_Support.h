@@ -68,7 +68,7 @@ EXTERN    usCriticalNesting
 portSAVE_CONTEXT MACRO
 ;
 Saves the context of the general purpose registers, CS and ES (only in far
-        ;	memory mode) registers the usCriticalNesting Value and the Stack Pointer
+                ;	memory mode) registers the usCriticalNesting Value and the Stack Pointer
 ;
 of the active Task onto the task stack
 ;

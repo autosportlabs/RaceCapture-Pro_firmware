@@ -67,265 +67,265 @@
 */
 
 void arm_lms_q31(
-    const arm_lms_instance_q31 * S,
-    q31_t * pSrc,
-    q31_t * pRef,
-    q31_t * pOut,
-    q31_t * pErr,
-    uint32_t blockSize)
+        const arm_lms_instance_q31 * S,
+        q31_t * pSrc,
+        q31_t * pRef,
+        q31_t * pOut,
+        q31_t * pErr,
+        uint32_t blockSize)
 {
-    q31_t *pState = S->pState;                     /* State pointer */
-    uint32_t numTaps = S->numTaps;                 /* Number of filter coefficients in the filter */
-    q31_t *pCoeffs = S->pCoeffs;                   /* Coefficient pointer */
-    q31_t *pStateCurnt;                            /* Points to the current sample of the state */
-    q31_t mu = S->mu;                              /* Adaptive factor */
-    q31_t *px;                                     /* Temporary pointer for state */
-    q31_t *pb;                                     /* Temporary pointer for coefficient buffer */
-    uint32_t tapCnt, blkCnt;                       /* Loop counters */
-    q63_t acc;                                     /* Accumulator */
-    q31_t e = 0;                                   /* error of data sample */
-    q31_t alpha;                                   /* Intermediate constant for taps update */
-    uint8_t shift = (uint8_t) (32u - (S->postShift + 1u));        /* Shift to be applied to the output */
-    q31_t coef;                                    /* Temporary variable for coef */
+        q31_t *pState = S->pState;                     /* State pointer */
+        uint32_t numTaps = S->numTaps;                 /* Number of filter coefficients in the filter */
+        q31_t *pCoeffs = S->pCoeffs;                   /* Coefficient pointer */
+        q31_t *pStateCurnt;                            /* Points to the current sample of the state */
+        q31_t mu = S->mu;                              /* Adaptive factor */
+        q31_t *px;                                     /* Temporary pointer for state */
+        q31_t *pb;                                     /* Temporary pointer for coefficient buffer */
+        uint32_t tapCnt, blkCnt;                       /* Loop counters */
+        q63_t acc;                                     /* Accumulator */
+        q31_t e = 0;                                   /* error of data sample */
+        q31_t alpha;                                   /* Intermediate constant for taps update */
+        uint8_t shift = (uint8_t) (32u - (S->postShift + 1u));        /* Shift to be applied to the output */
+        q31_t coef;                                    /* Temporary variable for coef */
 
-    /* S->pState points to buffer which contains previous frame (numTaps - 1) samples */
-    /* pStateCurnt points to the location where the new input data should be written */
-    pStateCurnt = &(S->pState[(numTaps - 1u)]);
+        /* S->pState points to buffer which contains previous frame (numTaps - 1) samples */
+        /* pStateCurnt points to the location where the new input data should be written */
+        pStateCurnt = &(S->pState[(numTaps - 1u)]);
 
-    /* Initializing blkCnt with blockSize */
-    blkCnt = blockSize;
+        /* Initializing blkCnt with blockSize */
+        blkCnt = blockSize;
 
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    while(blkCnt > 0u) {
-        /* Copy the new input sample into the state buffer */
-        *pStateCurnt++ = *pSrc++;
+        while(blkCnt > 0u) {
+                /* Copy the new input sample into the state buffer */
+                *pStateCurnt++ = *pSrc++;
 
-        /* Initialize state pointer */
-        px = pState;
+                /* Initialize state pointer */
+                px = pState;
 
-        /* Initialize coefficient pointer */
-        pb = pCoeffs;
+                /* Initialize coefficient pointer */
+                pb = pCoeffs;
 
-        /* Set the accumulator to zero */
-        acc = 0;
+                /* Set the accumulator to zero */
+                acc = 0;
 
-        /* Loop unrolling.  Process 4 taps at a time. */
-        tapCnt = numTaps >> 2;
+                /* Loop unrolling.  Process 4 taps at a time. */
+                tapCnt = numTaps >> 2;
 
-        while(tapCnt > 0u) {
-            /* Perform the multiply-accumulate */
-            /* acc +=  b[N] * x[n-N] */
-            acc += ((q63_t) (*px++)) * (*pb++);
+                while(tapCnt > 0u) {
+                        /* Perform the multiply-accumulate */
+                        /* acc +=  b[N] * x[n-N] */
+                        acc += ((q63_t) (*px++)) * (*pb++);
 
-            /* acc +=  b[N-1] * x[n-N-1] */
-            acc += ((q63_t) (*px++)) * (*pb++);
+                        /* acc +=  b[N-1] * x[n-N-1] */
+                        acc += ((q63_t) (*px++)) * (*pb++);
 
-            /* acc +=  b[N-2] * x[n-N-2] */
-            acc += ((q63_t) (*px++)) * (*pb++);
+                        /* acc +=  b[N-2] * x[n-N-2] */
+                        acc += ((q63_t) (*px++)) * (*pb++);
 
-            /* acc +=  b[N-3] * x[n-N-3] */
-            acc += ((q63_t) (*px++)) * (*pb++);
+                        /* acc +=  b[N-3] * x[n-N-3] */
+                        acc += ((q63_t) (*px++)) * (*pb++);
 
-            /* Decrement the loop counter */
-            tapCnt--;
+                        /* Decrement the loop counter */
+                        tapCnt--;
+                }
+
+                /* If the filter length is not a multiple of 4, compute the remaining filter taps */
+                tapCnt = numTaps % 0x4u;
+
+                while(tapCnt > 0u) {
+                        /* Perform the multiply-accumulate */
+                        acc += ((q63_t) (*px++)) * (*pb++);
+
+                        /* Decrement the loop counter */
+                        tapCnt--;
+                }
+
+                /* Converting the result to 1.31 format */
+                /* Store the result from accumulator into the destination buffer. */
+                acc = (q31_t) (acc >> shift);
+
+                *pOut++ = (q31_t) acc;
+
+                /* Compute and store error */
+                e = *pRef++ - (q31_t) acc;
+
+                *pErr++ = (q31_t) e;
+
+                /* Compute alpha i.e. intermediate constant for taps update */
+                alpha = (q31_t) (((q63_t) e * mu) >> 31);
+
+                /* Initialize state pointer */
+                /* Advance state pointer by 1 for the next sample */
+                px = pState++;
+
+                /* Initialize coefficient pointer */
+                pb = pCoeffs;
+
+                /* Loop unrolling.  Process 4 taps at a time. */
+                tapCnt = numTaps >> 2;
+
+                /* Update filter coefficients */
+                while(tapCnt > 0u) {
+                        /* coef is in 2.30 format */
+                        coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
+                        /* get coef in 1.31 format by left shifting */
+                        *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+                        /* update coefficient buffer to next coefficient */
+                        pb++;
+
+                        coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
+                        *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+                        pb++;
+
+                        coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
+                        *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+                        pb++;
+
+                        coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
+                        *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+                        pb++;
+
+                        /* Decrement the loop counter */
+                        tapCnt--;
+                }
+
+                /* If the filter length is not a multiple of 4, compute the remaining filter taps */
+                tapCnt = numTaps % 0x4u;
+
+                while(tapCnt > 0u) {
+                        /* Perform the multiply-accumulate */
+                        coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
+                        *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+                        pb++;
+
+                        /* Decrement the loop counter */
+                        tapCnt--;
+                }
+
+                /* Decrement the loop counter */
+                blkCnt--;
         }
 
-        /* If the filter length is not a multiple of 4, compute the remaining filter taps */
-        tapCnt = numTaps % 0x4u;
+        /* Processing is complete. Now copy the last numTaps - 1 samples to the
+           satrt of the state buffer. This prepares the state buffer for the
+           next function call. */
 
+        /* Points to the start of the pState buffer */
+        pStateCurnt = S->pState;
+
+        /* Loop unrolling for (numTaps - 1u) samples copy */
+        tapCnt = (numTaps - 1u) >> 2u;
+
+        /* copy data */
         while(tapCnt > 0u) {
-            /* Perform the multiply-accumulate */
-            acc += ((q63_t) (*px++)) * (*pb++);
+                *pStateCurnt++ = *pState++;
+                *pStateCurnt++ = *pState++;
+                *pStateCurnt++ = *pState++;
+                *pStateCurnt++ = *pState++;
 
-            /* Decrement the loop counter */
-            tapCnt--;
+                /* Decrement the loop counter */
+                tapCnt--;
         }
 
-        /* Converting the result to 1.31 format */
-        /* Store the result from accumulator into the destination buffer. */
-        acc = (q31_t) (acc >> shift);
+        /* Calculate remaining number of copies */
+        tapCnt = (numTaps - 1u) % 0x4u;
 
-        *pOut++ = (q31_t) acc;
-
-        /* Compute and store error */
-        e = *pRef++ - (q31_t) acc;
-
-        *pErr++ = (q31_t) e;
-
-        /* Compute alpha i.e. intermediate constant for taps update */
-        alpha = (q31_t) (((q63_t) e * mu) >> 31);
-
-        /* Initialize state pointer */
-        /* Advance state pointer by 1 for the next sample */
-        px = pState++;
-
-        /* Initialize coefficient pointer */
-        pb = pCoeffs;
-
-        /* Loop unrolling.  Process 4 taps at a time. */
-        tapCnt = numTaps >> 2;
-
-        /* Update filter coefficients */
+        /* Copy the remaining q31_t data */
         while(tapCnt > 0u) {
-            /* coef is in 2.30 format */
-            coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
-            /* get coef in 1.31 format by left shifting */
-            *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
-            /* update coefficient buffer to next coefficient */
-            pb++;
+                *pStateCurnt++ = *pState++;
 
-            coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
-            *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
-            pb++;
-
-            coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
-            *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
-            pb++;
-
-            coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
-            *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
-            pb++;
-
-            /* Decrement the loop counter */
-            tapCnt--;
+                /* Decrement the loop counter */
+                tapCnt--;
         }
-
-        /* If the filter length is not a multiple of 4, compute the remaining filter taps */
-        tapCnt = numTaps % 0x4u;
-
-        while(tapCnt > 0u) {
-            /* Perform the multiply-accumulate */
-            coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
-            *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
-            pb++;
-
-            /* Decrement the loop counter */
-            tapCnt--;
-        }
-
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
-
-    /* Processing is complete. Now copy the last numTaps - 1 samples to the
-       satrt of the state buffer. This prepares the state buffer for the
-       next function call. */
-
-    /* Points to the start of the pState buffer */
-    pStateCurnt = S->pState;
-
-    /* Loop unrolling for (numTaps - 1u) samples copy */
-    tapCnt = (numTaps - 1u) >> 2u;
-
-    /* copy data */
-    while(tapCnt > 0u) {
-        *pStateCurnt++ = *pState++;
-        *pStateCurnt++ = *pState++;
-        *pStateCurnt++ = *pState++;
-        *pStateCurnt++ = *pState++;
-
-        /* Decrement the loop counter */
-        tapCnt--;
-    }
-
-    /* Calculate remaining number of copies */
-    tapCnt = (numTaps - 1u) % 0x4u;
-
-    /* Copy the remaining q31_t data */
-    while(tapCnt > 0u) {
-        *pStateCurnt++ = *pState++;
-
-        /* Decrement the loop counter */
-        tapCnt--;
-    }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    while(blkCnt > 0u) {
-        /* Copy the new input sample into the state buffer */
-        *pStateCurnt++ = *pSrc++;
+        while(blkCnt > 0u) {
+                /* Copy the new input sample into the state buffer */
+                *pStateCurnt++ = *pSrc++;
 
-        /* Initialize pState pointer */
-        px = pState;
+                /* Initialize pState pointer */
+                px = pState;
 
-        /* Initialize pCoeffs pointer */
-        pb = pCoeffs;
+                /* Initialize pCoeffs pointer */
+                pb = pCoeffs;
 
-        /* Set the accumulator to zero */
-        acc = 0;
+                /* Set the accumulator to zero */
+                acc = 0;
 
-        /* Loop over numTaps number of values */
-        tapCnt = numTaps;
+                /* Loop over numTaps number of values */
+                tapCnt = numTaps;
 
-        while(tapCnt > 0u) {
-            /* Perform the multiply-accumulate */
-            acc += ((q63_t) (*px++)) * (*pb++);
+                while(tapCnt > 0u) {
+                        /* Perform the multiply-accumulate */
+                        acc += ((q63_t) (*px++)) * (*pb++);
 
-            /* Decrement the loop counter */
-            tapCnt--;
+                        /* Decrement the loop counter */
+                        tapCnt--;
+                }
+
+                /* Converting the result to 1.31 format */
+                /* Store the result from accumulator into the destination buffer. */
+                acc = (q31_t) (acc >> shift);
+
+                *pOut++ = (q31_t) acc;
+
+                /* Compute and store error */
+                e = *pRef++ - (q31_t) acc;
+
+                *pErr++ = (q31_t) e;
+
+                /* Weighting factor for the LMS version */
+                alpha = (q31_t) (((q63_t) e * mu) >> 31);
+
+                /* Initialize pState pointer */
+                /* Advance state pointer by 1 for the next sample */
+                px = pState++;
+
+                /* Initialize pCoeffs pointer */
+                pb = pCoeffs;
+
+                /* Loop over numTaps number of values */
+                tapCnt = numTaps;
+
+                while(tapCnt > 0u) {
+                        /* Perform the multiply-accumulate */
+                        coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
+                        *pb += (coef << 1u);
+                        pb++;
+
+                        /* Decrement the loop counter */
+                        tapCnt--;
+                }
+
+                /* Decrement the loop counter */
+                blkCnt--;
         }
 
-        /* Converting the result to 1.31 format */
-        /* Store the result from accumulator into the destination buffer. */
-        acc = (q31_t) (acc >> shift);
+        /* Processing is complete. Now copy the last numTaps - 1 samples to the
+           start of the state buffer. This prepares the state buffer for the
+           next function call. */
 
-        *pOut++ = (q31_t) acc;
+        /* Points to the start of the pState buffer */
+        pStateCurnt = S->pState;
 
-        /* Compute and store error */
-        e = *pRef++ - (q31_t) acc;
+        /*  Copy (numTaps - 1u) samples  */
+        tapCnt = (numTaps - 1u);
 
-        *pErr++ = (q31_t) e;
-
-        /* Weighting factor for the LMS version */
-        alpha = (q31_t) (((q63_t) e * mu) >> 31);
-
-        /* Initialize pState pointer */
-        /* Advance state pointer by 1 for the next sample */
-        px = pState++;
-
-        /* Initialize pCoeffs pointer */
-        pb = pCoeffs;
-
-        /* Loop over numTaps number of values */
-        tapCnt = numTaps;
-
+        /* Copy the data */
         while(tapCnt > 0u) {
-            /* Perform the multiply-accumulate */
-            coef = (q31_t) (((q63_t) alpha * (*px++)) >> (32));
-            *pb += (coef << 1u);
-            pb++;
+                *pStateCurnt++ = *pState++;
 
-            /* Decrement the loop counter */
-            tapCnt--;
+                /* Decrement the loop counter */
+                tapCnt--;
         }
-
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
-
-    /* Processing is complete. Now copy the last numTaps - 1 samples to the
-       start of the state buffer. This prepares the state buffer for the
-       next function call. */
-
-    /* Points to the start of the pState buffer */
-    pStateCurnt = S->pState;
-
-    /*  Copy (numTaps - 1u) samples  */
-    tapCnt = (numTaps - 1u);
-
-    /* Copy the data */
-    while(tapCnt > 0u) {
-        *pStateCurnt++ = *pState++;
-
-        /* Decrement the loop counter */
-        tapCnt--;
-    }
 
 #endif /*   #ifndef ARM_MATH_CM0 */
 

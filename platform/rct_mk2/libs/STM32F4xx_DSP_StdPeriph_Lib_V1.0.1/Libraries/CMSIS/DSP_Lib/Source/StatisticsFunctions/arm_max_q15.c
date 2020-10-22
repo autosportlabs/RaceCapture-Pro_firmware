@@ -49,65 +49,65 @@
  */
 
 void arm_max_q15(
-    q15_t * pSrc,
-    uint32_t blockSize,
-    q15_t * pResult,
-    uint32_t * pIndex)
+        q15_t * pSrc,
+        uint32_t blockSize,
+        q15_t * pResult,
+        uint32_t * pIndex)
 {
-    q15_t maxVal, out;                             /* Temporary variables to store the output value. */
-    uint32_t blkCnt, outIndex;                     /* loop counter */
+        q15_t maxVal, out;                             /* Temporary variables to store the output value. */
+        uint32_t blkCnt, outIndex;                     /* loop counter */
 
-    /* Initialise the index value to zero. */
-    outIndex = 0u;
-    /* Load first input value that act as reference value for comparision */
-    out = *pSrc++;
+        /* Initialise the index value to zero. */
+        outIndex = 0u;
+        /* Load first input value that act as reference value for comparision */
+        out = *pSrc++;
 
-    /* Loop over blockSize number of values */
-    blkCnt = (blockSize - 1u);
+        /* Loop over blockSize number of values */
+        blkCnt = (blockSize - 1u);
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    do {
-        /* Initialize maxVal to the next consecutive values one by one */
-        maxVal = *pSrc++;
+        do {
+                /* Initialize maxVal to the next consecutive values one by one */
+                maxVal = *pSrc++;
 
-        /* compare for the maximum value */
-        if(out < maxVal) {
-            /* Update the maximum value and its index */
-            out = maxVal;
-            outIndex = blockSize - blkCnt;
-        }
+                /* compare for the maximum value */
+                if(out < maxVal) {
+                        /* Update the maximum value and its index */
+                        out = maxVal;
+                        outIndex = blockSize - blkCnt;
+                }
 
-        blkCnt--;
+                blkCnt--;
 
-    } while(blkCnt > 0u);
+        } while(blkCnt > 0u);
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    while(blkCnt > 0u) {
-        /* Initialize maxVal to the next consecutive values one by one */
-        maxVal = *pSrc++;
+        while(blkCnt > 0u) {
+                /* Initialize maxVal to the next consecutive values one by one */
+                maxVal = *pSrc++;
 
-        /* compare for the maximum value */
-        if(out < maxVal) {
-            /* Update the maximum value and its index */
-            out = maxVal;
-            outIndex = blockSize - blkCnt;
+                /* compare for the maximum value */
+                if(out < maxVal) {
+                        /* Update the maximum value and its index */
+                        out = maxVal;
+                        outIndex = blockSize - blkCnt;
+                }
+                /* Decrement the loop counter */
+                blkCnt--;
+
         }
-        /* Decrement the loop counter */
-        blkCnt--;
-
-    }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    /* Store the maximum value and its index into destination pointers */
-    *pResult = out;
-    *pIndex = outIndex;
+        /* Store the maximum value and its index into destination pointers */
+        *pResult = out;
+        *pIndex = outIndex;
 }
 
 /**

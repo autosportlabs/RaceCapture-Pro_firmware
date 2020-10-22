@@ -55,27 +55,27 @@
   * @{
   */
 typedef enum {
-    USBH_MSC_OK = 0,
-    USBH_MSC_FAIL = 1,
-    USBH_MSC_PHASE_ERROR = 2,
-    USBH_MSC_BUSY = 3
+        USBH_MSC_OK = 0,
+        USBH_MSC_FAIL = 1,
+        USBH_MSC_PHASE_ERROR = 2,
+        USBH_MSC_BUSY = 3
 } USBH_MSC_Status_TypeDef;
 
 typedef enum {
-    CMD_UNINITIALIZED_STATE =0,
-    CMD_SEND_STATE,
-    CMD_WAIT_STATUS
+        CMD_UNINITIALIZED_STATE =0,
+        CMD_SEND_STATE,
+        CMD_WAIT_STATUS
 } CMD_STATES_TypeDef;
 
 
 
 typedef struct __MassStorageParameter {
-    uint32_t MSCapacity;
-    uint32_t MSSenseKey;
-    uint16_t MSPageLength;
-    uint8_t MSBulkOutEp;
-    uint8_t MSBulkInEp;
-    uint8_t MSWriteProtect;
+        uint32_t MSCapacity;
+        uint32_t MSSenseKey;
+        uint16_t MSPageLength;
+        uint8_t MSBulkOutEp;
+        uint8_t MSBulkInEp;
+        uint8_t MSWriteProtect;
 } MassStorageParameter_TypeDef;
 /**
   * @}
@@ -133,11 +133,11 @@ uint8_t USBH_MSC_ModeSense6(USB_OTG_CORE_HANDLE *pdev);
 uint8_t USBH_MSC_RequestSense(USB_OTG_CORE_HANDLE *pdev);
 uint8_t USBH_MSC_Write10(USB_OTG_CORE_HANDLE *pdev,
                          uint8_t *,
-                         uint32_t ,
+                         uint32_t,
                          uint32_t );
 uint8_t USBH_MSC_Read10(USB_OTG_CORE_HANDLE *pdev,
                         uint8_t *,
-                        uint32_t ,
+                        uint32_t,
                         uint32_t );
 void USBH_MSC_StateMachine(USB_OTG_CORE_HANDLE *pdev);
 

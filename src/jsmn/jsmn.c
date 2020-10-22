@@ -392,7 +392,7 @@ bool jsmn_exists_set_val_uint8(const jsmntok_t *root, const char * field,
 }
 
 bool jsmn_exists_set_val_uint16(const jsmntok_t *root, const char * field,
-                               uint16_t *val, uint16_t (*filter)(uint16_t))
+                                uint16_t *val, uint16_t (*filter)(uint16_t))
 {
         const jsmntok_t *value_node = jsmn_find_get_node_value_prim(root, field);
         if (value_node) {

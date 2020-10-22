@@ -172,104 +172,104 @@
 
 /*  This Union is copied from usb_core.h  */
 typedef union {
-    uint16_t w;
-    struct BW {
-        uint8_t msb;
-        uint8_t lsb;
-    }
-    bw;
+        uint16_t w;
+        struct BW {
+                uint8_t msb;
+                uint8_t lsb;
+        }
+        bw;
 }
 uint16_t_uint8_t;
 
 
 typedef union _USB_Setup {
-    uint8_t d8[8];
+        uint8_t d8[8];
 
-    struct _SetupPkt_Struc {
-        uint8_t           bmRequestType;
-        uint8_t           bRequest;
-        uint16_t_uint8_t  wValue;
-        uint16_t_uint8_t  wIndex;
-        uint16_t_uint8_t  wLength;
-    } b;
+        struct _SetupPkt_Struc {
+                uint8_t           bmRequestType;
+                uint8_t           bRequest;
+                uint16_t_uint8_t  wValue;
+                uint16_t_uint8_t  wIndex;
+                uint16_t_uint8_t  wLength;
+        } b;
 }
 USB_Setup_TypeDef;
 
 typedef  struct  _DescHeader {
-    uint8_t  bLength;
-    uint8_t  bDescriptorType;
+        uint8_t  bLength;
+        uint8_t  bDescriptorType;
 }
 USBH_DescHeader_t;
 
 typedef struct _DeviceDescriptor {
-    uint8_t   bLength;
-    uint8_t   bDescriptorType;
-    uint16_t  bcdUSB;        /* USB Specification Number which device complies too */
-    uint8_t   bDeviceClass;
-    uint8_t   bDeviceSubClass;
-    uint8_t   bDeviceProtocol;
-    /* If equal to Zero, each interface specifies its own class
-    code if equal to 0xFF, the class code is vendor specified.
-    Otherwise field is valid Class Code.*/
-    uint8_t   bMaxPacketSize;
-    uint16_t  idVendor;      /* Vendor ID (Assigned by USB Org) */
-    uint16_t  idProduct;     /* Product ID (Assigned by Manufacturer) */
-    uint16_t  bcdDevice;     /* Device Release Number */
-    uint8_t   iManufacturer;  /* Index of Manufacturer String Descriptor */
-    uint8_t   iProduct;       /* Index of Product String Descriptor */
-    uint8_t   iSerialNumber;  /* Index of Serial Number String Descriptor */
-    uint8_t   bNumConfigurations; /* Number of Possible Configurations */
+        uint8_t   bLength;
+        uint8_t   bDescriptorType;
+        uint16_t  bcdUSB;        /* USB Specification Number which device complies too */
+        uint8_t   bDeviceClass;
+        uint8_t   bDeviceSubClass;
+        uint8_t   bDeviceProtocol;
+        /* If equal to Zero, each interface specifies its own class
+        code if equal to 0xFF, the class code is vendor specified.
+        Otherwise field is valid Class Code.*/
+        uint8_t   bMaxPacketSize;
+        uint16_t  idVendor;      /* Vendor ID (Assigned by USB Org) */
+        uint16_t  idProduct;     /* Product ID (Assigned by Manufacturer) */
+        uint16_t  bcdDevice;     /* Device Release Number */
+        uint8_t   iManufacturer;  /* Index of Manufacturer String Descriptor */
+        uint8_t   iProduct;       /* Index of Product String Descriptor */
+        uint8_t   iSerialNumber;  /* Index of Serial Number String Descriptor */
+        uint8_t   bNumConfigurations; /* Number of Possible Configurations */
 }
 USBH_DevDesc_TypeDef;
 
 
 typedef struct _ConfigurationDescriptor {
-    uint8_t   bLength;
-    uint8_t   bDescriptorType;
-    uint16_t  wTotalLength;        /* Total Length of Data Returned */
-    uint8_t   bNumInterfaces;       /* Number of Interfaces */
-    uint8_t   bConfigurationValue;  /* Value to use as an argument to select this configuration*/
-    uint8_t   iConfiguration;       /*Index of String Descriptor Describing this configuration */
-    uint8_t   bmAttributes;         /* D7 Bus Powered , D6 Self Powered, D5 Remote Wakeup , D4..0 Reserved (0)*/
-    uint8_t   bMaxPower;            /*Maximum Power Consumption */
+        uint8_t   bLength;
+        uint8_t   bDescriptorType;
+        uint16_t  wTotalLength;        /* Total Length of Data Returned */
+        uint8_t   bNumInterfaces;       /* Number of Interfaces */
+        uint8_t   bConfigurationValue;  /* Value to use as an argument to select this configuration*/
+        uint8_t   iConfiguration;       /*Index of String Descriptor Describing this configuration */
+        uint8_t   bmAttributes;         /* D7 Bus Powered , D6 Self Powered, D5 Remote Wakeup , D4..0 Reserved (0)*/
+        uint8_t   bMaxPower;            /*Maximum Power Consumption */
 }
 USBH_CfgDesc_TypeDef;
 
 
 typedef struct _HIDDescriptor {
-    uint8_t   bLength;
-    uint8_t   bDescriptorType;
-    uint16_t  bcdHID;               /* indicates what endpoint this descriptor is describing */
-    uint8_t   bCountryCode;        /* specifies the transfer type. */
-    uint8_t   bNumDescriptors;     /* specifies the transfer type. */
-    uint8_t   bReportDescriptorType;    /* Maximum Packet Size this endpoint is capable of sending or receiving */
-    uint16_t  wItemLength;          /* is used to specify the polling interval of certain transfers. */
+        uint8_t   bLength;
+        uint8_t   bDescriptorType;
+        uint16_t  bcdHID;               /* indicates what endpoint this descriptor is describing */
+        uint8_t   bCountryCode;        /* specifies the transfer type. */
+        uint8_t   bNumDescriptors;     /* specifies the transfer type. */
+        uint8_t   bReportDescriptorType;    /* Maximum Packet Size this endpoint is capable of sending or receiving */
+        uint16_t  wItemLength;          /* is used to specify the polling interval of certain transfers. */
 }
 USBH_HIDDesc_TypeDef;
 
 
 typedef struct _InterfaceDescriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-    uint8_t bInterfaceNumber;
-    uint8_t bAlternateSetting;    /* Value used to select alternative setting */
-    uint8_t bNumEndpoints;        /* Number of Endpoints used for this interface */
-    uint8_t bInterfaceClass;      /* Class Code (Assigned by USB Org) */
-    uint8_t bInterfaceSubClass;   /* Subclass Code (Assigned by USB Org) */
-    uint8_t bInterfaceProtocol;   /* Protocol Code */
-    uint8_t iInterface;           /* Index of String Descriptor Describing this interface */
+        uint8_t bLength;
+        uint8_t bDescriptorType;
+        uint8_t bInterfaceNumber;
+        uint8_t bAlternateSetting;    /* Value used to select alternative setting */
+        uint8_t bNumEndpoints;        /* Number of Endpoints used for this interface */
+        uint8_t bInterfaceClass;      /* Class Code (Assigned by USB Org) */
+        uint8_t bInterfaceSubClass;   /* Subclass Code (Assigned by USB Org) */
+        uint8_t bInterfaceProtocol;   /* Protocol Code */
+        uint8_t iInterface;           /* Index of String Descriptor Describing this interface */
 
 }
 USBH_InterfaceDesc_TypeDef;
 
 
 typedef struct _EndpointDescriptor {
-    uint8_t   bLength;
-    uint8_t   bDescriptorType;
-    uint8_t   bEndpointAddress;   /* indicates what endpoint this descriptor is describing */
-    uint8_t   bmAttributes;       /* specifies the transfer type. */
-    uint16_t  wMaxPacketSize;    /* Maximum Packet Size this endpoint is capable of sending or receiving */
-    uint8_t   bInterval;          /* is used to specify the polling interval of certain transfers. */
+        uint8_t   bLength;
+        uint8_t   bDescriptorType;
+        uint8_t   bEndpointAddress;   /* indicates what endpoint this descriptor is describing */
+        uint8_t   bmAttributes;       /* specifies the transfer type. */
+        uint16_t  wMaxPacketSize;    /* Maximum Packet Size this endpoint is capable of sending or receiving */
+        uint8_t   bInterval;          /* is used to specify the polling interval of certain transfers. */
 }
 USBH_EpDesc_TypeDef;
 #endif

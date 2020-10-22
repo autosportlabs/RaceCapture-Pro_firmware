@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -71,7 +71,7 @@
  * This file can only be used if the linker is configured to to generate
  * a heap memory area.
  *
- * See heap_1.c, heap_2.c and heap_4.c for alternative implementations, and the 
+ * See heap_1.c, heap_2.c and heap_4.c for alternative implementations, and the
  * memory management pages of http://www.FreeRTOS.org for more information.
  */
 
@@ -91,40 +91,38 @@ task.h is included from an application file. */
 
 void *pvPortMalloc( size_t xWantedSize )
 {
-void *pvReturn;
+        void *pvReturn;
 
-	vTaskSuspendAll();
-	{
-		pvReturn = malloc( xWantedSize );
-		traceMALLOC( pvReturn, xWantedSize );
-	}
-	xTaskResumeAll();
+        vTaskSuspendAll();
+        {
+                pvReturn = malloc( xWantedSize );
+                traceMALLOC( pvReturn, xWantedSize );
+        }
+        xTaskResumeAll();
 
-	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
-	{
-		if( pvReturn == NULL )
-		{
-			extern void vApplicationMallocFailedHook( void );
-			vApplicationMallocFailedHook();
-		}
-	}
-	#endif
-	
-	return pvReturn;
+#if( configUSE_MALLOC_FAILED_HOOK == 1 )
+        {
+                if( pvReturn == NULL ) {
+                        extern void vApplicationMallocFailedHook( void );
+                        vApplicationMallocFailedHook();
+                }
+        }
+#endif
+
+        return pvReturn;
 }
 /*-----------------------------------------------------------*/
 
 void vPortFree( void *pv )
 {
-	if( pv )
-	{
-		vTaskSuspendAll();
-		{
-			free( pv );
-			traceFREE( pv, 0 );
-		}
-		xTaskResumeAll();
-	}
+        if( pv ) {
+                vTaskSuspendAll();
+                {
+                        free( pv );
+                        traceFREE( pv, 0 );
+                }
+                xTaskResumeAll();
+        }
 }
 
 

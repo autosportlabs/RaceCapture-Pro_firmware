@@ -56,60 +56,60 @@
  */
 
 void arm_abs_q31(
-    q31_t * pSrc,
-    q31_t * pDst,
-    uint32_t blockSize)
+        q31_t * pSrc,
+        q31_t * pDst,
+        uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* loop counter */
-    q31_t in;                                      /* Input value */
+        uint32_t blkCnt;                               /* loop counter */
+        q31_t in;                                      /* Input value */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = |A| */
-        /* Calculate absolute of input (if -1 then saturated to 0x7fffffff) and then store the results in the destination buffer. */
-        in = *pSrc++;
-        *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
-        in = *pSrc++;
-        *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
-        in = *pSrc++;
-        *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
-        in = *pSrc++;
-        *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = |A| */
+                /* Calculate absolute of input (if -1 then saturated to 0x7fffffff) and then store the results in the destination buffer. */
+                in = *pSrc++;
+                *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
+                in = *pSrc++;
+                *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
+                in = *pSrc++;
+                *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
+                in = *pSrc++;
+                *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
 #endif /*   #ifndef ARM_MATH_CM0   */
 
-    while(blkCnt > 0u) {
-        /* C = |A| */
-        /* Calculate absolute value of the input (if -1 then saturated to 0x7fffffff) and then store the results in the destination buffer. */
-        in = *pSrc++;
-        *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
+        while(blkCnt > 0u) {
+                /* C = |A| */
+                /* Calculate absolute value of the input (if -1 then saturated to 0x7fffffff) and then store the results in the destination buffer. */
+                in = *pSrc++;
+                *pDst++ = (in > 0) ? in : ((in == 0x80000000) ? 0x7fffffff : -in);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 }
 

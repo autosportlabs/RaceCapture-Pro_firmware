@@ -70,64 +70,64 @@
  */
 
 void arm_cmplx_conj_f32(
-    float32_t * pSrc,
-    float32_t * pDst,
-    uint32_t numSamples)
+        float32_t * pSrc,
+        float32_t * pDst,
+        uint32_t numSamples)
 {
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    uint32_t blkCnt;                               /* loop counter */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        uint32_t blkCnt;                               /* loop counter */
 
-    /*loop Unrolling */
-    blkCnt = numSamples >> 2u;
+        /*loop Unrolling */
+        blkCnt = numSamples >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C[0]+jC[1] = A[0]+ j (-1) A[1] */
-        /* Calculate Complex Conjugate and then store the results in the destination buffer. */
-        *pDst++ = *pSrc++;
-        *pDst++ = -*pSrc++;
-        *pDst++ = *pSrc++;
-        *pDst++ = -*pSrc++;
-        *pDst++ = *pSrc++;
-        *pDst++ = -*pSrc++;
-        *pDst++ = *pSrc++;
-        *pDst++ = -*pSrc++;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C[0]+jC[1] = A[0]+ j (-1) A[1] */
+                /* Calculate Complex Conjugate and then store the results in the destination buffer. */
+                *pDst++ = *pSrc++;
+                *pDst++ = -*pSrc++;
+                *pDst++ = *pSrc++;
+                *pDst++ = -*pSrc++;
+                *pDst++ = *pSrc++;
+                *pDst++ = -*pSrc++;
+                *pDst++ = *pSrc++;
+                *pDst++ = -*pSrc++;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = numSamples % 0x4u;
+        /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = numSamples % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* C[0]+jC[1] = A[0]+ j (-1) A[1] */
-        /* Calculate Complex Conjugate and then store the results in the destination buffer. */
-        *pDst++ = *pSrc++;
-        *pDst++ = -*pSrc++;
+        while(blkCnt > 0u) {
+                /* C[0]+jC[1] = A[0]+ j (-1) A[1] */
+                /* Calculate Complex Conjugate and then store the results in the destination buffer. */
+                *pDst++ = *pSrc++;
+                *pDst++ = -*pSrc++;
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    while(numSamples > 0u) {
-        /* realOut + j (imagOut) = realIn + j (-1) imagIn */
-        /* Calculate Complex Conjugate and then store the results in the destination buffer. */
-        *pDst++ = *pSrc++;
-        *pDst++ = -*pSrc++;
+        while(numSamples > 0u) {
+                /* realOut + j (imagOut) = realIn + j (-1) imagIn */
+                /* Calculate Complex Conjugate and then store the results in the destination buffer. */
+                *pDst++ = *pSrc++;
+                *pDst++ = -*pSrc++;
 
-        /* Decrement the loop counter */
-        numSamples--;
-    }
+                /* Decrement the loop counter */
+                numSamples--;
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 

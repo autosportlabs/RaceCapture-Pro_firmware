@@ -42,11 +42,11 @@
 * The function resets the state buffer to zeros.
 */
 void arm_pid_reset_q31(
-    arm_pid_instance_q31 * S)
+        arm_pid_instance_q31 * S)
 {
 
-    /* Clear the state buffer.  The size will be always 3 samples */
-    memset(S->state, 0, 3u * sizeof(q31_t));
+        /* Clear the state buffer.  The size will be always 3 samples */
+        memset(S->state, 0, 3u * sizeof(q31_t));
 }
 
 /**

@@ -75,26 +75,26 @@
  */
 
 void arm_biquad_cas_df1_32x64_init_q31(
-    arm_biquad_cas_df1_32x64_ins_q31 * S,
-    uint8_t numStages,
-    q31_t * pCoeffs,
-    q63_t * pState,
-    uint8_t postShift)
+        arm_biquad_cas_df1_32x64_ins_q31 * S,
+        uint8_t numStages,
+        q31_t * pCoeffs,
+        q63_t * pState,
+        uint8_t postShift)
 {
-    /* Assign filter stages */
-    S->numStages = numStages;
+        /* Assign filter stages */
+        S->numStages = numStages;
 
-    /* Assign postShift to be applied to the output */
-    S->postShift = postShift;
+        /* Assign postShift to be applied to the output */
+        S->postShift = postShift;
 
-    /* Assign coefficient pointer */
-    S->pCoeffs = pCoeffs;
+        /* Assign coefficient pointer */
+        S->pCoeffs = pCoeffs;
 
-    /* Clear state buffer and size is always 4 * numStages */
-    memset(pState, 0, (4u * (uint32_t) numStages) * sizeof(q63_t));
+        /* Clear state buffer and size is always 4 * numStages */
+        memset(pState, 0, (4u * (uint32_t) numStages) * sizeof(q63_t));
 
-    /* Assign state pointer */
-    S->pState = pState;
+        /* Assign state pointer */
+        S->pState = pState;
 }
 
 /**

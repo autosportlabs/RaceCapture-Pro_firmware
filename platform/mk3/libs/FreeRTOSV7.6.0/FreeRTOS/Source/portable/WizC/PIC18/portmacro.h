@@ -428,7 +428,7 @@ extern unsigned portSHORT usCalcMinStackSize;
 
 /*-----------------------------------------------------------*/
 
-#define portTICK_RATE_MS	( ( portTickType ) 1000 / configTICK_RATE_HZ )		
+#define portTICK_RATE_MS	( ( portTickType ) 1000 / configTICK_RATE_HZ )
 
 /*-----------------------------------------------------------*/
 

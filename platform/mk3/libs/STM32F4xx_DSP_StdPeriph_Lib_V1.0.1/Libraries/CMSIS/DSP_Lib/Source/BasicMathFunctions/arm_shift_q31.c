@@ -71,66 +71,66 @@
  */
 
 void arm_shift_q31(
-    q31_t * pSrc,
-    int8_t shiftBits,
-    q31_t * pDst,
-    uint32_t blockSize)
+        q31_t * pSrc,
+        int8_t shiftBits,
+        q31_t * pDst,
+        uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* loop counter */
-    uint8_t sign;                                  /* Sign of shiftBits */
-    /* Getting the sign of shiftBits */
-    sign = (shiftBits & 0x80);
+        uint32_t blkCnt;                               /* loop counter */
+        uint8_t sign;                                  /* Sign of shiftBits */
+        /* Getting the sign of shiftBits */
+        sign = (shiftBits & 0x80);
 
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = A (>> or <<) shiftBits */
-        /* Shift the input and then store the results in the destination buffer. */
-        *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
-                  (*pSrc++ >> -shiftBits);
-        *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
-                  (*pSrc++ >> -shiftBits);
-        *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
-                  (*pSrc++ >> -shiftBits);
-        *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
-                  (*pSrc++ >> -shiftBits);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = A (>> or <<) shiftBits */
+                /* Shift the input and then store the results in the destination buffer. */
+                *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
+                          (*pSrc++ >> -shiftBits);
+                *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
+                          (*pSrc++ >> -shiftBits);
+                *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
+                          (*pSrc++ >> -shiftBits);
+                *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
+                          (*pSrc++ >> -shiftBits);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
 
-    while(blkCnt > 0u) {
-        /* C = A (>> or <<) shiftBits */
-        /* Shift the input and then store the result in the destination buffer. */
-        *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
-                  (*pSrc++ >> -shiftBits);
+        while(blkCnt > 0u) {
+                /* C = A (>> or <<) shiftBits */
+                /* Shift the input and then store the result in the destination buffer. */
+                *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
+                          (*pSrc++ >> -shiftBits);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 }
 

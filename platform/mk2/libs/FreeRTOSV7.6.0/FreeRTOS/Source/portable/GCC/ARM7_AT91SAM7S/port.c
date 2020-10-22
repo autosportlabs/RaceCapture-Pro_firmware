@@ -122,98 +122,98 @@ extern void vPortISRStartFirstTask( void );
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-    portSTACK_TYPE *pxOriginalTOS;
+        portSTACK_TYPE *pxOriginalTOS;
 
-    pxOriginalTOS = pxTopOfStack;
+        pxOriginalTOS = pxTopOfStack;
 
-    /* To ensure asserts in tasks.c don't fail, although in this case the assert
-    is not really required. */
-    pxTopOfStack--;
+        /* To ensure asserts in tasks.c don't fail, although in this case the assert
+        is not really required. */
+        pxTopOfStack--;
 
-    /* Setup the initial stack of the task.  The stack is set exactly as
-    expected by the portRESTORE_CONTEXT() macro. */
+        /* Setup the initial stack of the task.  The stack is set exactly as
+        expected by the portRESTORE_CONTEXT() macro. */
 
-    /* First on the stack is the return address - which in this case is the
-    start of the task.  The offset is added to make the return address appear
-    as it would within an IRQ ISR. */
-    *pxTopOfStack = ( portSTACK_TYPE ) pxCode + portINSTRUCTION_SIZE;
-    pxTopOfStack--;
+        /* First on the stack is the return address - which in this case is the
+        start of the task.  The offset is added to make the return address appear
+        as it would within an IRQ ISR. */
+        *pxTopOfStack = ( portSTACK_TYPE ) pxCode + portINSTRUCTION_SIZE;
+        pxTopOfStack--;
 
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x00000000;	/* R14 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) pxOriginalTOS; /* Stack used when task starts goes in R13. */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x12121212;	/* R12 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x11111111;	/* R11 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x10101010;	/* R10 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x09090909;	/* R9 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x08080808;	/* R8 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x07070707;	/* R7 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x06060606;	/* R6 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x05050505;	/* R5 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x04040404;	/* R4 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x03030303;	/* R3 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x02020202;	/* R2 */
-    pxTopOfStack--;
-    *pxTopOfStack = ( portSTACK_TYPE ) 0x01010101;	/* R1 */
-    pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x00000000;	/* R14 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) pxOriginalTOS; /* Stack used when task starts goes in R13. */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x12121212;	/* R12 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x11111111;	/* R11 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x10101010;	/* R10 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x09090909;	/* R9 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x08080808;	/* R8 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x07070707;	/* R7 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x06060606;	/* R6 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x05050505;	/* R5 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x04040404;	/* R4 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x03030303;	/* R3 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x02020202;	/* R2 */
+        pxTopOfStack--;
+        *pxTopOfStack = ( portSTACK_TYPE ) 0x01010101;	/* R1 */
+        pxTopOfStack--;
 
-    /* When the task starts is will expect to find the function parameter in
-    R0. */
-    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters; /* R0 */
-    pxTopOfStack--;
+        /* When the task starts is will expect to find the function parameter in
+        R0. */
+        *pxTopOfStack = ( portSTACK_TYPE ) pvParameters; /* R0 */
+        pxTopOfStack--;
 
-    /* The last thing onto the stack is the status register, which is set for
-    system mode, with interrupts enabled. */
-    *pxTopOfStack = ( portSTACK_TYPE ) portINITIAL_SPSR;
+        /* The last thing onto the stack is the status register, which is set for
+        system mode, with interrupts enabled. */
+        *pxTopOfStack = ( portSTACK_TYPE ) portINITIAL_SPSR;
 
 #ifdef THUMB_INTERWORK
-    {
-        /* We want the task to start in thumb mode. */
-        *pxTopOfStack |= portTHUMB_MODE_BIT;
-    }
+        {
+                /* We want the task to start in thumb mode. */
+                *pxTopOfStack |= portTHUMB_MODE_BIT;
+        }
 #endif
 
-    pxTopOfStack--;
+        pxTopOfStack--;
 
-    /* Some optimisation levels use the stack differently to others.  This
-    means the interrupt flags cannot always be stored on the stack and will
-    instead be stored in a variable, which is then saved as part of the
-    tasks context. */
-    *pxTopOfStack = portNO_CRITICAL_SECTION_NESTING;
+        /* Some optimisation levels use the stack differently to others.  This
+        means the interrupt flags cannot always be stored on the stack and will
+        instead be stored in a variable, which is then saved as part of the
+        tasks context. */
+        *pxTopOfStack = portNO_CRITICAL_SECTION_NESTING;
 
-    return pxTopOfStack;
+        return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE xPortStartScheduler( void )
 {
-    /* Start the timer that generates the tick ISR.  Interrupts are disabled
-    here already. */
-    prvSetupTimerInterrupt();
+        /* Start the timer that generates the tick ISR.  Interrupts are disabled
+        here already. */
+        prvSetupTimerInterrupt();
 
-    /* Start the first task. */
-    vPortISRStartFirstTask();
+        /* Start the first task. */
+        vPortISRStartFirstTask();
 
-    /* Should not get here! */
-    return 0;
+        /* Should not get here! */
+        return 0;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-    /* It is unlikely that the ARM port will require this function as there
-    is nothing to return to.  */
+        /* It is unlikely that the ARM port will require this function as there
+        is nothing to return to.  */
 }
 /*-----------------------------------------------------------*/
 
@@ -222,28 +222,28 @@ void vPortEndScheduler( void )
  */
 static void prvSetupTimerInterrupt( void )
 {
-    AT91PS_PITC pxPIT = AT91C_BASE_PITC;
+        AT91PS_PITC pxPIT = AT91C_BASE_PITC;
 
-    /* Setup the AIC for PIT interrupts.  The interrupt routine chosen depends
-    on whether the preemptive or cooperative scheduler is being used. */
+        /* Setup the AIC for PIT interrupts.  The interrupt routine chosen depends
+        on whether the preemptive or cooperative scheduler is being used. */
 #if configUSE_PREEMPTION == 0
 
-    extern void ( vNonPreemptiveTick ) ( void );
-    AT91F_AIC_ConfigureIt( AT91C_ID_SYS, AT91C_AIC_PRIOR_HIGHEST, portINT_LEVEL_SENSITIVE, ( void (*)(void) ) vNonPreemptiveTick );
+        extern void ( vNonPreemptiveTick ) ( void );
+        AT91F_AIC_ConfigureIt( AT91C_ID_SYS, AT91C_AIC_PRIOR_HIGHEST, portINT_LEVEL_SENSITIVE, ( void (*)(void) ) vNonPreemptiveTick );
 
 #else
 
-    extern void ( vPreemptiveTick )( void );
-    AT91F_AIC_ConfigureIt( AT91C_ID_SYS, AT91C_AIC_PRIOR_HIGHEST, portINT_LEVEL_SENSITIVE, ( void (*)(void) ) vPreemptiveTick );
+        extern void ( vPreemptiveTick )( void );
+        AT91F_AIC_ConfigureIt( AT91C_ID_SYS, AT91C_AIC_PRIOR_HIGHEST, portINT_LEVEL_SENSITIVE, ( void (*)(void) ) vPreemptiveTick );
 
 #endif
 
-    /* Configure the PIT period. */
-    pxPIT->PITC_PIMR = portPIT_ENABLE | portPIT_INT_ENABLE | portPIT_COUNTER_VALUE;
+        /* Configure the PIT period. */
+        pxPIT->PITC_PIMR = portPIT_ENABLE | portPIT_INT_ENABLE | portPIT_COUNTER_VALUE;
 
-    /* Enable the interrupt.  Global interrupts are disables at this point so
-    this is safe. */
-    AT91C_BASE_AIC->AIC_IECR = 0x1 << AT91C_ID_SYS;
+        /* Enable the interrupt.  Global interrupts are disables at this point so
+        this is safe. */
+        AT91C_BASE_AIC->AIC_IECR = 0x1 << AT91C_ID_SYS;
 }
 /*-----------------------------------------------------------*/
 

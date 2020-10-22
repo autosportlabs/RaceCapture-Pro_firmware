@@ -60,12 +60,11 @@ extern "C" {
 /**
   * @brief  GPIO Configuration Mode enumeration
   */
-typedef enum
-{
-    GPIO_Mode_IN   = 0x00, /*!< GPIO Input Mode */
-    GPIO_Mode_OUT  = 0x01, /*!< GPIO Output Mode */
-    GPIO_Mode_AF   = 0x02, /*!< GPIO Alternate function Mode */
-    GPIO_Mode_AN   = 0x03  /*!< GPIO Analog Mode */
+typedef enum {
+        GPIO_Mode_IN   = 0x00, /*!< GPIO Input Mode */
+        GPIO_Mode_OUT  = 0x01, /*!< GPIO Output Mode */
+        GPIO_Mode_AF   = 0x02, /*!< GPIO Alternate function Mode */
+        GPIO_Mode_AN   = 0x03  /*!< GPIO Analog Mode */
 }
 GPIOMode_TypeDef;
 #define IS_GPIO_MODE(MODE) (((MODE) == GPIO_Mode_IN)  || ((MODE) == GPIO_Mode_OUT) || \
@@ -75,8 +74,8 @@ GPIOMode_TypeDef;
   * @brief  GPIO Output type enumeration
   */
 typedef enum {
-    GPIO_OType_PP = 0x00,
-    GPIO_OType_OD = 0x01
+        GPIO_OType_PP = 0x00,
+        GPIO_OType_OD = 0x01
 } GPIOOType_TypeDef;
 #define IS_GPIO_OTYPE(OTYPE) (((OTYPE) == GPIO_OType_PP) || ((OTYPE) == GPIO_OType_OD))
 
@@ -85,10 +84,10 @@ typedef enum {
   * @brief  GPIO Output Maximum frequency enumeration
   */
 typedef enum {
-    GPIO_Speed_2MHz   = 0x00, /*!< Low speed */
-    GPIO_Speed_25MHz  = 0x01, /*!< Medium speed */
-    GPIO_Speed_50MHz  = 0x02, /*!< Fast speed */
-    GPIO_Speed_100MHz = 0x03  /*!< High speed on 30 pF (80 MHz Output max speed on 15 pF) */
+        GPIO_Speed_2MHz   = 0x00, /*!< Low speed */
+        GPIO_Speed_25MHz  = 0x01, /*!< Medium speed */
+        GPIO_Speed_50MHz  = 0x02, /*!< Fast speed */
+        GPIO_Speed_100MHz = 0x03  /*!< High speed on 30 pF (80 MHz Output max speed on 15 pF) */
 } GPIOSpeed_TypeDef;
 #define IS_GPIO_SPEED(SPEED) (((SPEED) == GPIO_Speed_2MHz) || ((SPEED) == GPIO_Speed_25MHz) || \
                               ((SPEED) == GPIO_Speed_50MHz)||  ((SPEED) == GPIO_Speed_100MHz))
@@ -97,9 +96,9 @@ typedef enum {
   * @brief  GPIO Configuration PullUp PullDown enumeration
   */
 typedef enum {
-    GPIO_PuPd_NOPULL = 0x00,
-    GPIO_PuPd_UP     = 0x01,
-    GPIO_PuPd_DOWN   = 0x02
+        GPIO_PuPd_NOPULL = 0x00,
+        GPIO_PuPd_UP     = 0x01,
+        GPIO_PuPd_DOWN   = 0x02
 } GPIOPuPd_TypeDef;
 #define IS_GPIO_PUPD(PUPD) (((PUPD) == GPIO_PuPd_NOPULL) || ((PUPD) == GPIO_PuPd_UP) || \
                             ((PUPD) == GPIO_PuPd_DOWN))
@@ -108,8 +107,8 @@ typedef enum {
   * @brief  GPIO Bit SET and Bit RESET enumeration
   */
 typedef enum {
-    Bit_RESET = 0,
-    Bit_SET
+        Bit_RESET = 0,
+        Bit_SET
 } BitAction;
 #define IS_GPIO_BIT_ACTION(ACTION) (((ACTION) == Bit_RESET) || ((ACTION) == Bit_SET))
 
@@ -118,19 +117,19 @@ typedef enum {
   * @brief   GPIO Init structure definition
   */
 typedef struct {
-    uint32_t GPIO_Pin;              /*!< Specifies the GPIO pins to be configured.
+        uint32_t GPIO_Pin;              /*!< Specifies the GPIO pins to be configured.
                                        This parameter can be any value of @ref GPIO_pins_define */
 
-    GPIOMode_TypeDef GPIO_Mode;     /*!< Specifies the operating mode for the selected pins.
+        GPIOMode_TypeDef GPIO_Mode;     /*!< Specifies the operating mode for the selected pins.
                                        This parameter can be a value of @ref GPIOMode_TypeDef */
 
-    GPIOSpeed_TypeDef GPIO_Speed;   /*!< Specifies the speed for the selected pins.
+        GPIOSpeed_TypeDef GPIO_Speed;   /*!< Specifies the speed for the selected pins.
                                        This parameter can be a value of @ref GPIOSpeed_TypeDef */
 
-    GPIOOType_TypeDef GPIO_OType;   /*!< Specifies the operating output type for the selected pins.
+        GPIOOType_TypeDef GPIO_OType;   /*!< Specifies the operating output type for the selected pins.
                                        This parameter can be a value of @ref GPIOOType_TypeDef */
 
-    GPIOPuPd_TypeDef GPIO_PuPd;     /*!< Specifies the operating Pull-up/Pull down for the selected pins.
+        GPIOPuPd_TypeDef GPIO_PuPd;     /*!< Specifies the operating Pull-up/Pull down for the selected pins.
                                        This parameter can be a value of @ref GPIOPuPd_TypeDef */
 } GPIO_InitTypeDef;
 

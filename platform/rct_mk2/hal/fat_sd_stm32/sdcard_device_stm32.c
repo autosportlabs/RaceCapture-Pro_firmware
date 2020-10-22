@@ -38,11 +38,11 @@ static void init_sdcard_io(void)
 
 void disk_init_hardware(void)
 {
-    init_sdcard_io();
-	SD_Init();
+        init_sdcard_io();
+        SD_Init();
 }
 
 bool sdcard_device_card_present(void)
 {
-    return GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14) ? false : true;
+        return GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14) ? false : true;
 }

@@ -57,80 +57,80 @@
  */
 
 void arm_cmplx_dot_prod_q15(
-    q15_t * pSrcA,
-    q15_t * pSrcB,
-    uint32_t numSamples,
-    q31_t * realResult,
-    q31_t * imagResult)
+        q15_t * pSrcA,
+        q15_t * pSrcB,
+        uint32_t numSamples,
+        q31_t * realResult,
+        q31_t * imagResult)
 {
-    q63_t real_sum = 0, imag_sum = 0;              /* Temporary result storage */
+        q63_t real_sum = 0, imag_sum = 0;              /* Temporary result storage */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    uint32_t blkCnt;                               /* loop counter */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        uint32_t blkCnt;                               /* loop counter */
 
 
-    /*loop Unrolling */
-    blkCnt = numSamples >> 2u;
+        /*loop Unrolling */
+        blkCnt = numSamples >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
-        real_sum += ((q31_t) * pSrcA++ **pSrcB++);
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
+                real_sum += ((q31_t) * pSrcA++ **pSrcB++);
 
-        /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
-        imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
+                imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
 
-        real_sum += ((q31_t) * pSrcA++ **pSrcB++);
-        imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                real_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
 
-        real_sum += ((q31_t) * pSrcA++ **pSrcB++);
-        imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                real_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
 
-        real_sum += ((q31_t) * pSrcA++ **pSrcB++);
-        imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                real_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = numSamples % 0x4u;
+        /* If the numSamples is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = numSamples % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
-        real_sum += ((q31_t) * pSrcA++ **pSrcB++);
-        /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
-        imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
+        while(blkCnt > 0u) {
+                /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
+                real_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
+                imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    while(numSamples > 0u) {
-        /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
-        real_sum += ((q31_t) * pSrcA++ **pSrcB++);
-        /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
-        imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
+        while(numSamples > 0u) {
+                /* CReal = A[0]* B[0] + A[2]* B[2] + A[4]* B[4] + .....+ A[numSamples-2]* B[numSamples-2] */
+                real_sum += ((q31_t) * pSrcA++ **pSrcB++);
+                /* CImag = A[1]* B[1] + A[3]* B[3] + A[5]* B[5] + .....+ A[numSamples-1]* B[numSamples-1] */
+                imag_sum += ((q31_t) * pSrcA++ **pSrcB++);
 
-        /* Decrement the loop counter */
-        numSamples--;
-    }
+                /* Decrement the loop counter */
+                numSamples--;
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-    /* Store the real and imaginary results in 8.24 format  */
-    /* Convert real data in 34.30 to 8.24 by 6 right shifts */
-    *realResult = (q31_t) (real_sum) >> 6;
-    /* Convert imaginary data in 34.30 to 8.24 by 6 right shifts */
-    *imagResult = (q31_t) (imag_sum) >> 6;
+        /* Store the real and imaginary results in 8.24 format  */
+        /* Convert real data in 34.30 to 8.24 by 6 right shifts */
+        *realResult = (q31_t) (real_sum) >> 6;
+        /* Convert imaginary data in 34.30 to 8.24 by 6 right shifts */
+        *imagResult = (q31_t) (imag_sum) >> 6;
 }
 
 /**

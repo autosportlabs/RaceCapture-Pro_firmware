@@ -83,23 +83,44 @@
  */
 
 arm_status arm_fir_init_q15(
-    arm_fir_instance_q15 * S,
-    uint16_t numTaps,
-    q15_t * pCoeffs,
-    q15_t * pState,
-    uint32_t blockSize)
+        arm_fir_instance_q15 * S,
+        uint16_t numTaps,
+        q15_t * pCoeffs,
+        q15_t * pState,
+        uint32_t blockSize)
 {
-    arm_status status;
+        arm_status status;
 
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /* The Number of filter coefficients in the filter must be even and at least 4 */
-    if((numTaps < 4u) || (numTaps & 0x1u)) {
-        status = ARM_MATH_ARGUMENT_ERROR;
-    } else {
+        /* The Number of filter coefficients in the filter must be even and at least 4 */
+        if((numTaps < 4u) || (numTaps & 0x1u)) {
+                status = ARM_MATH_ARGUMENT_ERROR;
+        } else {
+                /* Assign filter taps */
+                S->numTaps = numTaps;
+
+                /* Assign coefficient pointer */
+                S->pCoeffs = pCoeffs;
+
+                /* Clear the state buffer.  The size is always (blockSize + numTaps - 1) */
+                memset(pState, 0, (numTaps + (blockSize - 1u)) * sizeof(q15_t));
+
+                /* Assign state pointer */
+                S->pState = pState;
+
+                status = ARM_MATH_SUCCESS;
+        }
+
+        return (status);
+
+#else
+
+        /* Run the below code for Cortex-M0 */
+
         /* Assign filter taps */
         S->numTaps = numTaps;
 
@@ -113,29 +134,8 @@ arm_status arm_fir_init_q15(
         S->pState = pState;
 
         status = ARM_MATH_SUCCESS;
-    }
 
-    return (status);
-
-#else
-
-    /* Run the below code for Cortex-M0 */
-
-    /* Assign filter taps */
-    S->numTaps = numTaps;
-
-    /* Assign coefficient pointer */
-    S->pCoeffs = pCoeffs;
-
-    /* Clear the state buffer.  The size is always (blockSize + numTaps - 1) */
-    memset(pState, 0, (numTaps + (blockSize - 1u)) * sizeof(q15_t));
-
-    /* Assign state pointer */
-    S->pState = pState;
-
-    status = ARM_MATH_SUCCESS;
-
-    return (status);
+        return (status);
 
 #endif /*  #ifndef ARM_MATH_CM0 */
 

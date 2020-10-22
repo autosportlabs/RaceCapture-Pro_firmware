@@ -84,7 +84,7 @@ static struct led_data* find_led_data(const enum led l)
 
 bool led_device_available(const enum led l)
 {
-    return find_led_data(l) != NULL;
+        return find_led_data(l) != NULL;
 }
 
 bool led_device_set(const enum led l, const bool on)
@@ -103,7 +103,7 @@ bool led_device_toggle(const enum led l)
 
 void led_device_set_all(const bool on)
 {
-	for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
+        for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
                 struct led_data *ld = leds + i;
                 led_set_level(ld, on);
         }
@@ -124,14 +124,14 @@ bool led_device_init(void)
         gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
         gpio_conf.GPIO_OType = GPIO_OType_OD;
 
-	for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
+        for (size_t i = 0; i < ARRAY_LEN(leds); ++i) {
                 struct led_data *ld = leds + i;
                 gpio_conf.GPIO_Pin = ld->mask;
                 GPIO_Init(ld->port, &gpio_conf);
         }
 
-	/* Turn all LEDs off */
-	led_device_set_all(false);
+        /* Turn all LEDs off */
+        led_device_set_all(false);
 
         return true;
 }

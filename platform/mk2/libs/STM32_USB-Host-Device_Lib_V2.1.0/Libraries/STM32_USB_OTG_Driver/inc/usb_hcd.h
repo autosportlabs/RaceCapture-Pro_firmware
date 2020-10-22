@@ -77,11 +77,11 @@
 /** @defgroup USB_HCD_Exported_FunctionsPrototype
   * @{
   */
-uint32_t  HCD_Init                 (USB_OTG_CORE_HANDLE *pdev ,
+uint32_t  HCD_Init                 (USB_OTG_CORE_HANDLE *pdev,
                                     USB_OTG_CORE_ID_TypeDef coreID);
-uint32_t  HCD_HC_Init              (USB_OTG_CORE_HANDLE *pdev ,
+uint32_t  HCD_HC_Init              (USB_OTG_CORE_HANDLE *pdev,
                                     uint8_t hc_num);
-uint32_t  HCD_SubmitRequest        (USB_OTG_CORE_HANDLE *pdev ,
+uint32_t  HCD_SubmitRequest        (USB_OTG_CORE_HANDLE *pdev,
                                     uint8_t hc_num) ;
 uint32_t  HCD_GetCurrentSpeed      (USB_OTG_CORE_HANDLE *pdev);
 uint32_t  HCD_ResetPort            (USB_OTG_CORE_HANDLE *pdev);

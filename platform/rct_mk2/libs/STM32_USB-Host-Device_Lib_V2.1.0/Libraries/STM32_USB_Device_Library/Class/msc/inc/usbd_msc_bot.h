@@ -81,22 +81,22 @@
   */
 
 typedef struct _MSC_BOT_CBW {
-    uint32_t dSignature;
-    uint32_t dTag;
-    uint32_t dDataLength;
-    uint8_t  bmFlags;
-    uint8_t  bLUN;
-    uint8_t  bCBLength;
-    uint8_t  CB[16];
+        uint32_t dSignature;
+        uint32_t dTag;
+        uint32_t dDataLength;
+        uint8_t  bmFlags;
+        uint8_t  bLUN;
+        uint8_t  bCBLength;
+        uint8_t  CB[16];
 }
 MSC_BOT_CBW_TypeDef;
 
 
 typedef struct _MSC_BOT_CSW {
-    uint32_t dSignature;
-    uint32_t dTag;
-    uint32_t dDataResidue;
-    uint8_t  bStatus;
+        uint32_t dSignature;
+        uint32_t dTag;
+        uint32_t dDataResidue;
+        uint8_t  bStatus;
 }
 MSC_BOT_CSW_TypeDef;
 

@@ -57,11 +57,13 @@ bool sdcard_present()
         return true;
 }
 
-void fs_lock(void){
+void fs_lock(void)
+{
 
 }
 
-void fs_unlock(void){
+void fs_unlock(void)
+{
 
 }
 

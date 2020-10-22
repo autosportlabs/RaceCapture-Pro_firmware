@@ -148,10 +148,10 @@ extern void vPortSuppressTicksAndSleep( portTickType xExpectedIdleTime );
 /* Generic helper function. */
 __attribute__( ( always_inline ) ) static inline unsigned char ucPortCountLeadingZeros( unsigned long ulBitmap )
 {
-    unsigned char ucReturn;
+        unsigned char ucReturn;
 
-    __asm volatile ( "clz %0, %1" : "=r" ( ucReturn ) : "r" ( ulBitmap ) );
-    return ucReturn;
+        __asm volatile ( "clz %0, %1" : "=r" ( ucReturn ) : "r" ( ulBitmap ) );
+        return ucReturn;
 }
 
 /* Check the configuration. */

@@ -167,20 +167,20 @@ static enum serial_ioctl_status usb_serial_ioctl(struct Serial* serial,
         switch(req) {
         case SERIAL_IOCTL_TELEMETRY:
                                 return set_telemetry((int) (long) argp);
-                default:
-                        pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
-                                           (int) req);
-                        return -1;
-                }
+        default:
+                pr_warning_int_msg(LOG_PFX "Unhandled ioctl request: ",
+                                   (int) req);
+                return -1;
         }
+}
 
 
-        /* *** Task Handlers *** */
+/* *** Task Handlers *** */
 
-        /**
-         *
-         */
-        static void process_rx_msgs()
+/**
+ *
+ */
+static void process_rx_msgs()
 {
         struct Serial* const s = usb_state.serial;
         struct rx_buff* const rxb = usb_state.rx.buff;

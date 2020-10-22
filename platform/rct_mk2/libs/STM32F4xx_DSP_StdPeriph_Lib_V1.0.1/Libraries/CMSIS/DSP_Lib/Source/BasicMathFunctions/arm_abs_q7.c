@@ -55,81 +55,81 @@
  */
 
 void arm_abs_q7(
-    q7_t * pSrc,
-    q7_t * pDst,
-    uint32_t blockSize)
+        q7_t * pSrc,
+        q7_t * pDst,
+        uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* loop counter */
+        uint32_t blkCnt;                               /* loop counter */
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
-    q7_t in1;                                      /* Input value1 */
-    q7_t in2;                                      /* Input value2 */
-    q7_t in3;                                      /* Input value3 */
-    q7_t in4;                                      /* Input value4 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
+        q7_t in1;                                      /* Input value1 */
+        q7_t in2;                                      /* Input value2 */
+        q7_t in3;                                      /* Input value3 */
+        q7_t in4;                                      /* Input value4 */
 
 
-    /*loop Unrolling */
-    blkCnt = blockSize >> 2u;
+        /*loop Unrolling */
+        blkCnt = blockSize >> 2u;
 
-    /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-     ** a second loop below computes the remaining 1 to 3 samples. */
-    while(blkCnt > 0u) {
-        /* C = |A| */
-        /* Read 4 inputs */
-        in1 = *pSrc++;
-        in2 = *pSrc++;
-        in3 = *pSrc++;
-        in4 = *pSrc++;
+        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+         ** a second loop below computes the remaining 1 to 3 samples. */
+        while(blkCnt > 0u) {
+                /* C = |A| */
+                /* Read 4 inputs */
+                in1 = *pSrc++;
+                in2 = *pSrc++;
+                in3 = *pSrc++;
+                in4 = *pSrc++;
 
-        /* Store the Absolute result in the destination buffer by packing the 4 values in single cycle */
-        *__SIMD32(pDst)++ =
-            __PACKq7(((in1 > 0) ? in1 : __SSAT(-in1, 8)),
-                     ((in2 > 0) ? in2 : __SSAT(-in2, 8)),
-                     ((in3 > 0) ? in3 : __SSAT(-in3, 8)),
-                     ((in4 > 0) ? in4 : __SSAT(-in4, 8)));
+                /* Store the Absolute result in the destination buffer by packing the 4 values in single cycle */
+                *__SIMD32(pDst)++ =
+                        __PACKq7(((in1 > 0) ? in1 : __SSAT(-in1, 8)),
+                                 ((in2 > 0) ? in2 : __SSAT(-in2, 8)),
+                                 ((in3 > 0) ? in3 : __SSAT(-in3, 8)),
+                                 ((in4 > 0) ? in4 : __SSAT(-in4, 8)));
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
-    /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-     ** No loop unrolling is used. */
-    blkCnt = blockSize % 0x4u;
+        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+         ** No loop unrolling is used. */
+        blkCnt = blockSize % 0x4u;
 
-    while(blkCnt > 0u) {
-        /* C = |A| */
-        /* Read the input */
-        in1 = *pSrc++;
+        while(blkCnt > 0u) {
+                /* C = |A| */
+                /* Read the input */
+                in1 = *pSrc++;
 
-        /* Store the Absolute result in the destination buffer */
-        *pDst++ = (in1 > 0) ? in1 : __SSAT(-in1, 8);
+                /* Store the Absolute result in the destination buffer */
+                *pDst++ = (in1 > 0) ? in1 : __SSAT(-in1, 8);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    q7_t in;                                       /* Temporary input varible */
+        q7_t in;                                       /* Temporary input varible */
 
-    /* Initialize blkCnt with number of samples */
-    blkCnt = blockSize;
+        /* Initialize blkCnt with number of samples */
+        blkCnt = blockSize;
 
-    while(blkCnt > 0u) {
-        /* C = |A| */
-        /* Read the input */
-        in = *pSrc++;
+        while(blkCnt > 0u) {
+                /* C = |A| */
+                /* Read the input */
+                in = *pSrc++;
 
-        /* Store the Absolute result in the destination buffer */
-        *pDst++ = (in > 0) ? in : __SSAT(-in, 8);
+                /* Store the Absolute result in the destination buffer */
+                *pDst++ = (in > 0) ? in : __SSAT(-in, 8);
 
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
+                /* Decrement the loop counter */
+                blkCnt--;
+        }
 
 #endif /*   #ifndef ARM_MATH_CM0   */
 

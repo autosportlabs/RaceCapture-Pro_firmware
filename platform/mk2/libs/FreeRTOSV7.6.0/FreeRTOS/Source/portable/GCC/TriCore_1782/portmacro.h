@@ -114,7 +114,7 @@ typedef unsigned portLONG portTickType;
 /*---------------------------------------------------------------------------*/
 
 typedef struct MPU_SETTINGS {
-    unsigned long ulNotUsed;
+        unsigned long ulNotUsed;
 } xMPU_SETTINGS;
 
 /* Define away the instruction from the Restore Context Macro. */

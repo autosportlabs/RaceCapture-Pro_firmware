@@ -51,14 +51,14 @@ extern "C" {
   * @brief   CRYP Init structure definition
   */
 typedef struct {
-    uint16_t CRYP_AlgoDir;   /*!< Encrypt or Decrypt. This parameter can be a
+        uint16_t CRYP_AlgoDir;   /*!< Encrypt or Decrypt. This parameter can be a
                                 value of @ref CRYP_Algorithm_Direction */
-    uint16_t CRYP_AlgoMode;  /*!< TDES-ECB, TDES-CBC, DES-ECB, DES-CBC, AES-ECB,
+        uint16_t CRYP_AlgoMode;  /*!< TDES-ECB, TDES-CBC, DES-ECB, DES-CBC, AES-ECB,
                                 AES-CBC, AES-CTR, AES-Key. This parameter can be
                                 a value of @ref CRYP_Algorithm_Mode */
-    uint16_t CRYP_DataType;  /*!< 32-bit data, 16-bit data, bit data or bit-string.
+        uint16_t CRYP_DataType;  /*!< 32-bit data, 16-bit data, bit data or bit-string.
                                 This parameter can be a value of @ref CRYP_Data_Type */
-    uint16_t CRYP_KeySize;   /*!< Used only in AES mode only : 128, 192 or 256 bit
+        uint16_t CRYP_KeySize;   /*!< Used only in AES mode only : 128, 192 or 256 bit
                                 key length. This parameter can be a value of
                                 @ref CRYP_Key_Size_for_AES_only */
 } CRYP_InitTypeDef;
@@ -67,45 +67,45 @@ typedef struct {
   * @brief   CRYP Key(s) structure definition
   */
 typedef struct {
-    uint32_t CRYP_Key0Left;  /*!< Key 0 Left  */
-    uint32_t CRYP_Key0Right; /*!< Key 0 Right */
-    uint32_t CRYP_Key1Left;  /*!< Key 1 left  */
-    uint32_t CRYP_Key1Right; /*!< Key 1 Right */
-    uint32_t CRYP_Key2Left;  /*!< Key 2 left  */
-    uint32_t CRYP_Key2Right; /*!< Key 2 Right */
-    uint32_t CRYP_Key3Left;  /*!< Key 3 left  */
-    uint32_t CRYP_Key3Right; /*!< Key 3 Right */
+        uint32_t CRYP_Key0Left;  /*!< Key 0 Left  */
+        uint32_t CRYP_Key0Right; /*!< Key 0 Right */
+        uint32_t CRYP_Key1Left;  /*!< Key 1 left  */
+        uint32_t CRYP_Key1Right; /*!< Key 1 Right */
+        uint32_t CRYP_Key2Left;  /*!< Key 2 left  */
+        uint32_t CRYP_Key2Right; /*!< Key 2 Right */
+        uint32_t CRYP_Key3Left;  /*!< Key 3 left  */
+        uint32_t CRYP_Key3Right; /*!< Key 3 Right */
 } CRYP_KeyInitTypeDef;
 /**
   * @brief   CRYP Initialization Vectors (IV) structure definition
   */
 typedef struct {
-    uint32_t CRYP_IV0Left;  /*!< Init Vector 0 Left  */
-    uint32_t CRYP_IV0Right; /*!< Init Vector 0 Right */
-    uint32_t CRYP_IV1Left;  /*!< Init Vector 1 left  */
-    uint32_t CRYP_IV1Right; /*!< Init Vector 1 Right */
+        uint32_t CRYP_IV0Left;  /*!< Init Vector 0 Left  */
+        uint32_t CRYP_IV0Right; /*!< Init Vector 0 Right */
+        uint32_t CRYP_IV1Left;  /*!< Init Vector 1 left  */
+        uint32_t CRYP_IV1Right; /*!< Init Vector 1 Right */
 } CRYP_IVInitTypeDef;
 
 /**
   * @brief  CRYP context swapping structure definition
   */
 typedef struct {
-    /*!< Configuration */
-    uint32_t CR_bits9to2;
-    /*!< KEY */
-    uint32_t CRYP_IV0LR;
-    uint32_t CRYP_IV0RR;
-    uint32_t CRYP_IV1LR;
-    uint32_t CRYP_IV1RR;
-    /*!< IV */
-    uint32_t CRYP_K0LR;
-    uint32_t CRYP_K0RR;
-    uint32_t CRYP_K1LR;
-    uint32_t CRYP_K1RR;
-    uint32_t CRYP_K2LR;
-    uint32_t CRYP_K2RR;
-    uint32_t CRYP_K3LR;
-    uint32_t CRYP_K3RR;
+        /*!< Configuration */
+        uint32_t CR_bits9to2;
+        /*!< KEY */
+        uint32_t CRYP_IV0LR;
+        uint32_t CRYP_IV0RR;
+        uint32_t CRYP_IV1LR;
+        uint32_t CRYP_IV1RR;
+        /*!< IV */
+        uint32_t CRYP_K0LR;
+        uint32_t CRYP_K0RR;
+        uint32_t CRYP_K1LR;
+        uint32_t CRYP_K1RR;
+        uint32_t CRYP_K2LR;
+        uint32_t CRYP_K2RR;
+        uint32_t CRYP_K3LR;
+        uint32_t CRYP_K3RR;
 } CRYP_Context;
 
 

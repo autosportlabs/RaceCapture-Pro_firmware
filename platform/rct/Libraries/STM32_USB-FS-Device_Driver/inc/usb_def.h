@@ -31,48 +31,44 @@
 
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
-typedef enum _RECIPIENT_TYPE
-{
-    DEVICE_RECIPIENT,     /* Recipient device */
-    INTERFACE_RECIPIENT,  /* Recipient interface */
-    ENDPOINT_RECIPIENT,   /* Recipient endpoint */
-    OTHER_RECIPIENT
+typedef enum _RECIPIENT_TYPE {
+        DEVICE_RECIPIENT,     /* Recipient device */
+        INTERFACE_RECIPIENT,  /* Recipient interface */
+        ENDPOINT_RECIPIENT,   /* Recipient endpoint */
+        OTHER_RECIPIENT
 } RECIPIENT_TYPE;
 
 
-typedef enum _STANDARD_REQUESTS
-{
-    GET_STATUS = 0,
-    CLEAR_FEATURE,
-    RESERVED1,
-    SET_FEATURE,
-    RESERVED2,
-    SET_ADDRESS,
-    GET_DESCRIPTOR,
-    SET_DESCRIPTOR,
-    GET_CONFIGURATION,
-    SET_CONFIGURATION,
-    GET_INTERFACE,
-    SET_INTERFACE,
-    TOTAL_sREQUEST,  /* Total number of Standard request */
-    SYNCH_FRAME = 12
+typedef enum _STANDARD_REQUESTS {
+        GET_STATUS = 0,
+        CLEAR_FEATURE,
+        RESERVED1,
+        SET_FEATURE,
+        RESERVED2,
+        SET_ADDRESS,
+        GET_DESCRIPTOR,
+        SET_DESCRIPTOR,
+        GET_CONFIGURATION,
+        SET_CONFIGURATION,
+        GET_INTERFACE,
+        SET_INTERFACE,
+        TOTAL_sREQUEST,  /* Total number of Standard request */
+        SYNCH_FRAME = 12
 } STANDARD_REQUESTS;
 
 /* Definition of "USBwValue" */
-typedef enum _DESCRIPTOR_TYPE
-{
-    DEVICE_DESCRIPTOR = 1,
-    CONFIG_DESCRIPTOR,
-    STRING_DESCRIPTOR,
-    INTERFACE_DESCRIPTOR,
-    ENDPOINT_DESCRIPTOR
+typedef enum _DESCRIPTOR_TYPE {
+        DEVICE_DESCRIPTOR = 1,
+        CONFIG_DESCRIPTOR,
+        STRING_DESCRIPTOR,
+        INTERFACE_DESCRIPTOR,
+        ENDPOINT_DESCRIPTOR
 } DESCRIPTOR_TYPE;
 
 /* Feature selector of a SET_FEATURE or CLEAR_FEATURE */
-typedef enum _FEATURE_SELECTOR
-{
-    ENDPOINT_STALL,
-    DEVICE_REMOTE_WAKEUP
+typedef enum _FEATURE_SELECTOR {
+        ENDPOINT_STALL,
+        DEVICE_REMOTE_WAKEUP
 } FEATURE_SELECTOR;
 
 /* Exported constants --------------------------------------------------------*/

@@ -4,8 +4,8 @@
   * @author  MCD Application Team
   * @version V1.0.1
   * @date    23-October-2012
-  * @brief   This file contains all the functions prototypes for the IWDG 
-  *          firmware library.  
+  * @brief   This file contains all the functions prototypes for the IWDG
+  *          firmware library.
   ******************************************************************************
   * @attention
   *
@@ -17,8 +17,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -31,7 +31,7 @@
 #define __STM32F30X_IWDG_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -64,7 +64,7 @@
   * @}
   */
 
-/** @defgroup IWDG_prescaler 
+/** @defgroup IWDG_prescaler
   * @{
   */
 
@@ -86,7 +86,7 @@
   * @}
   */
 
-/** @defgroup IWDG_Flag 
+/** @defgroup IWDG_Flag
   * @{
   */
 
@@ -98,7 +98,7 @@
 /**
   * @}
   */
-  
+
 /** @defgroup IWDG_Reload_Value
   * @{
   */

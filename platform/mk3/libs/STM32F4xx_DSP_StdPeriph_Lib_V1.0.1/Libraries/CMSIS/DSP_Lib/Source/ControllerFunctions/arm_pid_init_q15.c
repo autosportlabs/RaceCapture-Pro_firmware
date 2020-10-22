@@ -48,57 +48,57 @@
  */
 
 void arm_pid_init_q15(
-    arm_pid_instance_q15 * S,
-    int32_t resetStateFlag)
+        arm_pid_instance_q15 * S,
+        int32_t resetStateFlag)
 {
 
 #ifndef ARM_MATH_CM0
 
-    /* Run the below code for Cortex-M4 and Cortex-M3 */
+        /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-    /* Derived coefficient A0 */
-    S->A0 = __QADD16(__QADD16(S->Kp, S->Ki), S->Kd);
+        /* Derived coefficient A0 */
+        S->A0 = __QADD16(__QADD16(S->Kp, S->Ki), S->Kd);
 
-    /* Derived coefficients and pack into A1 */
+        /* Derived coefficients and pack into A1 */
 
 #ifndef  ARM_MATH_BIG_ENDIAN
 
-    S->A1 = __PKHBT(-__QADD16(__QADD16(S->Kd, S->Kd), S->Kp), S->Kd, 16);
+        S->A1 = __PKHBT(-__QADD16(__QADD16(S->Kd, S->Kd), S->Kp), S->Kd, 16);
 
 #else
 
-    S->A1 = __PKHBT(S->Kd, -__QADD16(__QADD16(S->Kd, S->Kd), S->Kp), 16);
+        S->A1 = __PKHBT(S->Kd, -__QADD16(__QADD16(S->Kd, S->Kd), S->Kp), 16);
 
 #endif /*      #ifndef  ARM_MATH_BIG_ENDIAN    */
 
-    /* Check whether state needs reset or not */
-    if(resetStateFlag) {
-        /* Clear the state buffer.  The size will be always 3 samples */
-        memset(S->state, 0, 3u * sizeof(q15_t));
-    }
+        /* Check whether state needs reset or not */
+        if(resetStateFlag) {
+                /* Clear the state buffer.  The size will be always 3 samples */
+                memset(S->state, 0, 3u * sizeof(q15_t));
+        }
 
 #else
 
-    /* Run the below code for Cortex-M0 */
+        /* Run the below code for Cortex-M0 */
 
-    q31_t temp;                                    /*to store the sum */
+        q31_t temp;                                    /*to store the sum */
 
-    /* Derived coefficient A0 */
-    temp = S->Kp + S->Ki + S->Kd;
-    S->A0 = (q15_t) __SSAT(temp, 16);
+        /* Derived coefficient A0 */
+        temp = S->Kp + S->Ki + S->Kd;
+        S->A0 = (q15_t) __SSAT(temp, 16);
 
-    /* Derived coefficients and pack into A1 */
-    temp = -(S->Kd + S->Kd + S->Kp);
-    S->A1 = (q15_t) __SSAT(temp, 16);
-    S->A2 = S->Kd;
+        /* Derived coefficients and pack into A1 */
+        temp = -(S->Kd + S->Kd + S->Kp);
+        S->A1 = (q15_t) __SSAT(temp, 16);
+        S->A2 = S->Kd;
 
 
 
-    /* Check whether state needs reset or not */
-    if(resetStateFlag) {
-        /* Clear the state buffer.  The size will be always 3 samples */
-        memset(S->state, 0, 3u * sizeof(q15_t));
-    }
+        /* Check whether state needs reset or not */
+        if(resetStateFlag) {
+                /* Clear the state buffer.  The size will be always 3 samples */
+                memset(S->state, 0, 3u * sizeof(q15_t));
+        }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 

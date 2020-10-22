@@ -64,31 +64,31 @@
 */
 
 void arm_lms_init_q31(
-    arm_lms_instance_q31 * S,
-    uint16_t numTaps,
-    q31_t * pCoeffs,
-    q31_t * pState,
-    q31_t mu,
-    uint32_t blockSize,
-    uint32_t postShift)
+        arm_lms_instance_q31 * S,
+        uint16_t numTaps,
+        q31_t * pCoeffs,
+        q31_t * pState,
+        q31_t mu,
+        uint32_t blockSize,
+        uint32_t postShift)
 {
-    /* Assign filter taps */
-    S->numTaps = numTaps;
+        /* Assign filter taps */
+        S->numTaps = numTaps;
 
-    /* Assign coefficient pointer */
-    S->pCoeffs = pCoeffs;
+        /* Assign coefficient pointer */
+        S->pCoeffs = pCoeffs;
 
-    /* Clear state buffer and size is always blockSize + numTaps - 1 */
-    memset(pState, 0, ((uint32_t) numTaps + (blockSize - 1u)) * sizeof(q31_t));
+        /* Clear state buffer and size is always blockSize + numTaps - 1 */
+        memset(pState, 0, ((uint32_t) numTaps + (blockSize - 1u)) * sizeof(q31_t));
 
-    /* Assign state pointer */
-    S->pState = pState;
+        /* Assign state pointer */
+        S->pState = pState;
 
-    /* Assign Step size value */
-    S->mu = mu;
+        /* Assign Step size value */
+        S->mu = mu;
 
-    /* Assign postShift value to be applied */
-    S->postShift = postShift;
+        /* Assign postShift value to be applied */
+        S->postShift = postShift;
 
 }
 

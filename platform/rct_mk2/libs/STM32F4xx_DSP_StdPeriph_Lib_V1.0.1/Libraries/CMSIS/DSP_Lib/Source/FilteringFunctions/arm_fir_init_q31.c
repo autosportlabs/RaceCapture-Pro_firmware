@@ -66,23 +66,23 @@
  */
 
 void arm_fir_init_q31(
-    arm_fir_instance_q31 * S,
-    uint16_t numTaps,
-    q31_t * pCoeffs,
-    q31_t * pState,
-    uint32_t blockSize)
+        arm_fir_instance_q31 * S,
+        uint16_t numTaps,
+        q31_t * pCoeffs,
+        q31_t * pState,
+        uint32_t blockSize)
 {
-    /* Assign filter taps */
-    S->numTaps = numTaps;
+        /* Assign filter taps */
+        S->numTaps = numTaps;
 
-    /* Assign coefficient pointer */
-    S->pCoeffs = pCoeffs;
+        /* Assign coefficient pointer */
+        S->pCoeffs = pCoeffs;
 
-    /* Clear state buffer and state array size is (blockSize + numTaps - 1) */
-    memset(pState, 0, (blockSize + ((uint32_t) numTaps - 1u)) * sizeof(q31_t));
+        /* Clear state buffer and state array size is (blockSize + numTaps - 1) */
+        memset(pState, 0, (blockSize + ((uint32_t) numTaps - 1u)) * sizeof(q31_t));
 
-    /* Assign state pointer */
-    S->pState = pState;
+        /* Assign state pointer */
+        S->pState = pState;
 
 }
 

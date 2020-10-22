@@ -59,90 +59,90 @@
  */
 
 arm_status arm_mat_sub_q15(
-    const arm_matrix_instance_q15 * pSrcA,
-    const arm_matrix_instance_q15 * pSrcB,
-    arm_matrix_instance_q15 * pDst)
+        const arm_matrix_instance_q15 * pSrcA,
+        const arm_matrix_instance_q15 * pSrcB,
+        arm_matrix_instance_q15 * pDst)
 {
-    q15_t *pInA = pSrcA->pData;                    /* input data matrix pointer A */
-    q15_t *pInB = pSrcB->pData;                    /* input data matrix pointer B */
-    q15_t *pOut = pDst->pData;                     /* output data matrix pointer */
-    uint32_t numSamples;                           /* total number of elements in the matrix */
-    uint32_t blkCnt;                               /* loop counters  */
-    arm_status status;                             /* status of matrix subtraction  */
+        q15_t *pInA = pSrcA->pData;                    /* input data matrix pointer A */
+        q15_t *pInB = pSrcB->pData;                    /* input data matrix pointer B */
+        q15_t *pOut = pDst->pData;                     /* output data matrix pointer */
+        uint32_t numSamples;                           /* total number of elements in the matrix */
+        uint32_t blkCnt;                               /* loop counters  */
+        arm_status status;                             /* status of matrix subtraction  */
 
 
 #ifdef ARM_MATH_MATRIX_CHECK
 
 
-    /* Check for matrix mismatch condition */
-    if((pSrcA->numRows != pSrcB->numRows) ||
-       (pSrcA->numCols != pSrcB->numCols) ||
-       (pSrcA->numRows != pDst->numRows) || (pSrcA->numCols != pDst->numCols)) {
-        /* Set status as ARM_MATH_SIZE_MISMATCH */
-        status = ARM_MATH_SIZE_MISMATCH;
-    } else
+        /* Check for matrix mismatch condition */
+        if((pSrcA->numRows != pSrcB->numRows) ||
+            (pSrcA->numCols != pSrcB->numCols) ||
+            (pSrcA->numRows != pDst->numRows) || (pSrcA->numCols != pDst->numCols)) {
+                /* Set status as ARM_MATH_SIZE_MISMATCH */
+                status = ARM_MATH_SIZE_MISMATCH;
+        } else
 #endif /*    #ifdef ARM_MATH_MATRIX_CHECK    */
 
-    {
-        /* Total number of samples in the input matrix */
-        numSamples = (uint32_t) pSrcA->numRows * pSrcA->numCols;
+        {
+                /* Total number of samples in the input matrix */
+                numSamples = (uint32_t) pSrcA->numRows * pSrcA->numCols;
 
 #ifndef ARM_MATH_CM0
 
-        /* Run the below code for Cortex-M4 and Cortex-M3 */
+                /* Run the below code for Cortex-M4 and Cortex-M3 */
 
-        /* Apply loop unrolling */
-        blkCnt = numSamples >> 2u;
+                /* Apply loop unrolling */
+                blkCnt = numSamples >> 2u;
 
-        /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
-         ** a second loop below computes the remaining 1 to 3 samples. */
-        while(blkCnt > 0u) {
-            /* C(m,n) = A(m,n) - B(m,n) */
-            /* Subtract, Saturate and then store the results in the destination buffer. */
-            *__SIMD32(pOut)++ = __QSUB16(*__SIMD32(pInA)++, *__SIMD32(pInB)++);
-            *__SIMD32(pOut)++ = __QSUB16(*__SIMD32(pInA)++, *__SIMD32(pInB)++);
+                /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+                 ** a second loop below computes the remaining 1 to 3 samples. */
+                while(blkCnt > 0u) {
+                        /* C(m,n) = A(m,n) - B(m,n) */
+                        /* Subtract, Saturate and then store the results in the destination buffer. */
+                        *__SIMD32(pOut)++ = __QSUB16(*__SIMD32(pInA)++, *__SIMD32(pInB)++);
+                        *__SIMD32(pOut)++ = __QSUB16(*__SIMD32(pInA)++, *__SIMD32(pInB)++);
 
-            /* Decrement the loop counter */
-            blkCnt--;
-        }
+                        /* Decrement the loop counter */
+                        blkCnt--;
+                }
 
-        /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
-         ** No loop unrolling is used. */
-        blkCnt = numSamples % 0x4u;
+                /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+                 ** No loop unrolling is used. */
+                blkCnt = numSamples % 0x4u;
 
-        while(blkCnt > 0u) {
-            /* C(m,n) = A(m,n) - B(m,n) */
-            /* Subtract and then store the results in the destination buffer. */
-            *pOut++ = (q15_t) __QSUB16(*pInA++, *pInB++);
+                while(blkCnt > 0u) {
+                        /* C(m,n) = A(m,n) - B(m,n) */
+                        /* Subtract and then store the results in the destination buffer. */
+                        *pOut++ = (q15_t) __QSUB16(*pInA++, *pInB++);
 
-            /* Decrement the loop counter */
-            blkCnt--;
-        }
+                        /* Decrement the loop counter */
+                        blkCnt--;
+                }
 
 #else
 
-        /* Run the below code for Cortex-M0 */
+                /* Run the below code for Cortex-M0 */
 
-        /* Initialize blkCnt with number of samples */
-        blkCnt = numSamples;
+                /* Initialize blkCnt with number of samples */
+                blkCnt = numSamples;
 
-        while(blkCnt > 0u) {
-            /* C(m,n) = A(m,n) - B(m,n) */
-            /* Subtract and then store the results in the destination buffer. */
-            *pOut++ = (q15_t) __SSAT(((q31_t) * pInA++ - *pInB++), 16);
+                while(blkCnt > 0u) {
+                        /* C(m,n) = A(m,n) - B(m,n) */
+                        /* Subtract and then store the results in the destination buffer. */
+                        *pOut++ = (q15_t) __SSAT(((q31_t) * pInA++ - *pInB++), 16);
 
-            /* Decrement the loop counter */
-            blkCnt--;
-        }
+                        /* Decrement the loop counter */
+                        blkCnt--;
+                }
 
 #endif /* #ifndef ARM_MATH_CM0 */
 
-        /* Set status as ARM_MATH_SUCCESS */
-        status = ARM_MATH_SUCCESS;
-    }
+                /* Set status as ARM_MATH_SUCCESS */
+                status = ARM_MATH_SUCCESS;
+        }
 
-    /* Return to application */
-    return (status);
+        /* Return to application */
+        return (status);
 }
 
 /**

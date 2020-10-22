@@ -15,17 +15,17 @@
 #include "lrotable.h"
 
 static const luaL_Reg lualibs[] = {
-    {"", luaopen_base},
-    {LUA_LOADLIBNAME, luaopen_package},
-    {LUA_STRLIBNAME, luaopen_string},
+        {"", luaopen_base},
+        {LUA_LOADLIBNAME, luaopen_package},
+        {LUA_STRLIBNAME, luaopen_string},
 #if LUA_OPTIMIZE_MEMORY == 0
-    {LUA_MATHLIBNAME, luaopen_math},
-    {LUA_OSLIBNAME, luaopen_os},
-    {LUA_TABLIBNAME, luaopen_table},
-    {LUA_DBLIBNAME, luaopen_debug},
-    {LUA_BITLIBNAME, luaopen_bit},
+        {LUA_MATHLIBNAME, luaopen_math},
+        {LUA_OSLIBNAME, luaopen_os},
+        {LUA_TABLIBNAME, luaopen_table},
+        {LUA_DBLIBNAME, luaopen_debug},
+        {LUA_BITLIBNAME, luaopen_bit},
 #endif
-    {NULL, NULL}
+        {NULL, NULL}
 };
 
 /* The read-only tables are defined here */
@@ -37,22 +37,22 @@ extern const luaL_Reg dblib[];
 extern const luaL_Reg co_funcs[];
 const luaR_table lua_rotable[] = {
 #if LUA_OPTIMIZE_MEMORY > 0
-    {LUA_MATHLIBNAME, mathlib, mathlib_vals},
-    {LUA_OSLIBNAME, syslib, NULL},
-    {LUA_TABLIBNAME, tab_funcs, NULL},
-    {LUA_DBLIBNAME, dblib, NULL},
-    {LUA_COLIBNAME, co_funcs, NULL},
+        {LUA_MATHLIBNAME, mathlib, mathlib_vals},
+        {LUA_OSLIBNAME, syslib, NULL},
+        {LUA_TABLIBNAME, tab_funcs, NULL},
+        {LUA_DBLIBNAME, dblib, NULL},
+        {LUA_COLIBNAME, co_funcs, NULL},
 #endif
-    {NULL, NULL, NULL}
+        {NULL, NULL, NULL}
 };
 
 
 LUALIB_API void luaL_openlibs (lua_State *L)
 {
-    const luaL_Reg *lib = lualibs;
-    for (; lib->func; lib++) {
-        lua_pushcfunction(L, lib->func);
-        lua_pushstring(L, lib->name);
-        lua_call(L, 1, 0);
-    }
+        const luaL_Reg *lib = lualibs;
+        for (; lib->func; lib++) {
+                lua_pushcfunction(L, lib->func);
+                lua_pushstring(L, lib->name);
+                lua_call(L, 1, 0);
+        }
 }

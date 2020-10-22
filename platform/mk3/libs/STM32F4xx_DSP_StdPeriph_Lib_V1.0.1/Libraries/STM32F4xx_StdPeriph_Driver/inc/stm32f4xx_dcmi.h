@@ -49,25 +49,25 @@ extern "C" {
   * @brief   DCMI Init structure definition
   */
 typedef struct {
-    uint16_t DCMI_CaptureMode;      /*!< Specifies the Capture Mode: Continuous or Snapshot.
+        uint16_t DCMI_CaptureMode;      /*!< Specifies the Capture Mode: Continuous or Snapshot.
                                        This parameter can be a value of @ref DCMI_Capture_Mode */
 
-    uint16_t DCMI_SynchroMode;      /*!< Specifies the Synchronization Mode: Hardware or Embedded.
+        uint16_t DCMI_SynchroMode;      /*!< Specifies the Synchronization Mode: Hardware or Embedded.
                                        This parameter can be a value of @ref DCMI_Synchronization_Mode */
 
-    uint16_t DCMI_PCKPolarity;      /*!< Specifies the Pixel clock polarity: Falling or Rising.
+        uint16_t DCMI_PCKPolarity;      /*!< Specifies the Pixel clock polarity: Falling or Rising.
                                        This parameter can be a value of @ref DCMI_PIXCK_Polarity */
 
-    uint16_t DCMI_VSPolarity;       /*!< Specifies the Vertical synchronization polarity: High or Low.
+        uint16_t DCMI_VSPolarity;       /*!< Specifies the Vertical synchronization polarity: High or Low.
                                        This parameter can be a value of @ref DCMI_VSYNC_Polarity */
 
-    uint16_t DCMI_HSPolarity;       /*!< Specifies the Horizontal synchronization polarity: High or Low.
+        uint16_t DCMI_HSPolarity;       /*!< Specifies the Horizontal synchronization polarity: High or Low.
                                        This parameter can be a value of @ref DCMI_HSYNC_Polarity */
 
-    uint16_t DCMI_CaptureRate;      /*!< Specifies the frequency of frame capture: All, 1/2 or 1/4.
+        uint16_t DCMI_CaptureRate;      /*!< Specifies the frequency of frame capture: All, 1/2 or 1/4.
                                        This parameter can be a value of @ref DCMI_Capture_Rate */
 
-    uint16_t DCMI_ExtendedDataMode; /*!< Specifies the data width: 8-bit, 10-bit, 12-bit or 14-bit.
+        uint16_t DCMI_ExtendedDataMode; /*!< Specifies the data width: 8-bit, 10-bit, 12-bit or 14-bit.
                                        This parameter can be a value of @ref DCMI_Extended_Data_Mode */
 } DCMI_InitTypeDef;
 
@@ -75,16 +75,16 @@ typedef struct {
   * @brief   DCMI CROP Init structure definition
   */
 typedef struct {
-    uint16_t DCMI_VerticalStartLine;      /*!< Specifies the Vertical start line count from which the image capture
+        uint16_t DCMI_VerticalStartLine;      /*!< Specifies the Vertical start line count from which the image capture
                                              will start. This parameter can be a value between 0x00 and 0x1FFF */
 
-    uint16_t DCMI_HorizontalOffsetCount;  /*!< Specifies the number of pixel clocks to count before starting a capture.
+        uint16_t DCMI_HorizontalOffsetCount;  /*!< Specifies the number of pixel clocks to count before starting a capture.
                                              This parameter can be a value between 0x00 and 0x3FFF */
 
-    uint16_t DCMI_VerticalLineCount;      /*!< Specifies the number of lines to be captured from the starting point.
+        uint16_t DCMI_VerticalLineCount;      /*!< Specifies the number of lines to be captured from the starting point.
                                              This parameter can be a value between 0x00 and 0x3FFF */
 
-    uint16_t DCMI_CaptureCount;           /*!< Specifies the number of pixel clocks to be captured from the starting
+        uint16_t DCMI_CaptureCount;           /*!< Specifies the number of pixel clocks to be captured from the starting
                                              point on the same line.
                                              This parameter can be a value between 0x00 and 0x3FFF */
 } DCMI_CROPInitTypeDef;
@@ -93,10 +93,10 @@ typedef struct {
   * @brief   DCMI Embedded Synchronisation CODE Init structure definition
   */
 typedef struct {
-    uint8_t DCMI_FrameStartCode; /*!< Specifies the code of the frame start delimiter. */
-    uint8_t DCMI_LineStartCode;  /*!< Specifies the code of the line start delimiter. */
-    uint8_t DCMI_LineEndCode;    /*!< Specifies the code of the line end delimiter. */
-    uint8_t DCMI_FrameEndCode;   /*!< Specifies the code of the frame end delimiter. */
+        uint8_t DCMI_FrameStartCode; /*!< Specifies the code of the frame start delimiter. */
+        uint8_t DCMI_LineStartCode;  /*!< Specifies the code of the line start delimiter. */
+        uint8_t DCMI_LineEndCode;    /*!< Specifies the code of the line end delimiter. */
+        uint8_t DCMI_FrameEndCode;   /*!< Specifies the code of the frame end delimiter. */
 } DCMI_CodesInitTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
