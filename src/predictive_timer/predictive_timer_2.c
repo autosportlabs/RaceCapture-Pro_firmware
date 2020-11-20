@@ -173,7 +173,7 @@ static tiny_millis_t adjustPollInterval(tiny_millis_t lapTime)
         }
 
         // Careful here of gotchas with tiny_millis_t and floats.
-        pollInterval = lapTime / (slots / 0.9f);
+        pollInterval = lapTime / (slots * 0.9f);
         DEBUG("Setting poll interval to %ull\n", pollInterval);
 
         return pollInterval;
