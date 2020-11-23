@@ -1,5 +1,7 @@
 = 2.18.2 =
-* OBDII - match PID responses to the configured CAN mapping ID, to account for standard as well as extended mapping responses
+* OBDII: match PID responses to the configured CAN mapping ID, to account for standard as well as extended mapping responses
+* CAN: Set factory default CAN baud rate to 500K for CAN1, and 1MB for remaning CAN bus networks. 
+* Lua: Add function to retrieve GPS X,Y,Z velocity to lua binding
 
 = 2.18.0=
 * IMU: Enable GSumPctMax and GSumMax channels to act as performance indicators within session
