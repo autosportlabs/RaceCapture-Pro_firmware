@@ -151,7 +151,7 @@ char filterPwmLoggingMode(int config)
 }
 #endif
 
-#if GPIO_CHANNELS > 1
+#if GPIO_CHANNELS > 0
 GPIOConfig * getGPIOConfigChannel(int channel)
 {
         GPIOConfig *c = NULL;
@@ -313,7 +313,9 @@ static void resetConnectivityConfig(ConnectivityConfig *cfg)
         resetBluetoothConfig(&cfg->bluetoothConfig);
         resetCellularConfig(&cfg->cellularConfig);
         resetTelemetryConfig(&cfg->telemetryConfig);
+#if WIFI_SUPPORT == 1
         wifi_reset_config(&cfg->wifi);
+#endif
 }
 
 static void reset_logging_config(struct logging_config *lc)
@@ -495,6 +497,8 @@ ADCConfig * getADCConfigChannel(int channel)
         return c;
 }
 
+#endif
+
 unsigned char filterAnalogScalingMode(unsigned char mode)
 {
         switch(mode) {
@@ -507,7 +511,6 @@ unsigned char filterAnalogScalingMode(unsigned char mode)
                 return SCALING_MODE_RAW;
         }
 }
-#endif
 
 unsigned int getHighestSampleRate(LoggerConfig *config)
 {

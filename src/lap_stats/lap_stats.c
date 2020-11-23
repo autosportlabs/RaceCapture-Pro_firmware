@@ -735,6 +735,13 @@ static void debug_print_gps_snapshot(const GpsSnapshot *gps_snapshot)
         pr_trace_int(gps_snapshot->sample.fixMode);
         pr_trace("\r\nDOP:           ");
         pr_trace_float(gps_snapshot->sample.DOP);
+        pr_trace("\r\nVelocity:      (");
+        pr_trace_float(gps_snapshot->sample.velocity_x);
+        pr_trace(", ");
+        pr_trace_float(gps_snapshot->sample.velocity_y);
+        pr_trace(", ");
+        pr_trace_float(gps_snapshot->sample.velocity_z);
+        pr_trace(" )");
         pr_debug("\r\ndeltaFirstFix: ");
         pr_debug_int(gps_snapshot->deltaFirstFix);
         pr_debug("\r\ndeltaLastSam:  ");

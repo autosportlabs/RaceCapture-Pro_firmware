@@ -211,6 +211,7 @@ static void get_imu_status(struct Serial *serial, const bool more)
 }
 #endif
 
+#if WIFI_SUPPORT == 1
 static void get_wifi_status(struct Serial* serial, const bool more)
 {
         const LoggerConfig *lc = getWorkingLoggerConfig();
@@ -239,6 +240,7 @@ static void get_wifi_status(struct Serial* serial, const bool more)
 
         json_objEnd(serial, more);
 }
+#endif
 
 static void get_cellular_status(struct Serial* serial, const bool more)
 {
@@ -323,7 +325,10 @@ int api_getStatus(struct Serial *serial, const jsmntok_t *json)
 #if IMU_CHANNELS > 0
         get_imu_status(serial, true);
 #endif
+
+#if WIFI_SUPPORT == 1
         get_wifi_status(serial, false);
+#endif
 
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
@@ -794,12 +799,15 @@ static const jsmntok_t * setAnalogExtendedField(const jsmntok_t *valueTok, const
 
 static void getAnalogConfigs(size_t channelId, void ** baseCfg, ChannelConfig ** channelCfg)
 {
+#if ANALOG_CHANNELS > 0
         if (channelId < ANALOG_CHANNELS) {
                 ADCConfig *c =&(getWorkingLoggerConfig()->ADCConfigs[channelId]);
                 *baseCfg = c;
                 *channelCfg = &c->cfg;
         }
+#endif
 }
+
 
 int api_setAnalogConfig(struct Serial *serial, const jsmntok_t * json)
 {
@@ -810,6 +818,7 @@ int api_setAnalogConfig(struct Serial *serial, const jsmntok_t * json)
 static void sendAnalogConfig(struct Serial *serial, size_t startIndex, size_t endIndex)
 {
 
+#if ANALOG_CHANNELS > 0
         json_objStart(serial);
         json_objStartString(serial, "analogCfg");
         for (size_t i = startIndex; i <= endIndex; i++) {
@@ -847,6 +856,7 @@ static void sendAnalogConfig(struct Serial *serial, size_t startIndex, size_t en
         }
         json_objEnd(serial, 0);
         json_objEnd(serial, 0);
+#endif
 }
 
 int api_getAnalogConfig(struct Serial *serial, const jsmntok_t * json)
@@ -1350,9 +1360,10 @@ static void gps_set_units(const jsmntok_t *json, GPSConfig *cfg)
                        units_get_label(UNIT_LENGTH_FEET));
 
         /* Speed supports only Kilometers/Hr or Miles/Hr */
-        if (UNIT_SPEED_KILOMETERS_HOUR != units_get_unit(cfg->speed.units))
+        if (UNIT_SPEED_KILOMETERS_HOUR != units_get_unit(cfg->speed.units)) {
                 strcpy(cfg->speed.units,
                        units_get_label(UNIT_SPEED_MILES_HOUR));
+        }
 }
 
 static void gpsConfigTestAndSet(const jsmntok_t *json, ChannelConfig *cfg,
@@ -2102,6 +2113,7 @@ static void get_wifi_ap_cfg(struct Serial *serial,
 
         json_objEnd(serial, more);
 }
+
 
 int api_get_wifi_cfg(struct Serial *serial, const jsmntok_t *json)
 {

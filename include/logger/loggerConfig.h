@@ -630,7 +630,9 @@ uint16_t filterPwmClockFrequency(uint16_t frequency);
 unsigned short filterTimerDivider(unsigned short divider);
 char filterTimerMode(int config);
 
+#if ANALOG_CHANNELS > 0
 ADCConfig * getADCConfigChannel(int channel);
+#endif
 unsigned char filterAnalogScalingMode(unsigned char mode);
 
 GPIOConfig * getGPIOConfigChannel(int channel);

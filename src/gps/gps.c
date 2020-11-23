@@ -146,6 +146,21 @@ float GPS_getDOP()
         return g_gpsSnapshot.sample.DOP;
 }
 
+float GPS_getVelocityX()
+{
+        return g_gpsSnapshot.sample.velocity_x;
+}
+
+float GPS_getVelocityY()
+{
+        return g_gpsSnapshot.sample.velocity_y;
+}
+
+float GPS_getVelocityZ()
+{
+        return g_gpsSnapshot.sample.velocity_z;
+}
+
 int GPS_getSatellitesUsedForPosition()
 {
         return g_gpsSnapshot.sample.satellites;
