@@ -279,7 +279,12 @@ typedef struct _PWMConfig {
 #define DEFAULT_PWM_CONFIG {DEFAULT_PWM_CHANNEL_CONFIG, MODE_PWM_FREQUENCY, MODE_LOGGING_PWM_DUTY, DEFAULT_PWM_DUTY_CYCLE, DEFAULT_PWM_PERIOD}
 
 
-#define DEFAULT_CAN_BAUD_RATE 500000
+/*
+ * First CAN bus defaults to 500K for OEM compatibility; remaining CAN bus
+ * networks are 1MB to match ASL sensor network standard
+ */
+#define DEFAULT_CAN1_BAUD_RATE 500000
+#define DEFAULT_AUX_CAN_BAUD_RATE 1000000
 
 typedef struct _CANConfig {
         unsigned char enabled;
