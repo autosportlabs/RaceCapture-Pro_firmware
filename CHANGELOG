@@ -1,4 +1,5 @@
 = 2.18.2 =
+* Predictive Timer: Fix time jumping at the end of a lap
 * OBDII: match PID responses to the configured CAN mapping ID, to account for standard as well as extended mapping responses
 * CAN: Set factory default CAN baud rate to 500K for CAN1, and 1MB for remaning CAN bus networks. 
 * Lua: Add function to retrieve GPS X,Y,Z velocity to lua binding
