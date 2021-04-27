@@ -67,6 +67,8 @@ CPP_GUARD_BEGIN
 	API_METHOD("setTrackCfg", api_setTrackConfig)			\
 	API_METHOD("setWifiCfg", api_set_wifi_cfg)			\
 	API_METHOD("sysReset", api_systemReset)				\
+	API_METHOD("txCan", api_tx_can) \
+	API_METHOD("rxCan", api_rx_can) \
 
 
 #if VIRTUAL_CHANNEL_SUPPORT == 1
@@ -261,6 +263,9 @@ int api_set_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json);
 #endif
 
+/* CAN bus tx/rx */
+int api_tx_can(struct Serial *serial, const jsmntok_t *json);
+int api_rx_can(struct Serial *serial, const jsmntok_t *json);
 CPP_GUARD_END
 
 #endif /* LOGGERAPI_H_ */

@@ -4,6 +4,7 @@
 * CAN: Set factory default CAN baud rate to 500K for CAN1, and 1MB for remaning CAN bus networks. 
 * Lua: Add function to retrieve GPS X,Y,Z velocity to lua binding
 * Lua: Add hex formatting to string format function
+* API: Add txCan / rxCan for sending / receiving CAN messages directly from the RaceCapture app
 
 = 2.18.0=
 * IMU: Enable GSumPctMax and GSumMax channels to act as performance indicators within session

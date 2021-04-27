@@ -36,6 +36,7 @@
 #include "can_mapping.h"
 #include "can_channels.h"
 #include "CAN_aux_queue.h"
+#include "CAN_aux_filterqueue.h"
 #include "CAN_dispatcher.h"
 
 #define _LOG_PFX                        "[CAN_Task] "
@@ -52,6 +53,7 @@ static void CAN_task(void *parameters)
 
 #if CAN_AUX_QUEUE_SUPPORT == 1
         CAN_aux_queue_init();
+        CAN_aux_filterqueue_init();
 #endif
         while(1) {
                 uint16_t enabled_mapping_count = 0;
@@ -84,7 +86,8 @@ static void CAN_task(void *parameters)
                                 can_dispatch_message(&msg);
 
 #if CAN_AUX_QUEUE_SUPPORT == 1
-                                CAN_aux_queue_put_msg(&msg, 0);
+                                CAN_aux_queue_put_msg(&msg);
+                                CAN_aux_filterqueue_put_msg(&msg);
 #endif
                         }
                         if (oc->enabled)
