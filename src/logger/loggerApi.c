@@ -2364,6 +2364,7 @@ int api_rx_can(struct Serial *serial, const jsmntok_t *json)
                         json_arrayElementInt(serial, can_msg.data[i], i < can_msg.dataLength - 1);
                 }
                 json_arrayEnd(serial, false);
+                json_objEnd(serial, false);
                 count++;
         }
         json_arrayEnd(serial, false);
