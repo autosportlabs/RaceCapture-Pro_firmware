@@ -26,6 +26,7 @@
 #include <stddef.h>
 
 #define CAN_AUX_FILTERQUEUE_LENGTH 10
+#define CAN_AUX_MAX_FILTERQUEUE_POLL 100
 
 /**
  * Initializes the CAN aux message queues

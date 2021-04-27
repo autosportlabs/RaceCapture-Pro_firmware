@@ -2286,6 +2286,7 @@ int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json)
         set_virtual_channel_value(channel_id, channel_value);
         return API_SUCCESS;
 }
+#endif
 
 int api_tx_can(struct Serial *serial, const jsmntok_t *json)
 /**
@@ -2352,7 +2353,7 @@ int api_rx_can(struct Serial *serial, const jsmntok_t *json)
 
         CAN_msg can_msg;
         size_t count = 0;
-        while (CAN_aux_filterqueue_get_msg(&can_msg, 0) && count < 100) {
+        while (CAN_aux_filterqueue_get_msg(&can_msg, 0) && count < CAN_AUX_MAX_FILTERQUEUE_POLL) {
                 if (count > 0)
                         serial_write_c(serial, ',');
                 json_objStart(serial);
@@ -2371,4 +2372,3 @@ int api_rx_can(struct Serial *serial, const jsmntok_t *json)
 
         return API_SUCCESS_NO_RETURN;
 }
-#endif

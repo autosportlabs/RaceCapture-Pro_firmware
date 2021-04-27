@@ -53,8 +53,8 @@ static void CAN_task(void *parameters)
 
 #if CAN_AUX_QUEUE_SUPPORT == 1
         CAN_aux_queue_init();
-        CAN_aux_filterqueue_init();
 #endif
+        CAN_aux_filterqueue_init();
         while(1) {
                 uint16_t enabled_mapping_count = 0;
                 uint16_t enabled_obd2_pids_count = 0;
@@ -87,8 +87,8 @@ static void CAN_task(void *parameters)
 
 #if CAN_AUX_QUEUE_SUPPORT == 1
                                 CAN_aux_queue_put_msg(&msg);
-                                CAN_aux_filterqueue_put_msg(&msg);
 #endif
+                                CAN_aux_filterqueue_put_msg(&msg);
                         }
                         if (oc->enabled)
                                 sequence_next_obd2_query(oc, enabled_obd2_pids_count);

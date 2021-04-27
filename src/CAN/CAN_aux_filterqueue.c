@@ -18,7 +18,7 @@
  * have received a copy of the GNU General Public License along with
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "CAN_aux_queue.h"
+#include "CAN_aux_filterqueue.h"
 #include "capabilities.h"
 #include "printk.h"
 #include "taskUtil.h"
