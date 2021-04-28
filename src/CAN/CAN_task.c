@@ -36,6 +36,7 @@
 #include "can_mapping.h"
 #include "can_channels.h"
 #include "CAN_aux_queue.h"
+#include "CAN_aux_filterqueue.h"
 #include "CAN_dispatcher.h"
 
 #define _LOG_PFX                        "[CAN_Task] "
@@ -53,6 +54,7 @@ static void CAN_task(void *parameters)
 #if CAN_AUX_QUEUE_SUPPORT == 1
         CAN_aux_queue_init();
 #endif
+        CAN_aux_filterqueue_init();
         while(1) {
                 uint16_t enabled_mapping_count = 0;
                 uint16_t enabled_obd2_pids_count = 0;
@@ -84,8 +86,9 @@ static void CAN_task(void *parameters)
                                 can_dispatch_message(&msg);
 
 #if CAN_AUX_QUEUE_SUPPORT == 1
-                                CAN_aux_queue_put_msg(&msg, 0);
+                                CAN_aux_queue_put_msg(&msg);
 #endif
+                                CAN_aux_filterqueue_put_msg(&msg);
                         }
                         if (oc->enabled)
                                 sequence_next_obd2_query(oc, enabled_obd2_pids_count);

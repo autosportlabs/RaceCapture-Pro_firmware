@@ -24,8 +24,7 @@
 #include "taskUtil.h"
 
 
-#define _LOG_PFX "[CAN AUX] "
-#define CAN_AUX_QUEUE_LENGTH 5
+#define _LOG_PFX "[CAN AUX QUEUE] "
 static xQueueHandle can_aux_queue[CAN_CHANNELS] = {0};
 
 bool CAN_aux_queue_init(void)
@@ -40,16 +39,15 @@ bool CAN_aux_queue_init(void)
         return true;
 }
 
-bool CAN_aux_queue_put_msg(CAN_msg * can_msg, size_t timeout_ms)
+bool CAN_aux_queue_put_msg(CAN_msg * can_msg)
 {
         uint8_t can_bus = can_msg->can_bus;
         if (can_bus >= CAN_CHANNELS)
                 return false;
 
-        if (pdTRUE == xQueueSend(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)))
+        /* add to queue with no delay */
+        if (pdTRUE == xQueueSend(can_aux_queue[can_bus], can_msg, 0))
                 return true;
-
-        pr_debug("Failed to add CAN message to Auxiliary Queue\r\n");
         return false;
 }
 
@@ -57,6 +55,5 @@ bool CAN_aux_queue_get_msg(uint8_t can_bus, CAN_msg * can_msg, size_t timeout_ms
 {
         if (pdTRUE == xQueueReceive(can_aux_queue[can_bus], can_msg, msToTicks(timeout_ms)))
                 return true;
-
         return false;
 }

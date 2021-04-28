@@ -19,32 +19,42 @@
  * this code. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDE_CAN_CAN_AUX_QUEUE_H_
-#define INCLUDE_CAN_CAN_AUX_QUEUE_H_
+#ifndef INCLUDE_CAN_CAN_AUX_FILTERQUEUE_H_
+#define INCLUDE_CAN_CAN_AUX_FILTERQUEUE_H_
+
 #include "CAN.h"
 #include <stddef.h>
 
-#define CAN_AUX_QUEUE_LENGTH 5
+#define CAN_AUX_FILTERQUEUE_LENGTH 10
+#define CAN_AUX_MAX_FILTERQUEUE_POLL 100
 
 /**
  * Initializes the CAN aux message queues
  */
-bool CAN_aux_queue_init(void);
+bool CAN_aux_filterqueue_init(void);
 
 /**
- * Puts a CAN message into the Auxiliary CAN message queue
+ * Configure the CAN aux filterqueue
+ * @param the can bus to filter
+ * @param the low ID range, inclusive
+ * @param the high ID range, inclusive
+ */
+void CAN_aux_filterqueue_configure(uint8_t can_bus, uint32_t low_id_range, uint32_t high_id_range);
+
+/**
+ * Puts a CAN message into the Auxiliary CAN message filterqueue
  * @param msg the CAN message to put
  * @return true if the message was successfully added
  */
-bool CAN_aux_queue_put_msg(CAN_msg * can_msg);
+bool CAN_aux_filterqueue_put_msg(CAN_msg * can_msg);
 
 /**
- * Gets a CAN message from the Auxiliary CAN message queue
+ * Gets a CAN message from the Auxiliary CAN message filterqueue
  * @param can_bus the CAN bus to retrieve from
  * @param msg the CAN message to populate
  * @param timeout to wait in ms
  * @return true if the message was successfully retrieved
  */
-bool CAN_aux_queue_get_msg(uint8_t can_bus, CAN_msg * can_msg, size_t timeout_ms);
+bool CAN_aux_filterqueue_get_msg(CAN_msg * can_msg, size_t timeout_ms);
 
 #endif /* INCLUDE_CAN_CAN_AUX_QUEUE_H_ */

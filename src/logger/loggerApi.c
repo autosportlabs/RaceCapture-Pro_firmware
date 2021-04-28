@@ -26,6 +26,7 @@
 #include "capabilities.h"
 #include "cellular.h"
 #include "CAN.h"
+#include "CAN_aux_filterqueue.h"
 #include "cellular_api_status_keys.h"
 #include "channel_config.h"
 #include "constants.h"
@@ -2277,7 +2278,7 @@ int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json)
         }
 
         if (channel_id == INVALID_VIRTUAL_CHANNEL) {
-                pr_error_str_msg("Could not make virtual channel ", channel_name);
+                pr_error_str_msg(_LOG_PFX "Could not make virtual channel ", channel_name);
                 //could not make a virutal channel
                 return API_ERROR_SEVERE;
         }
@@ -2286,3 +2287,89 @@ int api_set_virtual_channel_value(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS;
 }
 #endif
+
+int api_tx_can(struct Serial *serial, const jsmntok_t *json)
+/**
+ * Transmit a CAN message
+ *  {"txCan": {"id": 12345, "bus": 0, "ext": true, "timeout": 100, "data":[1,2,3,4,5,6,7,8]}}
+ **/
+{
+        uint32_t id;
+        uint8_t bus;
+        bool ext;
+
+        const jsmntok_t *data_tok = jsmn_find_node(json, "data");
+        data_tok = jsmn_find_node_type(data_tok, JSMN_ARRAY);
+
+        if(! (jsmn_exists_set_val_uint32(json, "id", &id) && jsmn_exists_set_val_uint8(json, "bus", &bus, NULL) && jsmn_exists_set_val_bool(json, "ext", &ext) && data_tok)) {
+                pr_error(_LOG_PFX "txCan failed - missing parameters\r\n");
+                return API_ERROR_SEVERE;
+        }
+
+        /* set an optional timeout */
+        uint32_t timeout = 0;
+        jsmn_exists_set_val_uint32(json,"timeout", &timeout);
+
+        CAN_msg msg;
+        msg.addressValue = id;
+        msg.isExtendedAddress = ext;
+
+        /* rail data_length to max length for CAN bus */
+        msg.dataLength = MIN(CAN_MSG_SIZE, data_tok->size);
+        for (size_t i = 0; i < msg.dataLength; i++) {
+                data_tok++;
+                jsmn_trimData(data_tok);
+                msg.data[i] = atoi(data_tok->data);
+        }
+        pr_info_int_msg("sizeof can msg ", sizeof(CAN_msg));
+        return (CAN_tx_msg(bus, &msg, timeout) ? API_SUCCESS : API_ERROR_UNSPECIFIED);
+}
+
+int api_rx_can(struct Serial *serial, const jsmntok_t *json)
+/**
+ * Receive CAN messages, or configure filter for receving
+ * Configure filter: {"rxCan": {"bus": 1, "lowid": 41474, "highid": 41574}}
+ * Poll available messages: {"rxCan": null}
+ * Response: {"rxCan":{"msg":[{"bus":1,"id":41474,"data":[28,12,52,85,85,1,0,1]]}}
+ **/
+{
+        uint8_t can_bus = 0;
+        uint32_t low_id_range = 0;
+        uint32_t high_id_range= 0;
+
+        jsmn_exists_set_val_uint8(json, "bus", &can_bus, NULL);
+        jsmn_exists_set_val_uint32(json, "lowid", &low_id_range);
+        jsmn_exists_set_val_uint32(json, "highid", &high_id_range);
+
+        /* perform configuration and exit */
+        if (low_id_range && high_id_range) {
+                CAN_aux_filterqueue_configure(can_bus, low_id_range, high_id_range);
+                return API_SUCCESS;
+        }
+
+        json_objStart(serial);
+        json_objStartString(serial, "rxCan");
+        json_arrayStart(serial, "msg");
+
+        CAN_msg can_msg;
+        size_t count = 0;
+        while (CAN_aux_filterqueue_get_msg(&can_msg, 0) && count < CAN_AUX_MAX_FILTERQUEUE_POLL) {
+                if (count > 0)
+                        serial_write_c(serial, ',');
+                json_objStart(serial);
+                json_uint(serial, "bus", can_msg.can_bus, true);
+                json_uint(serial, "id", can_msg.addressValue, true);
+                json_arrayStart(serial, "data");
+                for (size_t i = 0; i < can_msg.dataLength; i++) {
+                        json_arrayElementInt(serial, can_msg.data[i], i < can_msg.dataLength - 1);
+                }
+                json_arrayEnd(serial, false);
+                json_objEnd(serial, false);
+                count++;
+        }
+        json_arrayEnd(serial, false);
+        json_objEnd(serial, false);
+        json_objEnd(serial, false);
+
+        return API_SUCCESS_NO_RETURN;
+}

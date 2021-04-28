@@ -256,6 +256,7 @@ mock_gps_device.c \
 mock_serial.c \
 mock_uart.c \
 mock_usb_comm.c \
+mock_CAN_aux_filterqueue.c \
 
 SIM_C_SRC = \
 $(RCP_SRC)/devices/cellular_api_status_keys.c \
