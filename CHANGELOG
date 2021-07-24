@@ -1,3 +1,6 @@
+= 2.18.4 =
+* Enable pit-to-car alert message CAN bus broadcast for app-based telemetry
+
 = 2.18.2 =
 * Predictive Timer: Fix time jumping at the end of a lap
 * OBDII: match PID responses to the configured CAN mapping ID, to account for standard as well as extended mapping responses

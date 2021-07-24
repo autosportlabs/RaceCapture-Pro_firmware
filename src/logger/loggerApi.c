@@ -377,15 +377,20 @@ int api_alertmessage(struct Serial *serial, const jsmntok_t *json)
         struct api_event event;
         event.source=serial;
         event.type = ApiEventType_Alertmessage;
+        bool forward_message = true;
         jsmn_exists_set_val_string(json, "message", event.data.alertmsg.message, MAX_ALERTMESSAGE_LENGTH, true);
         jsmn_exists_set_val_int(json, "id", &event.data.alertmsg.id);
         jsmn_exists_set_val_int(json, "priority", &event.data.alertmsg.priority);
-
-        /* Broadcast to other connections */
-        api_event_process_callbacks(&event);
+        jsmn_exists_set_val_bool(json, "fwd", &forward_message);
 
         /* Broadcast CAN message for alertmessage */
         alertmsg_can_send_message(&event.data.alertmsg);
+
+        if (forward_message) {
+                /* Broadcast to other connections */
+                api_event_process_callbacks(&event);
+        }
+
         return API_SUCCESS_NO_RETURN;
 }
 

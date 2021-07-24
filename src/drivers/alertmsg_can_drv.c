@@ -57,7 +57,7 @@ void alertmsg_can_send_message(const struct alertmessage *alertmsg)
         }
         msg.addressValue = address;
         if (!CAN_tx_msg(ALERTMSG_CAN_BUS, &msg, DEFAULT_CAN_TIMEOUT)) {
-                pr_warning_str_msg(_LOG_PFX "Failed sending CAN alertmsg segment 1 ", message_text);
+                pr_warning_str_msg(_LOG_PFX "Failed sending CAN alertmsg segment 1: ", message_text);
         }
 
         /* Send the second 1/2 of the alert message */
@@ -66,6 +66,6 @@ void alertmsg_can_send_message(const struct alertmessage *alertmsg)
         }
         msg.addressValue = address + 1;
         if (!CAN_tx_msg(ALERTMSG_CAN_BUS, &msg, DEFAULT_CAN_TIMEOUT)) {
-                pr_warning_str_msg(_LOG_PFX "Failed sending CAN alertmsg segment 2", message_text);
+                pr_warning_str_msg(_LOG_PFX "Failed sending CAN alertmsg segment 2: ", message_text);
         }
 }
