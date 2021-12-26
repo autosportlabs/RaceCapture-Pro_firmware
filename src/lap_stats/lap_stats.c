@@ -793,7 +793,7 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
 
         /**
          * ============================================
-         * Set up interpolation for GPS Point
+         * Set up interpolation for GPS Points
          * ============================================
          */
         float lat1 = gps_snapshot->previousPoint.latitude;
@@ -803,7 +803,6 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
 
         /**
          * Evenly split up difference in latitiude into intervals
-         * longitude is linearly interpolated based on changing latitude
          */
         float lat_interval = fabsf(lat2 - lat1) / (float)interval_count;
         if (lat1 > lat2)
@@ -812,6 +811,17 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
 
         /* Set the starting interpolated latitude */
         float interp_lat = lat1;
+
+        /**
+         * Evenly split up difference in longitude into intervals
+         */
+        float lon_interval = fabsf(lon2 - lon1) / (float)interval_count;
+        if (lon1 > lon2)
+                /* Account for reverse direction */
+                lon_interval = -lon_interval;
+
+        /* Set the starting interpolated longitude */
+        float interp_lon = lon1;
 
         /**
          * ============================================
@@ -846,13 +856,11 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
                 pr_debug_float_msg("Interval count: ", interval_count);
                 pr_debug_float_msg("Speed interval: ", speed_interval);
                 pr_debug_float_msg("Lat. interval:  ", lat_interval);
+                pr_debug_float_msg("Lon. interval:  ", lon_interval);
                 pr_debug_int_msg  ("Time interval:  ", time_interval);
         }
 
         for (size_t i = 0; i < interval_count; i++) {
-                /* Linearly interpolate longitude from latitude */
-                float interp_lon = lat2 == lat1 ? lon2 : lon1 + (interp_lat - lat1) * ((lon2 - lon1) / (lat2 - lat1));
-
                 /* Update current GPS snapshot with interpolated values */
                 gps_snapshot->sample.point.latitude = interp_lat;
                 gps_snapshot->sample.point.longitude = interp_lon;
@@ -870,6 +878,7 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
                 gps_snapshot->previousPoint = gps_snapshot->sample.point;
 
                 interp_lat += lat_interval;
+                interp_lon += lon_interval;
                 interp_time += time_interval;
                 interp_delta_ff += time_interval;
 
