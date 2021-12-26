@@ -796,21 +796,17 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
          * Set up interpolation for GPS Points
          * ============================================
          */
-        float lat1 = gps_snapshot->previousPoint.latitude;
-        float lon1 = gps_snapshot->previousPoint.longitude;
-        float lat2 = gps_snapshot->sample.point.latitude;
-        float lon2 = gps_snapshot->sample.point.longitude;
 
-        /**
-         * Evenly split up difference in latitiude into intervals
-         */
+        /* Evenly split up difference in latitiude into intervals */
+        float lat1 = gps_snapshot->previousPoint.latitude;
+        float lat2 = gps_snapshot->sample.point.latitude;
         float lat_interval = (lat2 - lat1) / (float)interval_count;
         /* Set the starting interpolated latitude */
         float interp_lat = lat1;
 
-        /**
-         * Evenly split up difference in longitude into intervals
-         */
+        /* Evenly split up difference in longitude into intervals */
+        float lon1 = gps_snapshot->previousPoint.longitude;
+        float lon2 = gps_snapshot->sample.point.longitude;
         float lon_interval = (lon2 - lon1) / (float)interval_count;
         /* Set the starting interpolated longitude */
         float interp_lon = lon1;
@@ -820,10 +816,9 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
          * Set up interpolation for Speed
          * ============================================
          */
+        /* evenly split up changes in speed based on the interval */
         float speed1 = gps_snapshot->previous_speed;
         float speed2 = gps_snapshot->sample.speed;
-
-        /* evenly split up changes in speed based on the interval */
         float speed_interval = (speed2 - speed1)/ (float)interval_count;
         /* Set the starting speed */
         float interp_speed = speed1;
