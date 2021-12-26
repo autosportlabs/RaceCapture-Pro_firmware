@@ -804,22 +804,14 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
         /**
          * Evenly split up difference in latitiude into intervals
          */
-        float lat_interval = fabsf(lat2 - lat1) / (float)interval_count;
-        if (lat1 > lat2)
-                /* Account for reverse direction */
-                lat_interval = -lat_interval;
-
+        float lat_interval = (lat2 - lat1) / (float)interval_count;
         /* Set the starting interpolated latitude */
         float interp_lat = lat1;
 
         /**
          * Evenly split up difference in longitude into intervals
          */
-        float lon_interval = fabsf(lon2 - lon1) / (float)interval_count;
-        if (lon1 > lon2)
-                /* Account for reverse direction */
-                lon_interval = -lon_interval;
-
+        float lon_interval = (lon2 - lon1) / (float)interval_count;
         /* Set the starting interpolated longitude */
         float interp_lon = lon1;
 
@@ -832,11 +824,7 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
         float speed2 = gps_snapshot->sample.speed;
 
         /* evenly split up changes in speed based on the interval */
-        float speed_interval = fabsf(speed2 - speed1)/ (float)interval_count;
-        if (speed1 > speed2)
-                /* Account for reverse direction */
-                speed_interval = -speed_interval;
-
+        float speed_interval = (speed2 - speed1)/ (float)interval_count;
         /* Set the starting speed */
         float interp_speed = speed1;
 
