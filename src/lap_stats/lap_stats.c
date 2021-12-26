@@ -851,7 +851,7 @@ void lapstats_processUpdate(GpsSnapshot *gps_snapshot)
 
         for (size_t i = 0; i < interval_count; i++) {
                 /* Linearly interpolate longitude from latitude */
-                float interp_lon = lon1 + (interp_lat - lat1) * ((lon2 - lon1) / (lat2 - lat1));
+                float interp_lon = lat2 == lat1 ? lon2 : lon1 + (interp_lat - lat1) * ((lon2 - lon1) / (lat2 - lat1));
 
                 /* Update current GPS snapshot with interpolated values */
                 gps_snapshot->sample.point.latitude = interp_lat;
