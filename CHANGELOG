@@ -1,3 +1,6 @@
+= 2.18.5 =
+* Fix edge case where firmware may crash if GPS data does not change while interpolating points
+
 = 2.18.4 =
 * Enable pit-to-car alert message CAN bus broadcast for app-based telemetry
 
