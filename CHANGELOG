@@ -1,4 +1,4 @@
-= 2.18.5 =
+= 2.18.6 =
 * Fix edge case where firmware may crash if GPS data does not change while interpolating points
 
 = 2.18.4 =
