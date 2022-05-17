@@ -20,9 +20,10 @@
  */
 
 
-#include <stdint.h>
-#include "byteswap.h"
-#include "panic.h"
+ #include <stdint.h>
+ #include <math.h>
+ #include "byteswap.h"
+ #include "panic.h"
 
 uint16_t swap_uint16( uint16_t val )
 {
@@ -61,11 +62,45 @@ uint64_t swap_uint64(uint64_t val)
 
 uint64_t swap_uint_length(uint64_t val, size_t bit_length)
 {
-        if (bit_length <= 8) return val;
-        if (bit_length <= 16) return swap_uint16(val);
-        if (bit_length <= 24) return swap_uint24(val);
-        if (bit_length <= 32) return swap_uint32(val);
-        if (bit_length <= 64) return swap_uint64(val);
-        panic(PANIC_CAUSE_UNREACHABLE);
-        return 0; /* to make compiler happy */
+        uint64_t step;
+        uint8_t step_count=0;
+        size_t bit_length_orgin;
+        bit_length = bit_length - (bit_length%8);
+        bit_length_orgin=bit_length;
+
+        for(int i=63; i>0; i--)
+        {
+                step=pow(2, i);
+                if((val&step)==0)
+                        step_count++;
+                else
+                        break;
+        }
+
+        bit_length=64-step_count;
+
+        while(1)
+        {
+                if(bit_length<bit_length_orgin)
+                {
+                        bit_length++;
+                }
+                else
+                {
+                        break;
+                }
+        }
+
+        if (bit_length <= 8) val = val;
+        else if (bit_length <= 16) val = swap_uint16(val);
+        else if (bit_length <= 24) val = swap_uint24(val);
+        else if (bit_length <= 32) val = swap_uint32(val);
+        else if (bit_length <= 64) val = swap_uint64(val);
+        else
+        {
+                panic(PANIC_CAUSE_UNREACHABLE);
+                return 0; /* to make compiler happy */
+        }
+
+        return val; /* to make compiler happy */
 }
