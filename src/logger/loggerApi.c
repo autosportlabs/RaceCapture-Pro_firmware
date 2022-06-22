@@ -1519,7 +1519,7 @@ static void set_can_mapping(const jsmntok_t *json_mapping, CANMapping *mapping)
         jsmn_exists_set_val_uint8(json_mapping, "len", &mapping->length, NULL);
         /* rail to maximum CAN mapping length */
         mapping->length = MIN(mapping->length, MAX_CAN_MAPPING_LENGTH_BYTES * (mapping->bit_mode ? 8 : 1));
-        
+
         jsmn_exists_set_val_uint8(json_mapping, "bus", &mapping->can_channel, filter_can_bus_channel);
 
         jsmn_exists_set_val_int(json_mapping, "id", &mapping->can_id);
