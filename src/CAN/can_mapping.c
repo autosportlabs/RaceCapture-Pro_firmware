@@ -22,13 +22,14 @@
 #include "byteswap.h"
 #include "units_conversion.h"
 #include "panic.h"
+#include <stdio.h>
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        raw_data = swap_uint64(raw_data);
+     //   raw_data = swap_uint64(raw_data);
 #endif
-
+        printf("raw data %lu\r\n", raw_data);
         uint8_t offset = mapping->offset;
         uint8_t length = mapping->length;
         if (! mapping->bit_mode) {
@@ -37,27 +38,43 @@ float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
         }
         /* create the bitmask of the appropriate length */
         uint32_t bitmask = (1UL << length) - 1;
+        printf("bitmask %u\r\n", bitmask);
 
-        /* extract the raw value from the 64 bit representation of the CAN message */
-        uint32_t raw_value = (raw_data >> (64 - offset - length)) & bitmask;
+        uint64_t raw_value = raw_data;
 
         /* normalize endian */
-        if (!mapping->big_endian) {
+        if (mapping->big_endian) {
                 raw_value = swap_uint_length(raw_value, length);
+                printf("raw data after swap %d %lu\r\n", length, raw_value);
         }
+
+        raw_value = (raw_value >> (offset));
+        printf("after offset %lu\r\n", raw_value);
+
+
+        raw_value = raw_value & bitmask;
+        printf("After bitmask %lu\r\n", raw_value);
+
+
 
         /* convert type */
         switch (mapping->type) {
         case CANMappingType_unsigned:
                 return (float)raw_value;
         case CANMappingType_signed:
-                if (length <= 8) {
-                        return (float)*((int8_t*)&raw_value);
+                if (length == 8) {
+                    return (float)*((int8_t*)&raw_value);
                 }
-                if (length <= 16) {
-                        return (float)*((int16_t*)&raw_value);
+                else if (length == 16) {
+                    return (float)*((int16_t*)&raw_value);
                 }
-                return (float)*((int32_t*)&raw_value);
+                else if (length == 32) {
+                    return (float)*((int32_t*)&raw_value);
+                }
+                else{
+                    int32_t half = 1 << (length - 1);
+                    return raw_value < half ? (float)raw_value : ((float)(raw_value & (half-1))-(float)(half));
+                }
         case CANMappingType_IEEE754:
                 return *((float*)&raw_value);
         case CANMappingType_sign_magnitude:
