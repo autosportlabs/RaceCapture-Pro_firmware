@@ -77,7 +77,7 @@ void CANMappingTest::extract_test_bit_mode(void)
 {
         srand(time(NULL));
 
-        for (size_t bitpattern = 0; bitpattern <= 0; bitpattern++) {
+        for (size_t bitpattern = 0; bitpattern <= 1; bitpattern++) {
                 for (size_t endian = 0; endian <= 1; endian++) {
                         for (uint8_t length = 1; length <= 32; length++ ) {
 
