@@ -27,7 +27,7 @@
 #include "byteswap.h"
 #include <stdlib.h>
 
-
+// Uncomment the below to see the output of the can mapping test
 // #define CAN_MAPPING_TEST_DEBUG
 
 
@@ -77,7 +77,6 @@ void CANMappingTest::formula_test(void)
 
 void CANMappingTest::extract_test_bit_mode(void)
 {
-        return;
         srand(time(NULL));
 
         for (size_t bitpattern = 0; bitpattern <= 1; bitpattern++) {
@@ -92,9 +91,7 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         /* test with bit pattern of 101010... */
                                         test_value = 0x5555555555555555 & (((uint64_t)1 << length) - 1);
                                 }
-
-                                //for (uint8_t offset = 0; offset < (CAN_MSG_SIZE * 8) - length + 1; offset++) {
-                                for (uint8_t offset = 0; offset < 8; offset++) {
+                                for (uint8_t offset = 0; offset < (CAN_MSG_SIZE * 8) - length + 1; offset++) {
                                         CAN_msg msg;
                                         CANMapping mapping;
                                         memset(&mapping, 0, sizeof(mapping));
@@ -113,18 +110,39 @@ void CANMappingTest::extract_test_bit_mode(void)
                                                 msg.data64 = offset_test_value;
                                         }
                                         else {
+                                                // Since x86 computers (build machines) are little endian platforms,
+                                                // bit shifting does not work as expected if we first swap endian.
+                                                // so we need to construct the 64 bit payload manually, by
+                                                // first creating a binary string, then encoding into the uint64.
+                                                //
+                                                // To see this effect, enable CAN_MAPPING_TEST_DEBUG
+                                                // at the top of this file.
                                                 offset_test_value = swap_uint_length(offset_test_value, length);
                                                 char bits[65];
                                                 memset(bits, 0, sizeof(bits));
+
+                                                // write out the zeros before the data
                                                 for (int i = 0; i < offset; i++) {
                                                         bits[i] = '0';
                                                 }
+
+                                                // write out the bit pattern of the test value
+                                                int test_value_bit = length - 1;
                                                 for (int i = offset; i < offset + length; i++) {
-                                                        bits[i] = '1';
+                                                        int temp_test_value = test_value;
+                                                        temp_test_value >>= test_value_bit;
+                                                        temp_test_value &= 1;
+                                                        bits[i] = temp_test_value ? '1' : '0';
+                                                        test_value_bit--;
                                                 }
+
+                                                // write out the remaining zeros after the test value
                                                 for (int i = offset + length; i < 64; i++){
                                                         bits[i] = '0';
                                                 }
+
+                                                // now turn the entire string encoded binary value back into a number
+                                                // and set it into the CAN message.
                                                 uint64_t the_bitstream = 0;
                                                 std::string bit_string(bits);
 
@@ -144,7 +162,7 @@ void CANMappingTest::extract_test_bit_mode(void)
                                         /* prepare the comparison value */
                                         uint64_t compare_value = test_value;
 #ifdef CAN_MAPPING_TEST_DEBUG
-                                        printf("bitmode test: endian=%u / test_value=%lu / offset=%d / length=%d / return = %f\r\n" ,
+                                        printf("bitmode test: endian=%d / test_value=%lu / offset=%d / length=%d / return = %f\r\n" ,
                                                mapping.big_endian, compare_value, offset, length, value);
                                         printf("CAN data: ");
                                         for (size_t di = 0; di < CAN_MSG_SIZE; di++) {
@@ -206,7 +224,7 @@ void CANMappingTest::extract_test(void)
                                 float value = canmapping_extract_value(msg.data64, &mapping);
 
 #ifdef CAN_MAPPING_TEST_DEBUG
-                                printf("endian=%d / test value=%d / offset=%d / length=%d / return=%f\r\n" ,
+                                printf("endian=%ld / test value=%d / offset=%d / length=%d / return=%f\r\n" ,
                                        endian, test_value, offset, length, value);
                                 printf("CAN data: ");
                                 for (size_t di = 0; di < CAN_MSG_SIZE; di++) {
