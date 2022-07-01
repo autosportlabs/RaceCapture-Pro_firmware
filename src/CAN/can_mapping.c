@@ -22,40 +22,30 @@
 #include "byteswap.h"
 #include "units_conversion.h"
 #include "panic.h"
-#include <stdio.h>
 
 float canmapping_extract_value(uint64_t raw_data, const CANMapping *mapping)
 {
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-     //   raw_data = swap_uint64(raw_data);
-#endif
-        printf("raw data %lu\r\n", raw_data);
         uint8_t offset = mapping->offset;
         uint8_t length = mapping->length;
+
         if (! mapping->bit_mode) {
                 length *= 8;
                 offset *= 8;
         }
         /* create the bitmask of the appropriate length */
         uint32_t bitmask = (1UL << length) - 1;
-        printf("bitmask %u\r\n", bitmask);
 
         uint64_t raw_value = raw_data;
 
         /* normalize endian */
         if (mapping->big_endian) {
-                raw_value = swap_uint_length(raw_value, length);
-                printf("raw data after swap %d %lu\r\n", length, raw_value);
+                raw_value = swap_uint64(raw_value);
+                raw_value = (raw_value >> (64 - offset - length));
         }
-
-        raw_value = (raw_value >> (offset));
-        printf("after offset %lu\r\n", raw_value);
-
-
+        else {
+                raw_value = (raw_value >> (offset));
+        }
         raw_value = raw_value & bitmask;
-        printf("After bitmask %lu\r\n", raw_value);
-
-
 
         /* convert type */
         switch (mapping->type) {
