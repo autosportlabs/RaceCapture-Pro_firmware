@@ -92,11 +92,18 @@ void configChanged()
 void startLogging()
 {
         g_loggingShouldRun = 1;
+
+#if SDCARD_SUPPORT == 0
+        logging_set_status(LOGGING_STATUS_WRITING);
+#endif
 }
 
 void stopLogging()
 {
         g_loggingShouldRun = 0;
+#if SDCARD_SUPPORT == 0
+        logging_set_status(LOGGING_STATUS_IDLE);
+#endif
 }
 
 static void logging_started()
@@ -187,9 +194,7 @@ void loggerTaskEx(void *params)
         camera_control_init(&loggerConfig->camera_control_cfg);
 #endif
 
-#if SDCARD_SUPPORT
         auto_logger_init(&loggerConfig->auto_logger_cfg);
-#endif
 
         while (1) {
                 xSemaphoreTake(onTick, portMAX_DELAY);

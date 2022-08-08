@@ -91,6 +91,8 @@ bool api_event_destroy_callback(const int handle)
 
 void process_api_event(const struct api_event * api_event, struct Serial * serial)
 {
+        /* Dispatch API messages to connected devices */
+
         /* Only try to send if our Serial device is connected */
         if (!serial_is_connected(serial))
                 return;
@@ -117,6 +119,11 @@ void process_api_event(const struct api_event * api_event, struct Serial * seria
                 api_send_button_state(serial, &api_event->data.butt_state);
                 put_crlf(serial);
                 break;
+        case ApiEventType_LoggerStatus:
+                api_send_logging_status(serial);
+                put_crlf(serial);
+                break;
+
         default:
                 pr_warning_int_msg(LOG_PFX "Unknown ApiEvent type ", api_event->type);
                 break;

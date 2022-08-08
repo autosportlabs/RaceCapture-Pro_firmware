@@ -275,18 +275,26 @@ static void get_bt_status(struct Serial* serial, const bool more)
 #if BLUETOOTH_SUPPORT
         json_objStartString(serial, "bt");
         json_int(serial, "init", (int)bt_get_status(), 0);
-        json_objEnd(serial, 1);
+        json_objEnd(serial, more);
 #endif
 }
 
 static void get_logging_status(struct Serial* serial, const bool more)
 {
-#if SDCARD_SUPPORT
         json_objStartString(serial, "logging");
         json_int(serial, "status", (int)logging_get_status(), 1);
         json_int(serial, "dur", logging_active_time(), 0);
-        json_objEnd(serial, 1);
-#endif
+        json_objEnd(serial, more);
+}
+
+int api_send_logging_status(struct Serial* serial)
+{
+        json_objStart(serial);
+        json_objStartString(serial, "status");
+        get_logging_status(serial, false);
+        json_objEnd(serial, false);
+        json_objEnd(serial, false);
+        return API_SUCCESS_NO_RETURN;
 }
 
 int api_getStatus(struct Serial *serial, const jsmntok_t *json)
@@ -2193,7 +2201,6 @@ int api_set_active_track(struct Serial *serial, const jsmntok_t *json)
         return API_SUCCESS;
 }
 
-#if SDCARD_SUPPORT
 int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
 {
         struct auto_logger_config* cfg =
@@ -2214,7 +2221,6 @@ int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json)
         return auto_logger_set_config(cfg, json) ?
                API_SUCCESS : API_ERROR_UNSPECIFIED;
 }
-#endif
 
 #if CAMERA_CONTROL
 int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json)

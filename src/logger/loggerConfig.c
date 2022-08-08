@@ -151,7 +151,7 @@ char filterPwmLoggingMode(int config)
 }
 #endif
 
-#if GPIO_CHANNELS > 0
+#if GPIO_CHANNELS > 1
 GPIOConfig * getGPIOConfigChannel(int channel)
 {
         GPIOConfig *c = NULL;
@@ -773,9 +773,9 @@ void reset_logger_config(void)
         resetConnectivityConfig(&lc->ConnectivityConfigs);
         reset_logging_config(&lc->logging_cfg);
 
-#if SDCARD_SUPPORT
+
         auto_logger_reset_config(&lc->auto_logger_cfg);
-#endif
+
 
 #if CAMERA_CONTROL
         camera_control_reset_config(&lc->camera_control_cfg);
