@@ -151,7 +151,7 @@ char filterPwmLoggingMode(int config)
 }
 #endif
 
-#if GPIO_CHANNELS > 1
+#if GPIO_CHANNELS > 0
 GPIOConfig * getGPIOConfigChannel(int channel)
 {
         GPIOConfig *c = NULL;
