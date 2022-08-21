@@ -91,19 +91,23 @@ void configChanged()
 
 void startLogging()
 {
-        g_loggingShouldRun = 1;
 
 #if SDCARD_SUPPORT == 0
-        logging_set_status(LOGGING_STATUS_WRITING);
+        if (!g_loggingShouldRun) {
+                logging_set_status(LOGGING_STATUS_WRITING);
+        }
 #endif
+        g_loggingShouldRun = 1;
 }
 
 void stopLogging()
 {
-        g_loggingShouldRun = 0;
 #if SDCARD_SUPPORT == 0
-        logging_set_status(LOGGING_STATUS_IDLE);
+        if (g_loggingShouldRun) {
+                logging_set_status(LOGGING_STATUS_IDLE);
+        }
 #endif
+        g_loggingShouldRun = 0;
 }
 
 static void logging_started()
