@@ -29,14 +29,15 @@ static int g_logging_since = 0;
 
 void logging_set_status(logging_status_t status)
 {
+        if (status != g_logging_status) {
+                /* Broadcast logging state to connected clients */
+                struct api_event event;
+                event.source = NULL; /* not coming from any serial source */
+                event.type = ApiEventType_LoggerStatus;
+                /* Broadcast to active connections */
+                api_event_process_callbacks(&event);
+        }
         g_logging_status = status;
-
-        /* Broadcast logging state to connected clients */
-        struct api_event event;
-        event.source = NULL; /* not coming from any serial source */
-        event.type = ApiEventType_LoggerStatus;
-        /* Broadcast to active connections */
-        api_event_process_callbacks(&event);
 }
 
 logging_status_t logging_get_status( void )
