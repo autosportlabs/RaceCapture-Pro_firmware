@@ -1,4 +1,5 @@
-= 2.18.8 =
+= 2.19.0 =
+* Broadcast logging start/stop message to connected apps to trigger external logging
 * Fix little endian CAN bus mapping when in bit mode
 
 = 2.18.6 =
