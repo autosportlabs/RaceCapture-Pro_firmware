@@ -34,7 +34,8 @@ enum ApiEventType {
         ApiEventType_Alertmessage,
         ApiEventType_AlertmsgAck,
         ApiEventType_AlertmsgReply,
-        ApiEventType_ButtonState
+        ApiEventType_ButtonState,
+        ApiEventType_LoggerStatus
 };
 
 struct alertmessage {
