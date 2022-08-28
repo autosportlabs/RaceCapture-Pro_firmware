@@ -87,13 +87,10 @@ CPP_GUARD_BEGIN
 #define GPS_API_METHODS
 #endif
 
-#if SDCARD_SUPPORT
-#define AUTOLOGGING_METHODS                                     \
-    API_METHOD("getSdLogCtrlCfg", api_get_auto_logger_cfg)     \
-    API_METHOD("setSdLogCtrlCfg", api_set_auto_logger_cfg)
-#else
-#define AUTOLOGGING_METHODS
-#endif
+#define AUTOLOGGING_METHODS                                    \
+        API_METHOD("getSdLogCtrlCfg", api_get_auto_logger_cfg) \
+        API_METHOD("setSdLogCtrlCfg", api_set_auto_logger_cfg) \
+
 
 #if CAMERA_CONTROL  > 0
 #define CAMERA_CONTROL_METHODS                                  \
@@ -180,6 +177,7 @@ int api_flashConfig(struct Serial *serial, const jsmntok_t *json);
 int api_getVersion(struct Serial *serial, const jsmntok_t *json);
 int api_getCapabilities(struct Serial *serial, const jsmntok_t *json);
 int api_getStatus(struct Serial *serial, const jsmntok_t *json);
+int api_send_logging_status(struct Serial* serial);
 int api_systemReset(struct Serial *serial, const jsmntok_t *json);
 int api_factoryReset(struct Serial *serial, const jsmntok_t *json);
 int api_sampleData(struct Serial *serial, const jsmntok_t *json);
@@ -249,10 +247,8 @@ int api_set_telemetry(struct Serial *serial, const jsmntok_t *json);
 /* Volatile setter of active Track */
 int api_set_active_track(struct Serial *serial, const jsmntok_t *json);
 
-#if SDCARD_SUPPORT
 int api_get_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
 int api_set_auto_logger_cfg(struct Serial *serial, const jsmntok_t *json);
-#endif
 
 #if CAMERA_CONTROL
 int api_get_camera_control_cfg(struct Serial *serial, const jsmntok_t *json);

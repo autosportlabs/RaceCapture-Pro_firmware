@@ -596,9 +596,7 @@ typedef struct _LoggerConfig {
 
         struct logging_config logging_cfg;
 
-#if SDCARD_SUPPORT
         struct auto_logger_config auto_logger_cfg;
-#endif
 
 #if CAMERA_CONTROL
         struct camera_control_config camera_control_cfg;
